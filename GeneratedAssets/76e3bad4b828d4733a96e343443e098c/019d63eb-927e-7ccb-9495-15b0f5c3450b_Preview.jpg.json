@@ -1,0 +1,12 @@
+{
+    "asset": "76e3bad4b828d4733a96e343443e098c",
+    "fileName": "019d63eb-927e-7ccb-9495-15b0f5c3450b_Preview.jpg",
+    "prompt": "top-down forest floor ground texture, dark soil, scattered dry leaves, moss, subtle ant trails, insect world style, seamless tiling",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 2080793500,
+    "w3CTraceId": "1f91c3af4d54f7370c985a662be3cab6",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

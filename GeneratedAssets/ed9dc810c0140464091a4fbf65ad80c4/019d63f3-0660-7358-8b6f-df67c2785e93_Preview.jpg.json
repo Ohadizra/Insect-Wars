@@ -1,0 +1,12 @@
+{
+    "asset": "ed9dc810c0140464091a4fbf65ad80c4",
+    "fileName": "019d63f3-0660-7358-8b6f-df67c2785e93_Preview.jpg",
+    "prompt": "dry sandy soil texture, light brown, top-down RTS ground, neutral, seamless tiling, no large features, optimized for unit visibility",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1409082086,
+    "w3CTraceId": "75f3ad262bdb8548a4a5946c6d8f0302",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

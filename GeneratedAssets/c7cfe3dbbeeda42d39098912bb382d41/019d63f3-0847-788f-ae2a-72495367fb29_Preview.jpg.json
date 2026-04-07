@@ -1,0 +1,12 @@
+{
+    "asset": "c7cfe3dbbeeda42d39098912bb382d41",
+    "fileName": "019d63f3-0847-788f-ae2a-72495367fb29_Preview.jpg",
+    "prompt": "fine dark soil texture, uniform earthy brown and grey, top-down RTS ground, neutral, no large objects, very low contrast, seamless tiling, optimized for unit visibility",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 199431842,
+    "w3CTraceId": "1322e8648301074f44184c616874e7cb",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
