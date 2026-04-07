@@ -294,20 +294,41 @@ namespace InsectWars.RTS
             var skin = TeamPalette.GetShellColor(team);
             var accent = TeamPalette.GetTeamColor(team);
 
-            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.22f, 0f), new Vector3(1.05f, 0.36f, 0.52f),
-                Quaternion.Euler(0f, 0f, 90f), skin);
-            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(-0.38f, 0.16f, 0.12f), Vector3.one * 0.2f,
-                Quaternion.identity, Color.Lerp(skin, Color.black, 0.15f));
-            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0.38f, 0.16f, 0.12f), Vector3.one * 0.2f,
-                Quaternion.identity, Color.Lerp(skin, Color.black, 0.15f));
-            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.18f, 0.48f), Vector3.one * 0.17f,
-                Quaternion.identity, accent);
+            // Body (Thorax)
+            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.35f, -0.1f), new Vector3(0.45f, 0.6f, 0.45f),
+                Quaternion.Euler(45f, 0f, 0f), skin);
             
-            // Straps: Two "shoulder" stripes
-            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(-0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
-                Quaternion.Euler(0f, 0f, 15f), accent);
-            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
-                Quaternion.Euler(0f, 0f, -15f), accent);
+            // Head
+            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.85f, 0.3f), Vector3.one * 0.35f,
+                Quaternion.identity, skin);
+            
+            // Eyes (vibrant accent)
+            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(-0.15f, 0.95f, 0.45f), Vector3.one * 0.12f,
+                Quaternion.identity, accent);
+            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0.15f, 0.95f, 0.45f), Vector3.one * 0.12f,
+                Quaternion.identity, accent);
+
+            // Left Scythe Arm
+            var lArm = new GameObject("LeftArm").transform;
+            lArm.SetParent(root, false);
+            lArm.localPosition = new Vector3(-0.25f, 0.65f, 0.2f);
+            var lForearm = AddPrimitivePart(lArm, PrimitiveType.Capsule, new Vector3(0f, -0.2f, 0.15f), new Vector3(0.15f, 0.35f, 0.15f),
+                Quaternion.Euler(60f, 0f, 0f), skin);
+            lForearm.name = "Forearm";
+
+            // Right Scythe Arm
+            var rArm = new GameObject("RightArm").transform;
+            rArm.SetParent(root, false);
+            rArm.localPosition = new Vector3(0.25f, 0.65f, 0.2f);
+            var rForearm = AddPrimitivePart(rArm, PrimitiveType.Capsule, new Vector3(0f, -0.2f, 0.15f), new Vector3(0.15f, 0.35f, 0.15f),
+                Quaternion.Euler(60f, 0f, 0f), skin);
+            rForearm.name = "Forearm";
+            
+            // Straps: Shoulders
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(-0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                Quaternion.Euler(0f, 0f, 20f), accent);
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                Quaternion.Euler(0f, 0f, -20f), accent);
         }
 
         static void BuildRangedVisual(Transform root, Color body, Team team)
