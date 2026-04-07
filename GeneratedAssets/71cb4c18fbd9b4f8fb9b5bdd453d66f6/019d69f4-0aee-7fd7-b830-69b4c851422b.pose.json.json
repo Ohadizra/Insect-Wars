@@ -1,0 +1,12 @@
+{
+    "asset": "71cb4c18fbd9b4f8fb9b5bdd453d66f6",
+    "fileName": "019d69f4-0aee-7fd7-b830-69b4c851422b.pose.json",
+    "prompt": "mantis melee attack with front claws, full body lunge, aggressive strike, insectoid movement style",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1805458092,
+    "w3CTraceId": "dbee57c3ed2bc0aff3696c23e49575e6",
+    "feedback": 0,
+    "isTrimmed": false
+}
