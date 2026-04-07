@@ -5,6 +5,7 @@ using UnityEngine.AI;
 namespace InsectWars.RTS
 {
     [DisallowMultipleComponent]
+    [ExecuteAlways]
     public class UnitAnimationDriver : MonoBehaviour
     {
         static readonly int Speed = Animator.StringToHash("Speed");
@@ -84,7 +85,7 @@ namespace InsectWars.RTS
         {
             if (_unit == null || !_unit.IsAlive || _dying)
             {
-                if (modelRoot != null && _dying)
+                if (Application.isPlaying && modelRoot != null && _dying)
                     modelRoot.localScale = Vector3.Lerp(modelRoot.localScale, Vector3.zero, Time.deltaTime * 5f);
                 return;
             }
@@ -93,98 +94,104 @@ namespace InsectWars.RTS
             var planar = new Vector3(vel.x, 0f, vel.z);
             var moving = planar.sqrMagnitude > 0.06f;
 
-            if (animator != null && animator.runtimeAnimatorController != null)
+            // Handle Animator parameters
+            if (animator != null && animator.runtimeAnimatorController != null && Application.isPlaying)
             {
                 animator.SetFloat(Speed, planar.magnitude);
                 animator.SetBool(IsMoving, moving);
                 animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isStopped);
             }
-            else if (modelRoot != null)
-            {
-                // Procedural Movement Bob
-                var bob = moving ? Mathf.Sin(Time.time * proceduralBobSpeed) * proceduralBobAmp : 0f;
-                
-                // Procedural Idle Logic
-                float idleBob = 0f;
-                float breathScale = 1f;
-                
-                if (!moving && _attackAnimT <= 0f)
-                {
-                    _idleT += Time.deltaTime;
-                    idleBob = Mathf.Sin(_idleT * idlePulseSpeed) * idlePulseAmp;
-                    breathScale = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
 
-                    // Characteristic Mantis Sway (Wind-mimicry)
-                    float sway = Mathf.Sin(_idleT * 1.2f);
-                    float microTwitch = (Mathf.PerlinNoise(_idleT * 8f, 0f) - 0.5f) * 4f;
-                    
-                    if (_chest != null)
-                        _chest.localRotation = _chestBase * Quaternion.Euler(sway * 5f, sway * 8f, 0f);
-                    
-                    if (_head != null)
-                        _head.localRotation = _headBase * Quaternion.Euler(sway * -3f + microTwitch, sway * 12f, microTwitch);
-
-                    if (_lArm != null)
-                        _lArm.localRotation = _lArmBase * Quaternion.Euler(Mathf.Sin(_idleT * 1.8f) * 10f + microTwitch, 0f, sway * 5f);
-                    
-                    if (_rArm != null)
-                        _rArm.localRotation = _rArmBase * Quaternion.Euler(Mathf.Sin(_idleT * 1.8f) * -10f + microTwitch, 0f, sway * -5f);
-
-                    if (_tail != null)
-                        _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 2.5f) * 6f, 0f, 0f);
-                }
-                else if (moving)
-                {
-                    ResetBones(Time.deltaTime * 8f);
-                }
-                
-                modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + idleBob, 0f);
-
-                // Apply Scale & Lunge (prioritize attack)
-                if (_attackAnimT > 0f)
-                {
-                    _attackAnimT -= Time.deltaTime;
-                    float progress = 1f - (_attackAnimT / 0.35f); 
-                    float lunge = Mathf.Sin(progress * Mathf.PI) * 0.45f;
-                    float squash = 1f + 0.18f * Mathf.Sin(progress * Mathf.PI * 2f);
-                    
-                    modelRoot.localPosition += modelRoot.forward * lunge;
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
-
-                    // Mantis Scythe Strike
-                    if (_lArm != null)
-                        _lArm.localRotation = _lArmBase * Quaternion.Euler(Mathf.Sin(progress * Mathf.PI) * -85f, 0f, 0f);
-                    if (_rArm != null)
-                        _rArm.localRotation = _rArmBase * Quaternion.Euler(Mathf.Sin(progress * Mathf.PI) * -85f, 0f, 0f);
-                }
-                else
-                {
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breathScale, 1f, breathScale));
-                }
-            }
-
-            Vector3 face = Vector3.zero;
-            if (moving)
-                face = planar;
-            else if (_unit.CurrentOrder == UnitOrder.Attack && _unit.AttackTarget != null)
-            {
-                var t = _unit.AttackTarget.position - transform.position;
-                t.y = 0f;
-                if (t.sqrMagnitude > 0.01f) face = t;
-            }
-
+            // Handle rotation logic
             if (modelRoot != null)
             {
-                // Base rotation from movement/facing
+                Vector3 face = Vector3.zero;
+                if (moving)
+                    face = planar;
+                else if (_unit.CurrentOrder == UnitOrder.Attack && _unit.AttackTarget != null)
+                {
+                    var t = _unit.AttackTarget.position - transform.position;
+                    t.y = 0f;
+                    if (t.sqrMagnitude > 0.01f) face = t;
+                }
+
                 if (face.sqrMagnitude > 0.01f)
                 {
                     var q = Quaternion.LookRotation(face.normalized, Vector3.up);
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.deltaTime);
                 }
 
-                // Add procedural Idle look-around (absolute offset, no spinning)
+                // Smooth look-around Twitch
                 float twitch = (!moving && _attackAnimT <= 0f) ? (Mathf.PerlinNoise(_idleT * 1.2f, 0f) - 0.5f) * 25f : 0f;
                 modelRoot.rotation = _lookRotation * Quaternion.Euler(0f, twitch, 0f);
+            }
+        }
+
+        void LateUpdate()
+        {
+            if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
+
+            var vel = _agent != null ? _agent.velocity : Vector3.zero;
+            var planar = new Vector3(vel.x, 0f, vel.z);
+            var moving = planar.sqrMagnitude > 0.06f;
+
+            // Update timers
+            float dt = Application.isPlaying ? Time.deltaTime : 0.016f; // Fallback for editor
+            _idleT += dt;
+
+            // 1. Procedural Movement Bob
+            var bob = moving ? Mathf.Sin(Time.time * proceduralBobSpeed) * proceduralBobAmp : 0f;
+            
+            // 2. Procedural Idle Logic
+            float idleBob = 0f;
+            float breathScale = 1f;
+            
+            if (!moving && _attackAnimT <= 0f)
+            {
+                idleBob = Mathf.Sin(_idleT * idlePulseSpeed) * idlePulseAmp;
+                breathScale = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
+
+                float sway = Mathf.Sin(_idleT * 1.2f);
+                float microTwitch = (Mathf.PerlinNoise(_idleT * 8f, 0f) - 0.5f) * 4f;
+                
+                // Overlay bone rotations
+                if (_chest != null)
+                    _chest.localRotation *= Quaternion.Euler(sway * 5f, sway * 8f, 0f);
+                
+                if (_head != null)
+                    _head.localRotation *= Quaternion.Euler(sway * -3f + microTwitch, sway * 12f, microTwitch);
+
+                if (_lArm != null)
+                    _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(_idleT * 1.8f) * 10f + microTwitch, 0f, sway * 5f);
+                
+                if (_rArm != null)
+                    _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(_idleT * 1.8f) * -10f + microTwitch, 0f, sway * -5f);
+
+                if (_tail != null)
+                    _tail.localRotation *= Quaternion.Euler(Mathf.Sin(_idleT * 2.5f) * 6f, 0f, 0f);
+            }
+            
+            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + idleBob, 0f);
+
+            // 3. Attack Animation (Lunge/Squash)
+            if (_attackAnimT > 0f)
+            {
+                _attackAnimT -= dt;
+                float progress = 1f - (_attackAnimT / 0.35f); 
+                float lunge = Mathf.Sin(progress * Mathf.PI) * 0.45f;
+                float squash = 1f + 0.18f * Mathf.Sin(progress * Mathf.PI * 2f);
+                
+                modelRoot.localPosition += modelRoot.forward * lunge;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+
+                if (_lArm != null)
+                    _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(progress * Mathf.PI) * -85f, 0f, 0f);
+                if (_rArm != null)
+                    _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(progress * Mathf.PI) * -85f, 0f, 0f);
+            }
+            else
+            {
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breathScale, 1f, breathScale));
             }
         }
 
@@ -210,7 +217,7 @@ namespace InsectWars.RTS
             _dying = true;
             if (animator != null && animator.runtimeAnimatorController != null)
                 animator.SetTrigger(Death);
-            Destroy(gameObject, destroyDelay);
+            if (Application.isPlaying) Destroy(gameObject, destroyDelay);
         }
 
         public Vector3 GetProjectileSpawnPoint()
