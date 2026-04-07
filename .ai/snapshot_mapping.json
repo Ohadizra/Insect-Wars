@@ -11,6 +11,12 @@
       "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
       "content": "I will fix the Editor preview tool to display the ground in the Scene View and verify the Fog of War configuration to ensure the pink screen effect is resolved.\n\nWould you like me to continue?",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
+      "content": "retry to continue",
+      "snapshot_message_type": 0
     }
   ]
 }
