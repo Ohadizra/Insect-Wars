@@ -31,11 +31,40 @@ namespace InsectWars.RTS
 
         void Start()
         {
+            BuildWorldPreview();
+            
+            var playerStart = new Vector3(-54f, 0f, -44f);
+            for (int i = 0; i < 5; i++)
+            {
+                var angle = i * 72f * Mathf.Deg2Rad;
+                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
+                SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
+            }
+            SpawnUnit(playerStart + new Vector3(1f, 0, 1f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart + new Vector3(3.5f, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart + new Vector3(-1f, 0, -1.5f), Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
+
+            var enemyStart = new Vector3(62f, 0f, 52f);
+            SpawnUnit(enemyStart + new Vector3(0f, 0, 1f), Team.Enemy, UnitArchetype.BasicFighter);
+            SpawnUnit(enemyStart + new Vector3(2.5f, 0, 0f), Team.Enemy, UnitArchetype.BasicFighter);
+            SpawnUnit(enemyStart + new Vector3(-2f, 0, 2f), Team.Enemy, UnitArchetype.BasicRanged);
+
+            var camCtrl = FindFirstObjectByType<RTSCameraController>();
+            if (camCtrl != null)
+                camCtrl.FocusWorldPosition(new Vector3(-48f, 0f, -38f));
+        }
+
+        public void BuildWorldPreview()
+        {
             SkirmishPlayArea.Configure(MapHalfExtent, MinimapOrtho);
             ActiveVisualLibrary = visualLibrary;
 
             EnsureLitShader();
-            var world = new GameObject("WorldRoot");
+            var world = GameObject.Find("WorldRoot");
+            if (world != null) DestroyImmediate(world);
+            
+            world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
             surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
@@ -94,7 +123,9 @@ namespace InsectWars.RTS
 
             surface.BuildNavMesh();
 
-            var systems = new GameObject("Systems");
+            var systems = GameObject.Find("Systems");
+            if (systems != null) DestroyImmediate(systems);
+            systems = new GameObject("Systems");
             systems.AddComponent<PlayerResources>();
             systems.AddComponent<SelectionController>();
             systems.AddComponent<CommandController>();
@@ -102,28 +133,8 @@ namespace InsectWars.RTS
             systems.AddComponent<Sc2BottomBar>();
             systems.AddComponent<SkirmishMinimap>();
             systems.AddComponent<FogOfWarSystem>();
-
-            var playerStart = new Vector3(-54f, 0f, -44f);
-            for (int i = 0; i < 5; i++)
-            {
-                var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
-                SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
-            }
-            SpawnUnit(playerStart + new Vector3(1f, 0, 1f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(3.5f, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(-1f, 0, -1.5f), Team.Player, UnitArchetype.BasicRanged);
-            SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
-
-            var enemyStart = new Vector3(62f, 0f, 52f);
-            SpawnUnit(enemyStart + new Vector3(0f, 0, 1f), Team.Enemy, UnitArchetype.BasicFighter);
-            SpawnUnit(enemyStart + new Vector3(2.5f, 0, 0f), Team.Enemy, UnitArchetype.BasicFighter);
-            SpawnUnit(enemyStart + new Vector3(-2f, 0, 2f), Team.Enemy, UnitArchetype.BasicRanged);
-
-            var camCtrl = FindFirstObjectByType<RTSCameraController>();
-            if (camCtrl != null)
-                camCtrl.FocusWorldPosition(new Vector3(-48f, 0f, -38f));
         }
+
 
         static List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
         {
