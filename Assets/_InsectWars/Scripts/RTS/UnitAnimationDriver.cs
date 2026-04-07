@@ -25,6 +25,7 @@ namespace InsectWars.RTS
         InsectUnit _unit;
         Vector3 _baseLocalPos;
         Vector3 _baseScale;
+        Quaternion _lookRotation;
         float _attackAnimT;
         float _idleT;
         bool _dying;
@@ -44,6 +45,7 @@ namespace InsectWars.RTS
             {
                 _baseLocalPos = modelRoot.localPosition;
                 _baseScale = modelRoot.localScale;
+                _lookRotation = modelRoot.rotation;
             }
             _idleT = Random.value * 10f;
         }
@@ -74,33 +76,31 @@ namespace InsectWars.RTS
                 
                 // Procedural Idle Breathing
                 float idleBob = 0f;
+                float breathScale = 1f;
                 if (!moving && _attackAnimT <= 0f)
                 {
                     _idleT += Time.deltaTime;
                     idleBob = Mathf.Sin(_idleT * idlePulseSpeed) * idlePulseAmp;
+                    breathScale = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
                 }
                 
                 modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + idleBob, 0f);
-            }
 
-            // Procedural Attack Animation (Lunge/Squash)
-            if (_attackAnimT > 0f)
-            {
-                _attackAnimT -= Time.deltaTime;
-                float progress = 1f - (_attackAnimT / 0.35f); 
-                
-                if (modelRoot != null)
+                // Apply Scale (prioritize attack squash)
+                if (_attackAnimT > 0f)
                 {
+                    _attackAnimT -= Time.deltaTime;
+                    float progress = 1f - (_attackAnimT / 0.35f); 
                     float lunge = Mathf.Sin(progress * Mathf.PI) * 0.45f;
                     float squash = 1f + 0.18f * Mathf.Sin(progress * Mathf.PI * 2f);
                     
                     modelRoot.localPosition += modelRoot.forward * lunge;
                     modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
                 }
-            }
-            else if (modelRoot != null)
-            {
-                modelRoot.localScale = _baseScale;
+                else
+                {
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breathScale, 1f, breathScale));
+                }
             }
 
             Vector3 face = Vector3.zero;
@@ -119,20 +119,22 @@ namespace InsectWars.RTS
                 if (face.sqrMagnitude > 0.01f)
                 {
                     var q = Quaternion.LookRotation(face.normalized, Vector3.up);
-                    modelRoot.rotation = Quaternion.RotateTowards(modelRoot.rotation, q, turnSpeed * Time.deltaTime);
+                    _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.deltaTime);
                 }
 
-                // Add procedural Idle twitch (additive)
+                // Add procedural Idle look-around (absolute offset, no spinning)
+                float twitch = 0f;
                 if (!moving && _attackAnimT <= 0f)
                 {
-                    float twitch = (Mathf.PerlinNoise(_idleT * 3f, 0f) - 0.5f) * 12f;
-                    modelRoot.rotation *= Quaternion.Euler(0f, twitch, 0f);
+                    twitch = (Mathf.PerlinNoise(_idleT * 1.2f, 0f) - 0.5f) * 25f;
                 }
-            }
-            }
+                
+                modelRoot.rotation = _lookRotation * Quaternion.Euler(0f, twitch, 0f);
+                }
+                }
 
-        public void NotifyAttack()
-        {
+                public void NotifyAttack()
+{
             if (animator != null && animator.runtimeAnimatorController != null)
                 animator.SetTrigger(Attack);
             _attackAnimT = 0.35f;
