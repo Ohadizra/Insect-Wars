@@ -47,6 +47,12 @@
       "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
       "content": "I have fixed the idle animation spinning bug and improved the natural movement of units. \n\n### Improvements:\n1.  **Fixed Spinning Bug**: The units no longer spin continuously. I separated the \"logical facing\" (where the unit is walking or aiming) from the \"visual twitch.\" The visual offset is now applied as an absolute rotation, preventing the mathematical accumulation that caused the 365-degree spinning.\n2.  **Natural Breathing**: Added a subtle horizontal and vertical scale oscillation (breathing) while units are idle. \n3.  **Look-Around Motion**: Units will now occasionally \"jitter\" or look slightly left and right using Perlin noise, giving them a more insect-like, alert presence without moving their actual collision or feet.\n4.  **Refined Attack Lunge**: Polished the lunge animation so it correctly pushes the unit forward in the direction they are facing and squashes their shell on impact.\n\nThe units should now stand in a natural \"ready\" stance typical of classic RTS games. You can verify this by checking them in the Scene View after clicking **\"**Build World Preview**\" or during **Play Mode**.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "84b7c8b1-8776-4a46-b1d7-0ac8476089e8",
+      "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
+      "content": "I have fixed the compilation issues in `SkirmishDirector.cs` by adding the missing closing braces. The project now compiles successfully, and I have verified that the \"Build World Preview\" functionality is working correctly.\n\n**Summary of Fix:**\n*   Resolved `error CS1513: } expected` in `SkirmishDirector.cs`.\n*   Validated the fix by successfully rebuilding the world in the Editor.\n\nEverything is now ready for you to continue development or Play-including the new team-colored skins and procedural animations.\n\nYou can now continue your work or enter Play Mode without any compiler-based units development or test the animations in Play Mode!",
+      "snapshot_message_type": 1
     }
   ]
 }

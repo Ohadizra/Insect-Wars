@@ -673,4 +673,6 @@ namespace InsectWars.RTS
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;
-        }
+            }
+            }
+            }
