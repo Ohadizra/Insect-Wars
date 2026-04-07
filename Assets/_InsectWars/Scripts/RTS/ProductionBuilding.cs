@@ -18,11 +18,13 @@ namespace InsectWars.RTS
         public static IReadOnlyList<ProductionBuilding> All => s_all;
 
         BuildingType _type;
+        Team _team = Team.Player;
         Vector3? _rallyPoint;
         RottingFruitNode _rallyGatherTarget;
         GameObject _rallyFlag;
 
         public BuildingType Type => _type;
+        public Team Team => _team;
         public Vector3? RallyPoint => _rallyPoint;
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
 
@@ -67,15 +69,16 @@ namespace InsectWars.RTS
             if (_rallyFlag != null) Destroy(_rallyFlag);
         }
 
-        public void Initialize(BuildingType type)
+        public void Initialize(BuildingType type, Team team = Team.Player)
         {
             _type = type;
+            _team = team;
             s_all.Add(this);
         }
 
         public InsectUnit ProduceUnit()
         {
-            if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(UnitCost))
+            if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(UnitCost))
                 return null;
 
             var center = new Vector3(transform.position.x, 0f, transform.position.z);
@@ -86,7 +89,7 @@ namespace InsectWars.RTS
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
 
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, Team.Player, ProducedArchetype);
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, ProducedArchetype);
             if (unit == null) return null;
 
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
@@ -145,20 +148,20 @@ namespace InsectWars.RTS
                 banner.transform.localPosition = new Vector3(0.2f, 1.05f, 0f);
                 banner.transform.localScale = new Vector3(0.35f, 0.22f, 0.05f);
                 Destroy(banner.GetComponent<Collider>());
-                ApplyMat(banner, new Color(0.3f, 1f, 0.45f, 0.9f));
+                ApplyMat(banner, TeamPalette.GetTeamColor(_team)); // Team color banner
             }
 
             _rallyFlag.SetActive(true);
             _rallyFlag.transform.position = _rallyPoint.Value;
         }
 
-        public static ProductionBuilding Place(Vector3 position, BuildingType type)
+        public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player)
         {
             if (type == BuildingType.AntNest)
             {
                 var lib = SkirmishDirector.ActiveVisualLibrary;
                 if (lib != null && lib.hivePrefab != null)
-                    return PlaceAntNestFromPrefab(position, lib.hivePrefab);
+                    return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
             }
 
             var go = new GameObject($"Building_{type}");
@@ -191,6 +194,24 @@ namespace InsectWars.RTS
             visual.transform.localScale = Vector3.one;
             Destroy(visual.GetComponent<Collider>());
             ApplyMat(visual, buildingColor);
+            
+            // Straps for buildings
+            var strapColor = TeamPalette.GetTeamColor(team);
+            var strap1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            strap1.name = "Strap_Top";
+            strap1.transform.SetParent(go.transform, false);
+            strap1.transform.localPosition = new Vector3(0f, 1.02f, 0f);
+            strap1.transform.localScale = new Vector3(0.5f, 0.05f, 0.5f);
+            Destroy(strap1.GetComponent<Collider>());
+            ApplyMat(strap1, strapColor);
+
+            var strap2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            strap2.name = "Strap_Side";
+            strap2.transform.SetParent(go.transform, false);
+            strap2.transform.localPosition = new Vector3(0.52f, 0.5f, 0f);
+            strap2.transform.localScale = new Vector3(0.05f, 0.4f, 0.15f);
+            Destroy(strap2.GetComponent<Collider>());
+            ApplyMat(strap2, strapColor);
 
             var col = go.AddComponent<BoxCollider>();
             col.center = new Vector3(0f, 0.5f, 0f);
@@ -203,12 +224,12 @@ namespace InsectWars.RTS
             obs.center = new Vector3(0f, 0.5f, 0f);
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(type);
+            building.Initialize(type, team);
 
             return building;
         }
 
-        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab)
+        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player)
         {
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
@@ -235,9 +256,18 @@ namespace InsectWars.RTS
                 obs.size = new Vector3(2f, 2f, 2f);
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
+            
+            // Straps for AntNest prefab
+            var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            strap.name = "TeamStrap";
+            strap.transform.SetParent(go.transform, false);
+            strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
+            strap.transform.localScale = new Vector3(1.5f, 0.05f, 1.5f);
+            Destroy(strap.GetComponent<Collider>());
+            ApplyMat(strap, TeamPalette.GetTeamColor(team));
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(BuildingType.AntNest);
+            building.Initialize(BuildingType.AntNest, team);
             return building;
         }
 

@@ -32,5 +32,12 @@ namespace InsectWars.RTS
                 ? new Color(0.08f, 0.22f, 0.55f)
                 : new Color(0.45f, 0.05f, 0.05f);
         }
-    }
-}
+
+        public static Color GetTeamColor(Team team)
+        {
+            return team == Team.Player
+                ? new Color(0.1f, 0.4f, 1f)  // Bright Blue
+                : new Color(1f, 0.1f, 0.1f); // Bright Red
+        }
+        }
+        }

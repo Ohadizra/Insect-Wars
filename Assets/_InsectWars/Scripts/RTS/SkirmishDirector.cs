@@ -82,30 +82,8 @@ namespace InsectWars.RTS
             AddClay(world.transform, new Vector3(48f, 0f, -12f), new Vector3(2.5f, 3f, 6f));
             AddClay(world.transform, new Vector3(-48f, 0f, 48f), new Vector3(6f, 2f, 4f));
 
-            GameObject hive;
-            if (visualLibrary != null && visualLibrary.hivePrefab != null)
-            {
-                hive = Instantiate(visualLibrary.hivePrefab, world.transform);
-                hive.name = "PlayerHive";
-                if (!hive.CompareTag("Hive")) hive.tag = "Hive";
-                hive.transform.position = new Vector3(-62f, 1f, -52f);
-                if (hive.GetComponent<HiveDeposit>() == null) hive.AddComponent<HiveDeposit>();
-                if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
-            }
-            else
-            {
-                hive = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                hive.name = "PlayerHive";
-                hive.tag = "Hive";
-                hive.transform.SetParent(world.transform);
-                hive.transform.position = new Vector3(-62f, 1f, -52f);
-                hive.transform.localScale = new Vector3(4f, 2f, 4f);
-                ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
-                var hiveMod = hive.AddComponent<NavMeshModifier>();
-                hiveMod.ignoreFromBuild = true;
-                hive.AddComponent<HiveDeposit>();
-                hive.AddComponent<HiveVisual>();
-            }
+            BuildHive(world.transform, new Vector3(-62f, 1f, -52f), Team.Player, "PlayerHive");
+            BuildHive(world.transform, new Vector3(62f, 1f, 52f), Team.Enemy, "EnemyHive");
 
             AddRottingApple(world.transform, new Vector3(-50f, 1.5f, -42f));
 
@@ -228,15 +206,19 @@ namespace InsectWars.RTS
             return p;
         }
 
-        static void BuildWorkerVisual(Transform root, Color body)
+        static void BuildWorkerVisual(Transform root, Color body, Team team)
         {
-            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f),
+AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f),
                 Quaternion.identity, body);
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f,
                 Quaternion.identity, Color.Lerp(body, Color.white, 0.12f));
+            
+            // Strap: a thin ring around the "waist"
+            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f),
+                Quaternion.identity, TeamPalette.GetTeamColor(team));
         }
 
-        static void BuildFighterVisual(Transform root, Color body)
+        static void BuildFighterVisual(Transform root, Color body, Team team)
         {
             AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.22f, 0f), new Vector3(1.05f, 0.36f, 0.52f),
                 Quaternion.Euler(0f, 0f, 90f), body);
@@ -246,6 +228,12 @@ namespace InsectWars.RTS
                 Quaternion.identity, Color.Lerp(body, Color.black, 0.15f));
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.18f, 0.48f), Vector3.one * 0.17f,
                 Quaternion.identity, Color.Lerp(body, Color.black, 0.08f));
+            
+            // Straps: Two "shoulder" stripes
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(-0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
+                Quaternion.Euler(0f, 0f, 15f), TeamPalette.GetTeamColor(team));
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
+                Quaternion.Euler(0f, 0f, -15f), TeamPalette.GetTeamColor(team));
         }
 
         static void BuildRangedVisual(Transform root, Color body, Team team)
@@ -256,6 +244,11 @@ namespace InsectWars.RTS
                 Quaternion.identity, Color.Lerp(body, Color.white, 0.1f));
             AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
                 Quaternion.identity, TeamPalette.WeaponAccent(team));
+            
+            // Strap: A horizontal ring on the main body
+            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f),
+                Quaternion.identity, TeamPalette.GetTeamColor(team));
+            
             var fp = new GameObject("FirePoint");
             fp.transform.SetParent(root, false);
             fp.transform.localPosition = new Vector3(0f, 0.55f, 0.55f);
@@ -284,6 +277,56 @@ namespace InsectWars.RTS
             obs.shape = NavMeshObstacleShape.Box;
             obs.size = Vector3.one;
             obs.center = Vector3.zero;
+        }
+
+        void BuildHive(Transform parent, Vector3 worldPos, Team team, string name)
+        {
+            GameObject hive;
+            if (visualLibrary != null && visualLibrary.hivePrefab != null)
+            {
+                hive = Instantiate(visualLibrary.hivePrefab, parent);
+                hive.name = name;
+                if (!hive.CompareTag("Hive")) hive.tag = "Hive";
+                hive.transform.position = worldPos;
+                var deposit = hive.GetComponent<HiveDeposit>();
+                if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
+                deposit.Configure(team);
+                if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
+                
+                // Add strap to prefab Hive
+                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                strap.name = "TeamStrap";
+                strap.transform.SetParent(hive.transform, false);
+                strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
+                strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f); // Thicker strap
+                Object.Destroy(strap.GetComponent<Collider>());
+                ApplyMat(strap, TeamPalette.GetTeamColor(team));
+            }
+            else
+            {
+                hive = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                hive.name = name;
+                hive.tag = "Hive";
+                hive.transform.SetParent(parent);
+                hive.transform.position = worldPos;
+                hive.transform.localScale = new Vector3(4f, 2f, 4f);
+                ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
+                
+                // Add straps to the primitive Hive
+                var strapColor = TeamPalette.GetTeamColor(team);
+                AddPrimitivePart(hive.transform, PrimitiveType.Cube, new Vector3(0f, 0.52f, 0f), new Vector3(1.05f, 0.08f, 1.05f), 
+                    Quaternion.identity, strapColor);
+                AddPrimitivePart(hive.transform, PrimitiveType.Cube, new Vector3(0f, 0f, 0.52f), new Vector3(0.5f, 1.05f, 0.08f), 
+                    Quaternion.identity, strapColor);
+                AddPrimitivePart(hive.transform, PrimitiveType.Cube, new Vector3(0f, 0f, -0.52f), new Vector3(0.5f, 1.05f, 0.08f), 
+                    Quaternion.identity, strapColor);
+
+                var hiveMod = hive.AddComponent<NavMeshModifier>();
+                hiveMod.ignoreFromBuild = true;
+                var deposit = hive.AddComponent<HiveDeposit>();
+                deposit.Configure(team);
+                hive.AddComponent<HiveVisual>();
+            }
         }
 
         void BuildTerrain(Transform parent)
@@ -430,6 +473,17 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
                 Color body = TeamPalette.UnitBody(team, arch);
                 var def = UnitDefinition.CreateRuntimeDefault(arch, body);
                 unit.Configure(team, def);
+                
+                // Add strap to prefab unit
+                var strapColor = TeamPalette.GetTeamColor(team);
+                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                strap.name = "TeamStrap";
+                strap.transform.SetParent(go.transform, false);
+                strap.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+                strap.transform.localScale = new Vector3(1.1f, 0.05f, 1.1f);
+                Object.Destroy(strap.GetComponent<Collider>());
+                ApplyMat(strap, strapColor);
+
                 if (go.GetComponent<UnitAnimationDriver>() == null)
                     go.AddComponent<UnitAnimationDriver>();
                 if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
@@ -448,10 +502,10 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
             switch (arch)
             {
                 case UnitArchetype.Worker:
-                    BuildWorkerVisual(visualRoot.transform, body2);
+                    BuildWorkerVisual(visualRoot.transform, body2, team);
                     break;
                 case UnitArchetype.BasicFighter:
-                    BuildFighterVisual(visualRoot.transform, body2);
+                    BuildFighterVisual(visualRoot.transform, body2, team);
                     break;
                 case UnitArchetype.BasicRanged:
                     BuildRangedVisual(visualRoot.transform, body2, team);

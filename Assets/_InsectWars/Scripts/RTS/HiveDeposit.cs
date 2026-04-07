@@ -7,21 +7,31 @@ namespace InsectWars.RTS
     {
         public static HiveDeposit PlayerHive { get; private set; }
 
+        [SerializeField] Team team = Team.Player;
         Vector3? _rallyPoint;
         RottingFruitNode _rallyGatherTarget;
         GameObject _rallyFlag;
 
+        public Team Team => team;
         public Vector3? RallyPoint => _rallyPoint;
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
 
         void Awake()
         {
-            PlayerHive = this;
+            if (team == Team.Player)
+                PlayerHive = this;
         }
 
         void OnDestroy()
         {
             if (PlayerHive == this) PlayerHive = null;
+        }
+
+        public void Configure(Team t)
+        {
+            team = t;
+            if (team == Team.Player)
+                PlayerHive = this;
         }
 
         public Vector3 DepositPoint
