@@ -257,6 +257,23 @@ namespace InsectWars.RTS
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
             
+            // Apply skin color to prefab renderers
+            var skinColor = TeamPalette.GetShellColor(team);
+            foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer.gameObject.name == "TeamStrap") continue;
+                var mats = renderer.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null) continue;
+                    var m = new Material(mats[i]);
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
+                    else if (m.HasProperty("_Color")) m.color = skinColor;
+                    mats[i] = m;
+                }
+                renderer.sharedMaterials = mats;
+            }
+
             // Straps for AntNest prefab
             var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             strap.name = "TeamStrap";
@@ -269,7 +286,7 @@ namespace InsectWars.RTS
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team);
             return building;
-        }
+            }
 
         static void ApplyMat(GameObject go, Color c)
         {

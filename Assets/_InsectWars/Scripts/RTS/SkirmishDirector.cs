@@ -96,6 +96,16 @@ namespace InsectWars.RTS
             AddFruit(world.transform, new Vector3(22f, 0.6f, -58f));
             AddFruit(world.transform, new Vector3(-15f, 0.6f, 62f));
 
+            // Spawn preview units for Editor
+            var pStart = new Vector3(-54f, 0f, -44f);
+            SpawnUnit(pStart + Vector3.forward * 2f, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
+            SpawnUnit(pStart + Vector3.right * 2f, Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+            SpawnUnit(pStart + new Vector3(2f, 0f, 2f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+
+            var eStart = new Vector3(62f, 0f, 52f);
+            SpawnUnit(eStart + Vector3.back * 2f, Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+            SpawnUnit(eStart + Vector3.left * 2f, Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+
             var exclusions = BuildExclusionZones();
             SkirmishPassiveScatter.Scatter(world.transform, MapHalfExtent, 18427, exclusions);
 
@@ -208,46 +218,55 @@ namespace InsectWars.RTS
 
         static void BuildWorkerVisual(Transform root, Color body, Team team)
         {
-AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f),
-                Quaternion.identity, body);
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+
+            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f),
+                Quaternion.identity, skin);
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f,
-                Quaternion.identity, Color.Lerp(body, Color.white, 0.12f));
+                Quaternion.identity, Color.Lerp(skin, Color.white, 0.2f));
             
             // Strap: a thin ring around the "waist"
             AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f),
-                Quaternion.identity, TeamPalette.GetTeamColor(team));
+                Quaternion.identity, accent);
         }
 
         static void BuildFighterVisual(Transform root, Color body, Team team)
         {
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+
             AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.22f, 0f), new Vector3(1.05f, 0.36f, 0.52f),
-                Quaternion.Euler(0f, 0f, 90f), body);
+                Quaternion.Euler(0f, 0f, 90f), skin);
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(-0.38f, 0.16f, 0.12f), Vector3.one * 0.2f,
-                Quaternion.identity, Color.Lerp(body, Color.black, 0.15f));
+                Quaternion.identity, Color.Lerp(skin, Color.black, 0.15f));
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0.38f, 0.16f, 0.12f), Vector3.one * 0.2f,
-                Quaternion.identity, Color.Lerp(body, Color.black, 0.15f));
+                Quaternion.identity, Color.Lerp(skin, Color.black, 0.15f));
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.18f, 0.48f), Vector3.one * 0.17f,
-                Quaternion.identity, Color.Lerp(body, Color.black, 0.08f));
+                Quaternion.identity, accent);
             
             // Straps: Two "shoulder" stripes
             AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(-0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
-                Quaternion.Euler(0f, 0f, 15f), TeamPalette.GetTeamColor(team));
+                Quaternion.Euler(0f, 0f, 15f), accent);
             AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.25f, 0.42f, 0f), new Vector3(0.12f, 0.05f, 0.42f),
-                Quaternion.Euler(0f, 0f, -15f), TeamPalette.GetTeamColor(team));
+                Quaternion.Euler(0f, 0f, -15f), accent);
         }
 
         static void BuildRangedVisual(Transform root, Color body, Team team)
         {
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+
             AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.52f, 0f), new Vector3(0.42f, 0.5f, 0.42f),
-                Quaternion.identity, body);
+                Quaternion.identity, skin);
             AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 1.02f, 0f), Vector3.one * 0.3f,
-                Quaternion.identity, Color.Lerp(body, Color.white, 0.1f));
+                Quaternion.identity, Color.Lerp(skin, Color.white, 0.2f));
             AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
-                Quaternion.identity, TeamPalette.WeaponAccent(team));
+                Quaternion.identity, accent);
             
             // Strap: A horizontal ring on the main body
             AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f),
-                Quaternion.identity, TeamPalette.GetTeamColor(team));
+                Quaternion.identity, accent);
             
             var fp = new GameObject("FirePoint");
             fp.transform.SetParent(root, false);
@@ -293,6 +312,23 @@ AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new V
                 deposit.Configure(team);
                 if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
                 
+                // Apply skin color to prefab renderers
+                var skinColor = TeamPalette.GetShellColor(team);
+                foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (renderer.gameObject.name == "TeamStrap") continue;
+                    var mats = renderer.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        if (mats[i] == null) continue;
+                        var m = new Material(mats[i]);
+                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
+                        else if (m.HasProperty("_Color")) m.color = skinColor;
+                        mats[i] = m;
+                    }
+                    renderer.sharedMaterials = mats;
+                }
+
                 // Add strap to prefab Hive
                 var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 strap.name = "TeamStrap";
@@ -301,7 +337,7 @@ AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.28f, 0f), new V
                 strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f); // Thicker strap
                 Object.Destroy(strap.GetComponent<Collider>());
                 ApplyMat(strap, TeamPalette.GetTeamColor(team));
-            }
+}
             else
             {
                 hive = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -470,11 +506,30 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
                 go.transform.position = finalPos;
                 var unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
-                Color body = TeamPalette.UnitBody(team, arch);
-                var def = UnitDefinition.CreateRuntimeDefault(arch, body);
+                
+                Color shellColor = TeamPalette.GetShellColor(team);
+                var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
-                // Add strap to prefab unit
+                // Apply skin color to prefab renderers
+                foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
+                {
+                    // Skip the strap if it was already added (though here it's added after)
+                    if (renderer.gameObject.name == "TeamStrap") continue;
+                    
+                    var mats = renderer.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        if (mats[i] == null) continue;
+                        var m = new Material(mats[i]);
+                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", shellColor);
+                        else if (m.HasProperty("_Color")) m.color = shellColor;
+                        mats[i] = m;
+                    }
+                    renderer.sharedMaterials = mats;
+                }
+
+                // Add strap to prefab unit (vibrant accent)
                 var strapColor = TeamPalette.GetTeamColor(team);
                 var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 strap.name = "TeamStrap";

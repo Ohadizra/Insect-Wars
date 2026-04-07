@@ -148,8 +148,12 @@ namespace InsectWars.RTS
         void ApplyDefinition()
         {
             if (definition == null) return;
-            _agent.speed = definition.moveSpeed;
-            _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 1.2f;
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (_agent != null)
+            {
+                _agent.speed = definition.moveSpeed;
+                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 1.2f;
+            }
         }
 
         void Update()
