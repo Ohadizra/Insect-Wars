@@ -5,6 +5,12 @@
       "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
       "content": "the ground is not presented , only see pink",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "f4a3b9da-b294-48ab-bef9-8a5ba7fabc29",
+      "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
+      "content": "I will fix the Editor preview tool to display the ground in the Scene View and verify the Fog of War configuration to ensure the pink screen effect is resolved.\n\nWould you like me to continue?",
+      "snapshot_message_type": 1
     }
   ]
 }

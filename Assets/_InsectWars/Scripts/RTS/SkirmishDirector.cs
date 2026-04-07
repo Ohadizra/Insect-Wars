@@ -180,16 +180,26 @@ namespace InsectWars.RTS
         {
             if (s_lit != null) return;
             var sh = Shader.Find("Universal Render Pipeline/Lit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
+            if (sh == null)
+            {
+                sh = Shader.Find("Standard");
+                if (sh == null) sh = Shader.Find("Sprites/Default");
+            }
             s_lit = new Material(sh);
-            s_lit.SetColor("_BaseColor", Color.white);
-        }
+            if (sh.name.Contains("Universal Render Pipeline"))
+                s_lit.SetColor("_BaseColor", Color.white);
+            else if (s_lit.HasProperty("_Color"))
+                s_lit.SetColor("_Color", Color.white);
+            }
 
         static void ApplyMat(GameObject go, Color c)
         {
             EnsureLitShader();
             var m = new Material(s_lit);
-            m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_BaseColor"))
+                m.SetColor("_BaseColor", c);
+            else if (m.HasProperty("_Color"))
+                m.SetColor("_Color", c);
             var r = go.GetComponent<Renderer>();
             if (r != null) r.sharedMaterial = m;
         }
@@ -336,9 +346,16 @@ namespace InsectWars.RTS
             terrainObj.transform.position = new Vector3(-MapHalfExtent, 0f, -MapHalfExtent);
             
             s_terrain = terrainObj.GetComponent<Terrain>();
-            s_terrain.materialTemplate = null; // Use default URP Terrain Lit
+            
+            // Explicitly assign URP Terrain Lit shader to avoid pink fallback
+            var terrainShader = Shader.Find("Universal Render Pipeline/Terrain/Lit");
+            if (terrainShader != null)
+                s_terrain.materialTemplate = new Material(terrainShader);
+            else
+                s_terrain.materialTemplate = null; // Use default URP Terrain Lit
+                
             s_terrain.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-        }
+            }
 
         static void AddRottingApple(Transform parent, Vector3 pos)
         {
@@ -353,10 +370,13 @@ namespace InsectWars.RTS
             apple.transform.localScale = new Vector3(4f, 3f, 4f);
             EnsureLitShader();
             var m = new Material(s_lit);
-            m.SetColor("_BaseColor", new Color(0.85f, 0.68f, 0.15f));
+            if (m.HasProperty("_BaseColor"))
+                m.SetColor("_BaseColor", new Color(0.85f, 0.68f, 0.15f));
+            else if (m.HasProperty("_Color"))
+                m.SetColor("_Color", new Color(0.85f, 0.68f, 0.15f));
             if (m.HasProperty("_Smoothness"))
                 m.SetFloat("_Smoothness", 0.15f);
-            apple.GetComponent<Renderer>().sharedMaterial = m;
+apple.GetComponent<Renderer>().sharedMaterial = m;
             var modifier = apple.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
             apple.AddComponent<RottingFruitNode>();
