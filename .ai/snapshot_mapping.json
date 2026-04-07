@@ -89,6 +89,12 @@
       "conversation_id": "750f6efe-6e21-4bcd-9e8a-95c8e4282b34",
       "content": "I have completely removed all side-to-side (Y-axis) rotation from the Mantis idle animation. The movement is now strictly focused on vertical (up-down) gestures and articulated arm maintenance.\n\n### Refined Mantis Idle Loop (Vertical Only):\n1.  **0 - 10s: Vertical Scanning**: The unit slowly tilts its head up and down, surveying the surroundings without any horizontal sway.\n2.  **10 - 18s: Left Scythe Maintenance**: The left arm is raised vertically, and the head dips down to inspect it. A high-frequency \"scrubbing\" motion is applied purely along the vertical axis.\n3.  **18 - 24s: Deep Dip**: The unit performs a deep vertical bow/head dip, layered with the rhythmic tail wag.\n4.  **24 - 30s: Right Scythe Maintenance**: Vertical cleaning and inspection of the right arm.\n\n### Technical Adjustments:\n*   **Zeroed Yaw (Y-rotation)**: All procedural `Quaternion.Euler` calls now have `0f` in the second parameter to ensure no left-right turning occurs during idle.\n*   **Root Stability**: Removed the noise-based \"twitch\" from the unit's root rotation, so they stand perfectly still in terms of orientation.\n*   **Pure Vertical Tail Wag**: Verified that the tail movement is strictly pitch-based (up-down).\n\nThis provides a very stable, yet alive and biological presence for the Mantis. You can verify this in the **Scene View** (Build World Preview) or **Play Mode**.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "6f52b5c3-24ce-4e01-9b72-121270395f41",
+      "content": "for the mantis unit, we have idle and walk animation, now make attack animation.. it shuld be a full body action with the main focus on the hands attacking melee",
+      "snapshot_message_type": 0
     }
   ]
 }
