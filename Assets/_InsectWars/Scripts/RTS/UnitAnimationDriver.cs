@@ -4,10 +4,6 @@ using UnityEngine.AI;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Handles procedural animations for units, with a specific focus on high-quality 
-    /// long-form idle behaviors for the Mantis (Fighter) unit.
-    /// </summary>
     [DisallowMultipleComponent]
     [ExecuteAlways]
     public class UnitAnimationDriver : MonoBehaviour
@@ -23,6 +19,8 @@ namespace InsectWars.RTS
         [SerializeField] float turnSpeed = 540f;
         [SerializeField] float proceduralBobSpeed = 10f;
         [SerializeField] float proceduralBobAmp = 0.035f;
+        [SerializeField] float idlePulseSpeed = 2f;
+        [SerializeField] float idlePulseAmp = 0.02f;
 
         NavMeshAgent _agent;
         InsectUnit _unit;
@@ -122,13 +120,8 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.deltaTime);
                 }
 
-                // Smooth look-around twitch (de-synchronized)
-                float twitch = 0f;
-                if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
-                {
-                    twitch = (Mathf.PerlinNoise(_idleT * 0.8f, _instanceOffset) - 0.5f) * 30f;
-                }
-                modelRoot.rotation = _lookRotation * Quaternion.Euler(0f, twitch, 0f);
+                // Strictly no procedural side-to-side twitching
+                modelRoot.rotation = _lookRotation;
             }
         }
 
@@ -143,11 +136,9 @@ namespace InsectWars.RTS
             float dt = Application.isPlaying ? Time.deltaTime : 0.016f;
             _idleT += dt;
 
-            // Simple bob for all
             var bob = moving ? Mathf.Sin(Time.time * proceduralBobSpeed) * proceduralBobAmp : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
 
-            // 30-Second Complex Idle Loop (Mantis Only)
             if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
             {
                 ApplyMantisLoop(dt);
@@ -158,17 +149,22 @@ namespace InsectWars.RTS
                 ResetBones(dt * 5f);
             }
 
-            // Attack Overlay
             if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
-                float p = 1f - (_attackAnimT / 0.35f);
+                float p = 1f - (_attackAnimT / 0.35f); 
                 float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
                 float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
                 modelRoot.localPosition += modelRoot.forward * lunge;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+
                 if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
                 if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+            }
+            else if (_unit.Archetype != UnitArchetype.BasicFighter)
+            {
+                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }
 
@@ -178,68 +174,39 @@ namespace InsectWars.RTS
             float breath = 1f + Mathf.Sin(_idleT * 1.8f) * 0.015f;
             modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
 
-            // Random micro-jitters applied to everything for "life"
-            float jitterHead = (Mathf.PerlinNoise(_idleT * 6f, _instanceOffset) - 0.5f) * 5f;
-            float jitterTail = (Mathf.PerlinNoise(_idleT * 4f, _instanceOffset + 50f) - 0.5f) * 15f;
-
-            // Always have a slight tail wag (user liked tail movement)
             if (_tail != null)
-                _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 2f) * 8f + jitterTail, 0f, 0f);
+                _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 2f) * 8f, 0f, 0f);
 
-            // 30-Second Life Cycle
-            // 0-10s: Casual Look Around
-            // 10-18s: Clean/Sharpen Left Scythe
-            // 18-24s: Curious Tilt
-            // 24-30s: Clean/Sharpen Right Scythe
-
-            if (loopTime < 10f) // Casual Look Around
+            if (loopTime < 10f) // Vertical Look
             {
-                float lookX = (Mathf.PerlinNoise(_idleT * 0.5f, _instanceOffset) - 0.5f) * 40f;
-                float lookY = (Mathf.PerlinNoise(_idleT * 0.5f, _instanceOffset + 100f) - 0.5f) * 30f;
-                
-                if (_head != null)
-                    _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(lookY, lookX, jitterHead), dt * 2f);
-                if (_chest != null)
-                    _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(lookY * 0.2f, lookX * 0.3f, 0f), dt * 1.5f);
-                
+                float lookY = (Mathf.PerlinNoise(_idleT * 0.5f, _instanceOffset + 100f) - 0.5f) * 35f;
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(lookY, 0f, 0f), dt * 2f);
+                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(lookY * 0.2f, 0f, 0f), dt * 1.5f);
                 ResetBonesOnly(dt * 3f, arms: true);
             }
-            else if (loopTime >= 10f && loopTime < 18f) // Clean Left Scythe
+            else if (loopTime >= 10f && loopTime < 18f) // Vertical Scythe Maintenance Left
             {
                 float p = Mathf.InverseLerp(10f, 18f, loopTime);
                 float lift = Mathf.Sin(p * Mathf.PI);
-                float scrub = Mathf.Sin(_idleT * 15f) * 10f; // Rapid sharpening motion
-                
-                if (_lArm != null)
-                    _lArm.localRotation = Quaternion.Slerp(_lArm.localRotation, _lArmBase * Quaternion.Euler(-45f * lift + scrub, -25f * lift, 15f * lift), dt * 6f);
-                if (_head != null)
-                    _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f * lift, -35f * lift, scrub * 0.5f), dt * 6f);
-                
+                float scrub = Mathf.Sin(_idleT * 15f) * 8f;
+                if (_lArm != null) _lArm.localRotation = Quaternion.Slerp(_lArm.localRotation, _lArmBase * Quaternion.Euler(-45f * lift + scrub, 0f, 0f), dt * 6f);
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(30f * lift, 0f, 0f), dt * 6f);
                 ResetBonesOnly(dt * 2f, rightArm: true, chest: true);
             }
-            else if (loopTime >= 18f && loopTime < 24f) // Curious Tilt
+            else if (loopTime >= 18f && loopTime < 24f) // Head Dip
             {
                 float p = Mathf.InverseLerp(18f, 24f, loopTime);
-                float tilt = Mathf.Sin(p * Mathf.PI);
-                
-                if (_head != null)
-                    _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(-10f * tilt, 15f * tilt, 35f * tilt), dt * 3f);
-                if (_chest != null)
-                    _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(0f, 10f * tilt, 5f * tilt), dt * 2f);
-                
-                ResetBonesOnly(dt * 3f, arms: true);
+                float dip = Mathf.Sin(p * Mathf.PI);
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(40f * dip, 0f, 0f), dt * 3f);
+                ResetBonesOnly(dt * 3f, arms: true, chest: true);
             }
-            else // Clean Right Scythe (24-30s)
+            else // Vertical Scythe Maintenance Right
             {
                 float p = Mathf.InverseLerp(24f, 30f, loopTime);
                 float lift = Mathf.Sin(p * Mathf.PI);
-                float scrub = Mathf.Sin(_idleT * 15f) * 10f;
-                
-                if (_rArm != null)
-                    _rArm.localRotation = Quaternion.Slerp(_rArm.localRotation, _rArmBase * Quaternion.Euler(-45f * lift + scrub, 25f * lift, -15f * lift), dt * 6f);
-                if (_head != null)
-                    _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f * lift, 35f * lift, scrub * -0.5f), dt * 6f);
-                
+                float scrub = Mathf.Sin(_idleT * 15f) * 8f;
+                if (_rArm != null) _rArm.localRotation = Quaternion.Slerp(_rArm.localRotation, _rArmBase * Quaternion.Euler(-45f * lift + scrub, 0f, 0f), dt * 6f);
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(30f * lift, 0f, 0f), dt * 6f);
                 ResetBonesOnly(dt * 2f, leftArm: true, chest: true);
             }
         }
