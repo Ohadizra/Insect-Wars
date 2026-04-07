@@ -65,9 +65,12 @@ namespace InsectWars.RTS
             if (!SkirmishPlayArea.HasBounds || _tex == null || _pix == null) return;
 
             PushBounds();
-            RebuildVisionGrid();
-            _tex.SetPixels32(_pix);
-            _tex.Apply(false, false);
+            if ((Time.frameCount & 1) == 0)
+            {
+                RebuildVisionGrid();
+                _tex.SetPixels32(_pix);
+                _tex.Apply(false, false);
+            }
 
             UpdateEnemyVisibility();
         }
@@ -77,7 +80,7 @@ namespace InsectWars.RTS
             for (var i = 0; i < _pix.Length; i++)
                 _pix[i].g = 0;
 
-            foreach (var u in FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+            foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 var r = u.Definition != null ? u.Definition.visionRadius : 12f;
@@ -112,7 +115,7 @@ namespace InsectWars.RTS
                     _enemyRenderers.Remove(u);
             }
 
-            foreach (var u in FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+            foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
                 if (!_enemyRenderers.TryGetValue(u, out var renderers))

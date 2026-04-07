@@ -12,6 +12,8 @@ namespace InsectWars.RTS
         /// <summary>Runtime HUD canvas (minimap and other widgets parent here).</summary>
         public static RectTransform HudCanvasRect { get; private set; }
 
+        [SerializeField] GameObject hudCanvasPrefab;
+
         Text _calorieLabel;
         Text _selectionLabel;
         const string SelectionHint =
@@ -19,10 +21,24 @@ namespace InsectWars.RTS
 
         void Awake()
         {
+            if (hudCanvasPrefab != null)
+            {
+                var root = Instantiate(hudCanvasPrefab, transform);
+                var bind = root.GetComponentInChildren<DemoHudBindings>(true);
+                if (bind != null && bind.CalorieText != null && bind.SelectionText != null)
+                {
+                    EnsureEventSystem();
+                    _calorieLabel = bind.CalorieText;
+                    _selectionLabel = bind.SelectionText;
+                    HudCanvasRect = root.GetComponent<RectTransform>();
+                    return;
+                }
+                Destroy(root);
+            }
             BuildHud();
         }
 
-        void BuildHud()
+        void EnsureEventSystem()
         {
             if (FindFirstObjectByType<EventSystem>() == null)
             {
@@ -30,6 +46,11 @@ namespace InsectWars.RTS
                 es.AddComponent<EventSystem>();
                 es.AddComponent<InputSystemUIInputModule>();
             }
+        }
+
+        void BuildHud()
+        {
+            EnsureEventSystem();
 
             var canvasGo = new GameObject("DemoHUD");
             canvasGo.transform.SetParent(transform);

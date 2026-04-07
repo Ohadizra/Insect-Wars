@@ -10,7 +10,7 @@ namespace InsectWars.Core
     }
 
     /// <summary>
-    /// Cross-scene session data (Demo 0). Difficulty scales enemy HP / spawn pressure.
+    /// Cross-scene session data (Demo 0). Difficulty scales enemy durability, AI cadence, opening counts, and economy.
     /// </summary>
     public static class GameSession
     {
@@ -26,6 +26,33 @@ namespace InsectWars.Core
             DemoDifficulty.Easy => 0.75f,
             DemoDifficulty.Normal => 1f,
             DemoDifficulty.Hard => 1.35f,
+            _ => 1f
+        };
+
+        /// <summary>Multiplier on enemy skirmish unit count at match start (&gt;= 1 rounds up).</summary>
+        public static float DifficultyEnemySpawnMultiplier => Difficulty switch
+        {
+            DemoDifficulty.Easy => 0.85f,
+            DemoDifficulty.Normal => 1f,
+            DemoDifficulty.Hard => 1.25f,
+            _ => 1f
+        };
+
+        /// <summary>Multiplier on enemy AI think delay; higher = slower reactions.</summary>
+        public static float DifficultyEnemyAiThinkIntervalMultiplier => Difficulty switch
+        {
+            DemoDifficulty.Easy => 1.35f,
+            DemoDifficulty.Normal => 1f,
+            DemoDifficulty.Hard => 0.75f,
+            _ => 1f
+        };
+
+        /// <summary>Applied to PlayerResources starting stockpile.</summary>
+        public static float DifficultyStartingCaloriesMultiplier => Difficulty switch
+        {
+            DemoDifficulty.Easy => 1.15f,
+            DemoDifficulty.Normal => 1f,
+            DemoDifficulty.Hard => 0.9f,
             _ => 1f
         };
 

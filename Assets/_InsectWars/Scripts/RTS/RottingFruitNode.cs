@@ -28,6 +28,16 @@ namespace InsectWars.RTS
             _initialCalories = chargesRemaining;
         }
 
+        void OnEnable()
+        {
+            RtsSimRegistry.Register(this);
+        }
+
+        void OnDisable()
+        {
+            RtsSimRegistry.Unregister(this);
+        }
+
         public void Configure(int calories, int perPickup, float gatherSeconds)
         {
             chargesRemaining = calories;

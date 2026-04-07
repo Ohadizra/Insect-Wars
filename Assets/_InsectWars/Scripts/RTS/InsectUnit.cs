@@ -55,6 +55,8 @@ namespace InsectWars.RTS
         public float LastDamageTime { get; private set; } = -1f;
 
         GameObject _selectionRing;
+        static Mesh s_sharedRingMesh;
+        static Material s_sharedRingMaterial;
 
         void Awake()
         {
@@ -63,51 +65,37 @@ namespace InsectWars.RTS
                 s_unitsLayer = LayerMask.NameToLayer("Units");
         }
 
+        void OnEnable()
+        {
+            RtsSimRegistry.Register(this);
+        }
+
+        void OnDisable()
+        {
+            RtsSimRegistry.Unregister(this);
+        }
+
         void LateUpdate()
         {
             SyncSelectionRing();
         }
 
-        void SyncSelectionRing()
+        static void EnsureSharedSelectionRing()
         {
-            if (team != Team.Player) return;
-            if (_selectionRing == null)
-            {
-                _selectionRing = new GameObject("SelectionRing");
-                _selectionRing.transform.SetParent(transform, false);
-                _selectionRing.transform.localPosition = new Vector3(0f, 0.07f, 0f);
-                _selectionRing.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-
-                var mf = _selectionRing.AddComponent<MeshFilter>();
-                mf.sharedMesh = BuildRingMesh(0.55f, 0.65f, 48);
-                var mr = _selectionRing.AddComponent<MeshRenderer>();
-
-                var sh = Shader.Find("Sprites/Default");
-                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
-                var m = new Material(sh);
-                var col = new Color(0.3f, 1f, 0.5f, 0.7f);
-                if (m.HasProperty("_Color")) m.color = col;
-                if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", col);
-                mr.sharedMaterial = m;
-                _selectionRing.SetActive(false);
-            }
-            var show = IsSelected && IsAlive;
-            if (_selectionRing.activeSelf != show)
-                _selectionRing.SetActive(show);
-        }
-
-        static Mesh BuildRingMesh(float inner, float outer, int segments)
-        {
+            if (s_sharedRingMesh != null) return;
+            const int segments = 48;
+            const float inner = 0.55f;
+            const float outer = 0.65f;
             var verts = new Vector3[segments * 2];
             var tris = new int[segments * 6];
-            for (int i = 0; i < segments; i++)
+            for (var i = 0; i < segments; i++)
             {
                 float a = Mathf.PI * 2f * i / segments;
-                float c = Mathf.Cos(a), s = Mathf.Sin(a);
-                verts[i * 2] = new Vector3(c * inner, s * inner, 0f);
-                verts[i * 2 + 1] = new Vector3(c * outer, s * outer, 0f);
-                int next = (i + 1) % segments;
-                int ti = i * 6;
+                float c = Mathf.Cos(a), sn = Mathf.Sin(a);
+                verts[i * 2] = new Vector3(c * inner, sn * inner, 0f);
+                verts[i * 2 + 1] = new Vector3(c * outer, sn * outer, 0f);
+                var next = (i + 1) % segments;
+                var ti = i * 6;
                 tris[ti] = i * 2;
                 tris[ti + 1] = next * 2;
                 tris[ti + 2] = i * 2 + 1;
@@ -115,9 +103,38 @@ namespace InsectWars.RTS
                 tris[ti + 4] = next * 2 + 1;
                 tris[ti + 5] = i * 2 + 1;
             }
-            var mesh = new Mesh { vertices = verts, triangles = tris };
-            mesh.RecalculateNormals();
-            return mesh;
+            s_sharedRingMesh = new Mesh { name = "IW_SharedSelectionRing" };
+            s_sharedRingMesh.vertices = verts;
+            s_sharedRingMesh.triangles = tris;
+            s_sharedRingMesh.RecalculateNormals();
+
+            var sh = Shader.Find("Sprites/Default");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+            s_sharedRingMaterial = new Material(sh);
+            var col = new Color(0.3f, 1f, 0.5f, 0.7f);
+            if (s_sharedRingMaterial.HasProperty("_Color")) s_sharedRingMaterial.color = col;
+            if (s_sharedRingMaterial.HasProperty("_BaseColor")) s_sharedRingMaterial.SetColor("_BaseColor", col);
+        }
+
+        void SyncSelectionRing()
+        {
+            if (team != Team.Player) return;
+            if (_selectionRing == null)
+            {
+                EnsureSharedSelectionRing();
+                _selectionRing = new GameObject("SelectionRing");
+                _selectionRing.transform.SetParent(transform, false);
+                _selectionRing.transform.localPosition = new Vector3(0f, 0.07f, 0f);
+                _selectionRing.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                var mf = _selectionRing.AddComponent<MeshFilter>();
+                mf.sharedMesh = s_sharedRingMesh;
+                var mr = _selectionRing.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = s_sharedRingMaterial;
+                _selectionRing.SetActive(false);
+            }
+            var show = IsSelected && IsAlive;
+            if (_selectionRing.activeSelf != show)
+                _selectionRing.SetActive(show);
         }
 
         void Start()
@@ -347,9 +364,10 @@ namespace InsectWars.RTS
             if (!_wantsAttackMove || _order != UnitOrder.Move) return;
             if (s_unitsLayer < 0) return;
             var mask = 1 << s_unitsLayer;
-            var cols = Physics.OverlapSphere(transform.position, 8f, mask, QueryTriggerInteraction.Ignore);
+            var scan = definition != null ? definition.visionRadius : 12f;
+            var cols = Physics.OverlapSphere(transform.position, scan, mask, QueryTriggerInteraction.Ignore);
             InsectUnit best = null;
-            var bestD = 8f;
+            var bestD = scan;
             foreach (var c in cols)
             {
                 var u = c.GetComponentInParent<InsectUnit>();
@@ -434,7 +452,9 @@ namespace InsectWars.RTS
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
-            var cols = Physics.OverlapSphere(transform.position, 6f);
+            var resLayer = LayerMask.NameToLayer("Resources");
+            var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
+            var cols = Physics.OverlapSphere(transform.position, 6f, mask, QueryTriggerInteraction.Collide);
             RottingFruitNode best = null;
             float bestDist = float.MaxValue;
             foreach (var c in cols)
@@ -555,6 +575,7 @@ namespace InsectWars.RTS
             if (_health <= 0f) return;
             _health -= dmg;
             LastDamageTime = Time.time;
+            GameAudio.PlayCombatHit(transform.position);
             if (_health <= 0)
             {
                 _health = 0;

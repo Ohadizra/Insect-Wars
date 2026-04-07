@@ -6,6 +6,7 @@ namespace InsectWars.RTS
     public class HiveDeposit : MonoBehaviour
     {
         public static HiveDeposit PlayerHive { get; private set; }
+        public static HiveDeposit EnemyHive { get; private set; }
 
         [SerializeField] Team team = Team.Player;
         Vector3? _rallyPoint;
@@ -18,20 +19,29 @@ namespace InsectWars.RTS
 
         void Awake()
         {
-            if (team == Team.Player)
-                PlayerHive = this;
+            RegisterHive();
         }
 
         void OnDestroy()
         {
             if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
         }
 
         public void Configure(Team t)
         {
+            if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
             team = t;
+            RegisterHive();
+        }
+
+        void RegisterHive()
+        {
             if (team == Team.Player)
                 PlayerHive = this;
+            else if (team == Team.Enemy)
+                EnemyHive = this;
         }
 
         public Vector3 DepositPoint

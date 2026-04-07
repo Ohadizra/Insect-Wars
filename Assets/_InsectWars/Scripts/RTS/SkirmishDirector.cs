@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Core;
 using InsectWars.Data;
 using Unity.AI.Navigation;
 using UnityEngine;
@@ -12,15 +13,49 @@ namespace InsectWars.RTS
     [DefaultExecutionOrder(-50)]
     public class SkirmishDirector : MonoBehaviour
     {
-        const float MapHalfExtent = 88f;
-        const float MinimapOrtho = MapHalfExtent;
-
+        [SerializeField] SkirmishMapDefinition mapDefinition;
         [SerializeField] UnitVisualLibrary visualLibrary;
+
+        float _mapHalfExtent;
+        Vector3 _playerStart;
+        Vector3 _enemyStart;
+        Vector3 _playerHive;
+        Vector3 _enemyHive;
+        Vector3 _camFocus;
+        Vector3 _applePos;
+        int _scatterSeed;
+        ClayPlaced[] _clayLayout;
+        FruitPlaced[] _fruitLayout;
+
+        static readonly ClayPlaced[] DefaultClayList =
+        {
+            new() { position = new Vector3(-8f, 0f, 22f), scale = new Vector3(6f, 2.2f, 2f) },
+            new() { position = new Vector3(12f, 0f, -18f), scale = new Vector3(3f, 2.8f, 9f) },
+            new() { position = new Vector3(28f, 0f, 35f), scale = new Vector3(4f, 2f, 5f) },
+            new() { position = new Vector3(-35f, 0f, 8f), scale = new Vector3(5f, 2.5f, 3f) },
+            new() { position = new Vector3(5f, 0f, -42f), scale = new Vector3(8f, 2f, 2.5f) },
+            new() { position = new Vector3(-22f, 0f, -55f), scale = new Vector3(3.5f, 2f, 7f) },
+            new() { position = new Vector3(48f, 0f, -12f), scale = new Vector3(2.5f, 3f, 6f) },
+            new() { position = new Vector3(-48f, 0f, 48f), scale = new Vector3(6f, 2f, 4f) }
+        };
+
+        static readonly FruitPlaced[] DefaultFruitList =
+        {
+            new() { position = new Vector3(-48f, 0.6f, -28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(-72f, 0.6f, -15f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(-25f, 0.6f, 8f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(8f, 0.6f, 12f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(42f, 0.6f, 58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(68f, 0.6f, 28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(22f, 0.6f, -58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            new() { position = new Vector3(-15f, 0.6f, 62f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f }
+        };
 
         /// <summary>Used by units for projectile settings when not using a prefab-only pipeline.</summary>
         public static UnitVisualLibrary ActiveVisualLibrary { get; private set; }
 
         static Material s_lit;
+        static readonly Dictionary<int, Material> s_tintCache = new();
 
         void OnDestroy()
         {
@@ -29,12 +64,37 @@ namespace InsectWars.RTS
             SkirmishPlayArea.Clear();
         }
 
+        void DestroyObject(GameObject go)
+        {
+            if (go == null) return;
+            if (Application.isPlaying)
+                Destroy(go);
+            else
+                DestroyImmediate(go);
+        }
+
+        void ApplyMapLayout()
+        {
+            var m = mapDefinition;
+            _mapHalfExtent = m != null ? m.mapHalfExtent : 88f;
+            _playerStart = m != null ? m.playerArmyStart : new Vector3(-54f, 0f, -44f);
+            _enemyStart = m != null ? m.enemyArmyStart : new Vector3(62f, 0f, 52f);
+            _playerHive = m != null ? m.playerHivePosition : new Vector3(-62f, 1f, -52f);
+            _enemyHive = m != null ? m.enemyHivePosition : new Vector3(62f, 1f, 52f);
+            _camFocus = m != null ? m.cameraFocusWorld : new Vector3(-48f, 0f, -38f);
+            _applePos = m != null ? m.bigApplePosition : new Vector3(-50f, 1.5f, -42f);
+            _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
+            _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
+            _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
+        }
+
         void Start()
         {
+            GameSession.LoadPrefs();
             BuildWorldPreview();
-            
-            var playerStart = new Vector3(-54f, 0f, -44f);
-            for (int i = 0; i < 5; i++)
+
+            var playerStart = _playerStart;
+            for (var i = 0; i < 5; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
                 var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
@@ -45,74 +105,70 @@ namespace InsectWars.RTS
             SpawnUnit(playerStart + new Vector3(-1f, 0, -1.5f), Team.Player, UnitArchetype.BasicRanged);
             SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
 
-            var enemyStart = new Vector3(62f, 0f, 52f);
-            SpawnUnit(enemyStart + new Vector3(0f, 0, 1f), Team.Enemy, UnitArchetype.BasicFighter);
-            SpawnUnit(enemyStart + new Vector3(2.5f, 0, 0f), Team.Enemy, UnitArchetype.BasicFighter);
-            SpawnUnit(enemyStart + new Vector3(-2f, 0, 2f), Team.Enemy, UnitArchetype.BasicRanged);
+            var enemyStart = _enemyStart;
+            var nEnemy = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 14);
+            var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
+            for (var i = 0; i < nEnemy; i++)
+            {
+                var angle = i * 72f * Mathf.Deg2Rad;
+                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
+                var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
+                SpawnUnit(enemyStart + offset, Team.Enemy, arch);
+            }
 
             var camCtrl = FindFirstObjectByType<RTSCameraController>();
             if (camCtrl != null)
-                camCtrl.FocusWorldPosition(new Vector3(-48f, 0f, -38f));
+                camCtrl.FocusWorldPosition(_camFocus);
         }
 
         public void BuildWorldPreview()
         {
-            SkirmishPlayArea.Configure(MapHalfExtent, MinimapOrtho);
+            ApplyMapLayout();
+            SkirmishPlayArea.Configure(_mapHalfExtent, _mapHalfExtent);
             ActiveVisualLibrary = visualLibrary;
 
             EnsureLitShader();
             var world = GameObject.Find("WorldRoot");
-            if (world != null) DestroyImmediate(world);
-            
+            DestroyObject(world);
+
             world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
             surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
             surface.ignoreNavMeshObstacle = false;
 
-            BuildTerrain(world.transform);
-            AddMapBounds(world.transform, MapHalfExtent, 0.45f);
+            BuildTerrain(world.transform, _mapHalfExtent);
+            AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
 
-            AddClay(world.transform, new Vector3(-8f, 0f, 22f), new Vector3(6f, 2.2f, 2f));
-            AddClay(world.transform, new Vector3(12f, 0f, -18f), new Vector3(3f, 2.8f, 9f));
-            AddClay(world.transform, new Vector3(28f, 0f, 35f), new Vector3(4f, 2f, 5f));
-            AddClay(world.transform, new Vector3(-35f, 0f, 8f), new Vector3(5f, 2.5f, 3f));
-            AddClay(world.transform, new Vector3(5f, 0f, -42f), new Vector3(8f, 2f, 2.5f));
-            AddClay(world.transform, new Vector3(-22f, 0f, -55f), new Vector3(3.5f, 2f, 7f));
-            AddClay(world.transform, new Vector3(48f, 0f, -12f), new Vector3(2.5f, 3f, 6f));
-            AddClay(world.transform, new Vector3(-48f, 0f, 48f), new Vector3(6f, 2f, 4f));
+            foreach (var c in _clayLayout)
+                AddClay(world.transform, c.position, c.scale);
 
-            BuildHive(world.transform, new Vector3(-62f, 1f, -52f), Team.Player, "PlayerHive");
-            BuildHive(world.transform, new Vector3(62f, 1f, 52f), Team.Enemy, "EnemyHive");
+            BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
+            BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
 
-            AddRottingApple(world.transform, new Vector3(-50f, 1.5f, -42f));
+            AddRottingApple(world.transform, _applePos);
 
-            AddFruit(world.transform, new Vector3(-48f, 0.6f, -28f));
-            AddFruit(world.transform, new Vector3(-72f, 0.6f, -15f));
-            AddFruit(world.transform, new Vector3(-25f, 0.6f, 8f));
-            AddFruit(world.transform, new Vector3(8f, 0.6f, 12f));
-            AddFruit(world.transform, new Vector3(42f, 0.6f, 58f));
-            AddFruit(world.transform, new Vector3(68f, 0.6f, 28f));
-            AddFruit(world.transform, new Vector3(22f, 0.6f, -58f));
-            AddFruit(world.transform, new Vector3(-15f, 0.6f, 62f));
+            foreach (var f in _fruitLayout)
+                AddFruit(world.transform, f);
 
-            // Spawn preview units for Editor
-            var pStart = new Vector3(-54f, 0f, -44f);
-            SpawnUnit(pStart + Vector3.forward * 2f, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
-            SpawnUnit(pStart + Vector3.right * 2f, Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-            SpawnUnit(pStart + new Vector3(2f, 0f, 2f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
-
-            var eStart = new Vector3(62f, 0f, 52f);
-            SpawnUnit(eStart + Vector3.back * 2f, Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-            SpawnUnit(eStart + Vector3.left * 2f, Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                SpawnUnit(_playerStart + Vector3.forward * 2f, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
+                SpawnUnit(_playerStart + Vector3.right * 2f, Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(_playerStart + new Vector3(2f, 0f, 2f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+                SpawnUnit(_enemyStart + Vector3.back * 2f, Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(_enemyStart + Vector3.left * 2f, Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+            }
+#endif
 
             var exclusions = BuildExclusionZones();
-            SkirmishPassiveScatter.Scatter(world.transform, MapHalfExtent, 18427, exclusions);
+            SkirmishPassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
 
             surface.BuildNavMesh();
 
             var systems = GameObject.Find("Systems");
-            if (systems != null) DestroyImmediate(systems);
+            DestroyObject(systems);
             systems = new GameObject("Systems");
             systems.AddComponent<PlayerResources>();
             systems.AddComponent<SelectionController>();
@@ -121,36 +177,28 @@ namespace InsectWars.RTS
             systems.AddComponent<Sc2BottomBar>();
             systems.AddComponent<SkirmishMinimap>();
             systems.AddComponent<FogOfWarSystem>();
+            systems.AddComponent<MatchDirector>();
+            systems.AddComponent<PauseController>();
+            systems.AddComponent<GameAudio>();
         }
 
 
-        static List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
+        List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
         {
             var z = new List<SkirmishPassiveScatter.ExclusionZone>
             {
-                new(new Vector2(-54f, -44f), 26f),
-                new(new Vector2(62f, 52f), 26f),
-                new(new Vector2(-62f, -52f), 18f),
-                new(new Vector2(-50f, -42f), 12f)
+                new(new Vector2(_playerStart.x, _playerStart.z), 26f),
+                new(new Vector2(_enemyStart.x, _enemyStart.z), 26f),
+                new(new Vector2(_playerHive.x, _playerHive.z), 18f),
+                new(new Vector2(_applePos.x, _applePos.z), 12f)
             };
-            void Fruit(float x, float fz) => z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(x, fz), 8f));
-            Fruit(-48f, -28f);
-            Fruit(-72f, -15f);
-            Fruit(-25f, 8f);
-            Fruit(8f, 12f);
-            Fruit(42f, 58f);
-            Fruit(68f, 28f);
-            Fruit(22f, -58f);
-            Fruit(-15f, 62f);
-            void Clay(float x, float fz, float spread) => z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(x, fz), spread));
-            Clay(-8f, 22f, 9f);
-            Clay(12f, -18f, 11f);
-            Clay(28f, 35f, 8f);
-            Clay(-35f, 8f, 9f);
-            Clay(5f, -42f, 12f);
-            Clay(-22f, -55f, 10f);
-            Clay(48f, -12f, 9f);
-            Clay(-48f, 48f, 11f);
+            foreach (var f in _fruitLayout)
+                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(f.position.x, f.position.z), 8f));
+            foreach (var c in _clayLayout)
+            {
+                var spread = Mathf.Max(c.scale.x, c.scale.z) * 0.5f + 3f;
+                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), spread));
+            }
             return z;
         }
 
@@ -189,18 +237,28 @@ namespace InsectWars.RTS
                 s_lit.SetColor("_BaseColor", Color.white);
             else if (s_lit.HasProperty("_Color"))
                 s_lit.SetColor("_Color", Color.white);
-            }
+        }
 
-        static void ApplyMat(GameObject go, Color c)
+        static Material GetSharedTinted(Color c)
         {
+            var key = (Mathf.RoundToInt(c.r * 255f) << 16) | (Mathf.RoundToInt(c.g * 255f) << 8) |
+                      Mathf.RoundToInt(c.b * 255f);
+            if (s_tintCache.TryGetValue(key, out var existing))
+                return existing;
             EnsureLitShader();
             var m = new Material(s_lit);
             if (m.HasProperty("_BaseColor"))
                 m.SetColor("_BaseColor", c);
             else if (m.HasProperty("_Color"))
                 m.SetColor("_Color", c);
+            s_tintCache[key] = m;
+            return m;
+        }
+
+        static void ApplyMat(GameObject go, Color c)
+        {
             var r = go.GetComponent<Renderer>();
-            if (r != null) r.sharedMaterial = m;
+            if (r != null) r.sharedMaterial = GetSharedTinted(c);
         }
 
         static GameObject AddPrimitivePart(Transform parent, PrimitiveType type, Vector3 localPos, Vector3 localScale,
@@ -365,9 +423,9 @@ namespace InsectWars.RTS
             }
         }
 
-        void BuildTerrain(Transform parent)
+        void BuildTerrain(Transform parent, float mapHalfExtent)
         {
-            float size = MapHalfExtent * 2f;
+            float size = mapHalfExtent * 2f;
             int resolution = 128; // heightmap res
             
             TerrainData terrainData = new TerrainData();
@@ -433,7 +491,7 @@ namespace InsectWars.RTS
             GameObject terrainObj = Terrain.CreateTerrainGameObject(terrainData);
             terrainObj.name = "Ground";
             terrainObj.transform.SetParent(parent);
-            terrainObj.transform.position = new Vector3(-MapHalfExtent, 0f, -MapHalfExtent);
+            terrainObj.transform.position = new Vector3(-mapHalfExtent, 0f, -mapHalfExtent);
             
             s_terrain = terrainObj.GetComponent<Terrain>();
             
@@ -445,7 +503,7 @@ namespace InsectWars.RTS
                 s_terrain.materialTemplate = null; // Use default URP Terrain Lit
                 
             s_terrain.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            }
+        }
 
         static void AddRottingApple(Transform parent, Vector3 pos)
         {
@@ -458,22 +516,25 @@ namespace InsectWars.RTS
             float h = GetHeight(pos);
             apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
             apple.transform.localScale = new Vector3(4f, 3f, 4f);
-            EnsureLitShader();
-            var m = new Material(s_lit);
-            if (m.HasProperty("_BaseColor"))
-                m.SetColor("_BaseColor", new Color(0.85f, 0.68f, 0.15f));
-            else if (m.HasProperty("_Color"))
-                m.SetColor("_Color", new Color(0.85f, 0.68f, 0.15f));
-            if (m.HasProperty("_Smoothness"))
-                m.SetFloat("_Smoothness", 0.15f);
-apple.GetComponent<Renderer>().sharedMaterial = m;
+            var col = new Color(0.85f, 0.68f, 0.15f);
+            var r = apple.GetComponent<Renderer>();
+            if (r != null)
+            {
+                r.sharedMaterial = GetSharedTinted(col);
+                var pb = new MaterialPropertyBlock();
+                r.GetPropertyBlock(pb);
+                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Smoothness"))
+                    pb.SetFloat("_Smoothness", 0.15f);
+                r.SetPropertyBlock(pb);
+            }
             var modifier = apple.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
             apple.AddComponent<RottingFruitNode>();
         }
 
-        static void AddFruit(Transform parent, Vector3 pos)
+        static void AddFruit(Transform parent, FruitPlaced f)
         {
+            var pos = f.position;
             var fruit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             fruit.name = "RottingFruit";
             fruit.tag = "Fruit";
@@ -487,7 +548,7 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
             var modifier = fruit.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
             var node = fruit.AddComponent<RottingFruitNode>();
-            node.Configure(10000, 10, 5f);
+            node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);
         }
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
@@ -511,22 +572,19 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
                 var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
-                // Apply skin color to prefab renderers
+                var block = new MaterialPropertyBlock();
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
-                    // Skip the strap if it was already added (though here it's added after)
                     if (renderer.gameObject.name == "TeamStrap") continue;
-                    
-                    var mats = renderer.sharedMaterials;
-                    for (int i = 0; i < mats.Length; i++)
+                    renderer.GetPropertyBlock(block);
+                    if (renderer.sharedMaterial != null)
                     {
-                        if (mats[i] == null) continue;
-                        var m = new Material(mats[i]);
-                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", shellColor);
-                        else if (m.HasProperty("_Color")) m.color = shellColor;
-                        mats[i] = m;
+                        if (renderer.sharedMaterial.HasProperty("_BaseColor"))
+                            block.SetColor("_BaseColor", shellColor);
+                        if (renderer.sharedMaterial.HasProperty("_Color"))
+                            block.SetColor("_Color", shellColor);
                     }
-                    renderer.sharedMaterials = mats;
+                    renderer.SetPropertyBlock(block);
                 }
 
                 // Add strap to prefab unit (vibrant accent)
@@ -615,6 +673,4 @@ apple.GetComponent<Renderer>().sharedMaterial = m;
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;
-            }
-            }
-            }
+        }

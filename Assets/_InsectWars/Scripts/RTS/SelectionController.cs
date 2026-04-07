@@ -192,7 +192,7 @@ namespace InsectWars.RTS
             var rect = new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
             if (Keyboard.current == null || !Keyboard.current.leftShiftKey.isPressed)
                 ClearAll();
-            foreach (var u in FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+            foreach (var u in RtsSimRegistry.Units)
             {
                 if (u.Team != Team.Player || !u.IsAlive) continue;
                 var p = _cam.WorldToScreenPoint(u.transform.position);
@@ -228,7 +228,7 @@ namespace InsectWars.RTS
                 }
             }
 
-            foreach (var node in FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None))
+            foreach (var node in RtsSimRegistry.FruitNodes)
             {
                 if (node.Depleted) continue;
                 var np = _cam.WorldToScreenPoint(node.transform.position);

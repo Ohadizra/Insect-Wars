@@ -7,7 +7,7 @@ namespace InsectWars.RTS
     [CustomEditor(typeof(SkirmishDirector))]
     public class SkirmishDirectorEditor : UnityEditor.Editor
     {
-public override void OnInspectorGUI()
+        public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
@@ -19,6 +19,6 @@ public override void OnInspectorGUI()
                 sd.BuildWorldPreview();
                 EditorSceneManager.MarkSceneDirty(sd.gameObject.scene);
             }
-            }
-            }
-            }
+        }
+    }
+}

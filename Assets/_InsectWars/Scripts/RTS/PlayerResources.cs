@@ -1,4 +1,5 @@
 using System;
+using InsectWars.Core;
 using UnityEngine;
 
 namespace InsectWars.RTS
@@ -23,8 +24,9 @@ namespace InsectWars.RTS
 
         void Start()
         {
-            if (startingCalories > 0)
-                AddCalories(startingCalories);
+            var start = Mathf.RoundToInt(startingCalories * GameSession.DifficultyStartingCaloriesMultiplier);
+            if (start > 0)
+                AddCalories(start);
         }
 
         void OnDestroy()

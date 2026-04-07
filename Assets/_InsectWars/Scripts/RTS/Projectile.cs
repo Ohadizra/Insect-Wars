@@ -11,6 +11,8 @@ namespace InsectWars.RTS
         InsectUnit _homingTarget;
         Vector3 _lastTargetPos;
         static int s_unitsLayer = -1;
+        static Material s_fallbackProjectileMat;
+        static readonly MaterialPropertyBlock s_pb = new();
 
         public static Projectile SpawnHoming(Vector3 position, InsectUnit target, Team ownerTeam, float damage,
             float speed, float maxLifetime, GameObject prefab = null)
@@ -52,17 +54,21 @@ namespace InsectWars.RTS
         {
             var r = go.GetComponent<Renderer>();
             if (r == null) return;
-            var sh = Shader.Find("Universal Render Pipeline/Lit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
-            var m = new Material(sh);
-            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
-            if (m.HasProperty("_Color")) m.color = c;
-            if (m.HasProperty("_EmissionColor"))
+            if (s_fallbackProjectileMat == null)
             {
-                m.EnableKeyword("_EMISSION");
-                m.SetColor("_EmissionColor", c * 2.2f);
+                var sh = Shader.Find("Universal Render Pipeline/Lit");
+                if (sh == null) sh = Shader.Find("Sprites/Default");
+                s_fallbackProjectileMat = new Material(sh) { name = "IW_ProjectileFallback" };
+                if (s_fallbackProjectileMat.HasProperty("_EmissionColor"))
+                    s_fallbackProjectileMat.EnableKeyword("_EMISSION");
             }
-            r.sharedMaterial = m;
+            r.sharedMaterial = s_fallbackProjectileMat;
+            s_pb.Clear();
+            if (s_fallbackProjectileMat.HasProperty("_BaseColor")) s_pb.SetColor("_BaseColor", c);
+            if (s_fallbackProjectileMat.HasProperty("_Color")) s_pb.SetColor("_Color", c);
+            if (s_fallbackProjectileMat.HasProperty("_EmissionColor"))
+                s_pb.SetColor("_EmissionColor", c * 2.2f);
+            r.SetPropertyBlock(s_pb);
         }
 
         void Update()

@@ -129,7 +129,7 @@ namespace InsectWars.UI
 
             _panelHow = Panel("HowPanel", _canvas.transform);
             AddTitle(_panelHow.transform, "How To Play", v, 32);
-            AddMultiline(_panelHow.transform, "Select your units with left-click or drag a box.\nRight-click ground to move.\nRight-click enemies to attack.\nSelect workers and right-click Rotting Fruit to gather nectar.\nWorkers auto-return to the hive when full.\nEdge-pan or MMB drag to move the camera. Scroll to zoom.\nEscape returns to this menu from the demo.", v, -70f);
+            AddMultiline(_panelHow.transform, "Select your units with left-click or drag a box.\nRight-click ground to move.\nRight-click enemies to attack.\nSelect workers and right-click Rotting Fruit to gather nectar.\nWorkers auto-return to the hive when full.\nEliminate all enemy units to win; lose if yours are wiped out.\nEscape pauses during a match; use Main Menu on the victory/defeat overlay.\nEdge-pan or MMB drag to move the camera. Scroll to zoom.\nFrom the demo, use the HUD Main Menu to return here.", v, -70f);
             y = -320f;
             AddMenuButton(_panelHow.transform, "Back", v, ref y, () => ShowMain());
 
@@ -145,7 +145,7 @@ namespace InsectWars.UI
 
             _panelAbout = Panel("AboutPanel", _canvas.transform);
             AddTitle(_panelAbout.transform, "About", v, 32);
-            AddMultiline(_panelAbout.transform, "Insect Wars — Demo 0\n\nUnity 6 RTS vertical slice.\nPlaceholder units and economy.\n\nFuture: ECS, flow fields, lockstep.", v, -70f);
+            AddMultiline(_panelAbout.transform, "Insect Wars — Demo 0\n\nUnity 6 RTS vertical slice: NavMesh units, economy, fog of war, skirmish flow.\nProcedural primitives are the default when no UnitVisualLibrary prefabs are assigned.\n\nOptional: assign a Skirmish Map Definition on SkirmishDirector for authored layouts.", v, -70f);
             y = -280f;
             AddMenuButton(_panelAbout.transform, "Back", v, ref y, () => ShowMain());
         }
