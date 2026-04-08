@@ -365,10 +365,7 @@ namespace InsectWars.UI
             _previewCam.cullingMask = ~0;
             _previewCam.depth = -10;
 
-            _previewCam.enabled = false;
-
             FrameCameraOnUnit();
-            DontDestroyOnLoad(camGo);
 
             var keyGo = new GameObject("CodexKeyLight");
             keyGo.transform.rotation = Quaternion.Euler(30f, 160f, 0f);
@@ -376,7 +373,6 @@ namespace InsectWars.UI
             _previewLight.type = LightType.Directional;
             _previewLight.color = new Color(1f, 0.97f, 0.92f);
             _previewLight.intensity = 1.6f;
-            DontDestroyOnLoad(keyGo);
 
             var fillGo = new GameObject("CodexFillLight");
             fillGo.transform.rotation = Quaternion.Euler(15f, -40f, 0f);
@@ -385,7 +381,6 @@ namespace InsectWars.UI
             fill.color = new Color(0.6f, 0.7f, 1f);
             fill.intensity = 0.6f;
             _previewLightFill = fillGo;
-            DontDestroyOnLoad(fillGo);
         }
 
         void FrameCameraOnUnit()
@@ -417,8 +412,6 @@ namespace InsectWars.UI
         void LateUpdate()
         {
             UpdatePreviewAnim();
-            if (_previewCam != null && _previewModelRoot != null)
-                _previewCam.Render();
         }
 
         void UpdatePreviewAnim()
@@ -527,6 +520,9 @@ namespace InsectWars.UI
             _attackPhase = -1f;
             _currentPreviewArch = arch;
             FrameCameraForArch(arch);
+
+            Debug.Log($"[CodexPreview] Spawned {arch}, children={_previewModelRoot.transform.childCount}, " +
+                      $"shader={_previewModelRoot.GetComponentInChildren<Renderer>()?.material?.shader?.name}");
         }
 
         void FrameCameraForArch(UnitArchetype arch)

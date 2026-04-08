@@ -137,6 +137,12 @@
       "conversation_id": "6f52b5c3-24ce-4e01-9b72-121270395f41",
       "content": "fix combiler errors",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "a9d310ca-cdb6-4530-aa6c-36ed3d7a7f10",
+      "content": "fix the 3d view of the units in the how to play section, currently they are not visable int he 3d box",
+      "snapshot_message_type": 0
     }
   ]
 }
