@@ -1,0 +1,12 @@
+{
+  "asset": "ee2269af4c267427b91270bfa47f2291",
+  "fileName": "019d6d17-ee3d-71ea-9aa0-9dd9881a02f1.glb",
+  "prompt": "Stylized ant soldier character, organic red exoskeleton armor, 6 legs, antennae, low poly game ready, standing pose, front view",
+  "negativePrompt": "",
+  "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+  "modelName": "Rodin Hyper 3D",
+  "customSeed": -1,
+  "w3CTraceId": "6b3ad8f3c0be891a3e3f9aaf9c46e195",
+  "feedback": -1,
+  "refinementMode": "Generation"
+}

@@ -215,6 +215,12 @@
       "conversation_id": "b721fd44-9f1e-4c2f-9321-d8b441599a44",
       "content": "for all objects that are currently just box/has no art. make a new art and replace the boxes",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "b721fd44-9f1e-4c2f-9321-d8b441599a44",
+      "content": "dont make units , just non units objects, the art shuld be like the rooting apple",
+      "snapshot_message_type": 0
     }
   ]
 }
