@@ -1,0 +1,27 @@
+{
+    "asset": "e820301ab14cc4cc6836bcbe1247dff5",
+    "fileName": "019d6d0b-9343-7bf9-ad81-a0e09849ea55.png",
+    "prompt": "StarCraft II Zerg biological UI command card frame, rectangular grid container. Biological/insectoid carapace texture, dark purple and grey with glowing green veins. Organic, textured frame. Center is empty. High-resolution game UI asset.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "2b530862420b628fdab7be2f53e64798",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

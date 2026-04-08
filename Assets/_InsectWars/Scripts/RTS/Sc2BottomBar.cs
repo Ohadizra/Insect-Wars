@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace InsectWars.RTS
 {
@@ -78,6 +81,27 @@ namespace InsectWars.RTS
         {
             Instance = this;
             _font = UiFontHelper.GetFont();
+
+        #if UNITY_EDITOR
+            // Auto-wire the generated art if null
+            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/BottomBar_BG.png");
+            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Minimap_Frame.png");
+            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/CommandCard_Frame.png");
+            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_Frame.png");
+
+            if (iconMove == null) iconMove = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Move.png");
+            if (iconStop == null) iconStop = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Stop.png");
+            if (iconHold == null) iconHold = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Hold.png");
+            if (iconPatrol == null) iconPatrol = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Patrol.png");
+            if (iconAttack == null) iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Attack.png");
+            if (iconGather == null) iconGather = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Gather.png");
+            if (iconBuild == null) iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Build.png");
+            if (iconCancel == null) iconCancel = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Cancel.png");
+
+            if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_AntWorker.png");
+            if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_MantisFighter.png");
+            if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_BombardierBeetle.png");
+        #endif
         }
 
         void Start()
