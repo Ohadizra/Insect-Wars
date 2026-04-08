@@ -402,11 +402,18 @@ namespace InsectWars.UI
         {
             _previewAnimMode = mode;
             _walkPhase = 0f;
-            _attackPhase = mode == 2 ? 0f : -1f;
+            _attackPhase = mode == 2 ? 0.35f : -1f;
             if (_previewModelRoot != null)
             {
                 _previewModelRoot.transform.position = _previewBasePos;
                 _previewModelRoot.transform.localScale = Vector3.one;
+
+                var driver = _previewModelRoot.GetComponentInChildren<UnitAnimationDriver>();
+                if (driver != null)
+                {
+                    driver.previewSpeed = (mode == 1) ? 3.5f : 0f;
+                    if (mode == 2) driver.NotifyAttack();
+                }
             }
         }
 
@@ -421,6 +428,9 @@ namespace InsectWars.UI
             var t = _previewModelRoot.transform;
             _previewYaw += Time.unscaledDeltaTime * 25f;
             t.rotation = Quaternion.Euler(0f, _previewYaw, 0f);
+
+            if (_previewModelRoot.GetComponentInChildren<UnitAnimationDriver>() != null)
+                return;
 
             switch (_previewAnimMode)
             {
@@ -439,10 +449,9 @@ namespace InsectWars.UI
                 case 2: // attack lunge
                     if (_attackPhase >= 0f)
                     {
-                        _attackPhase += Time.unscaledDeltaTime;
-                        if (_attackPhase > 0.7f) _attackPhase = 0f;
-                        var p = _attackPhase / 0.35f;
-                        if (p > 1f) p = 2f - p;
+                        _attackPhase -= Time.unscaledDeltaTime;
+                        if (_attackPhase <= 0f) _attackPhase = 0.35f;
+                        var p = 1f - (_attackPhase / 0.35f);
                         var lunge = Mathf.Sin(p * Mathf.PI) * 0.3f;
                         var squash = 1f + 0.12f * Mathf.Sin(p * Mathf.PI * 2f);
                         t.position = _previewBasePos + t.forward * lunge;
@@ -475,8 +484,8 @@ namespace InsectWars.UI
 
                 if (inst.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent)) agent.enabled = false;
                 if (inst.TryGetComponent<Collider>(out var col)) col.enabled = false;
-                if (inst.TryGetComponent<InsectUnit>(out var unit)) unit.enabled = false;
-                if (inst.TryGetComponent<UnitAnimationDriver>(out var driver)) driver.enabled = false;
+                if (inst.TryGetComponent<InsectUnit>(out var unit)) unit.enabled = true; // Driver needs unit alive
+                if (inst.TryGetComponent<UnitAnimationDriver>(out var driver)) driver.enabled = true;
                 if (inst.TryGetComponent<SimpleEnemyAi>(out var ai)) ai.enabled = false;
 
                 var block = new MaterialPropertyBlock();
@@ -495,8 +504,8 @@ namespace InsectWars.UI
                 var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 strap.name = "TeamStrap";
                 strap.transform.SetParent(inst.transform, false);
-                strap.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-                strap.transform.localScale = new Vector3(1.1f, 0.05f, 1.1f);
+                strap.transform.localPosition = new Vector3(0f, 0.01f, 0f);
+                strap.transform.localScale = new Vector3(0.85f, 0.02f, 0.85f);
                 Destroy(strap.GetComponent<Collider>());
                 var sr = strap.GetComponent<Renderer>();
                 if (sr != null)
@@ -506,9 +515,9 @@ namespace InsectWars.UI
                     else if (m.HasProperty("_Color")) m.color = accent;
                     sr.material = m;
                 }
-            }
-            else
-            {
+                }
+                else
+                {
                 switch (arch)
                 {
                     case UnitArchetype.Worker:
@@ -518,7 +527,7 @@ namespace InsectWars.UI
                             new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f, Quaternion.identity,
                             Color.Lerp(skin, Color.white, 0.2f));
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
-                            new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f), Quaternion.identity, accent);
+                            new Vector3(0f, 0.01f, 0f), new Vector3(0.85f, 0.02f, 0.85f), Quaternion.identity, accent);
                         break;
 
                     case UnitArchetype.BasicFighter:
@@ -537,12 +546,8 @@ namespace InsectWars.UI
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
                             new Vector3(0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
                             Quaternion.Euler(60f, 0f, 0f), skin);
-                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                            new Vector3(-0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
-                            Quaternion.Euler(0f, 0f, 20f), accent);
-                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                            new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
-                            Quaternion.Euler(0f, 0f, -20f), accent);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                            new Vector3(0f, 0.01f, 0f), new Vector3(1.1f, 0.02f, 1.1f), Quaternion.identity, accent);
                         break;
 
                     case UnitArchetype.BasicRanged:
@@ -551,21 +556,19 @@ namespace InsectWars.UI
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
                             new Vector3(0f, 1.02f, 0f), Vector3.one * 0.3f, Quaternion.identity,
                             Color.Lerp(skin, Color.white, 0.2f));
-                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                            new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
-                            Quaternion.identity, accent);
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
-                            new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f), Quaternion.identity, accent);
+                            new Vector3(0f, 0.01f, 0f), new Vector3(0.85f, 0.02f, 0.85f), Quaternion.identity, accent);
                         break;
                 }
-            }
+                }
 
-            _previewYaw = 0f;
-            _previewBob = 0f;
-            _previewAnimMode = 0;
-            _attackPhase = -1f;
-            _currentPreviewArch = arch;
-            FrameCameraForArch(arch);
+                _previewYaw = 0f;
+                _previewBob = 0f;
+                _previewAnimMode = 0;
+                _attackPhase = -1f;
+                _currentPreviewArch = arch;
+                PreviewSetAnim(0);
+                FrameCameraForArch(arch);
 
             Debug.Log($"[CodexPreview] Spawned {arch}, children={_previewModelRoot.transform.childCount}, " +
                       $"library={(visualLibrary != null ? "Yes" : "No")}, " +
@@ -577,20 +580,20 @@ namespace InsectWars.UI
             if (_previewCam == null) return;
             float centerY = arch switch
             {
-                UnitArchetype.Worker => 0.35f,
-                UnitArchetype.BasicFighter => 0.50f,
-                UnitArchetype.BasicRanged => 0.55f,
+                UnitArchetype.Worker => 0.5f,
+                UnitArchetype.BasicFighter => 0.8f,
+                UnitArchetype.BasicRanged => 0.9f,
                 _ => 0.45f
             };
             float dist = arch switch
             {
-                UnitArchetype.Worker => 1.8f,
-                UnitArchetype.BasicFighter => 2.4f,
-                UnitArchetype.BasicRanged => 2.6f,
-                _ => 2.2f
+                UnitArchetype.Worker => 3.8f,
+                UnitArchetype.BasicFighter => 4.6f,
+                UnitArchetype.BasicRanged => 5.2f,
+                _ => 4.0f
             };
             var target = new Vector3(500f, centerY, 500f);
-            var camPos = target + new Vector3(0f, 0.3f, -dist);
+            var camPos = target + new Vector3(0f, 0.6f, -dist);
             _previewCam.transform.position = camPos;
             _previewCam.transform.LookAt(target);
         }

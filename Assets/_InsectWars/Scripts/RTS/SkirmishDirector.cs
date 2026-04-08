@@ -23,6 +23,7 @@ namespace InsectWars.RTS
         Vector3 _enemyHive;
         Vector3 _camFocus;
         Vector3 _applePos;
+        Vector3 _enemyApplePos;
         int _scatterSeed;
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
@@ -92,7 +93,7 @@ namespace InsectWars.RTS
 
         void ApplyMapLayout()
         {
-            var m = mapDefinition;
+            var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
             _mapHalfExtent = m != null ? m.mapHalfExtent : 88f;
             _playerStart = m != null ? m.playerArmyStart : new Vector3(-54f, 0f, -44f);
             _enemyStart = m != null ? m.enemyArmyStart : new Vector3(62f, 0f, 52f);
@@ -100,6 +101,7 @@ namespace InsectWars.RTS
             _enemyHive = m != null ? m.enemyHivePosition : new Vector3(62f, 1f, 52f);
             _camFocus = m != null ? m.cameraFocusWorld : new Vector3(-48f, 0f, -38f);
             _applePos = m != null ? m.bigApplePosition : new Vector3(-50f, 1.5f, -42f);
+            _enemyApplePos = m != null ? m.enemyBigApplePosition : new Vector3(50f, 1.5f, 42f);
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;

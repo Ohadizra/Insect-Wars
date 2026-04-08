@@ -1,3 +1,4 @@
+using InsectWars.Data;
 using UnityEngine;
 
 namespace InsectWars.Core
@@ -20,6 +21,14 @@ namespace InsectWars.Core
         public const string PrefQuality = "IW_Quality";
 
         public static DemoDifficulty Difficulty { get; private set; } = DemoDifficulty.Normal;
+
+        /// <summary>Map selected from the skirmish lobby. Null falls back to SkirmishDirector's serialized field.</summary>
+        public static SkirmishMapDefinition SelectedMap { get; private set; }
+
+        public static void SetSelectedMap(SkirmishMapDefinition map)
+        {
+            SelectedMap = map;
+        }
 
         public static float DifficultyEnemyHpMultiplier => Difficulty switch
         {

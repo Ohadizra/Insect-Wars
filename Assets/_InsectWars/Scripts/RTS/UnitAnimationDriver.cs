@@ -23,6 +23,8 @@ namespace InsectWars.RTS
         [SerializeField] float idlePulseSpeed = 2f;
         [SerializeField] float idlePulseAmp = 0.02f;
 
+        public float previewSpeed;
+
         NavMeshAgent _agent;
         InsectUnit _unit;
         Vector3 _baseLocalPos;
@@ -93,9 +95,9 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var vel = _agent != null ? _agent.velocity : Vector3.zero;
+            var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
             var planar = new Vector3(vel.x, 0f, vel.z);
-            var moving = planar.sqrMagnitude > 0.06f;
+            var moving = planar.sqrMagnitude > 0.001f;
 
             if (animator != null && animator.runtimeAnimatorController != null && Application.isPlaying)
             {
@@ -130,9 +132,9 @@ namespace InsectWars.RTS
         {
             if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
 
-            var vel = _agent != null ? _agent.velocity : Vector3.zero;
+            var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
             var planar = new Vector3(vel.x, 0f, vel.z);
-            var moving = planar.sqrMagnitude > 0.06f;
+            var moving = planar.sqrMagnitude > 0.001f;
 
             float dt = Application.isPlaying ? Time.deltaTime : 0.016f;
             _idleT += dt;
