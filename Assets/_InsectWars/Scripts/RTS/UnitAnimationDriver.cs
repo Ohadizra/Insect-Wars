@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
@@ -245,6 +246,41 @@ namespace InsectWars.RTS
             if (modelRoot != null)
                 return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f;
             return transform.position + Vector3.up * 0.4f;
+        }
+
+        /// <summary>Human-readable lines for the unit spotlight / codex UI.</summary>
+        public IReadOnlyList<string> GetSpotlightLines()
+        {
+            var lines = new List<string>(12);
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                lines.Add($"Animator: {animator.runtimeAnimatorController.name}");
+                lines.Add("Parameters (set by code):");
+                lines.Add("· Speed (float) — planar speed");
+                lines.Add("· IsMoving (bool)");
+                lines.Add("· Gathering (bool) — while gather + stopped");
+                lines.Add("· Attack (trigger) — NotifyAttack()");
+                lines.Add("· Death (trigger) — NotifyDeath()");
+                lines.Add("Plus: root faces move/attack direction (turnSpeed).");
+            }
+            else
+            {
+                lines.Add("Procedural (no Animator controller)");
+                lines.Add("· Move bob: sinusoidal Y, proceduralBobSpeed / proceduralBobAmp");
+                lines.Add("· Attack: 0.35s lunge + arm pitch + squash (NotifyAttack)");
+                if (_unit != null && _unit.Archetype == UnitArchetype.BasicFighter)
+                {
+                    lines.Add("· Mantis idle loop (~30s): head look, scythe maintenance, tail sway");
+                    lines.Add("· Bones: frontleg/R_frontleg, chest, head, tail (if named in mesh)");
+                }
+                else if (_unit != null)
+                {
+                    lines.Add("· Idle: subtle chest breath scale (idlePulseSpeed / idlePulseAmp)");
+                }
+                lines.Add("· Death: scale-down shrink unless Animator handles it");
+            }
+
+            return lines;
         }
     }
 }

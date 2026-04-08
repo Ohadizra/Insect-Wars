@@ -1,4 +1,6 @@
+using System.Text;
 using InsectWars.Core;
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -128,10 +130,7 @@ namespace InsectWars.UI
             AddMenuButton(_panelPlay.transform, "Back", v, ref y, () => ShowMain());
 
             _panelHow = Panel("HowPanel", _canvas.transform);
-            AddTitle(_panelHow.transform, "How To Play", v, 32);
-            AddMultiline(_panelHow.transform, "Select your units with left-click or drag a box.\nRight-click ground to move.\nRight-click enemies to attack.\nSelect workers and right-click Rotting Fruit to gather nectar.\nWorkers auto-return to the hive when full.\nEliminate all enemy units to win; lose if yours are wiped out.\nEscape pauses during a match; use Main Menu on the victory/defeat overlay.\nEdge-pan or MMB drag to move the camera. Scroll to zoom.\nFrom the demo, use the HUD Main Menu to return here.", v, -70f);
-            y = -320f;
-            AddMenuButton(_panelHow.transform, "Back", v, ref y, () => ShowMain());
+            BuildHowToPlayPanel(_panelHow.transform, v);
 
             _panelSettings = Panel("SettingsPanel", _canvas.transform);
             AddTitle(_panelSettings.transform, "Settings", v, 32);
@@ -148,6 +147,299 @@ namespace InsectWars.UI
             AddMultiline(_panelAbout.transform, "Insect Wars — Demo 0\n\nUnity 6 RTS vertical slice: NavMesh units, economy, fog of war, skirmish flow.\nProcedural primitives are the default when no UnitVisualLibrary prefabs are assigned.\n\nOptional: assign a Skirmish Map Definition on SkirmishDirector for authored layouts.", v, -70f);
             y = -280f;
             AddMenuButton(_panelAbout.transform, "Back", v, ref y, () => ShowMain());
+        }
+
+        // ───────── How To Play with Unit Codex ─────────
+
+        Text _unitDetailText;
+        readonly UnitArchetype[] _codexOrder =
+            { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
+        int _codexIndex;
+
+        void BuildHowToPlayPanel(Transform parent, Font font)
+        {
+            AddTitle(parent, "How To Play", font, 32);
+
+            var scrollGo = new GameObject("Scroll");
+            scrollGo.transform.SetParent(parent, false);
+            var scrollRt = scrollGo.AddComponent<RectTransform>();
+            scrollRt.anchorMin = new Vector2(0.02f, 0.04f);
+            scrollRt.anchorMax = new Vector2(0.98f, 0.88f);
+            scrollRt.offsetMin = scrollRt.offsetMax = Vector2.zero;
+
+            var scrollRect = scrollGo.AddComponent<ScrollRect>();
+            scrollRect.horizontal = false;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 30f;
+
+            var maskImg = scrollGo.AddComponent<Image>();
+            maskImg.color = new Color(0f, 0f, 0f, 0.01f);
+            scrollGo.AddComponent<Mask>().showMaskGraphic = false;
+
+            var contentGo = new GameObject("Content");
+            contentGo.transform.SetParent(scrollGo.transform, false);
+            var contentRt = contentGo.AddComponent<RectTransform>();
+            contentRt.anchorMin = new Vector2(0f, 1f);
+            contentRt.anchorMax = new Vector2(1f, 1f);
+            contentRt.pivot = new Vector2(0.5f, 1f);
+            contentRt.anchoredPosition = Vector2.zero;
+
+            var layout = contentGo.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.spacing = 10f;
+            layout.padding = new RectOffset(20, 20, 10, 20);
+            var fitter = contentGo.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            scrollRect.content = contentRt;
+
+            AddSectionLabel(contentGo.transform, font, "CONTROLS", 20, new Color(1f, 0.95f, 0.55f));
+            AddBodyText(contentGo.transform, font,
+                "LMB / drag — select units\n" +
+                "RMB ground — move selected\n" +
+                "RMB enemy — attack\n" +
+                "RMB fruit (with workers) — gather nectar\n" +
+                "Workers auto-return nectar to hive\n" +
+                "Edge-pan / MMB drag — scroll camera · Scroll — zoom\n" +
+                "Escape — pause/unpause\n" +
+                "Hotkeys: M move · A attack-move · S stop · H hold · P patrol · B build menu\n" +
+                "Win: eliminate all enemies · Lose: all your units die",
+                15, new Color(0.88f, 0.9f, 0.92f));
+
+            AddSectionLabel(contentGo.transform, font, "UNIT CODEX", 20, new Color(1f, 0.95f, 0.55f));
+
+            var tabRow = new GameObject("UnitTabs");
+            tabRow.transform.SetParent(contentGo.transform, false);
+            var tabLayout = tabRow.AddComponent<HorizontalLayoutGroup>();
+            tabLayout.childAlignment = TextAnchor.MiddleCenter;
+            tabLayout.childControlWidth = true;
+            tabLayout.childControlHeight = true;
+            tabLayout.childForceExpandWidth = true;
+            tabLayout.childForceExpandHeight = false;
+            tabLayout.spacing = 8f;
+            var tabFitter = tabRow.AddComponent<LayoutElement>();
+            tabFitter.preferredHeight = 42f;
+
+            foreach (var arch in _codexOrder)
+            {
+                var archCopy = arch;
+                var def = UnitDefinition.CreateRuntimeDefault(arch, Color.white);
+                AddTabButton(tabRow.transform, font, def.displayName.ToUpperInvariant(),
+                    () => ShowCodexUnit(archCopy));
+            }
+
+            var detailGo = new GameObject("UnitDetail");
+            detailGo.transform.SetParent(contentGo.transform, false);
+            _unitDetailText = detailGo.AddComponent<Text>();
+            _unitDetailText.font = font;
+            _unitDetailText.fontSize = 15;
+            _unitDetailText.lineSpacing = 1.1f;
+            _unitDetailText.supportRichText = true;
+            _unitDetailText.color = new Color(0.92f, 0.93f, 0.95f);
+            _unitDetailText.alignment = TextAnchor.UpperLeft;
+            _unitDetailText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            _unitDetailText.verticalOverflow = VerticalWrapMode.Overflow;
+            var dlayout = detailGo.AddComponent<LayoutElement>();
+            dlayout.preferredHeight = 440f;
+            dlayout.flexibleWidth = 1f;
+
+            ShowCodexUnit(UnitArchetype.Worker);
+
+            var backY = -1f;
+            var backParent = parent;
+            var backGo = new GameObject("Back");
+            backGo.transform.SetParent(backParent, false);
+            var backRt = backGo.AddComponent<RectTransform>();
+            backRt.anchorMin = new Vector2(0.5f, 0f);
+            backRt.anchorMax = new Vector2(0.5f, 0f);
+            backRt.pivot = new Vector2(0.5f, 0f);
+            backRt.anchoredPosition = new Vector2(0f, 12f);
+            backRt.sizeDelta = new Vector2(280, 44);
+            var bimg = backGo.AddComponent<Image>();
+            bimg.color = new Color(0.2f, 0.35f, 0.22f, 0.95f);
+            var bbtn = backGo.AddComponent<Button>();
+            bbtn.onClick.AddListener(() => ShowMain());
+            var btx = new GameObject("T").AddComponent<Text>();
+            btx.transform.SetParent(backGo.transform, false);
+            btx.font = font;
+            btx.fontSize = 20;
+            btx.color = Color.white;
+            btx.alignment = TextAnchor.MiddleCenter;
+            btx.text = "Back";
+            var btrt = btx.rectTransform;
+            btrt.anchorMin = Vector2.zero;
+            btrt.anchorMax = Vector2.one;
+            btrt.offsetMin = btrt.offsetMax = Vector2.zero;
+        }
+
+        void ShowCodexUnit(UnitArchetype arch)
+        {
+            if (_unitDetailText == null) return;
+            var def = UnitDefinition.CreateRuntimeDefault(arch, Color.white);
+            var sb = new StringBuilder(1024);
+
+            sb.AppendLine($"<b><size=22><color=#8CFFA8>{def.displayName.ToUpperInvariant()}</color></size></b>");
+            sb.AppendLine($"<i>{ArchetypeFlavorText(arch)}</i>");
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>VISION</color></b>");
+            sb.AppendLine($"  Sight radius .............. {def.visionRadius:F1} m");
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>VITALITY</color></b>");
+            sb.AppendLine($"  Max HP .................... {def.maxHealth:F0}");
+            sb.AppendLine($"  Move speed ................ {def.moveSpeed:F1}");
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>COMBAT</color></b>");
+            sb.AppendLine($"  Damage / hit .............. {def.attackDamage:F1}");
+            sb.AppendLine($"  Attack cooldown ........... {def.attackCooldown:F2} s");
+            sb.AppendLine($"  DPS ....................... ~{def.attackDamage / Mathf.Max(0.05f, def.attackCooldown):F1}");
+            sb.AppendLine($"  Range ..................... {def.attackRange:F1} m  ({(arch == UnitArchetype.BasicRanged ? "ranged projectile" : "melee")})");
+            sb.AppendLine($"  Can gather ................ {(def.canGather ? "Yes" : "No")}");
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>HIT BOX</color></b>");
+            AppendHitboxInfo(arch, sb);
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>ACTIONS</color></b>");
+            AppendActions(arch, sb);
+            sb.AppendLine();
+
+            sb.AppendLine("<b><color=#FFE87A>ANIMATIONS</color></b>");
+            AppendAnimations(arch, sb);
+
+            _unitDetailText.text = sb.ToString();
+        }
+
+        static string ArchetypeFlavorText(UnitArchetype arch) => arch switch
+        {
+            UnitArchetype.Worker =>
+                "Tireless forager. Gathers nectar from rotting fruit and returns it to the hive. Weak in combat but essential for your economy.",
+            UnitArchetype.BasicFighter =>
+                "Armored melee brawler. Closes distance fast and locks onto targets with scythe-arms. High damage up close, no ranged capability.",
+            UnitArchetype.BasicRanged =>
+                "Ranged bombardier. Launches homing acid projectiles from distance. Fragile if flanked, but deadly in groups behind a frontline.",
+            _ => ""
+        };
+
+        static void AppendHitboxInfo(UnitArchetype arch, StringBuilder sb)
+        {
+            switch (arch)
+            {
+                case UnitArchetype.Worker:
+                    sb.AppendLine("  Capsule: center (0, 0.45, 0)  r=0.32  h=0.95");
+                    sb.AppendLine("  NavAgent: h=0.92  r=0.30");
+                    break;
+                case UnitArchetype.BasicFighter:
+                    sb.AppendLine("  Capsule: center (0, 0.22, 0)  r=0.38  h=0.55");
+                    sb.AppendLine("  NavAgent: h=0.50  r=0.42");
+                    break;
+                case UnitArchetype.BasicRanged:
+                    sb.AppendLine("  Capsule: center (0, 0.55, 0)  r=0.28  h=1.10");
+                    sb.AppendLine("  NavAgent: h=1.12  r=0.27");
+                    break;
+            }
+            sb.AppendLine("  Layer: Units");
+        }
+
+        static void AppendActions(UnitArchetype arch, StringBuilder sb)
+        {
+            sb.AppendLine("  Move (RMB ground)");
+            sb.AppendLine("  Attack-move (A + LMB)");
+            sb.AppendLine("  Attack unit (RMB on enemy)");
+            sb.AppendLine("  Stop (S) / Hold position (H)");
+            sb.AppendLine("  Patrol (P, click start then end)");
+            if (arch == UnitArchetype.Worker)
+            {
+                sb.AppendLine("  <color=#FFD966>Gather</color> (RMB on Rotting Fruit)");
+                sb.AppendLine("  Auto-returns nectar to hive when full");
+            }
+        }
+
+        static void AppendAnimations(UnitArchetype arch, StringBuilder sb)
+        {
+            sb.AppendLine("  Pipeline: procedural (or Animator if prefab has controller)");
+            sb.AppendLine("  Move: sinusoidal Y bob while walking");
+            sb.AppendLine("  Attack: 0.35s lunge + squash/stretch + arm pitch");
+            switch (arch)
+            {
+                case UnitArchetype.BasicFighter:
+                    sb.AppendLine("  Idle: 30s mantis loop — head look, scythe maintenance L/R, head dip, tail sway");
+                    sb.AppendLine("  Bones driven: frontleg, R_frontleg, chest, head, tail");
+                    break;
+                case UnitArchetype.Worker:
+                case UnitArchetype.BasicRanged:
+                    sb.AppendLine("  Idle: subtle chest-breath scale pulse");
+                    break;
+            }
+            sb.AppendLine("  Death: scale-to-zero shrink (or Animator Death trigger)");
+            sb.AppendLine("  Animator params (when controller assigned):");
+            sb.AppendLine("    Speed (float) · IsMoving (bool) · Gathering (bool)");
+            sb.AppendLine("    Attack (trigger) · Death (trigger)");
+        }
+
+        void AddSectionLabel(Transform parent, Font font, string text, int size, Color color)
+        {
+            var go = new GameObject("Section");
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<Text>();
+            t.font = font;
+            t.fontSize = size;
+            t.fontStyle = FontStyle.Bold;
+            t.color = color;
+            t.alignment = TextAnchor.MiddleLeft;
+            t.text = text;
+            t.supportRichText = true;
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = size + 12;
+        }
+
+        void AddBodyText(Transform parent, Font font, string text, int size, Color color)
+        {
+            var go = new GameObject("Body");
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<Text>();
+            t.font = font;
+            t.fontSize = size;
+            t.color = color;
+            t.alignment = TextAnchor.UpperLeft;
+            t.text = text;
+            t.supportRichText = true;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = text.Split('\n').Length * (size + 4) + 10;
+            le.flexibleWidth = 1f;
+        }
+
+        void AddTabButton(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject(label);
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.color = new Color(0.18f, 0.3f, 0.2f, 0.92f);
+            var btn = go.AddComponent<Button>();
+            btn.onClick.AddListener(onClick);
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = 38f;
+            le.flexibleWidth = 1f;
+            var tx = new GameObject("T").AddComponent<Text>();
+            tx.transform.SetParent(go.transform, false);
+            tx.font = font;
+            tx.fontSize = 17;
+            tx.fontStyle = FontStyle.Bold;
+            tx.color = Color.white;
+            tx.alignment = TextAnchor.MiddleCenter;
+            tx.text = label;
+            var trt = tx.rectTransform;
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.offsetMin = trt.offsetMax = Vector2.zero;
         }
 
         static Font GetFont()
@@ -419,7 +711,7 @@ namespace InsectWars.UI
             var parent = on.transform.parent;
             foreach (Transform c in parent)
             {
-                if (c.name is "MainPanel" or "PlayPanel" or "HowPanel" or "SettingsPanel" or "AboutPanel")
+                if (c.name is "MainPanel" or "PlayPanel" or "HowPanel" or "SettingsPanel" or "AboutPanel" or "UnitCodexPanel")
                     c.gameObject.SetActive(c.gameObject == on);
             }
         }
