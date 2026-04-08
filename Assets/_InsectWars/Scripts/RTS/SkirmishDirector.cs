@@ -602,6 +602,11 @@ namespace InsectWars.RTS
         {
             GameObject apple;
             var lib = ActiveVisualLibrary;
+            float h = GetHeight(pos);
+            const float appleHeight = 3f;
+            // Center Y = h + (Height/6) to bury the bottom 1/3 (assuming pivot at center)
+            float posY = h + (appleHeight / 6f);
+
             if (lib != null && lib.rottingApplePrefab != null)
             {
                 apple = Object.Instantiate(lib.rottingApplePrefab, parent);
@@ -609,9 +614,8 @@ namespace InsectWars.RTS
                 apple.tag = "Fruit";
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) apple.layer = layer;
-                float h = GetHeight(pos);
-                apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-                apple.transform.localScale = new Vector3(4f, 3f, 4f);
+                apple.transform.position = new Vector3(pos.x, posY, pos.z);
+                apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
             }
             else
             {
@@ -621,9 +625,8 @@ namespace InsectWars.RTS
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) apple.layer = layer;
                 apple.transform.SetParent(parent);
-                float h = GetHeight(pos);
-                apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-                apple.transform.localScale = new Vector3(4f, 3f, 4f);
+                apple.transform.position = new Vector3(pos.x, posY, pos.z);
+                apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
                 var col = new Color(0.85f, 0.68f, 0.15f);
                 var r = apple.GetComponent<Renderer>();
                 if (r != null)
@@ -650,6 +653,11 @@ namespace InsectWars.RTS
             var pos = f.position;
             GameObject fruit;
             var lib = ActiveVisualLibrary;
+            float h = GetHeight(pos);
+            const float fruitHeight = 1.8f;
+            // Center Y = h + (Height/6) to bury the bottom 1/3
+            float posY = h + (fruitHeight / 6f);
+
             if (lib != null && lib.rottingApplePrefab != null)
             {
                 fruit = Object.Instantiate(lib.rottingApplePrefab, parent);
@@ -657,9 +665,8 @@ namespace InsectWars.RTS
                 fruit.tag = "Fruit";
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) fruit.layer = layer;
-                float h = GetHeight(pos);
-                fruit.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-                fruit.transform.localScale = Vector3.one * 1.8f;
+                fruit.transform.position = new Vector3(pos.x, posY, pos.z);
+                fruit.transform.localScale = Vector3.one * fruitHeight;
             }
             else
             {
@@ -669,9 +676,8 @@ namespace InsectWars.RTS
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) fruit.layer = layer;
                 fruit.transform.SetParent(parent);
-                float h = GetHeight(pos);
-                fruit.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-                fruit.transform.localScale = Vector3.one * 1.8f;
+                fruit.transform.position = new Vector3(pos.x, posY, pos.z);
+                fruit.transform.localScale = Vector3.one * fruitHeight;
                 ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
             }
 

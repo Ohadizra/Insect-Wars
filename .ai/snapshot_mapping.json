@@ -179,6 +179,12 @@
       "conversation_id": "a9d310ca-cdb6-4530-aa6c-36ed3d7a7f10",
       "content": "I have replaced the procedural \"yellow ball\" primitive used for the large rotting apple with a high-quality 3D model generated to match the art style you provided.\n\n### Summary of Changes:\n1.  **Generated 3D Model**: Created a detailed \"Rotting Apple\" mesh (`Assets/_InsectWars/Models/RottingApple 2.prefab`) featuring realistic decay, cavities, internal seeds, and mossy textures, inspired by your reference image.\n2.  **Updated Art Library**: Added a `rottingApplePrefab` field to the `UnitVisualLibrary` ScriptableObject and assigned the new model to the `DefaultVisualLibrary` asset.\n3.  **Modified Skirmish Director**: Updated `SkirmishDirector.cs` to use the art prefab for both the large rotting apple and the smaller scattered fruits.\n    *   **Fallback Logic**: If the prefab is missing, it will still fall back to the primitive sphere, ensuring the game remains playable.\n    *   **Proper Configuration**: Ensured the `RottingFruitNode` and `NavMeshModifier` components are correctly attached and configured for the new 3D object.\n4.  **Added Interaction Collider**: Added a `SphereCollider` to the generated prefab so it remains selectable and interactable by your worker units.\n\nThe new rotting apple should now be visible in the skirmish demo with its gritty, detailed art style.\n\n#### Validation:\n*   Mesh generation completed successfully.\n*   The `UnitVisualLibrary` asset was updated.\n*   `SkirmishDirector.cs` compiled successfully with the new logic.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "99135451-c170-471b-84e0-3c25c2dbe560",
+      "conversation_id": "a9d310ca-cdb6-4530-aa6c-36ed3d7a7f10",
+      "content": "I have adjusted the placement logic in `SkirmishDirector.cs` for both the large rotting apple and the smaller scattered fruits.\n\nThey are now positioned such that the bottom 1/3 of the model is buried beneath the ground level. This was achieved by calculating the center Y-coordinate as `groundHeight + (totalHeight / 6)`, which effectively sinks the bottom portion of the mesh into the terrain while keeping the top 2/3 visible.\n\nThe fix applies to both the new high-quality 3D model and the procedural sphere fallbacks.\n\n#### Validation:\n*   `SkirmishDirector.cs` compiled successfully.\n*   The placement logic correctly handles the different scales of the large apple and smaller fruits.",
+      "snapshot_message_type": 1
     }
   ]
 }
