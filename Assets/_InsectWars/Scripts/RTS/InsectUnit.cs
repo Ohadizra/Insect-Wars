@@ -295,9 +295,9 @@ namespace InsectWars.RTS
         {
             if (!IsAlive || node == null || node.Depleted || definition == null || !definition.canGather) return;
 
-            var teamHive = GetTeamHive();
             var inv = GetComponent<WorkerInventory>();
-            if (inv != null && inv.Carrying > 0 && teamHive != null)
+            var depositDest = FindNearestTeamDepositPoint();
+            if (inv != null && inv.Carrying > 0 && depositDest.HasValue)
             {
                 _lastGatherTarget = node;
                 _gatherTarget = null;
@@ -307,7 +307,7 @@ namespace InsectWars.RTS
                 _order = UnitOrder.ReturnDeposit;
                 _agent.ResetPath();
                 _agent.isStopped = false;
-                _agent.SetDestination(teamHive.DepositPoint);
+                _agent.SetDestination(depositDest.Value);
                 return;
             }
 
@@ -325,15 +325,16 @@ namespace InsectWars.RTS
 
         public void OrderReturnToHive()
         {
-            var teamHive = GetTeamHive();
-            if (!IsAlive || teamHive == null) return;
+            if (!IsAlive) return;
+            var dest = FindNearestTeamDepositPoint();
+            if (!dest.HasValue) return;
             ClearTargets();
             _wantsAttackMove = false;
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.ReturnDeposit;
             _agent.isStopped = false;
-            _agent.SetDestination(teamHive.DepositPoint);
+            _agent.SetDestination(dest.Value);
         }
 
         public void OrderPickupSeed(CactiSeedNode seed)
@@ -444,9 +445,9 @@ namespace InsectWars.RTS
             _order = UnitOrder.ReturnDeposit;
             _agent.ResetPath();
             _agent.isStopped = false;
-            var returnHive = GetTeamHive();
-            if (returnHive != null)
-                _agent.SetDestination(returnHive.DepositPoint);
+            var returnDest = FindNearestTeamDepositPoint();
+            if (returnDest.HasValue)
+                _agent.SetDestination(returnDest.Value);
         }
 
         void TickReturn()
@@ -599,7 +600,7 @@ namespace InsectWars.RTS
             _idleScanTimer = 0.5f;
             var resLayer = LayerMask.NameToLayer("Resources");
             var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
-            var cols = Physics.OverlapSphere(transform.position, 6f, mask, QueryTriggerInteraction.Collide);
+            var cols = Physics.OverlapSphere(transform.position, 15f, mask, QueryTriggerInteraction.Collide);
             RottingFruitNode bestFruit = null;
             CactiSeedNode bestSeed = null;
             float bestFruitDist = float.MaxValue;

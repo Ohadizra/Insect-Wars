@@ -185,6 +185,12 @@
       "conversation_id": "a9d310ca-cdb6-4530-aa6c-36ed3d7a7f10",
       "content": "I have adjusted the placement logic in `SkirmishDirector.cs` for both the large rotting apple and the smaller scattered fruits.\n\nThey are now positioned such that the bottom 1/3 of the model is buried beneath the ground level. This was achieved by calculating the center Y-coordinate as `groundHeight + (totalHeight / 6)`, which effectively sinks the bottom portion of the mesh into the terrain while keeping the top 2/3 visible.\n\nThe fix applies to both the new high-quality 3D model and the procedural sphere fallbacks.\n\n#### Validation:\n*   `SkirmishDirector.cs` compiled successfully.\n*   The placement logic correctly handles the different scales of the large apple and smaller fruits.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "5d0c3408-306a-49f6-a342-135a5f6981f2",
+      "content": "mantis do not melee attack properly, probbly due to hit boxses of attack and targets, fix it",
+      "snapshot_message_type": 0
     }
   ]
 }
