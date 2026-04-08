@@ -178,8 +178,47 @@ namespace InsectWars.RTS
             if (_agent != null)
             {
                 _agent.speed = definition.moveSpeed;
-                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 1.2f;
+                // Melee units should try to get close enough for their radius. 
+                // Large units like Mantis (radius 1.05) need a stopping distance that doesn't prevent them from reaching range.
+                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
             }
+        }
+
+        float GetEffectiveAttackRange()
+        {
+            if (definition == null) return 1.5f;
+            if (_attackTarget == null) return definition.attackRange;
+
+            float selfRadius = _agent != null ? _agent.radius : 0.4f;
+            float targetRadius = 0.4f;
+
+            var targetUnit = _attackTarget.GetComponent<InsectUnit>();
+            if (targetUnit != null)
+            {
+                var targetAgent = targetUnit.GetComponent<NavMeshAgent>();
+                if (targetAgent != null) targetRadius = targetAgent.radius;
+                else
+                {
+                    var targetCol = targetUnit.GetComponent<CapsuleCollider>();
+                    if (targetCol != null) targetRadius = targetCol.radius;
+                }
+            }
+            else
+            {
+                var targetCol = _attackTarget.GetComponent<Collider>();
+                if (targetCol != null)
+                {
+                    if (targetCol is CapsuleCollider cc) targetRadius = cc.radius;
+                    else if (targetCol is BoxCollider bc) targetRadius = Mathf.Max(bc.size.x, bc.size.z) * 0.5f;
+                    else if (targetCol is SphereCollider sc) targetRadius = sc.radius;
+                }
+            }
+
+            // The attackRange in definition (e.g. 1.55) is assumed to be tuned for center-to-center 
+            // with standard units (~0.4 radius). We convert it to a surface-to-surface range 
+            // and then add the actual radii.
+            float surfaceRange = Mathf.Max(0.1f, definition.attackRange - 0.8f);
+            return surfaceRange + selfRadius + targetRadius;
         }
 
         void Update()
@@ -459,13 +498,13 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var teamHive = GetTeamHive();
-            if (teamHive == null)
+            var depositDest = FindNearestTeamDepositPoint();
+            if (!depositDest.HasValue)
             {
                 _order = UnitOrder.Idle;
                 return;
             }
-            var dest = teamHive.DepositPoint;
+            var dest = depositDest.Value;
             var diff = transform.position - dest;
             diff.y = 0f;
             if (diff.magnitude > 2f)
@@ -635,18 +674,21 @@ namespace InsectWars.RTS
                 return;
             }
             var targetUnit = _attackTarget.GetComponent<InsectUnit>();
-            if (targetUnit == null || !targetUnit.IsAlive)
+            // Targets can be units or buildings (which might not have InsectUnit)
+            bool targetAlive = targetUnit != null ? targetUnit.IsAlive : true; 
+            if (!targetAlive)
             {
                 ResumeAfterAttack();
                 return;
             }
+
             var dist = Vector3.Distance(transform.position, _attackTarget.position);
-            var range = definition.attackRange;
+            var range = GetEffectiveAttackRange();
             bool isMelee = definition.archetype != UnitArchetype.BasicRanged;
 
             if (isMelee)
             {
-                float leashRange = range * 1.5f;
+                float leashRange = range * 1.25f;
                 bool locked = _meleeLockedPos.HasValue;
 
                 if (locked && dist <= leashRange)
@@ -660,11 +702,14 @@ namespace InsectWars.RTS
 
                     if (_attackCooldown <= 0f)
                     {
-                        targetUnit.ApplyDamage(definition.attackDamage);
+                        if (targetUnit != null)
+                        {
+                            targetUnit.ApplyDamage(definition.attackDamage);
+                        }
                         GetComponent<UnitAnimationDriver>()?.NotifyAttack();
                         _attackCooldown = definition.attackCooldown;
                     }
-                    return;
+return;
                 }
 
                 if (locked)

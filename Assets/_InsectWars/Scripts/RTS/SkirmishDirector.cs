@@ -218,25 +218,8 @@ namespace InsectWars.RTS
         }
 
 
-        /// <summary>
-        /// Free Ant's Nest near the player hive. Must run before NavMesh build so carving applies.
-        /// (Rebuilding WorldRoot each match removes any nest placed only in the scene/prefab.)
-        /// </summary>
         void PlaceStarterPlayerBuildings(Transform worldRoot)
         {
-            var hiveXZ = new Vector3(_playerHive.x + 8f, 0f, _playerHive.z + 6f);
-            var groundY = GetHeight(hiveXZ);
-            var pos = new Vector3(hiveXZ.x, groundY + 0.02f, hiveXZ.z);
-            var nest = ProductionBuilding.Place(pos, BuildingType.AntNest, Team.Player);
-            if (nest != null)
-                nest.transform.SetParent(worldRoot, true);
-
-            var enemyHiveXZ = new Vector3(_enemyHive.x - 8f, 0f, _enemyHive.z - 6f);
-            var enemyGroundY = GetHeight(enemyHiveXZ);
-            var enemyPos = new Vector3(enemyHiveXZ.x, enemyGroundY + 0.02f, enemyHiveXZ.z);
-            var enemyNest = ProductionBuilding.Place(enemyPos, BuildingType.AntNest, Team.Enemy);
-            if (enemyNest != null)
-                enemyNest.transform.SetParent(worldRoot, true);
         }
 
         List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
@@ -476,7 +459,10 @@ namespace InsectWars.RTS
                 strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f); // Thicker strap
                 Object.Destroy(strap.GetComponent<Collider>());
                 ApplyMat(strap, TeamPalette.GetTeamColor(team));
-}
+
+                var prod = hive.AddComponent<ProductionBuilding>();
+                prod.Initialize(BuildingType.AntNest, team);
+            }
             else
             {
                 hive = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -501,6 +487,9 @@ namespace InsectWars.RTS
                 var deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
                 hive.AddComponent<HiveVisual>();
+
+                var prod = hive.AddComponent<ProductionBuilding>();
+                prod.Initialize(BuildingType.AntNest, team);
             }
         }
 
