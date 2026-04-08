@@ -40,6 +40,11 @@ namespace InsectWars.Data
 
             map.passiveScatterSeed = 44291;
 
+            map.highGrounds = new[]
+            {
+                new HighGroundPlaced { uv = new Vector2(0.5f, 0.5f), radius = 0.06f, rampWidth = 0.05f, heightFraction = 0.06f },
+            };
+
             map.clay = new[]
             {
                 // Central choke — mirrored pair

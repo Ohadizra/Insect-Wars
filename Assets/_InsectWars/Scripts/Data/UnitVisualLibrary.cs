@@ -14,6 +14,7 @@ namespace InsectWars.Data
         public GameObject hivePrefab;
 
         [Header("Environment")]
+        public GameObject rottingApplePrefab;
         public Material groundMaterial;
         public TerrainLayer baseSoilLayer;
         public TerrainLayer drySoilLayer;

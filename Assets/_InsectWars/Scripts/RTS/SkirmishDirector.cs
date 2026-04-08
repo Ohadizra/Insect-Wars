@@ -507,24 +507,35 @@ namespace InsectWars.RTS
         void BuildTerrain(Transform parent, float mapHalfExtent)
         {
             float size = mapHalfExtent * 2f;
-            int resolution = 128; // heightmap res
-            
+            int resolution = 128;
+
             TerrainData terrainData = new TerrainData();
             terrainData.heightmapResolution = resolution + 1;
             terrainData.size = new Vector3(size, 20f, size);
             terrainData.alphamapResolution = 128;
 
-            // Setup Layers
             if (visualLibrary != null && visualLibrary.baseSoilLayer != null && visualLibrary.drySoilLayer != null)
-            {
                 terrainData.terrainLayers = new[] { visualLibrary.baseSoilLayer, visualLibrary.drySoilLayer };
+
+            var mapDef = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
+            bool useCustomHighGrounds = mapDef != null && mapDef.highGrounds != null;
+
+            HighGroundPlaced[] hgList;
+            if (useCustomHighGrounds)
+            {
+                hgList = mapDef.highGrounds;
+            }
+            else
+            {
+                hgList = new[]
+                {
+                    new HighGroundPlaced { uv = new Vector2(0.25f, 0.25f), radius = 0.13f, rampWidth = 0.04f, heightFraction = 0.15f },
+                    new HighGroundPlaced { uv = new Vector2(0.75f, 0.75f), radius = 0.13f, rampWidth = 0.04f, heightFraction = 0.15f },
+                    new HighGroundPlaced { uv = new Vector2(0.5f, 0.5f), radius = 0.13f, rampWidth = 0.04f, heightFraction = 0.15f },
+                };
             }
 
-            // Generate Heightmap (Plateaus with sharper edges)
             float[,] heights = new float[resolution + 1, resolution + 1];
-            Vector2[] highGrounds = { new Vector2(0.25f, 0.25f), new Vector2(0.75f, 0.75f), new Vector2(0.5f, 0.5f) };
-            float highLevel = 0.15f; // 15% of 20f = 3m high
-            
             for (int x = 0; x <= resolution; x++)
             {
                 for (int y = 0; y <= resolution; y++)
@@ -532,18 +543,18 @@ namespace InsectWars.RTS
                     float u = (float)x / resolution;
                     float v = (float)y / resolution;
                     float maxH = 0f;
-                    foreach (var hg in highGrounds)
+                    foreach (var hg in hgList)
                     {
-                        float dist = Vector2.Distance(new Vector2(u, v), hg);
-                        if (dist < 0.13f) maxH = highLevel;
-                        else if (dist < 0.15f) maxH = Mathf.Lerp(highLevel, 0f, (dist - 0.13f) / 0.02f); // sharp ramp
+                        float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                        float rw = Mathf.Max(hg.rampWidth, 0.01f);
+                        if (dist < hg.radius) maxH = Mathf.Max(maxH, hg.heightFraction);
+                        else if (dist < hg.radius + rw) maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, (dist - hg.radius) / rw));
                     }
                     heights[y, x] = maxH;
                 }
             }
             terrainData.SetHeights(0, 0, heights);
 
-            // Generate Alphamap (DrySoil on High Ground, BaseSoil on Low Ground + Noise)
             float[,,] alpha = new float[128, 128, 2];
             for (int x = 0; x < 128; x++)
             {
@@ -551,20 +562,21 @@ namespace InsectWars.RTS
                 {
                     float u = (float)x / 128f;
                     float v = (float)y / 128f;
-                    
+
                     float h = 0f;
-                    foreach (var hg in highGrounds)
+                    foreach (var hg in hgList)
                     {
-                        float dist = Vector2.Distance(new Vector2(u, v), hg);
-                        if (dist < 0.13f) h = 1f;
-                        else if (dist < 0.15f) h = Mathf.InverseLerp(0.15f, 0.13f, dist);
+                        float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                        float rw = Mathf.Max(hg.rampWidth, 0.01f);
+                        if (dist < hg.radius) h = 1f;
+                        else if (dist < hg.radius + rw) h = Mathf.Max(h, Mathf.InverseLerp(hg.radius + rw, hg.radius, dist));
                     }
-                    
+
                     float noise = Mathf.PerlinNoise(x * 0.1f, y * 0.1f);
                     float baseWeight = Mathf.Clamp01(1f - h + (noise - 0.5f) * 0.3f);
-                    
-                    alpha[y, x, 0] = baseWeight;     // BaseSoil
-                    alpha[y, x, 1] = 1f - baseWeight; // DrySoil
+
+                    alpha[y, x, 0] = baseWeight;
+                    alpha[y, x, 1] = 1f - baseWeight;
                 }
             }
             terrainData.SetAlphamaps(0, 0, alpha);
@@ -588,47 +600,87 @@ namespace InsectWars.RTS
 
         static void AddRottingApple(Transform parent, Vector3 pos)
         {
-            var apple = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            apple.name = "RottingApple";
-            apple.tag = "Fruit";
-            int layer = LayerMask.NameToLayer("Resources");
-            if (layer >= 0) apple.layer = layer;
-            apple.transform.SetParent(parent);
-            float h = GetHeight(pos);
-            apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-            apple.transform.localScale = new Vector3(4f, 3f, 4f);
-            var col = new Color(0.85f, 0.68f, 0.15f);
-            var r = apple.GetComponent<Renderer>();
-            if (r != null)
+            GameObject apple;
+            var lib = ActiveVisualLibrary;
+            if (lib != null && lib.rottingApplePrefab != null)
             {
-                r.sharedMaterial = GetSharedTinted(col);
-                var pb = new MaterialPropertyBlock();
-                r.GetPropertyBlock(pb);
-                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Smoothness"))
-                    pb.SetFloat("_Smoothness", 0.15f);
-                r.SetPropertyBlock(pb);
+                apple = Object.Instantiate(lib.rottingApplePrefab, parent);
+                apple.name = "RottingApple";
+                apple.tag = "Fruit";
+                int layer = LayerMask.NameToLayer("Resources");
+                if (layer >= 0) apple.layer = layer;
+                float h = GetHeight(pos);
+                apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
+                apple.transform.localScale = new Vector3(4f, 3f, 4f);
             }
-            var modifier = apple.AddComponent<NavMeshModifier>();
+            else
+            {
+                apple = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                apple.name = "RottingApple";
+                apple.tag = "Fruit";
+                int layer = LayerMask.NameToLayer("Resources");
+                if (layer >= 0) apple.layer = layer;
+                apple.transform.SetParent(parent);
+                float h = GetHeight(pos);
+                apple.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
+                apple.transform.localScale = new Vector3(4f, 3f, 4f);
+                var col = new Color(0.85f, 0.68f, 0.15f);
+                var r = apple.GetComponent<Renderer>();
+                if (r != null)
+                {
+                    r.sharedMaterial = GetSharedTinted(col);
+                    var pb = new MaterialPropertyBlock();
+                    r.GetPropertyBlock(pb);
+                    if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Smoothness"))
+                        pb.SetFloat("_Smoothness", 0.15f);
+                    r.SetPropertyBlock(pb);
+                }
+            }
+
+            var modifier = apple.GetComponent<NavMeshModifier>();
+            if (modifier == null) modifier = apple.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
-            apple.AddComponent<RottingFruitNode>();
+
+            if (apple.GetComponent<RottingFruitNode>() == null)
+                apple.AddComponent<RottingFruitNode>();
         }
 
         static void AddFruit(Transform parent, FruitPlaced f)
         {
             var pos = f.position;
-            var fruit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            fruit.name = "RottingFruit";
-            fruit.tag = "Fruit";
-            int layer = LayerMask.NameToLayer("Resources");
-            if (layer >= 0) fruit.layer = layer;
-            fruit.transform.SetParent(parent);
-            float h = GetHeight(pos);
-            fruit.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
-            fruit.transform.localScale = Vector3.one * 1.8f;
-            ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
-            var modifier = fruit.AddComponent<NavMeshModifier>();
+            GameObject fruit;
+            var lib = ActiveVisualLibrary;
+            if (lib != null && lib.rottingApplePrefab != null)
+            {
+                fruit = Object.Instantiate(lib.rottingApplePrefab, parent);
+                fruit.name = "RottingFruit";
+                fruit.tag = "Fruit";
+                int layer = LayerMask.NameToLayer("Resources");
+                if (layer >= 0) fruit.layer = layer;
+                float h = GetHeight(pos);
+                fruit.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
+                fruit.transform.localScale = Vector3.one * 1.8f;
+            }
+            else
+            {
+                fruit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                fruit.name = "RottingFruit";
+                fruit.tag = "Fruit";
+                int layer = LayerMask.NameToLayer("Resources");
+                if (layer >= 0) fruit.layer = layer;
+                fruit.transform.SetParent(parent);
+                float h = GetHeight(pos);
+                fruit.transform.position = new Vector3(pos.x, h + pos.y, pos.z);
+                fruit.transform.localScale = Vector3.one * 1.8f;
+                ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
+            }
+
+            var modifier = fruit.GetComponent<NavMeshModifier>();
+            if (modifier == null) modifier = fruit.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
-            var node = fruit.AddComponent<RottingFruitNode>();
+
+            var node = fruit.GetComponent<RottingFruitNode>();
+            if (node == null) node = fruit.AddComponent<RottingFruitNode>();
             node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);
         }
 

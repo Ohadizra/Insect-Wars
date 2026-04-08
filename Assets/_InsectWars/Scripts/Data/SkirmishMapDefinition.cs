@@ -25,6 +25,19 @@ namespace InsectWars.Data
         public Vector3 position;
     }
 
+    [Serializable]
+    public struct HighGroundPlaced
+    {
+        /// <summary>UV coordinates (0-1) on the terrain, where (0,0) is terrain origin corner.</summary>
+        public Vector2 uv;
+        /// <summary>Radius in UV space (0.13 ≈ 14% of map width).</summary>
+        public float radius;
+        /// <summary>Ramp width in UV space — wider = gentler slope NavMesh can walk.</summary>
+        public float rampWidth;
+        /// <summary>Height as fraction of terrain max height (e.g. 0.08 = 8% of 20m = 1.6m).</summary>
+        public float heightFraction;
+    }
+
     /// <summary>
     /// Serialized map layout for SkirmishDirector. Assign on the director or leave null for built-in Demo 0 defaults.
     /// </summary>
@@ -46,5 +59,8 @@ namespace InsectWars.Data
         public ClayPlaced[] clay = Array.Empty<ClayPlaced>();
         public FruitPlaced[] fruits = Array.Empty<FruitPlaced>();
         public CactiSeedPlaced[] cactiSeeds = Array.Empty<CactiSeedPlaced>();
+
+        /// <summary>Terrain elevation features. Empty = flat terrain. Null falls back to demo defaults.</summary>
+        public HighGroundPlaced[] highGrounds;
     }
 }

@@ -1,0 +1,12 @@
+{
+    "asset": "d47a28a8e9c47491780740798e93b26d",
+    "fileName": "019d6cf7-2402-71a4-8c51-41fe60ef9073.glb",
+    "prompt": "A highly detailed, production-ready 3D model of a rotting, decayed apple. It features deep, realistic holes and cavities where the core and seeds are visible. The skin is dark, mossy, and mottled with shades of deep green, brown, and black. Small, segmented worm-like insects are crawling on the surface and emerging from the holes. Gritty, realistic textures with PBR materials. The style is dark, organic, and realistic.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "8b9e98101b748865a0ba288347430ea4",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
