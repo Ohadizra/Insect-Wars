@@ -167,6 +167,7 @@ namespace InsectWars.RTS
             BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
 
             AddRottingApple(world.transform, _applePos);
+            AddRottingApple(world.transform, _enemyApplePos);
 
             foreach (var f in _fruitLayout)
                 AddFruit(world.transform, f);
@@ -220,6 +221,13 @@ namespace InsectWars.RTS
             var nest = ProductionBuilding.Place(pos, BuildingType.AntNest, Team.Player);
             if (nest != null)
                 nest.transform.SetParent(worldRoot, true);
+
+            var enemyHiveXZ = new Vector3(_enemyHive.x - 8f, 0f, _enemyHive.z - 6f);
+            var enemyGroundY = GetHeight(enemyHiveXZ);
+            var enemyPos = new Vector3(enemyHiveXZ.x, enemyGroundY + 0.02f, enemyHiveXZ.z);
+            var enemyNest = ProductionBuilding.Place(enemyPos, BuildingType.AntNest, Team.Enemy);
+            if (enemyNest != null)
+                enemyNest.transform.SetParent(worldRoot, true);
         }
 
         List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
@@ -229,7 +237,9 @@ namespace InsectWars.RTS
                 new(new Vector2(_playerStart.x, _playerStart.z), 26f),
                 new(new Vector2(_enemyStart.x, _enemyStart.z), 26f),
                 new(new Vector2(_playerHive.x, _playerHive.z), 18f),
-                new(new Vector2(_applePos.x, _applePos.z), 12f)
+                new(new Vector2(_enemyHive.x, _enemyHive.z), 18f),
+                new(new Vector2(_applePos.x, _applePos.z), 12f),
+                new(new Vector2(_enemyApplePos.x, _enemyApplePos.z), 12f)
             };
             foreach (var f in _fruitLayout)
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(f.position.x, f.position.z), 8f));
@@ -784,6 +794,6 @@ namespace InsectWars.RTS
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;
-            }
-            }
-            }
+        }
+    }
+}

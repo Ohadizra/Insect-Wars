@@ -21,6 +21,7 @@ namespace InsectWars.UI
         Canvas _canvas;
         GameObject _panelMain;
         GameObject _panelPlay;
+        GameObject _panelMapSelect;
         GameObject _panelHow;
         GameObject _panelSettings;
         GameObject _panelAbout;
@@ -122,14 +123,15 @@ namespace InsectWars.UI
         {
             var v = GetFont();
             _panelPlay = Panel("PlayPanel", _canvas.transform);
-            AddTitle(_panelPlay.transform, "Play Demo", v, 32);
-            AddLabel(_panelPlay.transform, "Difficulty affects enemy durability.", v, -90f);
+            AddTitle(_panelPlay.transform, "Select Difficulty", v, 32);
+            AddLabel(_panelPlay.transform, "Difficulty affects enemy durability and AI speed.", v, -90f);
             float y = -140f;
-            AddMenuButton(_panelPlay.transform, "Easy", v, ref y, () => SetDiff(DemoDifficulty.Easy));
-            AddMenuButton(_panelPlay.transform, "Normal", v, ref y, () => SetDiff(DemoDifficulty.Normal));
-            AddMenuButton(_panelPlay.transform, "Hard", v, ref y, () => SetDiff(DemoDifficulty.Hard));
-            AddMenuButton(_panelPlay.transform, "Start Skirmish", v, ref y, () => SceneLoader.LoadSkirmishDemo());
+            AddMenuButton(_panelPlay.transform, "Easy", v, ref y, () => { SetDiff(DemoDifficulty.Easy); ShowMapSelect(); });
+            AddMenuButton(_panelPlay.transform, "Normal", v, ref y, () => { SetDiff(DemoDifficulty.Normal); ShowMapSelect(); });
+            AddMenuButton(_panelPlay.transform, "Hard", v, ref y, () => { SetDiff(DemoDifficulty.Hard); ShowMapSelect(); });
             AddMenuButton(_panelPlay.transform, "Back", v, ref y, () => ShowMain());
+
+            BuildMapSelectPanel(v);
 
             _panelHow = Panel("HowPanel", _canvas.transform);
             BuildHowToPlayPanel(_panelHow.transform, v);
@@ -1030,6 +1032,92 @@ namespace InsectWars.UI
             GameSession.SetQualityLevel(next);
         }
 
+        void BuildMapSelectPanel(Font font)
+        {
+            _panelMapSelect = Panel("MapSelectPanel", _canvas.transform);
+            AddTitle(_panelMapSelect.transform, "Select Map", font, 32);
+
+            var maps = SkirmishMapPresets.GetAll();
+            float y = -100f;
+
+            for (int i = 0; i < maps.Length; i++)
+            {
+                var map = maps[i];
+                AddMapCard(_panelMapSelect.transform, font, map, ref y);
+            }
+
+            y -= 12f;
+            AddMenuButton(_panelMapSelect.transform, "Back", font, ref y, () => ShowPlay());
+        }
+
+        void AddMapCard(Transform parent, Font font, SkirmishMapDefinition map, ref float y)
+        {
+            var card = new GameObject(map.displayName);
+            card.transform.SetParent(parent, false);
+            var rt = card.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(420, 100);
+            y -= 112f;
+
+            var bg = card.AddComponent<Image>();
+            bg.color = new Color(0.12f, 0.22f, 0.14f, 0.92f);
+            var btn = card.AddComponent<Button>();
+            btn.onClick.AddListener(() =>
+            {
+                GameSession.SetSelectedMap(map);
+                SceneLoader.LoadSkirmishDemo();
+            });
+
+            var nameGo = new GameObject("MapName").AddComponent<Text>();
+            nameGo.transform.SetParent(card.transform, false);
+            nameGo.font = font;
+            nameGo.fontSize = 22;
+            nameGo.fontStyle = FontStyle.Bold;
+            nameGo.color = new Color(1f, 0.95f, 0.55f);
+            nameGo.alignment = TextAnchor.UpperLeft;
+            nameGo.text = map.displayName;
+            var nameRt = nameGo.rectTransform;
+            nameRt.anchorMin = new Vector2(0f, 0f);
+            nameRt.anchorMax = new Vector2(1f, 1f);
+            nameRt.offsetMin = new Vector2(16f, 40f);
+            nameRt.offsetMax = new Vector2(-16f, -10f);
+
+            var descGo = new GameObject("MapDesc").AddComponent<Text>();
+            descGo.transform.SetParent(card.transform, false);
+            descGo.font = font;
+            descGo.fontSize = 14;
+            descGo.color = new Color(0.82f, 0.84f, 0.88f);
+            descGo.alignment = TextAnchor.UpperLeft;
+            descGo.text = map.description;
+            descGo.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var descRt = descGo.rectTransform;
+            descRt.anchorMin = new Vector2(0f, 0f);
+            descRt.anchorMax = new Vector2(1f, 0.55f);
+            descRt.offsetMin = new Vector2(16f, 8f);
+            descRt.offsetMax = new Vector2(-16f, 0f);
+
+            var sizeGo = new GameObject("MapSize").AddComponent<Text>();
+            sizeGo.transform.SetParent(card.transform, false);
+            sizeGo.font = font;
+            sizeGo.fontSize = 13;
+            sizeGo.color = new Color(0.6f, 0.8f, 0.65f);
+            sizeGo.alignment = TextAnchor.UpperRight;
+            sizeGo.text = $"Size: {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
+            var sizeRt = sizeGo.rectTransform;
+            sizeRt.anchorMin = new Vector2(0f, 0f);
+            sizeRt.anchorMax = new Vector2(1f, 1f);
+            sizeRt.offsetMin = new Vector2(16f, 40f);
+            sizeRt.offsetMax = new Vector2(-16f, -10f);
+        }
+
+        void ShowMapSelect()
+        {
+            SetActivePanels(_panelMapSelect);
+        }
+
         void ShowMain()
         {
             SetActivePanels(_panelMain);
@@ -1060,7 +1148,7 @@ namespace InsectWars.UI
             var parent = on.transform.parent;
             foreach (Transform c in parent)
             {
-                if (c.name is "MainPanel" or "PlayPanel" or "HowPanel" or "SettingsPanel" or "AboutPanel" or "UnitCodexPanel")
+                if (c.name is "MainPanel" or "PlayPanel" or "MapSelectPanel" or "HowPanel" or "SettingsPanel" or "AboutPanel" or "UnitCodexPanel")
                     c.gameObject.SetActive(c.gameObject == on);
             }
         }
