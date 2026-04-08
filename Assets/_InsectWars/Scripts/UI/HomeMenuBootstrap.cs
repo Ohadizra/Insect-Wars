@@ -404,7 +404,7 @@ namespace InsectWars.UI
             _attackPhase = mode == 2 ? 0f : -1f;
             if (_previewModelRoot != null)
             {
-                _previewModelRoot.transform.localPosition = Vector3.zero;
+                _previewModelRoot.transform.position = _previewBasePos;
                 _previewModelRoot.transform.localScale = Vector3.one;
             }
         }
@@ -427,12 +427,12 @@ namespace InsectWars.UI
                     _previewBob += Time.unscaledDeltaTime;
                     var breathe = 1f + Mathf.Sin(_previewBob * 2f) * 0.02f;
                     t.localScale = new Vector3(breathe, 1f, breathe);
-                    t.localPosition = Vector3.zero;
+                    t.position = _previewBasePos;
                     break;
                 case 1: // walk bob
                     _walkPhase += Time.unscaledDeltaTime * 10f;
                     var yBob = Mathf.Sin(_walkPhase) * 0.04f;
-                    t.localPosition = new Vector3(0f, yBob, 0f);
+                    t.position = _previewBasePos + new Vector3(0f, yBob, 0f);
                     t.localScale = Vector3.one;
                     break;
                 case 2: // attack lunge
@@ -444,7 +444,7 @@ namespace InsectWars.UI
                         if (p > 1f) p = 2f - p;
                         var lunge = Mathf.Sin(p * Mathf.PI) * 0.3f;
                         var squash = 1f + 0.12f * Mathf.Sin(p * Mathf.PI * 2f);
-                        t.localPosition = t.forward * lunge;
+                        t.position = _previewBasePos + t.forward * lunge;
                         t.localScale = new Vector3(squash, 1f / squash, squash);
                     }
                     break;
@@ -457,6 +457,7 @@ namespace InsectWars.UI
                 Destroy(_previewModelRoot);
 
             var pos = new Vector3(500f, 0f, 500f);
+            _previewBasePos = pos;
             _previewModelRoot = new GameObject($"CodexPreview_{arch}");
             _previewModelRoot.transform.position = pos;
 
