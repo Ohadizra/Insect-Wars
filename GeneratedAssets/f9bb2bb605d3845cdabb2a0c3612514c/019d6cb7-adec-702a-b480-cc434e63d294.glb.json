@@ -1,0 +1,12 @@
+{
+    "asset": "f9bb2bb605d3845cdabb2a0c3612514c",
+    "fileName": "019d6cb7-adec-702a-b480-cc434e63d294.glb",
+    "prompt": "A 3D RTS building for spawning Mantis units. An organic, insectoid nest structure featuring sharp, metallic blades and scythe-like protrusions. The base is an armored hive with dark green and metallic iron textures, matching a warrior mantis aesthetic. High detail, stylized low-poly for game engine.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "ba47c87ed5c05f001ee30c190ac01a8c",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

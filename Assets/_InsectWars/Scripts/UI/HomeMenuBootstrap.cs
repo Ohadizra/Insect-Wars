@@ -1,9 +1,11 @@
 using System.Text;
 using InsectWars.Core;
 using InsectWars.Data;
+using InsectWars.RTS;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -149,181 +151,512 @@ namespace InsectWars.UI
             AddMenuButton(_panelAbout.transform, "Back", v, ref y, () => ShowMain());
         }
 
-        // ───────── How To Play with Unit Codex ─────────
+        // ───────── How To Play with 3D Unit Codex ─────────
 
         Text _unitDetailText;
+        RawImage _previewImage;
+        RenderTexture _previewRT;
+        Camera _previewCam;
+        Light _previewLight;
+        GameObject _previewModelRoot;
+        UnitArchetype _currentPreviewArch;
         readonly UnitArchetype[] _codexOrder =
             { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
-        int _codexIndex;
+        readonly Button[] _tabButtons = new Button[3];
+        float _previewYaw;
+        float _previewBob;
 
         void BuildHowToPlayPanel(Transform parent, Font font)
         {
-            AddTitle(parent, "How To Play", font, 32);
+            AddTitle(parent, "How To Play", font, 26);
 
-            var scrollGo = new GameObject("Scroll");
-            scrollGo.transform.SetParent(parent, false);
-            var scrollRt = scrollGo.AddComponent<RectTransform>();
-            scrollRt.anchorMin = new Vector2(0.02f, 0.04f);
-            scrollRt.anchorMax = new Vector2(0.98f, 0.88f);
-            scrollRt.offsetMin = scrollRt.offsetMax = Vector2.zero;
+            // ── Controls strip below title ──
+            var ctrlGo = new GameObject("Controls");
+            ctrlGo.transform.SetParent(parent, false);
+            var ctrlRt = ctrlGo.AddComponent<RectTransform>();
+            ctrlRt.anchorMin = new Vector2(0.03f, 0.89f);
+            ctrlRt.anchorMax = new Vector2(0.97f, 0.95f);
+            ctrlRt.offsetMin = ctrlRt.offsetMax = Vector2.zero;
+            var ctrlBg = ctrlGo.AddComponent<Image>();
+            ctrlBg.color = new Color(0.06f, 0.08f, 0.14f, 0.85f);
+            ctrlBg.raycastTarget = false;
+            var ctrlTx = new GameObject("T").AddComponent<Text>();
+            ctrlTx.transform.SetParent(ctrlGo.transform, false);
+            ctrlTx.font = font;
+            ctrlTx.fontSize = 13;
+            ctrlTx.color = new Color(0.82f, 0.84f, 0.88f);
+            ctrlTx.alignment = TextAnchor.MiddleCenter;
+            ctrlTx.supportRichText = true;
+            ctrlTx.text = "LMB select · RMB move/attack/gather · A atk-move · S stop · H hold · P patrol · B build · Esc pause · Scroll zoom · Win: kill all foes";
+            var crt = ctrlTx.rectTransform;
+            crt.anchorMin = Vector2.zero; crt.anchorMax = Vector2.one;
+            crt.offsetMin = new Vector2(12f, 2f); crt.offsetMax = new Vector2(-12f, -2f);
 
-            var scrollRect = scrollGo.AddComponent<ScrollRect>();
-            scrollRect.horizontal = false;
-            scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            scrollRect.scrollSensitivity = 30f;
+            // ── Unit tab row ──
+            var tabGo = new GameObject("Tabs");
+            tabGo.transform.SetParent(parent, false);
+            var tabRt = tabGo.AddComponent<RectTransform>();
+            tabRt.anchorMin = new Vector2(0.03f, 0.82f);
+            tabRt.anchorMax = new Vector2(0.97f, 0.88f);
+            tabRt.offsetMin = tabRt.offsetMax = Vector2.zero;
+            var tabHL = tabGo.AddComponent<HorizontalLayoutGroup>();
+            tabHL.childAlignment = TextAnchor.MiddleCenter;
+            tabHL.childControlWidth = true; tabHL.childControlHeight = true;
+            tabHL.childForceExpandWidth = true; tabHL.childForceExpandHeight = true;
+            tabHL.spacing = 6f;
 
-            var maskImg = scrollGo.AddComponent<Image>();
-            maskImg.color = new Color(0f, 0f, 0f, 0.01f);
-            scrollGo.AddComponent<Mask>().showMaskGraphic = false;
-
-            var contentGo = new GameObject("Content");
-            contentGo.transform.SetParent(scrollGo.transform, false);
-            var contentRt = contentGo.AddComponent<RectTransform>();
-            contentRt.anchorMin = new Vector2(0f, 1f);
-            contentRt.anchorMax = new Vector2(1f, 1f);
-            contentRt.pivot = new Vector2(0.5f, 1f);
-            contentRt.anchoredPosition = Vector2.zero;
-
-            var layout = contentGo.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.spacing = 10f;
-            layout.padding = new RectOffset(20, 20, 10, 20);
-            var fitter = contentGo.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            scrollRect.content = contentRt;
-
-            AddSectionLabel(contentGo.transform, font, "CONTROLS", 20, new Color(1f, 0.95f, 0.55f));
-            AddBodyText(contentGo.transform, font,
-                "LMB / drag — select units\n" +
-                "RMB ground — move selected\n" +
-                "RMB enemy — attack\n" +
-                "RMB fruit (with workers) — gather nectar\n" +
-                "Workers auto-return nectar to hive\n" +
-                "Edge-pan / MMB drag — scroll camera · Scroll — zoom\n" +
-                "Escape — pause/unpause\n" +
-                "Hotkeys: M move · A attack-move · S stop · H hold · P patrol · B build menu\n" +
-                "Win: eliminate all enemies · Lose: all your units die",
-                15, new Color(0.88f, 0.9f, 0.92f));
-
-            AddSectionLabel(contentGo.transform, font, "UNIT CODEX", 20, new Color(1f, 0.95f, 0.55f));
-
-            var tabRow = new GameObject("UnitTabs");
-            tabRow.transform.SetParent(contentGo.transform, false);
-            var tabLayout = tabRow.AddComponent<HorizontalLayoutGroup>();
-            tabLayout.childAlignment = TextAnchor.MiddleCenter;
-            tabLayout.childControlWidth = true;
-            tabLayout.childControlHeight = true;
-            tabLayout.childForceExpandWidth = true;
-            tabLayout.childForceExpandHeight = false;
-            tabLayout.spacing = 8f;
-            var tabFitter = tabRow.AddComponent<LayoutElement>();
-            tabFitter.preferredHeight = 42f;
-
-            foreach (var arch in _codexOrder)
+            for (var i = 0; i < _codexOrder.Length; i++)
             {
-                var archCopy = arch;
+                var idx = i;
+                var arch = _codexOrder[i];
                 var def = UnitDefinition.CreateRuntimeDefault(arch, Color.white);
-                AddTabButton(tabRow.transform, font, def.displayName.ToUpperInvariant(),
-                    () => ShowCodexUnit(archCopy));
+                _tabButtons[i] = BuildCodexTab(tabGo.transform, font, def.displayName.ToUpperInvariant(),
+                    () => ShowCodexUnit(_codexOrder[idx], idx));
             }
 
-            var detailGo = new GameObject("UnitDetail");
-            detailGo.transform.SetParent(contentGo.transform, false);
-            _unitDetailText = detailGo.AddComponent<Text>();
+            // ── Left half: 3D preview ──
+            var leftGo = new GameObject("PreviewArea");
+            leftGo.transform.SetParent(parent, false);
+            var leftRt = leftGo.AddComponent<RectTransform>();
+            leftRt.anchorMin = new Vector2(0.03f, 0.08f);
+            leftRt.anchorMax = new Vector2(0.42f, 0.81f);
+            leftRt.offsetMin = leftRt.offsetMax = Vector2.zero;
+
+            var previewBg = leftGo.AddComponent<Image>();
+            previewBg.color = new Color(0.04f, 0.06f, 0.10f, 0.92f);
+            previewBg.raycastTarget = false;
+
+            var rawGo = new GameObject("PreviewRaw");
+            rawGo.transform.SetParent(leftGo.transform, false);
+            var rawRt = rawGo.AddComponent<RectTransform>();
+            rawRt.anchorMin = new Vector2(0.02f, 0.15f);
+            rawRt.anchorMax = new Vector2(0.98f, 0.98f);
+            rawRt.offsetMin = rawRt.offsetMax = Vector2.zero;
+            _previewImage = rawGo.AddComponent<RawImage>();
+            _previewImage.raycastTarget = false;
+
+            SetupPreviewCamera();
+
+            // ── Anim buttons below preview ──
+            var animBar = new GameObject("AnimButtons");
+            animBar.transform.SetParent(leftGo.transform, false);
+            var abRt = animBar.AddComponent<RectTransform>();
+            abRt.anchorMin = new Vector2(0.04f, 0.02f);
+            abRt.anchorMax = new Vector2(0.96f, 0.14f);
+            abRt.offsetMin = abRt.offsetMax = Vector2.zero;
+            var abHL = animBar.AddComponent<HorizontalLayoutGroup>();
+            abHL.childAlignment = TextAnchor.MiddleCenter;
+            abHL.childControlWidth = true; abHL.childControlHeight = true;
+            abHL.childForceExpandWidth = true; abHL.childForceExpandHeight = true;
+            abHL.spacing = 4f;
+            BuildAnimBtn(animBar.transform, font, "Idle", () => PreviewSetAnim(0));
+            BuildAnimBtn(animBar.transform, font, "Walk", () => PreviewSetAnim(1));
+            BuildAnimBtn(animBar.transform, font, "Attack", () => PreviewSetAnim(2));
+
+            // ── Right half: stats scroll ──
+            var rightGo = new GameObject("StatsArea");
+            rightGo.transform.SetParent(parent, false);
+            var rightRt = rightGo.AddComponent<RectTransform>();
+            rightRt.anchorMin = new Vector2(0.44f, 0.08f);
+            rightRt.anchorMax = new Vector2(0.97f, 0.81f);
+            rightRt.offsetMin = rightRt.offsetMax = Vector2.zero;
+
+            var rightBg = rightGo.AddComponent<Image>();
+            rightBg.color = new Color(0.05f, 0.07f, 0.12f, 0.90f);
+            rightBg.raycastTarget = false;
+
+            var scrollGo = new GameObject("Scroll");
+            scrollGo.transform.SetParent(rightGo.transform, false);
+            var sRt = scrollGo.AddComponent<RectTransform>();
+            sRt.anchorMin = Vector2.zero; sRt.anchorMax = Vector2.one;
+            sRt.offsetMin = new Vector2(4f, 4f); sRt.offsetMax = new Vector2(-4f, -4f);
+
+            var sr = scrollGo.AddComponent<ScrollRect>();
+            sr.horizontal = false;
+            sr.movementType = ScrollRect.MovementType.Clamped;
+            sr.scrollSensitivity = 25f;
+
+            var viewportGo = new GameObject("Viewport");
+            viewportGo.transform.SetParent(scrollGo.transform, false);
+            var vpRt = viewportGo.AddComponent<RectTransform>();
+            vpRt.anchorMin = Vector2.zero; vpRt.anchorMax = Vector2.one;
+            vpRt.offsetMin = Vector2.zero; vpRt.offsetMax = Vector2.zero;
+            vpRt.pivot = new Vector2(0f, 1f);
+            var vpImg = viewportGo.AddComponent<Image>();
+            vpImg.color = new Color(0, 0, 0, 0.01f);
+            viewportGo.AddComponent<Mask>().showMaskGraphic = false;
+            sr.viewport = vpRt;
+
+            var contentGo = new GameObject("Content");
+            contentGo.transform.SetParent(viewportGo.transform, false);
+            var cntRt = contentGo.AddComponent<RectTransform>();
+            cntRt.anchorMin = new Vector2(0f, 1f);
+            cntRt.anchorMax = new Vector2(1f, 1f);
+            cntRt.pivot = new Vector2(0f, 1f);
+            cntRt.anchoredPosition = Vector2.zero;
+            cntRt.sizeDelta = new Vector2(0f, 0f);
+            sr.content = cntRt;
+
+            var textGo = new GameObject("DetailText");
+            textGo.transform.SetParent(contentGo.transform, false);
+            var txtRt = textGo.AddComponent<RectTransform>();
+            txtRt.anchorMin = new Vector2(0f, 1f);
+            txtRt.anchorMax = new Vector2(1f, 1f);
+            txtRt.pivot = new Vector2(0f, 1f);
+            txtRt.anchoredPosition = new Vector2(8f, -4f);
+            txtRt.sizeDelta = new Vector2(-16f, 0f);
+
+            _unitDetailText = textGo.AddComponent<Text>();
             _unitDetailText.font = font;
-            _unitDetailText.fontSize = 15;
-            _unitDetailText.lineSpacing = 1.1f;
+            _unitDetailText.fontSize = 14;
+            _unitDetailText.lineSpacing = 1.15f;
             _unitDetailText.supportRichText = true;
             _unitDetailText.color = new Color(0.92f, 0.93f, 0.95f);
             _unitDetailText.alignment = TextAnchor.UpperLeft;
             _unitDetailText.horizontalOverflow = HorizontalWrapMode.Wrap;
             _unitDetailText.verticalOverflow = VerticalWrapMode.Overflow;
-            var dlayout = detailGo.AddComponent<LayoutElement>();
-            dlayout.preferredHeight = 440f;
-            dlayout.flexibleWidth = 1f;
 
-            ShowCodexUnit(UnitArchetype.Worker);
+            var csf = textGo.AddComponent<ContentSizeFitter>();
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-            var backY = -1f;
-            var backParent = parent;
-            var backGo = new GameObject("Back");
-            backGo.transform.SetParent(backParent, false);
-            var backRt = backGo.AddComponent<RectTransform>();
-            backRt.anchorMin = new Vector2(0.5f, 0f);
-            backRt.anchorMax = new Vector2(0.5f, 0f);
-            backRt.pivot = new Vector2(0.5f, 0f);
-            backRt.anchoredPosition = new Vector2(0f, 12f);
-            backRt.sizeDelta = new Vector2(280, 44);
-            var bimg = backGo.AddComponent<Image>();
-            bimg.color = new Color(0.2f, 0.35f, 0.22f, 0.95f);
-            var bbtn = backGo.AddComponent<Button>();
-            bbtn.onClick.AddListener(() => ShowMain());
-            var btx = new GameObject("T").AddComponent<Text>();
-            btx.transform.SetParent(backGo.transform, false);
-            btx.font = font;
-            btx.fontSize = 20;
-            btx.color = Color.white;
-            btx.alignment = TextAnchor.MiddleCenter;
-            btx.text = "Back";
-            var btrt = btx.rectTransform;
-            btrt.anchorMin = Vector2.zero;
-            btrt.anchorMax = Vector2.one;
-            btrt.offsetMin = btrt.offsetMax = Vector2.zero;
+            var cntFitter = contentGo.AddComponent<ContentSizeFitter>();
+            cntFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            cntFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            var vLayout = contentGo.AddComponent<VerticalLayoutGroup>();
+            vLayout.childControlWidth = true;
+            vLayout.childControlHeight = true;
+            vLayout.childForceExpandWidth = true;
+            vLayout.childForceExpandHeight = false;
+            vLayout.padding = new RectOffset(0, 0, 4, 4);
+
+            // ── Back button at bottom ──
+            float backY = 0f;
+            AddMenuButton(parent, "Back", font, ref backY, () => ShowMain());
+            var backObj = parent.Find("Back");
+            if (backObj != null)
+            {
+                var brt = backObj.GetComponent<RectTransform>();
+                brt.anchorMin = new Vector2(0.5f, 0f);
+                brt.anchorMax = new Vector2(0.5f, 0f);
+                brt.pivot = new Vector2(0.5f, 0f);
+                brt.anchoredPosition = new Vector2(0f, 10f);
+            }
+
+            ShowCodexUnit(UnitArchetype.Worker, 0);
         }
 
-        void ShowCodexUnit(UnitArchetype arch)
+        GameObject _previewLightFill;
+
+        void SetupPreviewCamera()
         {
+            _previewRT = new RenderTexture(512, 512, 24);
+            _previewRT.antiAliasing = 4;
+            _previewImage.texture = _previewRT;
+
+            var camGo = new GameObject("CodexPreviewCam");
+            _previewCam = camGo.AddComponent<Camera>();
+            _previewCam.targetTexture = _previewRT;
+            _previewCam.clearFlags = CameraClearFlags.SolidColor;
+            _previewCam.backgroundColor = new Color(0.07f, 0.09f, 0.14f, 1f);
+            _previewCam.fieldOfView = 30f;
+            _previewCam.nearClipPlane = 0.05f;
+            _previewCam.farClipPlane = 30f;
+            _previewCam.cullingMask = ~0;
+            _previewCam.depth = -10;
+
+            var urpData = camGo.GetComponent<UniversalAdditionalCameraData>();
+            if (urpData == null)
+                urpData = camGo.AddComponent<UniversalAdditionalCameraData>();
+            urpData.renderType = CameraRenderType.Base;
+            urpData.renderShadows = false;
+            urpData.renderPostProcessing = false;
+
+            FrameCameraOnUnit();
+            DontDestroyOnLoad(camGo);
+
+            var keyGo = new GameObject("CodexKeyLight");
+            keyGo.transform.rotation = Quaternion.Euler(30f, 160f, 0f);
+            _previewLight = keyGo.AddComponent<Light>();
+            _previewLight.type = LightType.Directional;
+            _previewLight.color = new Color(1f, 0.97f, 0.92f);
+            _previewLight.intensity = 1.6f;
+            DontDestroyOnLoad(keyGo);
+
+            var fillGo = new GameObject("CodexFillLight");
+            fillGo.transform.rotation = Quaternion.Euler(15f, -40f, 0f);
+            var fill = fillGo.AddComponent<Light>();
+            fill.type = LightType.Directional;
+            fill.color = new Color(0.6f, 0.7f, 1f);
+            fill.intensity = 0.6f;
+            _previewLightFill = fillGo;
+            DontDestroyOnLoad(fillGo);
+        }
+
+        void FrameCameraOnUnit()
+        {
+            if (_previewCam == null) return;
+            var unitCenter = new Vector3(500f, 0.45f, 500f);
+            var camPos = unitCenter + new Vector3(0f, 0.4f, -2.2f);
+            _previewCam.transform.position = camPos;
+            _previewCam.transform.LookAt(unitCenter);
+        }
+
+        int _previewAnimMode; // 0=idle 1=walk 2=attack
+        float _walkPhase;
+        float _attackPhase = -1f;
+        Vector3 _previewBasePos;
+
+        void PreviewSetAnim(int mode)
+        {
+            _previewAnimMode = mode;
+            _walkPhase = 0f;
+            _attackPhase = mode == 2 ? 0f : -1f;
+            if (_previewModelRoot != null)
+            {
+                _previewModelRoot.transform.localPosition = Vector3.zero;
+                _previewModelRoot.transform.localScale = Vector3.one;
+            }
+        }
+
+        void Update()
+        {
+            UpdatePreviewAnim();
+        }
+
+        void UpdatePreviewAnim()
+        {
+            if (_previewModelRoot == null) return;
+            var t = _previewModelRoot.transform;
+            _previewYaw += Time.unscaledDeltaTime * 25f;
+            t.rotation = Quaternion.Euler(0f, _previewYaw, 0f);
+
+            switch (_previewAnimMode)
+            {
+                case 0: // idle breathe
+                    _previewBob += Time.unscaledDeltaTime;
+                    var breathe = 1f + Mathf.Sin(_previewBob * 2f) * 0.02f;
+                    t.localScale = new Vector3(breathe, 1f, breathe);
+                    t.localPosition = Vector3.zero;
+                    break;
+                case 1: // walk bob
+                    _walkPhase += Time.unscaledDeltaTime * 10f;
+                    var yBob = Mathf.Sin(_walkPhase) * 0.04f;
+                    t.localPosition = new Vector3(0f, yBob, 0f);
+                    t.localScale = Vector3.one;
+                    break;
+                case 2: // attack lunge
+                    if (_attackPhase >= 0f)
+                    {
+                        _attackPhase += Time.unscaledDeltaTime;
+                        if (_attackPhase > 0.7f) _attackPhase = 0f;
+                        var p = _attackPhase / 0.35f;
+                        if (p > 1f) p = 2f - p;
+                        var lunge = Mathf.Sin(p * Mathf.PI) * 0.3f;
+                        var squash = 1f + 0.12f * Mathf.Sin(p * Mathf.PI * 2f);
+                        t.localPosition = t.forward * lunge;
+                        t.localScale = new Vector3(squash, 1f / squash, squash);
+                    }
+                    break;
+            }
+        }
+
+        void SpawnPreviewUnit(UnitArchetype arch)
+        {
+            if (_previewModelRoot != null)
+                Destroy(_previewModelRoot);
+
+            var pos = new Vector3(500f, 0f, 500f);
+            _previewModelRoot = new GameObject($"CodexPreview_{arch}");
+            _previewModelRoot.transform.position = pos;
+            DontDestroyOnLoad(_previewModelRoot);
+
+            var team = Team.Player;
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+
+            switch (arch)
+            {
+                case UnitArchetype.Worker:
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                        new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f), Quaternion.identity, skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                        new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f, Quaternion.identity,
+                        Color.Lerp(skin, Color.white, 0.2f));
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                        new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f), Quaternion.identity, accent);
+                    break;
+
+                case UnitArchetype.BasicFighter:
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                        new Vector3(0f, 0.35f, -0.1f), new Vector3(0.45f, 0.6f, 0.45f),
+                        Quaternion.Euler(45f, 0f, 0f), skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                        new Vector3(0f, 0.85f, 0.3f), Vector3.one * 0.35f, Quaternion.identity, skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                        new Vector3(-0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                        new Vector3(0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                        new Vector3(-0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
+                        Quaternion.Euler(60f, 0f, 0f), skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                        new Vector3(0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
+                        Quaternion.Euler(60f, 0f, 0f), skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                        new Vector3(-0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                        Quaternion.Euler(0f, 0f, 20f), accent);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                        new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                        Quaternion.Euler(0f, 0f, -20f), accent);
+                    break;
+
+                case UnitArchetype.BasicRanged:
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                        new Vector3(0f, 0.52f, 0f), new Vector3(0.42f, 0.5f, 0.42f), Quaternion.identity, skin);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                        new Vector3(0f, 1.02f, 0f), Vector3.one * 0.3f, Quaternion.identity,
+                        Color.Lerp(skin, Color.white, 0.2f));
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                        new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
+                        Quaternion.identity, accent);
+                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                        new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f), Quaternion.identity, accent);
+                    break;
+            }
+
+            _previewYaw = 0f;
+            _previewBob = 0f;
+            _previewAnimMode = 0;
+            _attackPhase = -1f;
+            _currentPreviewArch = arch;
+            FrameCameraForArch(arch);
+        }
+
+        void FrameCameraForArch(UnitArchetype arch)
+        {
+            if (_previewCam == null) return;
+            float centerY = arch switch
+            {
+                UnitArchetype.Worker => 0.35f,
+                UnitArchetype.BasicFighter => 0.50f,
+                UnitArchetype.BasicRanged => 0.55f,
+                _ => 0.45f
+            };
+            float dist = arch switch
+            {
+                UnitArchetype.Worker => 1.8f,
+                UnitArchetype.BasicFighter => 2.4f,
+                UnitArchetype.BasicRanged => 2.6f,
+                _ => 2.2f
+            };
+            var target = new Vector3(500f, centerY, 500f);
+            var camPos = target + new Vector3(0f, 0.3f, -dist);
+            _previewCam.transform.position = camPos;
+            _previewCam.transform.LookAt(target);
+        }
+
+        static void BuildPreviewPart(Transform parent, PrimitiveType prim, Vector3 lp, Vector3 ls,
+            Quaternion lr, Color c)
+        {
+            var p = GameObject.CreatePrimitive(prim);
+            p.transform.SetParent(parent, false);
+            p.transform.localPosition = lp;
+            p.transform.localScale = ls;
+            p.transform.localRotation = lr;
+            Object.Destroy(p.GetComponent<Collider>());
+            var r = p.GetComponent<Renderer>();
+            if (r == null) return;
+
+            // Clone the primitive's own material — guaranteed to work in the active pipeline
+            var m = new Material(r.sharedMaterial);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+            if (m.HasProperty("_EmissionColor"))
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", c * 0.15f);
+            }
+            m.SetFloat("_Smoothness", 0.3f);
+            r.material = m;
+        }
+
+        void ShowCodexUnit(UnitArchetype arch, int tabIdx)
+        {
+            SpawnPreviewUnit(arch);
+            HighlightTab(tabIdx);
+
             if (_unitDetailText == null) return;
             var def = UnitDefinition.CreateRuntimeDefault(arch, Color.white);
             var sb = new StringBuilder(1024);
 
-            sb.AppendLine($"<b><size=22><color=#8CFFA8>{def.displayName.ToUpperInvariant()}</color></size></b>");
-            sb.AppendLine($"<i>{ArchetypeFlavorText(arch)}</i>");
+            sb.AppendLine($"<b><size=20><color=#8CFFA8>{def.displayName.ToUpperInvariant()}</color></size></b>");
+            sb.AppendLine($"<i><size=12><color=#AAB0BB>{ArchetypeFlavorText(arch)}</color></size></i>");
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>VISION</color></b>");
-            sb.AppendLine($"  Sight radius .............. {def.visionRadius:F1} m");
+            Stat(sb, "VISION");
+            Row(sb, "Sight radius", $"{def.visionRadius:F0} m");
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>VITALITY</color></b>");
-            sb.AppendLine($"  Max HP .................... {def.maxHealth:F0}");
-            sb.AppendLine($"  Move speed ................ {def.moveSpeed:F1}");
+            Stat(sb, "VITALITY");
+            Row(sb, "Max HP", $"{def.maxHealth:F0}");
+            Row(sb, "Move speed", $"{def.moveSpeed:F1}");
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>COMBAT</color></b>");
-            sb.AppendLine($"  Damage / hit .............. {def.attackDamage:F1}");
-            sb.AppendLine($"  Attack cooldown ........... {def.attackCooldown:F2} s");
-            sb.AppendLine($"  DPS ....................... ~{def.attackDamage / Mathf.Max(0.05f, def.attackCooldown):F1}");
-            sb.AppendLine($"  Range ..................... {def.attackRange:F1} m  ({(arch == UnitArchetype.BasicRanged ? "ranged projectile" : "melee")})");
-            sb.AppendLine($"  Can gather ................ {(def.canGather ? "Yes" : "No")}");
+            Stat(sb, "COMBAT");
+            Row(sb, "Damage / hit", $"{def.attackDamage:F1}");
+            Row(sb, "Cooldown", $"{def.attackCooldown:F2} s");
+            Row(sb, "DPS", $"~{def.attackDamage / Mathf.Max(0.05f, def.attackCooldown):F1}");
+            Row(sb, "Range", $"{def.attackRange:F1} m ({(arch == UnitArchetype.BasicRanged ? "ranged" : "melee")})");
+            Row(sb, "Gathers", def.canGather ? "<color=#FFD966>Yes</color>" : "No");
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>HIT BOX</color></b>");
+            Stat(sb, "HIT BOX");
             AppendHitboxInfo(arch, sb);
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>ACTIONS</color></b>");
+            Stat(sb, "ACTIONS");
             AppendActions(arch, sb);
             sb.AppendLine();
 
-            sb.AppendLine("<b><color=#FFE87A>ANIMATIONS</color></b>");
+            Stat(sb, "ANIMATIONS");
             AppendAnimations(arch, sb);
 
             _unitDetailText.text = sb.ToString();
         }
 
+        static void Stat(StringBuilder sb, string heading)
+        {
+            sb.AppendLine($"<b><color=#FFE87A>{heading}</color></b>");
+        }
+
+        static void Row(StringBuilder sb, string label, string value)
+        {
+            sb.AppendLine($"  {label}: <b>{value}</b>");
+        }
+
+        void HighlightTab(int active)
+        {
+            for (var i = 0; i < _tabButtons.Length; i++)
+            {
+                if (_tabButtons[i] == null) continue;
+                var img = _tabButtons[i].GetComponent<Image>();
+                if (img != null)
+                    img.color = i == active
+                        ? new Color(0.2f, 0.52f, 0.3f, 1f)
+                        : new Color(0.14f, 0.22f, 0.16f, 0.85f);
+            }
+        }
+
         static string ArchetypeFlavorText(UnitArchetype arch) => arch switch
         {
             UnitArchetype.Worker =>
-                "Tireless forager. Gathers nectar from rotting fruit and returns it to the hive. Weak in combat but essential for your economy.",
+                "Tireless forager. Gathers nectar from rotting fruit and returns it to the hive. Weak in combat but essential for economy.",
             UnitArchetype.BasicFighter =>
-                "Armored melee brawler. Closes distance fast and locks onto targets with scythe-arms. High damage up close, no ranged capability.",
+                "Armored melee brawler. Closes distance fast and locks onto targets with scythe-arms. High damage up close.",
             UnitArchetype.BasicRanged =>
-                "Ranged bombardier. Launches homing acid projectiles from distance. Fragile if flanked, but deadly in groups behind a frontline.",
+                "Ranged bombardier. Launches homing acid projectiles from distance. Fragile if flanked, deadly in groups.",
             _ => ""
         };
 
@@ -332,114 +665,94 @@ namespace InsectWars.UI
             switch (arch)
             {
                 case UnitArchetype.Worker:
-                    sb.AppendLine("  Capsule: center (0, 0.45, 0)  r=0.32  h=0.95");
-                    sb.AppendLine("  NavAgent: h=0.92  r=0.30");
+                    Row(sb, "Capsule", "(0, 0.45, 0) r=0.32 h=0.95");
+                    Row(sb, "Nav agent", "h=0.92 r=0.30");
                     break;
                 case UnitArchetype.BasicFighter:
-                    sb.AppendLine("  Capsule: center (0, 0.22, 0)  r=0.38  h=0.55");
-                    sb.AppendLine("  NavAgent: h=0.50  r=0.42");
+                    Row(sb, "Capsule", "(0, 0.22, 0) r=0.38 h=0.55");
+                    Row(sb, "Nav agent", "h=0.50 r=0.42");
                     break;
                 case UnitArchetype.BasicRanged:
-                    sb.AppendLine("  Capsule: center (0, 0.55, 0)  r=0.28  h=1.10");
-                    sb.AppendLine("  NavAgent: h=1.12  r=0.27");
+                    Row(sb, "Capsule", "(0, 0.55, 0) r=0.28 h=1.10");
+                    Row(sb, "Nav agent", "h=1.12 r=0.27");
                     break;
             }
-            sb.AppendLine("  Layer: Units");
+            Row(sb, "Layer", "Units");
         }
 
         static void AppendActions(UnitArchetype arch, StringBuilder sb)
         {
-            sb.AppendLine("  Move (RMB ground)");
-            sb.AppendLine("  Attack-move (A + LMB)");
-            sb.AppendLine("  Attack unit (RMB on enemy)");
-            sb.AppendLine("  Stop (S) / Hold position (H)");
-            sb.AppendLine("  Patrol (P, click start then end)");
+            sb.AppendLine("  Move · Attack-move · Attack");
+            sb.AppendLine("  Stop · Hold · Patrol");
             if (arch == UnitArchetype.Worker)
-            {
-                sb.AppendLine("  <color=#FFD966>Gather</color> (RMB on Rotting Fruit)");
-                sb.AppendLine("  Auto-returns nectar to hive when full");
-            }
+                sb.AppendLine("  <color=#FFD966>Gather</color> fruit, auto-return nectar");
         }
 
         static void AppendAnimations(UnitArchetype arch, StringBuilder sb)
         {
-            sb.AppendLine("  Pipeline: procedural (or Animator if prefab has controller)");
-            sb.AppendLine("  Move: sinusoidal Y bob while walking");
-            sb.AppendLine("  Attack: 0.35s lunge + squash/stretch + arm pitch");
+            sb.AppendLine("  Procedural (or Animator when prefab)");
+            sb.AppendLine("  Walk: Y bob · Attack: 0.35s lunge");
             switch (arch)
             {
                 case UnitArchetype.BasicFighter:
-                    sb.AppendLine("  Idle: 30s mantis loop — head look, scythe maintenance L/R, head dip, tail sway");
-                    sb.AppendLine("  Bones driven: frontleg, R_frontleg, chest, head, tail");
+                    sb.AppendLine("  Idle: mantis 30s loop (look/scythe/dip)");
                     break;
-                case UnitArchetype.Worker:
-                case UnitArchetype.BasicRanged:
-                    sb.AppendLine("  Idle: subtle chest-breath scale pulse");
+                default:
+                    sb.AppendLine("  Idle: chest-breath pulse");
                     break;
             }
-            sb.AppendLine("  Death: scale-to-zero shrink (or Animator Death trigger)");
-            sb.AppendLine("  Animator params (when controller assigned):");
-            sb.AppendLine("    Speed (float) · IsMoving (bool) · Gathering (bool)");
-            sb.AppendLine("    Attack (trigger) · Death (trigger)");
+            sb.AppendLine("  Death: scale shrink (or Death trigger)");
         }
 
-        void AddSectionLabel(Transform parent, Font font, string text, int size, Color color)
-        {
-            var go = new GameObject("Section");
-            go.transform.SetParent(parent, false);
-            var t = go.AddComponent<Text>();
-            t.font = font;
-            t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
-            t.color = color;
-            t.alignment = TextAnchor.MiddleLeft;
-            t.text = text;
-            t.supportRichText = true;
-            var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = size + 12;
-        }
-
-        void AddBodyText(Transform parent, Font font, string text, int size, Color color)
-        {
-            var go = new GameObject("Body");
-            go.transform.SetParent(parent, false);
-            var t = go.AddComponent<Text>();
-            t.font = font;
-            t.fontSize = size;
-            t.color = color;
-            t.alignment = TextAnchor.UpperLeft;
-            t.text = text;
-            t.supportRichText = true;
-            t.horizontalOverflow = HorizontalWrapMode.Wrap;
-            t.verticalOverflow = VerticalWrapMode.Overflow;
-            var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = text.Split('\n').Length * (size + 4) + 10;
-            le.flexibleWidth = 1f;
-        }
-
-        void AddTabButton(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
+        Button BuildCodexTab(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
         {
             var go = new GameObject(label);
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.18f, 0.3f, 0.2f, 0.92f);
+            img.color = new Color(0.14f, 0.22f, 0.16f, 0.85f);
             var btn = go.AddComponent<Button>();
             btn.onClick.AddListener(onClick);
-            var le = go.AddComponent<LayoutElement>();
-            le.preferredHeight = 38f;
-            le.flexibleWidth = 1f;
             var tx = new GameObject("T").AddComponent<Text>();
             tx.transform.SetParent(go.transform, false);
             tx.font = font;
-            tx.fontSize = 17;
+            tx.fontSize = 16;
             tx.fontStyle = FontStyle.Bold;
             tx.color = Color.white;
             tx.alignment = TextAnchor.MiddleCenter;
             tx.text = label;
             var trt = tx.rectTransform;
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
+            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = trt.offsetMax = Vector2.zero;
+            return btn;
+        }
+
+        void BuildAnimBtn(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject(label);
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.color = new Color(0.12f, 0.18f, 0.22f, 0.9f);
+            var btn = go.AddComponent<Button>();
+            btn.onClick.AddListener(onClick);
+            var tx = new GameObject("T").AddComponent<Text>();
+            tx.transform.SetParent(go.transform, false);
+            tx.font = font;
+            tx.fontSize = 13;
+            tx.color = new Color(0.8f, 0.9f, 1f);
+            tx.alignment = TextAnchor.MiddleCenter;
+            tx.text = label;
+            var trt = tx.rectTransform;
+            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+            trt.offsetMin = trt.offsetMax = Vector2.zero;
+        }
+
+        void OnDestroy()
+        {
+            if (_previewModelRoot != null) Destroy(_previewModelRoot);
+            if (_previewCam != null) Destroy(_previewCam.gameObject);
+            if (_previewLight != null) Destroy(_previewLight.gameObject);
+            if (_previewLightFill != null) Destroy(_previewLightFill);
+            if (_previewRT != null) _previewRT.Release();
         }
 
         static Font GetFont()
