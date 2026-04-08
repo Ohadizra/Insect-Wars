@@ -142,6 +142,8 @@ namespace InsectWars.RTS
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
 
+            bool hasAnimator = animator != null && animator.runtimeAnimatorController != null;
+
             if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
             {
                 ApplyMantisLoop(dt);
@@ -149,7 +151,12 @@ namespace InsectWars.RTS
             else
             {
                 modelRoot.localScale = _baseScale;
-                ResetBones(dt * 5f);
+                // Only reset bones procedurally if we don't have an animator taking over.
+                // If we do have an animator, it will handle the bones itself.
+                if (!hasAnimator)
+                {
+                    ResetBones(dt * 5f);
+                }
             }
 
             if (_attackAnimT > 0f)

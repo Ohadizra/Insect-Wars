@@ -484,17 +484,30 @@ namespace InsectWars.UI
                 inst.transform.localPosition = Vector3.zero;
                 inst.transform.localRotation = Quaternion.identity;
 
-                if (inst.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent)) agent.enabled = false;
-                if (inst.TryGetComponent<Collider>(out var col)) col.enabled = false;
-                if (inst.TryGetComponent<InsectUnit>(out var unit))
-                {
-                    unit.enabled = true;
-                    var runtimeDef = UnitDefinition.CreateRuntimeDefault(arch, skin);
-                    unit.Configure(team, runtimeDef);
-                    if (inst.TryGetComponent<UnitHealthBar>(out var hb)) hb.enabled = false;
-                }
-                if (inst.TryGetComponent<UnitAnimationDriver>(out var driver)) driver.enabled = true;
+                var agent = inst.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null) agent.enabled = false;
+
+                var col = inst.GetComponent<Collider>();
+                if (col != null) col.enabled = false;
+
+                var unit = inst.GetComponent<InsectUnit>();
+                if (unit == null) unit = inst.AddComponent<InsectUnit>();
+                unit.enabled = true;
+                unit.Configure(team, UnitDefinition.CreateRuntimeDefault(arch, skin));
+
+                if (inst.TryGetComponent<UnitHealthBar>(out var hb)) hb.enabled = false;
                 if (inst.TryGetComponent<SimpleEnemyAi>(out var ai)) ai.enabled = false;
+
+                var driver = inst.GetComponent<UnitAnimationDriver>();
+                if (driver == null) driver = inst.AddComponent<UnitAnimationDriver>();
+                driver.enabled = true;
+
+                // Ensure actual skirmish Animator is active and smooth in menus
+                foreach (var anim in inst.GetComponentsInChildren<Animator>(true))
+                {
+                    anim.enabled = true;
+                    anim.updateMode = AnimatorUpdateMode.UnscaledTime;
+                }
 
                 var block = new MaterialPropertyBlock();
                 foreach (var r in inst.GetComponentsInChildren<Renderer>(true))
