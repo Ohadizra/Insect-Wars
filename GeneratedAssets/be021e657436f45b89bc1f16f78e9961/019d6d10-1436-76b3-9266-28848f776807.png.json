@@ -1,0 +1,27 @@
+{
+    "asset": "be021e657436f45b89bc1f16f78e9961",
+    "fileName": "019d6d10-1436-76b3-9266-28848f776807.png",
+    "prompt": "StarCraft II Zerg style biological game HUD. Dark purple and black organic carapace. Textured with glowing green veins. Designed for the bottom of the screen. Includes a circular area for a minimap on the left, a central area for unit selection, and a 3x4 grid area for commands on the right. Symmetric and integrated design. High-resolution game asset. Wide landscape format. No buttons or text. Pure background.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "c056cf73288d87317c4b38e869329819",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

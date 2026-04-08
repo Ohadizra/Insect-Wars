@@ -84,7 +84,7 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             // Auto-wire the generated art if null
-            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/BottomBar_BG.png");
+            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/ZergHUD_Main.png");
             if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Minimap_Frame.png");
             if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/CommandCard_Frame.png");
             if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_Frame.png");
@@ -317,33 +317,25 @@ namespace InsectWars.RTS
             var bg = bar.AddComponent<Image>();
             bg.sprite = barBackground;
             bg.type = Image.Type.Simple;
-            bg.color = barBackground != null ? Color.white : new Color(0.06f, 0.07f, 0.09f, 0.96f);
+            bg.color = Color.white;
             bg.raycastTarget = true;
 
-            float pad = 12f;
-            
             // Minimap Slot
             var miniSlot = new GameObject("MinimapHost");
             miniSlot.transform.SetParent(bar.transform, false);
             var ms = miniSlot.AddComponent<RectTransform>();
             ms.anchorMin = new Vector2(0f, 0f);
-            ms.anchorMax = new Vector2(0f, 0f);
-            ms.pivot = new Vector2(0f, 0f);
-            ms.anchoredPosition = new Vector2(pad, pad);
-            ms.sizeDelta = new Vector2(minimapSlot, barHeight - pad * 2f);
-            var msBorder = miniSlot.AddComponent<Image>();
-            msBorder.sprite = minimapFrame;
-            msBorder.type = Image.Type.Simple;
-            msBorder.color = minimapFrame != null ? Color.white : new Color(0.12f, 0.14f, 0.16f, 1f);
-            msBorder.raycastTarget = false;
+            ms.anchorMax = new Vector2(0f, 1f);
+            ms.pivot = new Vector2(0f, 0.5f);
+            ms.anchoredPosition = new Vector2(32f, 0f);
+            ms.sizeDelta = new Vector2(180f, -60f);
 
             var miniInner = new GameObject("MinimapInner");
             miniInner.transform.SetParent(miniSlot.transform, false);
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(12f, 12f);
-            mi.offsetMax = new Vector2(-12f, -12f);
+            mi.offsetMin = mi.offsetMax = Vector2.zero;
             MinimapHost = mi;
 
             // Command Panel
@@ -353,24 +345,17 @@ namespace InsectWars.RTS
             cp.anchorMin = new Vector2(1f, 0f);
             cp.anchorMax = new Vector2(1f, 1f);
             cp.pivot = new Vector2(1f, 0.5f);
-            cp.anchoredPosition = new Vector2(-pad, 0f);
-            cp.sizeDelta = new Vector2(commandPanelWidth - pad, 0f);
-            var cpBg = cmdPanel.AddComponent<Image>();
-            cpBg.sprite = commandCardFrame;
-            cpBg.type = Image.Type.Simple;
-            cpBg.color = commandCardFrame != null ? Color.white : new Color(0.08f, 0.09f, 0.11f, 1f);
-            cpBg.raycastTarget = false;
+            cp.anchoredPosition = new Vector2(-32f, 0f);
+            cp.sizeDelta = new Vector2(280f, -60f);
 
             var grid = new GameObject("CmdGrid");
             grid.transform.SetParent(cmdPanel.transform, false);
             var grt = grid.AddComponent<RectTransform>();
-            grt.anchorMin = new Vector2(0.5f, 0.5f);
-            grt.anchorMax = new Vector2(0.5f, 0.5f);
-            grt.pivot = new Vector2(0.5f, 0.5f);
-            grt.sizeDelta = new Vector2(340f, 160f);
-            grt.anchoredPosition = new Vector2(0f, -5f);
+            grt.anchorMin = Vector2.zero;
+            grt.anchorMax = Vector2.one;
+            grt.offsetMin = grt.offsetMax = Vector2.zero;
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(72f, 48f);
+            gl.cellSize = new Vector2(62f, 48f);
             gl.spacing = new Vector2(6f, 6f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 4;
@@ -381,24 +366,24 @@ namespace InsectWars.RTS
             var center = new GameObject("SelectionBlock");
             center.transform.SetParent(bar.transform, false);
             var cr = center.AddComponent<RectTransform>();
-            cr.anchorMin = new Vector2(0f, 0f);
-            cr.anchorMax = new Vector2(1f, 1f);
-            cr.offsetMin = new Vector2(minimapSlot + pad * 2f, pad);
-            cr.offsetMax = new Vector2(-commandPanelWidth - pad, -pad);
+            cr.anchorMin = new Vector2(0.2f, 0f);
+            cr.anchorMax = new Vector2(0.8f, 1f);
+            cr.offsetMin = new Vector2(20f, 20f);
+            cr.offsetMax = new Vector2(-20f, -20f);
 
             // Portrait
             var portrait = new GameObject("PortraitBlock");
             portrait.transform.SetParent(center.transform, false);
             var pr = portrait.AddComponent<RectTransform>();
-            pr.anchorMin = new Vector2(0.5f, 0.5f);
-            pr.anchorMax = new Vector2(0.5f, 0.5f);
-            pr.pivot = new Vector2(0.5f, 0.5f);
-            pr.anchoredPosition = new Vector2(140f, 0f);
-            pr.sizeDelta = new Vector2(120f, 160f);
+            pr.anchorMin = new Vector2(0f, 0.5f);
+            pr.anchorMax = new Vector2(0f, 0.5f);
+            pr.pivot = new Vector2(0f, 0.5f);
+            pr.anchoredPosition = new Vector2(0f, 0f);
+            pr.sizeDelta = new Vector2(100f, 140f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
             pImg.type = Image.Type.Simple;
-            pImg.color = portraitFrame != null ? Color.white : new Color(0.05f, 0.06f, 0.08f, 1f);
+            pImg.color = portraitFrame != null ? Color.white : new Color(0.1f, 0.08f, 0.12f, 0.8f);
 
             var portraitSub = new GameObject("PortraitInner");
             portraitSub.transform.SetParent(portrait.transform, false);
@@ -417,74 +402,71 @@ namespace InsectWars.RTS
             ibr.anchorMin = new Vector2(0.5f, 0.5f);
             ibr.anchorMax = new Vector2(0.5f, 0.5f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.anchoredPosition = new Vector2(-60f, 0f);
-            ibr.sizeDelta = new Vector2(280f, 160f);
+            ibr.anchoredPosition = new Vector2(20f, -10f);
+            ibr.sizeDelta = new Vector2(220f, 120f);
 
             _portraitLabel = new GameObject("NameText").AddComponent<Text>();
             _portraitLabel.transform.SetParent(infoBlock.transform, false);
             _portraitLabel.font = _font;
-            _portraitLabel.fontSize = 22;
-            _portraitLabel.color = new Color(0.4f, 1f, 0.4f);
+            _portraitLabel.fontSize = 20;
+            _portraitLabel.color = new Color(0.5f, 1f, 0.5f);
             _portraitLabel.alignment = TextAnchor.MiddleCenter;
             var pl = _portraitLabel.rectTransform;
-            pl.anchorMin = new Vector2(0f, 0.7f);
+            pl.anchorMin = new Vector2(0f, 0.75f);
             pl.anchorMax = Vector2.one;
             pl.offsetMin = pl.offsetMax = Vector2.zero;
 
             _attributeLabel = new GameObject("AttributeText").AddComponent<Text>();
             _attributeLabel.transform.SetParent(infoBlock.transform, false);
             _attributeLabel.font = _font;
-            _attributeLabel.fontSize = 13;
+            _attributeLabel.fontSize = 12;
             _attributeLabel.color = new Color(0.7f, 0.8f, 0.7f);
             _attributeLabel.alignment = TextAnchor.MiddleCenter;
             var al = _attributeLabel.rectTransform;
             al.anchorMin = new Vector2(0f, 0f);
-            al.anchorMax = new Vector2(1f, 0.3f);
+            al.anchorMax = new Vector2(1f, 0.25f);
             al.offsetMin = al.offsetMax = Vector2.zero;
 
             _hpLabel = new GameObject("HpText").AddComponent<Text>();
             _hpLabel.transform.SetParent(infoBlock.transform, false);
             _hpLabel.font = _font;
-            _hpLabel.fontSize = 16;
+            _hpLabel.fontSize = 14;
             _hpLabel.color = Color.white;
             _hpLabel.alignment = TextAnchor.MiddleCenter;
             var hpRt = _hpLabel.rectTransform;
-            hpRt.anchorMin = new Vector2(0f, 0.3f);
-            hpRt.anchorMax = new Vector2(1f, 0.7f);
+            hpRt.anchorMin = new Vector2(0f, 0.4f);
+            hpRt.anchorMax = new Vector2(1f, 0.6f);
             hpRt.offsetMin = hpRt.offsetMax = Vector2.zero;
 
-            var hpBarBgGo = new GameObject("HpBarBg");
-            hpBarBgGo.transform.SetParent(infoBlock.transform, false);
-            var hbr = hpBarBgGo.AddComponent<RectTransform>();
-            hbr.anchorMin = new Vector2(0.2f, 0.25f);
-            hbr.anchorMax = new Vector2(0.8f, 0.32f);
+            _hpBarBg = new GameObject("HpBarBg").AddComponent<Image>();
+            _hpBarBg.transform.SetParent(infoBlock.transform, false);
+            _hpBarBg.color = new Color(0.15f, 0.05f, 0.05f, 1f);
+            var hbr = _hpBarBg.rectTransform;
+            hbr.anchorMin = new Vector2(0.1f, 0.3f);
+            hbr.anchorMax = new Vector2(0.9f, 0.38f);
             hbr.offsetMin = hbr.offsetMax = Vector2.zero;
-            _hpBarBg = hpBarBgGo.AddComponent<Image>();
-            _hpBarBg.color = new Color(0.2f, 0.05f, 0.05f, 1f);
 
-            var hpFillGo = new GameObject("HpBarFill");
-            hpFillGo.transform.SetParent(hpBarBgGo.transform, false);
-            var hfr = hpFillGo.AddComponent<RectTransform>();
+            _hpBarFill = new GameObject("HpBarFill").AddComponent<Image>();
+            _hpBarFill.transform.SetParent(_hpBarBg.transform, false);
+            _hpBarFill.color = new Color(0.2f, 0.8f, 0.2f, 1f);
+            var hfr = _hpBarFill.rectTransform;
             hfr.anchorMin = Vector2.zero;
             hfr.anchorMax = Vector2.one;
             hfr.offsetMin = hfr.offsetMax = Vector2.zero;
-            _hpBarFill = hpFillGo.AddComponent<Image>();
-            _hpBarFill.color = new Color(0.1f, 0.8f, 0.2f, 1f);
 
             // Selection Grid
             var gridRoot = new GameObject("SelectionGrid");
             gridRoot.transform.SetParent(center.transform, false);
             var gr = gridRoot.AddComponent<RectTransform>();
-            gr.anchorMin = new Vector2(0f, 1f);
+            gr.anchorMin = new Vector2(0.35f, 1f);
             gr.anchorMax = new Vector2(1f, 1f);
             gr.pivot = new Vector2(0f, 1f);
-            gr.anchoredPosition = new Vector2(0f, -4f);
-            gr.sizeDelta = new Vector2(0f, 48f);
+            gr.anchoredPosition = new Vector2(0f, 0f);
+            gr.sizeDelta = new Vector2(0f, 44f);
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
-            gridLayout.cellSize = new Vector2(40f, 40f);
-            gridLayout.spacing = new Vector2(4f, 4f);
-            gridLayout.childAlignment = TextAnchor.UpperLeft;
+            gridLayout.cellSize = new Vector2(38f, 38f);
+            gridLayout.spacing = new Vector2(2f, 2f);
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
             gridLayout.constraintCount = 1;
 
@@ -494,18 +476,17 @@ namespace InsectWars.RTS
                 var cell = new GameObject($"Sel_{i}");
                 cell.transform.SetParent(gridRoot.transform, false);
                 var img = cell.AddComponent<Image>();
-                img.color = new Color(0.1f, 0.12f, 0.14f, 0.9f);
+                img.color = new Color(1f, 1f, 1f, 0f);
                 var tx = new GameObject("t").AddComponent<Text>();
                 tx.transform.SetParent(cell.transform, false);
                 tx.font = _font;
-                tx.fontSize = 14;
+                tx.fontSize = 12;
                 tx.color = Color.white;
                 tx.alignment = TextAnchor.LowerRight;
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
                 trt.anchorMax = Vector2.one;
-                trt.offsetMin = new Vector2(2f, 2f);
-                trt.offsetMax = new Vector2(-2f, -2f);
+                trt.offsetMin = trt.offsetMax = new Vector2(2f, 2f);
                 _selectionCells[i] = img;
             }
 
@@ -779,14 +760,14 @@ namespace InsectWars.RTS
             if (_selectionCells == null) return;
             foreach (var c in _selectionCells)
             {
-                c.color = new Color(0.1f, 0.12f, 0.14f, 0.9f);
+                c.color = new Color(1f, 1f, 1f, 0f);
                 c.sprite = null;
                 var t = c.GetComponentInChildren<Text>();
                 if (t != null) t.text = "";
             }
 
             HideHpDisplay();
-            if (_portraitMain != null) _portraitMain.sprite = null;
+            if (_portraitMain != null) { _portraitMain.sprite = null; _portraitMain.color = new Color(1f, 1f, 1f, 0f); }
             if (_portraitLabel != null) _portraitLabel.text = "";
             if (_attributeLabel != null) _attributeLabel.text = "";
 
@@ -813,7 +794,7 @@ namespace InsectWars.RTS
             {
                 _portraitLabel.text = "Ant Nest";
                 _attributeLabel.text = "Structure - Biological";
-                if (_portraitMain != null) _portraitMain.sprite = portraitWorker; // Placeholder for structure icon
+                if (_portraitMain != null) { _portraitMain.sprite = portraitWorker; _portraitMain.color = Color.white; }
                 
                 var cell0 = _selectionCells[0];
                 cell0.color = Color.white;
@@ -843,7 +824,7 @@ namespace InsectWars.RTS
             var first = list[0];
             _portraitLabel.text = first.Definition != null ? first.Definition.displayName : "Unit";
             _attributeLabel.text = GetAttributes(first);
-            if (_portraitMain != null) _portraitMain.sprite = GetUnitPortrait(first.Archetype);
+            if (_portraitMain != null) { _portraitMain.sprite = GetUnitPortrait(first.Archetype); _portraitMain.color = Color.white; }
 
             float totalHp = 0f, totalMax = 0f;
             foreach (var u in list)
