@@ -15,6 +15,7 @@ namespace InsectWars.RTS
         [SerializeField] GameObject hudCanvasPrefab;
 
         Text _calorieLabel;
+        Text _seedLabel;
         Text _selectionLabel;
         const string SelectionHint =
             "LMB select · RMB move/attack/gather · M/S/H/P/A commands (see bottom bar)";
@@ -113,6 +114,43 @@ namespace InsectWars.RTS
             _calorieLabel.alignment = TextAnchor.MiddleLeft;
             _calorieLabel.text = "Calories: 0";
 
+            var seedBarGo = new GameObject("SeedBar");
+            seedBarGo.transform.SetParent(canvas.transform, false);
+            var seedBarRt = seedBarGo.AddComponent<RectTransform>();
+            seedBarRt.anchorMin = new Vector2(0, 1);
+            seedBarRt.anchorMax = new Vector2(0, 1);
+            seedBarRt.pivot = new Vector2(0, 1);
+            seedBarRt.anchoredPosition = new Vector2(12, -94);
+            seedBarRt.sizeDelta = new Vector2(270, 38);
+            var seedBarBg = seedBarGo.AddComponent<Image>();
+            seedBarBg.color = new Color(0.08f, 0.06f, 0.02f, 0.88f);
+            seedBarBg.raycastTarget = false;
+
+            var seedIconGo = new GameObject("SeedIcon");
+            seedIconGo.transform.SetParent(seedBarGo.transform, false);
+            var seedIconRt = seedIconGo.AddComponent<RectTransform>();
+            seedIconRt.anchorMin = new Vector2(0, 0.5f);
+            seedIconRt.anchorMax = new Vector2(0, 0.5f);
+            seedIconRt.pivot = new Vector2(0, 0.5f);
+            seedIconRt.anchoredPosition = new Vector2(10, 0);
+            seedIconRt.sizeDelta = new Vector2(22, 22);
+            var seedIconImg = seedIconGo.AddComponent<Image>();
+            seedIconImg.color = new Color(0.45f, 0.65f, 0.25f);
+            seedIconImg.raycastTarget = false;
+
+            _seedLabel = new GameObject("SeedText").AddComponent<Text>();
+            _seedLabel.transform.SetParent(seedBarGo.transform, false);
+            _seedLabel.font = UiFontHelper.GetFont();
+            _seedLabel.fontSize = 20;
+            _seedLabel.color = new Color(0.8f, 1f, 0.7f);
+            var seedRt = _seedLabel.rectTransform;
+            seedRt.anchorMin = new Vector2(0, 0);
+            seedRt.anchorMax = new Vector2(1, 1);
+            seedRt.offsetMin = new Vector2(40, 0);
+            seedRt.offsetMax = new Vector2(-8, 0);
+            _seedLabel.alignment = TextAnchor.MiddleLeft;
+            _seedLabel.text = "Cacti Seeds: 0";
+
             _selectionLabel = new GameObject("Selection").AddComponent<Text>();
             _selectionLabel.transform.SetParent(canvas.transform, false);
             _selectionLabel.font = UiFontHelper.GetFont();
@@ -158,14 +196,19 @@ namespace InsectWars.RTS
             if (PlayerResources.Instance != null)
             {
                 PlayerResources.Instance.OnCaloriesChanged += OnCalories;
+                PlayerResources.Instance.OnCactiSeedsChanged += OnSeeds;
                 OnCalories(PlayerResources.Instance.Calories);
+                OnSeeds(PlayerResources.Instance.CactiSeeds);
             }
         }
 
         void OnDestroy()
         {
             if (PlayerResources.Instance != null)
+            {
                 PlayerResources.Instance.OnCaloriesChanged -= OnCalories;
+                PlayerResources.Instance.OnCactiSeedsChanged -= OnSeeds;
+            }
             HudCanvasRect = null;
         }
 
@@ -173,6 +216,12 @@ namespace InsectWars.RTS
         {
             if (_calorieLabel != null)
                 _calorieLabel.text = $"Calories: {n:N0}";
+        }
+
+        void OnSeeds(int n)
+        {
+            if (_seedLabel != null)
+                _seedLabel.text = $"Cacti Seeds: {n:N0}";
         }
 
         void Update()

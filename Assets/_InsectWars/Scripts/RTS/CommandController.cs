@@ -83,6 +83,17 @@ namespace InsectWars.RTS
                 return;
             }
 
+            var seed = hit.collider.GetComponentInParent<CactiSeedNode>();
+            if (seed != null && !seed.PickedUp && SelectionController.Instance.HasWorkerSelected())
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                {
+                    if (u.Definition != null && u.Definition.canGather)
+                        u.OrderPickupSeed(seed);
+                }
+                return;
+            }
+
             var enemy = hit.collider.GetComponentInParent<InsectUnit>();
             if (enemy != null && enemy.Team == Team.Enemy && enemy.IsAlive)
             {
@@ -132,6 +143,17 @@ namespace InsectWars.RTS
                     {
                         if (u.Definition != null && u.Definition.canGather)
                             u.OrderGather(fruit);
+                    }
+                    Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                    return;
+                }
+                var seed = hit.collider.GetComponentInParent<CactiSeedNode>();
+                if (seed != null && !seed.PickedUp)
+                {
+                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    {
+                        if (u.Definition != null && u.Definition.canGather)
+                            u.OrderPickupSeed(seed);
                     }
                     Sc2BottomBar.Instance.SetPending(PendingCommand.None);
                 }

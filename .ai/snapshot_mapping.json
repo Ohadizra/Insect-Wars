@@ -131,6 +131,12 @@
       "conversation_id": "6f52b5c3-24ce-4e01-9b72-121270395f41",
       "content": "I have generated a new building for the **Mantis** unit that matches its armored, aggressive insectoid aesthetic.\n\n### **The Mantis Nest**\n*   **Asset Path:** `Assets/_InsectWars/Prefabs/MantisNest.prefab`\n*   **Art Style:** I designed this building to be an organic, armored hive. It features dark green and iron-metallic textures with sharp, scythe-like protrusions to match the Mantis unit's claws and warrior nature. It is a stylized low-poly 3D model, consistent with the `AntNest` and existing insect art.\n\n### **How to view and use it:**\n1.  **In the Project Window:** Go to `Assets/_InsectWars/Prefabs/` and select **MantisNest**.\n2.  **Preview:** You can see the 3D preview in the Inspector when the prefab is selected.\n3.  **In Scene:** Drag the prefab into your `SkirmishDemo` scene to place it. It is scaled similarly to the `AntNest` so it should fit your base layout immediately.\n\nI've also generated a few variations (`MantisNest 1` through `MantisNest 10`) in the same folder if you want to swap the mesh for a different silhouette.\n\n**Next Steps:**\nIf you'd like, I can wire this building into your spawner script so it actually produces Mantis units during gameplay.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "6f52b5c3-24ce-4e01-9b72-121270395f41",
+      "content": "fix combiler errors",
+      "snapshot_message_type": 0
     }
   ]
 }

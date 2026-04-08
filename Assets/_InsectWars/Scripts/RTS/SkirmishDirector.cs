@@ -611,6 +611,55 @@ namespace InsectWars.RTS
             node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);
         }
 
+        static void AddCactiSeed(Transform parent, CactiSeedPlaced s)
+        {
+            var pos = s.position;
+            var seed = new GameObject("CactiSeed");
+            int layer = LayerMask.NameToLayer("Resources");
+            if (layer >= 0) seed.layer = layer;
+            seed.transform.SetParent(parent);
+            float h = GetHeight(pos);
+            seed.transform.position = new Vector3(pos.x, h + 0.35f, pos.z);
+
+            var body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            body.name = "SeedBody";
+            body.transform.SetParent(seed.transform, false);
+            body.transform.localPosition = Vector3.zero;
+            body.transform.localScale = Vector3.one * 0.55f;
+            Object.Destroy(body.GetComponent<Collider>());
+            ApplyMat(body, new Color(0.55f, 0.7f, 0.3f));
+
+            Vector3[] spikeOffsets =
+            {
+                new(0f, 0.28f, 0f),
+                new(0.18f, 0.1f, 0.12f),
+                new(-0.15f, 0.08f, -0.16f),
+                new(0.1f, -0.1f, -0.18f),
+                new(-0.12f, -0.08f, 0.15f)
+            };
+            foreach (var off in spikeOffsets)
+            {
+                var spike = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                spike.name = "Spike";
+                spike.transform.SetParent(seed.transform, false);
+                spike.transform.localPosition = off;
+                spike.transform.localScale = new Vector3(0.08f, 0.14f, 0.08f);
+                spike.transform.localRotation = Quaternion.LookRotation(off.normalized) * Quaternion.Euler(90f, 0f, 0f);
+                Object.Destroy(spike.GetComponent<Collider>());
+                ApplyMat(spike, new Color(0.38f, 0.52f, 0.2f));
+            }
+
+            var col = seed.AddComponent<SphereCollider>();
+            col.center = Vector3.zero;
+            col.radius = 0.4f;
+            col.isTrigger = true;
+
+            var modifier = seed.AddComponent<NavMeshModifier>();
+            modifier.ignoreFromBuild = true;
+
+            seed.AddComponent<CactiSeedNode>();
+        }
+
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
             var lib = ActiveVisualLibrary;

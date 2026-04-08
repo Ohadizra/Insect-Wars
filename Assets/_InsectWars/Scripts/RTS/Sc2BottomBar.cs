@@ -48,7 +48,7 @@ namespace InsectWars.RTS
         GameObject _ghostPreview;
         Camera _cam;
 
-        enum BarMode { None, Units, WorkerUnits, Hive, Resource, BuildMenu, Building }
+        enum BarMode { None, Units, WorkerUnits, Hive, Resource, CactiSeed, BuildMenu, Building }
         BarMode _currentBarMode = (BarMode)(-1);
 
         void Awake()
@@ -170,6 +170,8 @@ namespace InsectWars.RTS
                 newMode = BarMode.Hive;
             else if (sc.SelectedResource != null)
                 newMode = BarMode.Resource;
+            else if (sc.SelectedSeed != null)
+                newMode = BarMode.CactiSeed;
             else
             {
                 bool hasUnits = false;
@@ -666,6 +668,7 @@ namespace InsectWars.RTS
                     UnitOrder.Attack => "Attack",
                     UnitOrder.Gather => "Gather",
                     UnitOrder.ReturnDeposit => "Gather",
+                    UnitOrder.PickupSeed => "Gather",
                     UnitOrder.Patrol => "Patrol",
                     _ => null
                 };
@@ -718,6 +721,26 @@ namespace InsectWars.RTS
                     tx0.text = $"{res.ChargesRemaining:N0}\ncal";
                     tx0.fontSize = 12;
                     tx0.color = new Color(1f, 0.95f, 0.7f);
+                }
+                return;
+            }
+
+            if (SelectionController.Instance.SelectedSeed != null)
+            {
+                var seedNode = SelectionController.Instance.SelectedSeed;
+                _portraitLabel.text = seedNode.PickedUp
+                    ? "Cacti\nSeed\n<size=12>(picked up)</size>"
+                    : "Cacti\nSeed";
+                _portraitLabel.supportRichText = true;
+
+                var cell0 = _selectionCells[0];
+                cell0.color = new Color(0.3f, 0.5f, 0.18f, 0.9f);
+                var tx0 = cell0.GetComponentInChildren<Text>();
+                if (tx0 != null)
+                {
+                    tx0.text = "1\nseed";
+                    tx0.fontSize = 12;
+                    tx0.color = new Color(0.8f, 1f, 0.7f);
                 }
                 return;
             }
