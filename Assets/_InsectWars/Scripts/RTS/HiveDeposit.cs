@@ -44,6 +44,22 @@ namespace InsectWars.RTS
                 EnemyHive = this;
         }
 
+        /// <summary>
+        /// Ant Nest uses the hive prefab but strips <see cref="HiveDeposit"/>. Instantiate still runs Awake on the
+        /// duplicate component and overwrites static refs; restore the real hive after <c>Destroy(hd)</c>.
+        /// </summary>
+        public static void RestorePlayerHiveReference(HiveDeposit mainPlayerHive)
+        {
+            if (mainPlayerHive != null)
+                PlayerHive = mainPlayerHive;
+        }
+
+        public static void RestoreEnemyHiveReference(HiveDeposit mainEnemyHive)
+        {
+            if (mainEnemyHive != null)
+                EnemyHive = mainEnemyHive;
+        }
+
         public Vector3 DepositPoint
         {
             get

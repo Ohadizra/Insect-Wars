@@ -231,15 +231,23 @@ namespace InsectWars.RTS
 
         static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player)
         {
+            var savedPlayerHive = HiveDeposit.PlayerHive;
+            var savedEnemyHive = HiveDeposit.EnemyHive;
+
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            go.transform.position = new Vector3(position.x, 1f, position.z);
+            go.transform.position = position;
             go.tag = "Untagged";
 
             var hd = go.GetComponent<HiveDeposit>();
             if (hd != null) Destroy(hd);
             var hv = go.GetComponent<HiveVisual>();
             if (hv != null) Destroy(hv);
+
+            if (team == Team.Player)
+                HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
+            else if (team == Team.Enemy)
+                HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
 
             if (go.GetComponent<Collider>() == null)
             {
@@ -286,7 +294,7 @@ namespace InsectWars.RTS
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team);
             return building;
-            }
+        }
 
         static void ApplyMat(GameObject go, Color c)
         {

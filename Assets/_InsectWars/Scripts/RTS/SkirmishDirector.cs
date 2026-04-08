@@ -165,6 +165,8 @@ namespace InsectWars.RTS
             var exclusions = BuildExclusionZones();
             SkirmishPassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
 
+            PlaceStarterPlayerBuildings(world.transform);
+
             surface.BuildNavMesh();
 
             var systems = GameObject.Find("Systems");
@@ -182,6 +184,20 @@ namespace InsectWars.RTS
             systems.AddComponent<GameAudio>();
         }
 
+
+        /// <summary>
+        /// Free Ant's Nest near the player hive. Must run before NavMesh build so carving applies.
+        /// (Rebuilding WorldRoot each match removes any nest placed only in the scene/prefab.)
+        /// </summary>
+        void PlaceStarterPlayerBuildings(Transform worldRoot)
+        {
+            var hiveXZ = new Vector3(_playerHive.x + 8f, 0f, _playerHive.z + 6f);
+            var groundY = GetHeight(hiveXZ);
+            var pos = new Vector3(hiveXZ.x, groundY + 0.02f, hiveXZ.z);
+            var nest = ProductionBuilding.Place(pos, BuildingType.AntNest, Team.Player);
+            if (nest != null)
+                nest.transform.SetParent(worldRoot, true);
+        }
 
         List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
         {
