@@ -209,6 +209,12 @@
       "conversation_id": "5d0c3408-306a-49f6-a342-135a5f6981f2",
       "content": "I have overhauled the biological UI to fix the integration issues shown in your screenshot.\n\n### Improvements Made:\n\n1.  **Transparency & Backgrounds**:\n    *   Processed all UI assets (portraits, icons, frames) with the **Background Removal** tool to eliminate the white boxes.\n    *   Re-sliced the unit and ability icon sheets to ensure the individual sprites now have proper transparency.\n2.  **Integrated HUD Art**:\n    *   Generated a new, high-resolution integrated background: `ZergHUD_Main.png`.\n    *   Updated the code to use this as a single, seamless biological piece instead of separate floating frames.\n    *   Removed the solid gray panels that were causing the visual clutter.\n3.  **Layout Refinement**:\n    *   Adjusted the **Minimap** and **Command Grid** positions to align perfectly with the circular and rectangular slots in the new biological HUD texture.\n    *   Centered the unit selection info (Name, Attributes, HP Bar) for a much cleaner, professional RTS look.\n    *   Fixed the selection grid icons to be transparent, allowing the biological background to show through behind the unit portraits.\n4.  **Automatic Setup**:\n    *   The `Sc2BottomBar.cs` script is updated to automatically wire these new high-quality assets in the editor, ensuring the \"Zerg-style\" look is applied the next time you enter the scene or play the game.\n\nThe UI should now feel like a solid, integrated part of the biological world rather than a collection of floating boxes floating over gray floating on top of it.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "b721fd44-9f1e-4c2f-9321-d8b441599a44",
+      "content": "for all objects that are currently just box/has no art. make a new art and replace the boxes",
+      "snapshot_message_type": 0
     }
   ]
 }
