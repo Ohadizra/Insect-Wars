@@ -19,6 +19,12 @@ namespace InsectWars.Data
         public float gatherSeconds;
     }
 
+    [Serializable]
+    public struct CactiSeedPlaced
+    {
+        public Vector3 position;
+    }
+
     /// <summary>
     /// Serialized map layout for SkirmishDirector. Assign on the director or leave null for built-in Demo 0 defaults.
     /// </summary>
@@ -35,5 +41,6 @@ namespace InsectWars.Data
         public int passiveScatterSeed = 18427;
         public ClayPlaced[] clay = Array.Empty<ClayPlaced>();
         public FruitPlaced[] fruits = Array.Empty<FruitPlaced>();
+        public CactiSeedPlaced[] cactiSeeds = Array.Empty<CactiSeedPlaced>();
     }
 }

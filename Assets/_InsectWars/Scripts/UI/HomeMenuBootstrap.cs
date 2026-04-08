@@ -5,7 +5,6 @@ using InsectWars.RTS;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -366,12 +365,7 @@ namespace InsectWars.UI
             _previewCam.cullingMask = ~0;
             _previewCam.depth = -10;
 
-            var urpData = camGo.GetComponent<UniversalAdditionalCameraData>();
-            if (urpData == null)
-                urpData = camGo.AddComponent<UniversalAdditionalCameraData>();
-            urpData.renderType = CameraRenderType.Base;
-            urpData.renderShadows = false;
-            urpData.renderPostProcessing = false;
+            _previewCam.enabled = false;
 
             FrameCameraOnUnit();
             DontDestroyOnLoad(camGo);
@@ -420,9 +414,11 @@ namespace InsectWars.UI
             }
         }
 
-        void Update()
+        void LateUpdate()
         {
             UpdatePreviewAnim();
+            if (_previewCam != null && _previewModelRoot != null)
+                _previewCam.Render();
         }
 
         void UpdatePreviewAnim()
@@ -470,7 +466,6 @@ namespace InsectWars.UI
             var pos = new Vector3(500f, 0f, 500f);
             _previewModelRoot = new GameObject($"CodexPreview_{arch}");
             _previewModelRoot.transform.position = pos;
-            DontDestroyOnLoad(_previewModelRoot);
 
             var team = Team.Player;
             var skin = TeamPalette.GetShellColor(team);
@@ -569,16 +564,11 @@ namespace InsectWars.UI
             var r = p.GetComponent<Renderer>();
             if (r == null) return;
 
-            // Clone the primitive's own material — guaranteed to work in the active pipeline
-            var m = new Material(r.sharedMaterial);
+            // Use the property block on the existing material to tint — avoids all shader/material issues
+            var m = r.material;
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
-            if (m.HasProperty("_EmissionColor"))
-            {
-                m.EnableKeyword("_EMISSION");
-                m.SetColor("_EmissionColor", c * 0.15f);
-            }
-            m.SetFloat("_Smoothness", 0.3f);
+            if (m.HasProperty("_Surface")) m.SetFloat("_Surface", 0f);
             r.material = m;
         }
 

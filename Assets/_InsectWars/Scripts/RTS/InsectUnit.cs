@@ -12,7 +12,14 @@ namespace InsectWars.RTS
         Attack,
         Gather,
         ReturnDeposit,
-        Patrol
+        Patrol,
+        PickupSeed
+    }
+
+    public enum CargoType
+    {
+        Calories,
+        CactiSeed
     }
 
     [RequireComponent(typeof(NavMeshAgent))]
@@ -30,6 +37,8 @@ namespace InsectWars.RTS
         RottingFruitNode _lastGatherTarget;
         float _gatherTimer;
         float _idleScanTimer;
+        CactiSeedNode _seedTarget;
+        Vector3? _seedReturnDest;
 
         bool _holdPosition;
         bool _patrolActive;
@@ -194,6 +203,9 @@ namespace InsectWars.RTS
                 case UnitOrder.Patrol:
                     TickPatrol();
                     break;
+                case UnitOrder.PickupSeed:
+                    TickPickupSeed();
+                    break;
                 case UnitOrder.Idle:
                     TickIdleAutoGather();
                     break;
@@ -322,12 +334,32 @@ namespace InsectWars.RTS
             _agent.SetDestination(HiveDeposit.PlayerHive.DepositPoint);
         }
 
+        public void OrderPickupSeed(CactiSeedNode seed)
+        {
+            if (!IsAlive || seed == null || seed.PickedUp || definition == null || !definition.canGather) return;
+
+            var inv = GetComponent<WorkerInventory>();
+            if (inv != null && inv.Carrying > 0) return;
+
+            ClearTargets();
+            _wantsAttackMove = false;
+            _holdPosition = false;
+            _patrolActive = false;
+            _seedTarget = seed;
+            _order = UnitOrder.PickupSeed;
+            _agent.ResetPath();
+            _agent.isStopped = false;
+            _agent.SetDestination(seed.transform.position);
+        }
+
         void ClearTargets()
         {
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
+            _seedTarget = null;
+            _seedReturnDest = null;
             UnlockMelee();
         }
 
@@ -416,6 +448,13 @@ namespace InsectWars.RTS
 
         void TickReturn()
         {
+            var inv = GetComponent<WorkerInventory>();
+            if (inv != null && inv.Cargo == CargoType.CactiSeed)
+            {
+                TickReturnSeed(inv);
+                return;
+            }
+
             if (HiveDeposit.PlayerHive == null)
             {
                 _order = UnitOrder.Idle;
@@ -431,7 +470,6 @@ namespace InsectWars.RTS
                 return;
             }
             _agent.isStopped = true;
-            var inv = GetComponent<WorkerInventory>();
             if (inv != null && inv.Carrying > 0 && PlayerResources.Instance != null)
             {
                 PlayerResources.Instance.AddCalories(inv.Carrying);
@@ -446,6 +484,100 @@ namespace InsectWars.RTS
             _order = UnitOrder.Idle;
         }
 
+        void TickReturnSeed(WorkerInventory inv)
+        {
+            if (_seedReturnDest == null)
+            {
+                _seedReturnDest = FindNearestTeamDepositPoint();
+                if (_seedReturnDest == null)
+                {
+                    _order = UnitOrder.Idle;
+                    return;
+                }
+            }
+
+            var dest = _seedReturnDest.Value;
+            var diff = transform.position - dest;
+            diff.y = 0f;
+            if (diff.magnitude > 2f)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(dest);
+                return;
+            }
+
+            _agent.isStopped = true;
+            if (inv.Carrying > 0 && PlayerResources.Instance != null)
+            {
+                PlayerResources.Instance.AddCactiSeeds(inv.Carrying);
+                inv.Carrying = 0;
+                inv.Cargo = CargoType.Calories;
+            }
+            _seedReturnDest = null;
+            _order = UnitOrder.Idle;
+        }
+
+        void TickPickupSeed()
+        {
+            if (_seedTarget == null || _seedTarget.PickedUp)
+            {
+                _seedTarget = null;
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            var diff = transform.position - _seedTarget.transform.position;
+            diff.y = 0f;
+            if (diff.magnitude > _seedTarget.PickupRange)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(_seedTarget.transform.position);
+                return;
+            }
+
+            _agent.isStopped = true;
+            if (!_seedTarget.TryPickup()) return;
+
+            var inv = GetComponent<WorkerInventory>();
+            if (inv == null) inv = gameObject.AddComponent<WorkerInventory>();
+            inv.Carrying = 1;
+            inv.Cargo = CargoType.CactiSeed;
+            _seedTarget = null;
+
+            _seedReturnDest = FindNearestTeamDepositPoint();
+            if (_seedReturnDest == null)
+            {
+                _order = UnitOrder.Idle;
+                return;
+            }
+            _order = UnitOrder.ReturnDeposit;
+            _agent.ResetPath();
+            _agent.isStopped = false;
+            _agent.SetDestination(_seedReturnDest.Value);
+        }
+
+        Vector3? FindNearestTeamDepositPoint()
+        {
+            float bestDist = float.MaxValue;
+            Vector3? bestPoint = null;
+
+            HiveDeposit teamHive = team == Team.Player ? HiveDeposit.PlayerHive : HiveDeposit.EnemyHive;
+            if (teamHive != null)
+            {
+                float d = Vector3.Distance(transform.position, teamHive.transform.position);
+                if (d < bestDist) { bestDist = d; bestPoint = teamHive.DepositPoint; }
+            }
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest) continue;
+                float d = Vector3.Distance(transform.position, bld.transform.position);
+                if (d < bestDist) { bestDist = d; bestPoint = bld.transform.position; }
+            }
+
+            return bestPoint;
+        }
+
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
@@ -455,16 +587,30 @@ namespace InsectWars.RTS
             var resLayer = LayerMask.NameToLayer("Resources");
             var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
             var cols = Physics.OverlapSphere(transform.position, 6f, mask, QueryTriggerInteraction.Collide);
-            RottingFruitNode best = null;
-            float bestDist = float.MaxValue;
+            RottingFruitNode bestFruit = null;
+            CactiSeedNode bestSeed = null;
+            float bestFruitDist = float.MaxValue;
+            float bestSeedDist = float.MaxValue;
             foreach (var c in cols)
             {
                 var node = c.GetComponent<RottingFruitNode>();
-                if (node == null || node.Depleted) continue;
-                var d = Vector3.Distance(transform.position, node.transform.position);
-                if (d < bestDist) { bestDist = d; best = node; }
+                if (node != null && !node.Depleted)
+                {
+                    var d = Vector3.Distance(transform.position, node.transform.position);
+                    if (d < bestFruitDist) { bestFruitDist = d; bestFruit = node; }
+                }
+                var seed = c.GetComponent<CactiSeedNode>();
+                if (seed != null && !seed.PickedUp)
+                {
+                    var d = Vector3.Distance(transform.position, seed.transform.position);
+                    if (d < bestSeedDist) { bestSeedDist = d; bestSeed = seed; }
+                }
             }
-            if (best != null) OrderGather(best);
+
+            if (bestSeed != null && bestSeedDist <= bestFruitDist)
+                OrderPickupSeed(bestSeed);
+            else if (bestFruit != null)
+                OrderGather(bestFruit);
         }
 
         void TickAttack()
@@ -594,13 +740,16 @@ namespace InsectWars.RTS
     public class WorkerInventory : MonoBehaviour
     {
         public int Carrying;
+        public CargoType Cargo;
         GameObject _cargoVisual;
+        CargoType _visualCargo;
 
         void LateUpdate()
         {
             bool show = Carrying > 0;
-            if (show && _cargoVisual == null)
+            if (show && (_cargoVisual == null || _visualCargo != Cargo))
             {
+                if (_cargoVisual != null) Destroy(_cargoVisual);
                 _cargoVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 _cargoVisual.name = "CargoVisual";
                 _cargoVisual.transform.SetParent(transform, false);
@@ -611,11 +760,14 @@ namespace InsectWars.RTS
                 var sh = Shader.Find("Universal Render Pipeline/Lit");
                 if (sh == null) sh = Shader.Find("Standard");
                 var m = new Material(sh);
-                var col = new Color(0.95f, 0.85f, 0.15f);
+                var col = Cargo == CargoType.CactiSeed
+                    ? new Color(0.45f, 0.65f, 0.25f)
+                    : new Color(0.95f, 0.85f, 0.15f);
                 m.color = col;
                 if (m.HasProperty("_BaseColor"))
                     m.SetColor("_BaseColor", col);
                 r.sharedMaterial = m;
+                _visualCargo = Cargo;
             }
             if (_cargoVisual != null && _cargoVisual.activeSelf != show)
                 _cargoVisual.SetActive(show);

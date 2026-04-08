@@ -26,6 +26,7 @@ namespace InsectWars.RTS
         int _scatterSeed;
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
+        CactiSeedPlaced[] _cactiSeedLayout;
 
         static readonly ClayPlaced[] DefaultClayList =
         {
@@ -49,6 +50,22 @@ namespace InsectWars.RTS
             new() { position = new Vector3(68f, 0.6f, 28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
             new() { position = new Vector3(22f, 0.6f, -58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
             new() { position = new Vector3(-15f, 0.6f, 62f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f }
+        };
+
+        static readonly CactiSeedPlaced[] DefaultCactiSeeds =
+        {
+            new() { position = new Vector3(0f, 0f, 0f) },
+            new() { position = new Vector3(-30f, 0f, 30f) },
+            new() { position = new Vector3(30f, 0f, -30f) },
+            new() { position = new Vector3(-58f, 0f, 22f) },
+            new() { position = new Vector3(58f, 0f, -22f) },
+            new() { position = new Vector3(15f, 0f, 48f) },
+            new() { position = new Vector3(-15f, 0f, -48f) },
+            new() { position = new Vector3(40f, 0f, 8f) },
+            new() { position = new Vector3(-40f, 0f, -8f) },
+            new() { position = new Vector3(0f, 0f, -65f) },
+            new() { position = new Vector3(0f, 0f, 65f) },
+            new() { position = new Vector3(65f, 0f, 55f) }
         };
 
         /// <summary>Used by units for projectile settings when not using a prefab-only pipeline.</summary>
@@ -86,6 +103,7 @@ namespace InsectWars.RTS
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
+            _cactiSeedLayout = m != null && m.cactiSeeds != null && m.cactiSeeds.Length > 0 ? m.cactiSeeds : DefaultCactiSeeds;
         }
 
         void Start()
@@ -151,6 +169,9 @@ namespace InsectWars.RTS
             foreach (var f in _fruitLayout)
                 AddFruit(world.transform, f);
 
+            foreach (var s in _cactiSeedLayout)
+                AddCactiSeed(world.transform, s);
+
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
@@ -215,6 +236,8 @@ namespace InsectWars.RTS
                 var spread = Mathf.Max(c.scale.x, c.scale.z) * 0.5f + 3f;
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), spread));
             }
+            foreach (var s in _cactiSeedLayout)
+                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(s.position.x, s.position.z), 4f));
             return z;
         }
 
