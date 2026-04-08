@@ -16,6 +16,7 @@ namespace InsectWars.UI
     public class HomeMenuBootstrap : MonoBehaviour
     {
         [SerializeField] string streamingVideoName = "MenuLoop.mp4";
+        [SerializeField] UnitVisualLibrary visualLibrary;
 
         Canvas _canvas;
         GameObject _panelMain;
@@ -465,54 +466,98 @@ namespace InsectWars.UI
             var skin = TeamPalette.GetShellColor(team);
             var accent = TeamPalette.GetTeamColor(team);
 
-            switch (arch)
+            GameObject prefab = (visualLibrary != null) ? visualLibrary.GetUnitPrefab(arch) : null;
+            if (prefab != null)
             {
-                case UnitArchetype.Worker:
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
-                        new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f), Quaternion.identity, skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
-                        new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f, Quaternion.identity,
-                        Color.Lerp(skin, Color.white, 0.2f));
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
-                        new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f), Quaternion.identity, accent);
-                    break;
+                var inst = Instantiate(prefab, _previewModelRoot.transform, false);
+                inst.transform.localPosition = Vector3.zero;
+                inst.transform.localRotation = Quaternion.identity;
 
-                case UnitArchetype.BasicFighter:
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
-                        new Vector3(0f, 0.35f, -0.1f), new Vector3(0.45f, 0.6f, 0.45f),
-                        Quaternion.Euler(45f, 0f, 0f), skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
-                        new Vector3(0f, 0.85f, 0.3f), Vector3.one * 0.35f, Quaternion.identity, skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
-                        new Vector3(-0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
-                        new Vector3(0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
-                        new Vector3(-0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
-                        Quaternion.Euler(60f, 0f, 0f), skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
-                        new Vector3(0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
-                        Quaternion.Euler(60f, 0f, 0f), skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                        new Vector3(-0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
-                        Quaternion.Euler(0f, 0f, 20f), accent);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                        new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
-                        Quaternion.Euler(0f, 0f, -20f), accent);
-                    break;
+                if (inst.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent)) agent.enabled = false;
+                if (inst.TryGetComponent<Collider>(out var col)) col.enabled = false;
+                if (inst.TryGetComponent<InsectUnit>(out var unit)) unit.enabled = false;
+                if (inst.TryGetComponent<UnitAnimationDriver>(out var driver)) driver.enabled = false;
+                if (inst.TryGetComponent<SimpleEnemyAi>(out var ai)) ai.enabled = false;
 
-                case UnitArchetype.BasicRanged:
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
-                        new Vector3(0f, 0.52f, 0f), new Vector3(0.42f, 0.5f, 0.42f), Quaternion.identity, skin);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
-                        new Vector3(0f, 1.02f, 0f), Vector3.one * 0.3f, Quaternion.identity,
-                        Color.Lerp(skin, Color.white, 0.2f));
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
-                        new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
-                        Quaternion.identity, accent);
-                    BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
-                        new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f), Quaternion.identity, accent);
-                    break;
+                var block = new MaterialPropertyBlock();
+                foreach (var r in inst.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (r.gameObject.name == "TeamStrap") continue;
+                    r.GetPropertyBlock(block);
+                    if (r.sharedMaterial != null)
+                    {
+                        if (r.sharedMaterial.HasProperty("_BaseColor")) block.SetColor("_BaseColor", skin);
+                        else if (r.sharedMaterial.HasProperty("_Color")) block.SetColor("_Color", skin);
+                    }
+                    r.SetPropertyBlock(block);
+                }
+
+                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                strap.name = "TeamStrap";
+                strap.transform.SetParent(inst.transform, false);
+                strap.transform.localPosition = new Vector3(0f, 0.45f, 0f);
+                strap.transform.localScale = new Vector3(1.1f, 0.05f, 1.1f);
+                Destroy(strap.GetComponent<Collider>());
+                var sr = strap.GetComponent<Renderer>();
+                if (sr != null)
+                {
+                    var m = sr.material;
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", accent);
+                    else if (m.HasProperty("_Color")) m.color = accent;
+                    sr.material = m;
+                }
+            }
+            else
+            {
+                switch (arch)
+                {
+                    case UnitArchetype.Worker:
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                            new Vector3(0f, 0.28f, 0f), new Vector3(0.52f, 0.24f, 0.52f), Quaternion.identity, skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                            new Vector3(0f, 0.58f, 0f), Vector3.one * 0.3f, Quaternion.identity,
+                            Color.Lerp(skin, Color.white, 0.2f));
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                            new Vector3(0f, 0.28f, 0f), new Vector3(0.55f, 0.05f, 0.55f), Quaternion.identity, accent);
+                        break;
+
+                    case UnitArchetype.BasicFighter:
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                            new Vector3(0f, 0.35f, -0.1f), new Vector3(0.45f, 0.6f, 0.45f),
+                            Quaternion.Euler(45f, 0f, 0f), skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                            new Vector3(0f, 0.85f, 0.3f), Vector3.one * 0.35f, Quaternion.identity, skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                            new Vector3(-0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                            new Vector3(0.15f, 0.95f, 0.45f), Vector3.one * 0.12f, Quaternion.identity, accent);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                            new Vector3(-0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
+                            Quaternion.Euler(60f, 0f, 0f), skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                            new Vector3(0.25f, 0.45f, 0.35f), new Vector3(0.15f, 0.35f, 0.15f),
+                            Quaternion.Euler(60f, 0f, 0f), skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                            new Vector3(-0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                            Quaternion.Euler(0f, 0f, 20f), accent);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                            new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
+                            Quaternion.Euler(0f, 0f, -20f), accent);
+                        break;
+
+                    case UnitArchetype.BasicRanged:
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
+                            new Vector3(0f, 0.52f, 0f), new Vector3(0.42f, 0.5f, 0.42f), Quaternion.identity, skin);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Sphere,
+                            new Vector3(0f, 1.02f, 0f), Vector3.one * 0.3f, Quaternion.identity,
+                            Color.Lerp(skin, Color.white, 0.2f));
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cube,
+                            new Vector3(0.2f, 0.62f, 0.38f), new Vector3(0.1f, 0.08f, 0.48f),
+                            Quaternion.identity, accent);
+                        BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
+                            new Vector3(0f, 0.72f, 0f), new Vector3(0.45f, 0.04f, 0.45f), Quaternion.identity, accent);
+                        break;
+                }
             }
 
             _previewYaw = 0f;
@@ -523,6 +568,7 @@ namespace InsectWars.UI
             FrameCameraForArch(arch);
 
             Debug.Log($"[CodexPreview] Spawned {arch}, children={_previewModelRoot.transform.childCount}, " +
+                      $"library={(visualLibrary != null ? "Yes" : "No")}, " +
                       $"shader={_previewModelRoot.GetComponentInChildren<Renderer>()?.material?.shader?.name}");
         }
 
