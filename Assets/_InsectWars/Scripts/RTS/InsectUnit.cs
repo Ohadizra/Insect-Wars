@@ -295,8 +295,9 @@ namespace InsectWars.RTS
         {
             if (!IsAlive || node == null || node.Depleted || definition == null || !definition.canGather) return;
 
+            var teamHive = GetTeamHive();
             var inv = GetComponent<WorkerInventory>();
-            if (inv != null && inv.Carrying > 0 && HiveDeposit.PlayerHive != null)
+            if (inv != null && inv.Carrying > 0 && teamHive != null)
             {
                 _lastGatherTarget = node;
                 _gatherTarget = null;
@@ -306,7 +307,7 @@ namespace InsectWars.RTS
                 _order = UnitOrder.ReturnDeposit;
                 _agent.ResetPath();
                 _agent.isStopped = false;
-                _agent.SetDestination(HiveDeposit.PlayerHive.DepositPoint);
+                _agent.SetDestination(teamHive.DepositPoint);
                 return;
             }
 
@@ -324,14 +325,15 @@ namespace InsectWars.RTS
 
         public void OrderReturnToHive()
         {
-            if (!IsAlive || HiveDeposit.PlayerHive == null) return;
+            var teamHive = GetTeamHive();
+            if (!IsAlive || teamHive == null) return;
             ClearTargets();
             _wantsAttackMove = false;
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.ReturnDeposit;
             _agent.isStopped = false;
-            _agent.SetDestination(HiveDeposit.PlayerHive.DepositPoint);
+            _agent.SetDestination(teamHive.DepositPoint);
         }
 
         public void OrderPickupSeed(CactiSeedNode seed)
@@ -442,8 +444,9 @@ namespace InsectWars.RTS
             _order = UnitOrder.ReturnDeposit;
             _agent.ResetPath();
             _agent.isStopped = false;
-            if (HiveDeposit.PlayerHive != null)
-                _agent.SetDestination(HiveDeposit.PlayerHive.DepositPoint);
+            var returnHive = GetTeamHive();
+            if (returnHive != null)
+                _agent.SetDestination(returnHive.DepositPoint);
         }
 
         void TickReturn()
@@ -455,12 +458,13 @@ namespace InsectWars.RTS
                 return;
             }
 
-            if (HiveDeposit.PlayerHive == null)
+            var teamHive = GetTeamHive();
+            if (teamHive == null)
             {
                 _order = UnitOrder.Idle;
                 return;
             }
-            var dest = HiveDeposit.PlayerHive.DepositPoint;
+            var dest = teamHive.DepositPoint;
             var diff = transform.position - dest;
             diff.y = 0f;
             if (diff.magnitude > 2f)
@@ -470,9 +474,12 @@ namespace InsectWars.RTS
                 return;
             }
             _agent.isStopped = true;
-            if (inv != null && inv.Carrying > 0 && PlayerResources.Instance != null)
+            if (inv != null && inv.Carrying > 0)
             {
-                PlayerResources.Instance.AddCalories(inv.Carrying);
+                if (team == Team.Player && PlayerResources.Instance != null)
+                    PlayerResources.Instance.AddCalories(inv.Carrying);
+                else if (team == Team.Enemy)
+                    EnemyResources.AddCalories(inv.Carrying);
                 inv.Carrying = 0;
             }
             if (_lastGatherTarget != null && !_lastGatherTarget.Depleted)
@@ -507,9 +514,10 @@ namespace InsectWars.RTS
             }
 
             _agent.isStopped = true;
-            if (inv.Carrying > 0 && PlayerResources.Instance != null)
+            if (inv.Carrying > 0)
             {
-                PlayerResources.Instance.AddCactiSeeds(inv.Carrying);
+                if (team == Team.Player && PlayerResources.Instance != null)
+                    PlayerResources.Instance.AddCactiSeeds(inv.Carrying);
                 inv.Carrying = 0;
                 inv.Cargo = CargoType.Calories;
             }
@@ -554,6 +562,11 @@ namespace InsectWars.RTS
             _agent.ResetPath();
             _agent.isStopped = false;
             _agent.SetDestination(_seedReturnDest.Value);
+        }
+
+        HiveDeposit GetTeamHive()
+        {
+            return team == Team.Player ? HiveDeposit.PlayerHive : HiveDeposit.EnemyHive;
         }
 
         Vector3? FindNearestTeamDepositPoint()

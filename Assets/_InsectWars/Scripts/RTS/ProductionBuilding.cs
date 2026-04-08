@@ -80,6 +80,8 @@ namespace InsectWars.RTS
         {
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(UnitCost))
                 return null;
+            if (_team == Team.Enemy && !EnemyResources.TrySpend(UnitCost))
+                return null;
 
             var center = new Vector3(transform.position.x, 0f, transform.position.z);
             var extent = transform.localScale.x * 0.5f + 1.5f;

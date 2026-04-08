@@ -111,6 +111,7 @@ namespace InsectWars.RTS
         void Start()
         {
             GameSession.LoadPrefs();
+            EnemyResources.Reset();
             BuildWorldPreview();
 
             var playerStart = _playerStart;
@@ -126,12 +127,19 @@ namespace InsectWars.RTS
             SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
 
             var enemyStart = _enemyStart;
-            var nEnemy = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 14);
-            var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
-            for (var i = 0; i < nEnemy; i++)
+            var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
+            for (var i = 0; i < nWorkers; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
                 var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
+                SpawnUnit(enemyStart + offset, Team.Enemy, UnitArchetype.Worker);
+            }
+            var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
+            var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
+            for (var i = 0; i < nCombat; i++)
+            {
+                var angle = (i + nWorkers) * 60f * Mathf.Deg2Rad;
+                var offset = new Vector3(Mathf.Cos(angle) * 4f, 0f, Mathf.Sin(angle) * 4f);
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
                 SpawnUnit(enemyStart + offset, Team.Enemy, arch);
             }
@@ -204,6 +212,7 @@ namespace InsectWars.RTS
             systems.AddComponent<SkirmishMinimap>();
             systems.AddComponent<FogOfWarSystem>();
             systems.AddComponent<MatchDirector>();
+            systems.AddComponent<EnemyCommander>();
             systems.AddComponent<PauseController>();
             systems.AddComponent<GameAudio>();
         }

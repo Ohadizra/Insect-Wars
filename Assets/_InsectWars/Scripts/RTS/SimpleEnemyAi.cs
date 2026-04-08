@@ -5,7 +5,8 @@ using UnityEngine;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Idle until a player unit enters vision, then prefer softer targets (workers, injured) using the sim registry.
+    /// Per-unit AI for enemy team. Workers auto-gather and flee threats.
+    /// Combat units scan for targets with soft-target preference (workers, injured).
     /// </summary>
     public class SimpleEnemyAi : MonoBehaviour, IAiController
     {
@@ -32,7 +33,57 @@ namespace InsectWars.RTS
             _timer -= deltaTime;
             if (_timer > 0) return;
             _timer = _thinkSeconds;
+
+            if (_self.Archetype == UnitArchetype.Worker)
+            {
+                TickWorker();
+                return;
+            }
+
+            TickCombat();
+        }
+
+        void TickWorker()
+        {
             var range = _self.Definition != null ? _self.Definition.visionRadius : 12f;
+
+            InsectUnit threat = null;
+            float threatDist = range;
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
+                if (u.Archetype == UnitArchetype.Worker) continue;
+                var d = Vector3.Distance(transform.position, u.transform.position);
+                if (d < threatDist)
+                {
+                    threatDist = d;
+                    threat = u;
+                }
+            }
+
+            if (threat != null)
+            {
+                var hive = HiveDeposit.EnemyHive;
+                if (hive != null)
+                    _self.OrderMove(hive.DepositPoint);
+                return;
+            }
+
+            if (_self.CurrentOrder == UnitOrder.Gather || _self.CurrentOrder == UnitOrder.ReturnDeposit)
+                return;
+
+            if (_self.CurrentOrder == UnitOrder.Idle)
+            {
+                var fruit = FindNearestFruit();
+                if (fruit != null)
+                    _self.OrderGather(fruit);
+            }
+        }
+
+        void TickCombat()
+        {
+            var range = _self.Definition != null ? _self.Definition.visionRadius : 12f;
+
             if (!_aggro)
             {
                 foreach (var u in RtsSimRegistry.Units)
@@ -46,6 +97,7 @@ namespace InsectWars.RTS
                 }
                 return;
             }
+
             InsectUnit best = null;
             var bestScore = float.MaxValue;
             foreach (var u in RtsSimRegistry.Units)
@@ -62,9 +114,23 @@ namespace InsectWars.RTS
                     best = u;
                 }
             }
+
             if (best != null &&
                 !(_self.CurrentOrder == UnitOrder.Attack && _self.AttackTarget == best.transform))
                 _self.OrderAttack(best);
+        }
+
+        RottingFruitNode FindNearestFruit()
+        {
+            RottingFruitNode best = null;
+            float bestDist = float.MaxValue;
+            foreach (var f in RtsSimRegistry.FruitNodes)
+            {
+                if (f == null || f.Depleted) continue;
+                var d = Vector3.Distance(transform.position, f.transform.position);
+                if (d < bestDist) { bestDist = d; best = f; }
+            }
+            return best;
         }
     }
 }

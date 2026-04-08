@@ -26,6 +26,7 @@ namespace InsectWars.UI
         GameObject _panelSettings;
         GameObject _panelAbout;
         Text _volValueLabel;
+        Text _diffLabelInMapSelect;
         Toggle _fullToggle;
 
         void Awake()
@@ -1054,10 +1055,39 @@ namespace InsectWars.UI
         void BuildMapSelectPanel(Font font)
         {
             _panelMapSelect = Panel("MapSelectPanel", _canvas.transform);
+
+            var backdrop = new GameObject("Backdrop");
+            backdrop.transform.SetParent(_panelMapSelect.transform, false);
+            var bdImg = backdrop.AddComponent<Image>();
+            bdImg.color = new Color(0.04f, 0.06f, 0.10f, 0.88f);
+            bdImg.raycastTarget = false;
+            var bdRt = backdrop.GetComponent<RectTransform>();
+            bdRt.anchorMin = new Vector2(0.15f, 0.05f);
+            bdRt.anchorMax = new Vector2(0.85f, 0.95f);
+            bdRt.offsetMin = bdRt.offsetMax = Vector2.zero;
+
             AddTitle(_panelMapSelect.transform, "Select Map", font, 32);
 
+            var diffLabel = new GameObject("DiffLabel").AddComponent<Text>();
+            diffLabel.transform.SetParent(_panelMapSelect.transform, false);
+            diffLabel.font = font;
+            diffLabel.fontSize = 16;
+            diffLabel.color = new Color(0.7f, 0.85f, 0.7f);
+            diffLabel.alignment = TextAnchor.UpperCenter;
+            diffLabel.text = $"Difficulty: {GameSession.Difficulty}";
+            var dlRt = diffLabel.rectTransform;
+            dlRt.anchorMin = new Vector2(0.5f, 1f);
+            dlRt.anchorMax = new Vector2(0.5f, 1f);
+            dlRt.pivot = new Vector2(0.5f, 1f);
+            dlRt.anchoredPosition = new Vector2(0, -80f);
+            dlRt.sizeDelta = new Vector2(400, 30);
+            _diffLabelInMapSelect = diffLabel;
+
             var maps = SkirmishMapPresets.GetAll();
-            float y = -100f;
+            float y = -120f;
+
+            AddLabel(_panelMapSelect.transform, "Click a map to start:", font, y);
+            y -= 40f;
 
             for (int i = 0; i < maps.Length; i++)
             {
@@ -1078,12 +1108,16 @@ namespace InsectWars.UI
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(420, 100);
-            y -= 112f;
+            rt.sizeDelta = new Vector2(420, 110);
+            y -= 122f;
 
             var bg = card.AddComponent<Image>();
-            bg.color = new Color(0.12f, 0.22f, 0.14f, 0.92f);
+            bg.color = new Color(0.18f, 0.32f, 0.20f, 0.95f);
             var btn = card.AddComponent<Button>();
+            var btnColors = btn.colors;
+            btnColors.highlightedColor = new Color(0.28f, 0.48f, 0.30f);
+            btnColors.pressedColor = new Color(0.35f, 0.55f, 0.35f);
+            btn.colors = btnColors;
             btn.onClick.AddListener(() =>
             {
                 GameSession.SetSelectedMap(map);
@@ -1101,14 +1135,14 @@ namespace InsectWars.UI
             var nameRt = nameGo.rectTransform;
             nameRt.anchorMin = new Vector2(0f, 0f);
             nameRt.anchorMax = new Vector2(1f, 1f);
-            nameRt.offsetMin = new Vector2(16f, 40f);
+            nameRt.offsetMin = new Vector2(16f, 50f);
             nameRt.offsetMax = new Vector2(-16f, -10f);
 
             var descGo = new GameObject("MapDesc").AddComponent<Text>();
             descGo.transform.SetParent(card.transform, false);
             descGo.font = font;
             descGo.fontSize = 14;
-            descGo.color = new Color(0.82f, 0.84f, 0.88f);
+            descGo.color = new Color(0.88f, 0.90f, 0.92f);
             descGo.alignment = TextAnchor.UpperLeft;
             descGo.text = map.description;
             descGo.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -1121,19 +1155,22 @@ namespace InsectWars.UI
             var sizeGo = new GameObject("MapSize").AddComponent<Text>();
             sizeGo.transform.SetParent(card.transform, false);
             sizeGo.font = font;
-            sizeGo.fontSize = 13;
-            sizeGo.color = new Color(0.6f, 0.8f, 0.65f);
+            sizeGo.fontSize = 14;
+            sizeGo.fontStyle = FontStyle.Bold;
+            sizeGo.color = new Color(0.6f, 0.9f, 0.65f);
             sizeGo.alignment = TextAnchor.UpperRight;
-            sizeGo.text = $"Size: {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
+            sizeGo.text = $"Small — {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
             var sizeRt = sizeGo.rectTransform;
             sizeRt.anchorMin = new Vector2(0f, 0f);
             sizeRt.anchorMax = new Vector2(1f, 1f);
-            sizeRt.offsetMin = new Vector2(16f, 40f);
+            sizeRt.offsetMin = new Vector2(16f, 50f);
             sizeRt.offsetMax = new Vector2(-16f, -10f);
         }
 
         void ShowMapSelect()
         {
+            if (_diffLabelInMapSelect != null)
+                _diffLabelInMapSelect.text = $"Difficulty: {GameSession.Difficulty}";
             SetActivePanels(_panelMapSelect);
         }
 
