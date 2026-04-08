@@ -486,7 +486,13 @@ namespace InsectWars.UI
 
                 if (inst.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent)) agent.enabled = false;
                 if (inst.TryGetComponent<Collider>(out var col)) col.enabled = false;
-                if (inst.TryGetComponent<InsectUnit>(out var unit)) unit.enabled = true; // Driver needs unit alive
+                if (inst.TryGetComponent<InsectUnit>(out var unit))
+                {
+                    unit.enabled = true;
+                    var runtimeDef = UnitDefinition.CreateRuntimeDefault(arch, skin);
+                    unit.Configure(team, runtimeDef);
+                    if (inst.TryGetComponent<UnitHealthBar>(out var hb)) hb.enabled = false;
+                }
                 if (inst.TryGetComponent<UnitAnimationDriver>(out var driver)) driver.enabled = true;
                 if (inst.TryGetComponent<SimpleEnemyAi>(out var ai)) ai.enabled = false;
 

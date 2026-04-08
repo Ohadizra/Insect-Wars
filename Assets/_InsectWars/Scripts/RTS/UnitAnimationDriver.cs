@@ -91,7 +91,7 @@ namespace InsectWars.RTS
             if (_unit == null || !_unit.IsAlive || _dying)
             {
                 if (Application.isPlaying && modelRoot != null && _dying)
-                    modelRoot.localScale = Vector3.Lerp(modelRoot.localScale, Vector3.zero, Time.deltaTime * 5f);
+                    modelRoot.localScale = Vector3.Lerp(modelRoot.localScale, Vector3.zero, Time.unscaledDeltaTime * 5f);
                 return;
             }
 
@@ -120,7 +120,7 @@ namespace InsectWars.RTS
                 if (face.sqrMagnitude > 0.01f)
                 {
                     var q = Quaternion.LookRotation(face.normalized, Vector3.up);
-                    _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.deltaTime);
+                    _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
                 // Strictly no procedural side-to-side twitching
@@ -136,10 +136,10 @@ namespace InsectWars.RTS
             var planar = new Vector3(vel.x, 0f, vel.z);
             var moving = planar.sqrMagnitude > 0.001f;
 
-            float dt = Application.isPlaying ? Time.deltaTime : 0.016f;
+            float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
             _idleT += dt;
 
-            var bob = moving ? Mathf.Sin(Time.time * proceduralBobSpeed) * proceduralBobAmp : 0f;
+            var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
 
             if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
@@ -155,7 +155,7 @@ namespace InsectWars.RTS
             if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
-                float p = 1f - (_attackAnimT / 0.35f); 
+                float p = 1f - (Mathf.Max(0f, _attackAnimT) / 0.35f); 
                 float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
                 float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
                 modelRoot.localPosition += modelRoot.forward * lunge;
