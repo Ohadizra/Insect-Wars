@@ -1,0 +1,27 @@
+{
+    "asset": "6004a64f006b84bbfb065005a7c16859",
+    "fileName": "019d6d0b-30bf-7272-bc46-0de2b4c8ba0e.png",
+    "prompt": "StarCraft II Zerg biological UI minimap frame, square shape. Biological/insectoid carapace texture, dark purple and grey with glowing green veins. Organic, textured frame for a square map. Center is empty/transparent. High-resolution game UI asset.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "c3ca1d0150e194562b73cff3dfed38a8",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

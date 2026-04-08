@@ -31,12 +31,35 @@ namespace InsectWars.RTS
         public static BuildingType PendingBuildingType { get; private set; }
 
         [SerializeField] float barHeight = 208f;
-        [SerializeField] float minimapSlot = 200f;
-        [SerializeField] float commandPanelWidth = 360f;
+        [SerializeField] float minimapSlot = 240f;
+        [SerializeField] float commandPanelWidth = 380f;
+
+        [Header("Biological UI Art")]
+        [SerializeField] Sprite barBackground;
+        [SerializeField] Sprite minimapFrame;
+        [SerializeField] Sprite commandCardFrame;
+        [SerializeField] Sprite portraitFrame;
+
+        [Header("Ability Icons")]
+        [SerializeField] Sprite iconMove;
+        [SerializeField] Sprite iconStop;
+        [SerializeField] Sprite iconHold;
+        [SerializeField] Sprite iconPatrol;
+        [SerializeField] Sprite iconAttack;
+        [SerializeField] Sprite iconGather;
+        [SerializeField] Sprite iconBuild;
+        [SerializeField] Sprite iconCancel;
+
+        [Header("Unit Portraits")]
+        [SerializeField] Sprite portraitWorker;
+        [SerializeField] Sprite portraitFighter;
+        [SerializeField] Sprite portraitRanged;
 
         Image[] _selectionCells;
+        Image _portraitMain;
         Text _portraitLabel;
         Text _hpLabel;
+        Text _attributeLabel;
         Image _hpBarBg;
         Image _hpBarFill;
         Text _pendingHint;
@@ -268,22 +291,14 @@ namespace InsectWars.RTS
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0.06f, 0.07f, 0.09f, 0.96f);
+            bg.sprite = barBackground;
+            bg.type = Image.Type.Simple;
+            bg.color = barBackground != null ? Color.white : new Color(0.06f, 0.07f, 0.09f, 0.96f);
             bg.raycastTarget = true;
 
-            var topLine = new GameObject("TopAccent");
-            topLine.transform.SetParent(bar.transform, false);
-            var tl = topLine.AddComponent<RectTransform>();
-            tl.anchorMin = new Vector2(0f, 1f);
-            tl.anchorMax = new Vector2(1f, 1f);
-            tl.pivot = new Vector2(0.5f, 1f);
-            tl.sizeDelta = new Vector2(0f, 3f);
-            tl.anchoredPosition = Vector2.zero;
-            var timg = topLine.AddComponent<Image>();
-            timg.color = new Color(0.15f, 0.35f, 0.2f, 1f);
-            timg.raycastTarget = false;
-
-            float pad = 8f;
+            float pad = 12f;
+            
+            // Minimap Slot
             var miniSlot = new GameObject("MinimapHost");
             miniSlot.transform.SetParent(bar.transform, false);
             var ms = miniSlot.AddComponent<RectTransform>();
@@ -293,7 +308,9 @@ namespace InsectWars.RTS
             ms.anchoredPosition = new Vector2(pad, pad);
             ms.sizeDelta = new Vector2(minimapSlot, barHeight - pad * 2f);
             var msBorder = miniSlot.AddComponent<Image>();
-            msBorder.color = new Color(0.12f, 0.14f, 0.16f, 1f);
+            msBorder.sprite = minimapFrame;
+            msBorder.type = Image.Type.Simple;
+            msBorder.color = minimapFrame != null ? Color.white : new Color(0.12f, 0.14f, 0.16f, 1f);
             msBorder.raycastTarget = false;
 
             var miniInner = new GameObject("MinimapInner");
@@ -301,10 +318,11 @@ namespace InsectWars.RTS
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(3f, 3f);
-            mi.offsetMax = new Vector2(-3f, -3f);
+            mi.offsetMin = new Vector2(12f, 12f);
+            mi.offsetMax = new Vector2(-12f, -12f);
             MinimapHost = mi;
 
+            // Command Panel
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);
             var cp = cmdPanel.AddComponent<RectTransform>();
@@ -314,7 +332,9 @@ namespace InsectWars.RTS
             cp.anchoredPosition = new Vector2(-pad, 0f);
             cp.sizeDelta = new Vector2(commandPanelWidth - pad, 0f);
             var cpBg = cmdPanel.AddComponent<Image>();
-            cpBg.color = new Color(0.08f, 0.09f, 0.11f, 1f);
+            cpBg.sprite = commandCardFrame;
+            cpBg.type = Image.Type.Simple;
+            cpBg.color = commandCardFrame != null ? Color.white : new Color(0.08f, 0.09f, 0.11f, 1f);
             cpBg.raycastTarget = false;
 
             var grid = new GameObject("CmdGrid");
@@ -323,16 +343,17 @@ namespace InsectWars.RTS
             grt.anchorMin = new Vector2(0.5f, 0.5f);
             grt.anchorMax = new Vector2(0.5f, 0.5f);
             grt.pivot = new Vector2(0.5f, 0.5f);
-            grt.sizeDelta = new Vector2(340f, 180f);
-            grt.anchoredPosition = Vector2.zero;
+            grt.sizeDelta = new Vector2(340f, 160f);
+            grt.anchoredPosition = new Vector2(0f, -5f);
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(78f, 54f);
-            gl.spacing = new Vector2(5f, 5f);
+            gl.cellSize = new Vector2(72f, 48f);
+            gl.spacing = new Vector2(6f, 6f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 4;
             gl.childAlignment = TextAnchor.MiddleCenter;
             _cmdGridParent = grid.transform;
 
+            // Center / Selection Block
             var center = new GameObject("SelectionBlock");
             center.transform.SetParent(bar.transform, false);
             var cr = center.AddComponent<RectTransform>();
@@ -341,83 +362,107 @@ namespace InsectWars.RTS
             cr.offsetMin = new Vector2(minimapSlot + pad * 2f, pad);
             cr.offsetMax = new Vector2(-commandPanelWidth - pad, -pad);
 
-            var portrait = new GameObject("Portrait");
+            // Portrait
+            var portrait = new GameObject("PortraitBlock");
             portrait.transform.SetParent(center.transform, false);
             var pr = portrait.AddComponent<RectTransform>();
-            pr.anchorMin = new Vector2(1f, 0.5f);
-            pr.anchorMax = new Vector2(1f, 0.5f);
-            pr.pivot = new Vector2(1f, 0.5f);
-            pr.anchoredPosition = new Vector2(-8f, 0f);
-            pr.sizeDelta = new Vector2(112f, 168f);
-            var pbg = portrait.AddComponent<Image>();
-            pbg.color = new Color(0.05f, 0.06f, 0.08f, 1f);
-            pbg.raycastTarget = false;
-            _portraitLabel = new GameObject("PortraitText").AddComponent<Text>();
-            _portraitLabel.transform.SetParent(portrait.transform, false);
+            pr.anchorMin = new Vector2(0.5f, 0.5f);
+            pr.anchorMax = new Vector2(0.5f, 0.5f);
+            pr.pivot = new Vector2(0.5f, 0.5f);
+            pr.anchoredPosition = new Vector2(140f, 0f);
+            pr.sizeDelta = new Vector2(120f, 160f);
+            var pImg = portrait.AddComponent<Image>();
+            pImg.sprite = portraitFrame;
+            pImg.type = Image.Type.Simple;
+            pImg.color = portraitFrame != null ? Color.white : new Color(0.05f, 0.06f, 0.08f, 1f);
+
+            var portraitSub = new GameObject("PortraitInner");
+            portraitSub.transform.SetParent(portrait.transform, false);
+            var psr = portraitSub.AddComponent<RectTransform>();
+            psr.anchorMin = Vector2.zero;
+            psr.anchorMax = Vector2.one;
+            psr.offsetMin = new Vector2(8f, 8f);
+            psr.offsetMax = new Vector2(-8f, -8f);
+            _portraitMain = portraitSub.AddComponent<Image>();
+            _portraitMain.preserveAspect = true;
+
+            // Central Info Block
+            var infoBlock = new GameObject("InfoBlock");
+            infoBlock.transform.SetParent(center.transform, false);
+            var ibr = infoBlock.AddComponent<RectTransform>();
+            ibr.anchorMin = new Vector2(0.5f, 0.5f);
+            ibr.anchorMax = new Vector2(0.5f, 0.5f);
+            ibr.pivot = new Vector2(0.5f, 0.5f);
+            ibr.anchoredPosition = new Vector2(-60f, 0f);
+            ibr.sizeDelta = new Vector2(280f, 160f);
+
+            _portraitLabel = new GameObject("NameText").AddComponent<Text>();
+            _portraitLabel.transform.SetParent(infoBlock.transform, false);
             _portraitLabel.font = _font;
-            _portraitLabel.fontSize = 15;
-            _portraitLabel.color = new Color(0.75f, 0.9f, 0.7f);
+            _portraitLabel.fontSize = 22;
+            _portraitLabel.color = new Color(0.4f, 1f, 0.4f);
             _portraitLabel.alignment = TextAnchor.MiddleCenter;
-            _portraitLabel.text = "\u2014";
             var pl = _portraitLabel.rectTransform;
-            pl.anchorMin = new Vector2(0f, 0.3f);
+            pl.anchorMin = new Vector2(0f, 0.7f);
             pl.anchorMax = Vector2.one;
-            pl.offsetMin = new Vector2(6f, 0f);
-            pl.offsetMax = new Vector2(-6f, -6f);
+            pl.offsetMin = pl.offsetMax = Vector2.zero;
+
+            _attributeLabel = new GameObject("AttributeText").AddComponent<Text>();
+            _attributeLabel.transform.SetParent(infoBlock.transform, false);
+            _attributeLabel.font = _font;
+            _attributeLabel.fontSize = 13;
+            _attributeLabel.color = new Color(0.7f, 0.8f, 0.7f);
+            _attributeLabel.alignment = TextAnchor.MiddleCenter;
+            var al = _attributeLabel.rectTransform;
+            al.anchorMin = new Vector2(0f, 0f);
+            al.anchorMax = new Vector2(1f, 0.3f);
+            al.offsetMin = al.offsetMax = Vector2.zero;
 
             _hpLabel = new GameObject("HpText").AddComponent<Text>();
-            _hpLabel.transform.SetParent(portrait.transform, false);
+            _hpLabel.transform.SetParent(infoBlock.transform, false);
             _hpLabel.font = _font;
-            _hpLabel.fontSize = 12;
-            _hpLabel.color = new Color(0.85f, 0.95f, 0.8f);
+            _hpLabel.fontSize = 16;
+            _hpLabel.color = Color.white;
             _hpLabel.alignment = TextAnchor.MiddleCenter;
-            _hpLabel.text = "";
             var hpRt = _hpLabel.rectTransform;
-            hpRt.anchorMin = new Vector2(0f, 0.12f);
-            hpRt.anchorMax = new Vector2(1f, 0.3f);
-            hpRt.offsetMin = new Vector2(6f, 0f);
-            hpRt.offsetMax = new Vector2(-6f, 0f);
+            hpRt.anchorMin = new Vector2(0f, 0.3f);
+            hpRt.anchorMax = new Vector2(1f, 0.7f);
+            hpRt.offsetMin = hpRt.offsetMax = Vector2.zero;
 
             var hpBarBgGo = new GameObject("HpBarBg");
-            hpBarBgGo.transform.SetParent(portrait.transform, false);
+            hpBarBgGo.transform.SetParent(infoBlock.transform, false);
             var hbr = hpBarBgGo.AddComponent<RectTransform>();
-            hbr.anchorMin = new Vector2(0f, 0f);
-            hbr.anchorMax = new Vector2(1f, 0f);
-            hbr.pivot = new Vector2(0f, 0f);
-            hbr.anchoredPosition = new Vector2(6f, 6f);
-            hbr.sizeDelta = new Vector2(-12f, 12f);
+            hbr.anchorMin = new Vector2(0.2f, 0.25f);
+            hbr.anchorMax = new Vector2(0.8f, 0.32f);
+            hbr.offsetMin = hbr.offsetMax = Vector2.zero;
             _hpBarBg = hpBarBgGo.AddComponent<Image>();
-            _hpBarBg.color = new Color(0.2f, 0.08f, 0.08f, 0.9f);
-            _hpBarBg.raycastTarget = false;
+            _hpBarBg.color = new Color(0.2f, 0.05f, 0.05f, 1f);
 
             var hpFillGo = new GameObject("HpBarFill");
             hpFillGo.transform.SetParent(hpBarBgGo.transform, false);
             var hfr = hpFillGo.AddComponent<RectTransform>();
             hfr.anchorMin = Vector2.zero;
             hfr.anchorMax = Vector2.one;
-            hfr.offsetMin = Vector2.zero;
-            hfr.offsetMax = Vector2.zero;
+            hfr.offsetMin = hfr.offsetMax = Vector2.zero;
             _hpBarFill = hpFillGo.AddComponent<Image>();
-            _hpBarFill.color = new Color(0.2f, 0.85f, 0.3f, 1f);
-            _hpBarFill.raycastTarget = false;
+            _hpBarFill.color = new Color(0.1f, 0.8f, 0.2f, 1f);
 
+            // Selection Grid
             var gridRoot = new GameObject("SelectionGrid");
             gridRoot.transform.SetParent(center.transform, false);
             var gr = gridRoot.AddComponent<RectTransform>();
-            gr.anchorMin = new Vector2(0f, 0.5f);
-            gr.anchorMax = new Vector2(1f, 0.5f);
-            gr.pivot = new Vector2(0f, 0.5f);
-            gr.anchoredPosition = new Vector2(12f, 0f);
-            gr.sizeDelta = new Vector2(-132f, 168f);
+            gr.anchorMin = new Vector2(0f, 1f);
+            gr.anchorMax = new Vector2(1f, 1f);
+            gr.pivot = new Vector2(0f, 1f);
+            gr.anchoredPosition = new Vector2(0f, -4f);
+            gr.sizeDelta = new Vector2(0f, 48f);
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
-            gridLayout.cellSize = new Vector2(52f, 52f);
+            gridLayout.cellSize = new Vector2(40f, 40f);
             gridLayout.spacing = new Vector2(4f, 4f);
-            gridLayout.startCorner = GridLayoutGroup.Corner.UpperLeft;
-            gridLayout.startAxis = GridLayoutGroup.Axis.Horizontal;
             gridLayout.childAlignment = TextAnchor.UpperLeft;
-            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            gridLayout.constraintCount = 8;
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            gridLayout.constraintCount = 1;
 
             _selectionCells = new Image[24];
             for (var i = 0; i < 24; i++)
@@ -426,33 +471,31 @@ namespace InsectWars.RTS
                 cell.transform.SetParent(gridRoot.transform, false);
                 var img = cell.AddComponent<Image>();
                 img.color = new Color(0.1f, 0.12f, 0.14f, 0.9f);
-                img.raycastTarget = false;
                 var tx = new GameObject("t").AddComponent<Text>();
                 tx.transform.SetParent(cell.transform, false);
                 tx.font = _font;
-                tx.fontSize = 18;
+                tx.fontSize = 14;
                 tx.color = Color.white;
-                tx.alignment = TextAnchor.MiddleCenter;
+                tx.alignment = TextAnchor.LowerRight;
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
                 trt.anchorMax = Vector2.one;
-                trt.offsetMin = Vector2.zero;
-                trt.offsetMax = Vector2.zero;
+                trt.offsetMin = new Vector2(2f, 2f);
+                trt.offsetMax = new Vector2(-2f, -2f);
                 _selectionCells[i] = img;
             }
 
             _pendingHint = new GameObject("PendingHint").AddComponent<Text>();
-            _pendingHint.transform.SetParent(bar.transform, false);
+            _pendingHint.transform.SetParent(hud, false);
             _pendingHint.font = _font;
-            _pendingHint.fontSize = 14;
-            _pendingHint.color = new Color(1f, 0.92f, 0.35f);
-            _pendingHint.alignment = TextAnchor.MiddleLeft;
+            _pendingHint.fontSize = 16;
+            _pendingHint.color = new Color(1f, 0.9f, 0.2f);
+            _pendingHint.alignment = TextAnchor.MiddleCenter;
             var ph = _pendingHint.rectTransform;
-            ph.anchorMin = new Vector2(0f, 1f);
-            ph.anchorMax = new Vector2(0.5f, 1f);
-            ph.pivot = new Vector2(0f, 1f);
-            ph.anchoredPosition = new Vector2(minimapSlot + 16f, -4f);
-            ph.sizeDelta = new Vector2(600f, 22f);
+            ph.anchorMin = new Vector2(0.5f, 0.25f);
+            ph.anchorMax = new Vector2(0.5f, 0.25f);
+            ph.anchoredPosition = Vector2.zero;
+            ph.sizeDelta = new Vector2(800f, 30f);
         }
 
         void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick)
@@ -460,29 +503,43 @@ namespace InsectWars.RTS
             var go = new GameObject($"Cmd_{name}");
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.12f, 0.18f, 0.12f, 1f);
+            img.sprite = GetCommandIcon(name);
+            img.color = Color.white;
+            
             var btn = go.AddComponent<Button>();
             var colors = btn.colors;
-            colors.highlightedColor = new Color(0.25f, 0.4f, 0.28f);
-            colors.pressedColor = new Color(0.35f, 0.55f, 0.35f);
+            colors.highlightedColor = new Color(0.85f, 1f, 0.85f);
+            colors.pressedColor = new Color(0.6f, 0.8f, 0.6f);
             btn.colors = colors;
             btn.onClick.AddListener(onClick);
 
-            var tx = new GameObject("Label").AddComponent<Text>();
-            tx.transform.SetParent(go.transform, false);
-            tx.font = _font;
-            tx.fontSize = 15;
-            tx.color = new Color(0.85f, 1f, 0.75f);
-            tx.alignment = TextAnchor.MiddleCenter;
-            tx.text = $"{name}\n<size=12><color=#88ff99>[{key}]</color></size>";
-            tx.supportRichText = true;
-            var trt = tx.rectTransform;
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
-            trt.offsetMin = Vector2.zero;
-            trt.offsetMax = Vector2.zero;
+            var keyLabel = new GameObject("Key").AddComponent<Text>();
+            keyLabel.transform.SetParent(go.transform, false);
+            keyLabel.font = _font;
+            keyLabel.fontSize = 12;
+            keyLabel.color = new Color(0.9f, 1f, 0.2f);
+            keyLabel.alignment = TextAnchor.UpperRight;
+            keyLabel.text = key;
+            var krt = keyLabel.rectTransform;
+            krt.anchorMin = Vector2.zero;
+            krt.anchorMax = Vector2.one;
+            krt.offsetMin = new Vector2(2f, 2f);
+            krt.offsetMax = new Vector2(-4f, -2f);
 
             _cmdButtonImages[name] = img;
+        }
+
+        Sprite GetCommandIcon(string cmdName)
+        {
+            if (cmdName.Contains("Move")) return iconMove;
+            if (cmdName.Contains("Stop")) return iconStop;
+            if (cmdName.Contains("Hold")) return iconHold;
+            if (cmdName.Contains("Patrol")) return iconPatrol;
+            if (cmdName.Contains("Attack")) return iconAttack;
+            if (cmdName.Contains("Gather")) return iconGather;
+            if (cmdName.Contains("Build")) return iconBuild;
+            if (cmdName.Contains("Cancel")) return iconCancel;
+            return null;
         }
 
         public void SetPending(PendingCommand cmd)
@@ -699,63 +756,44 @@ namespace InsectWars.RTS
             foreach (var c in _selectionCells)
             {
                 c.color = new Color(0.1f, 0.12f, 0.14f, 0.9f);
+                c.sprite = null;
                 var t = c.GetComponentInChildren<Text>();
                 if (t != null) t.text = "";
             }
 
             HideHpDisplay();
+            if (_portraitMain != null) _portraitMain.sprite = null;
+            if (_portraitLabel != null) _portraitLabel.text = "";
+            if (_attributeLabel != null) _attributeLabel.text = "";
 
-            if (SelectionController.Instance == null || _portraitLabel == null) return;
+            if (SelectionController.Instance == null) return;
 
             if (SelectionController.Instance.SelectedResource != null)
             {
                 var res = SelectionController.Instance.SelectedResource;
-                _portraitLabel.text = res.Depleted ? "Rotting\nApple\n<size=12>(depleted)</size>" : "Rotting\nApple";
-                _portraitLabel.supportRichText = true;
-
+                _portraitLabel.text = "Rotting Apple";
+                _attributeLabel.text = "Resource - Organic";
+                
                 var cell0 = _selectionCells[0];
-                cell0.color = new Color(0.55f, 0.42f, 0.08f, 0.9f);
+                cell0.color = Color.white;
                 var tx0 = cell0.GetComponentInChildren<Text>();
                 if (tx0 != null)
                 {
-                    tx0.text = $"{res.ChargesRemaining:N0}\ncal";
+                    tx0.text = $"{res.ChargesRemaining:N0}";
                     tx0.fontSize = 12;
-                    tx0.color = new Color(1f, 0.95f, 0.7f);
-                }
-                return;
-            }
-
-            if (SelectionController.Instance.SelectedSeed != null)
-            {
-                var seedNode = SelectionController.Instance.SelectedSeed;
-                _portraitLabel.text = seedNode.PickedUp
-                    ? "Cacti\nSeed\n<size=12>(picked up)</size>"
-                    : "Cacti\nSeed";
-                _portraitLabel.supportRichText = true;
-
-                var cell0 = _selectionCells[0];
-                cell0.color = new Color(0.3f, 0.5f, 0.18f, 0.9f);
-                var tx0 = cell0.GetComponentInChildren<Text>();
-                if (tx0 != null)
-                {
-                    tx0.text = "1\nseed";
-                    tx0.fontSize = 12;
-                    tx0.color = new Color(0.8f, 1f, 0.7f);
                 }
                 return;
             }
 
             if (SelectionController.Instance.SelectedHive != null)
             {
-                _portraitLabel.text = "Ant\nNest";
+                _portraitLabel.text = "Ant Nest";
+                _attributeLabel.text = "Structure - Biological";
+                if (_portraitMain != null) _portraitMain.sprite = portraitWorker; // Placeholder for structure icon
+                
                 var cell0 = _selectionCells[0];
-                cell0.color = new Color(0.2f, 0.35f, 0.6f, 0.9f);
-                var tx0 = cell0.GetComponentInChildren<Text>();
-                if (tx0 != null)
-                {
-                    tx0.text = "HQ";
-                    tx0.color = new Color(0.6f, 0.8f, 1f);
-                }
+                cell0.color = Color.white;
+                cell0.sprite = portraitWorker;
                 return;
             }
 
@@ -763,17 +801,10 @@ namespace InsectWars.RTS
             {
                 var bld = SelectionController.Instance.SelectedBuilding;
                 _portraitLabel.text = bld.DisplayName;
-                _portraitLabel.supportRichText = true;
+                _attributeLabel.text = "Structure - Biological";
+                
                 var cell0 = _selectionCells[0];
-                cell0.color = bld.Type == BuildingType.MantisBranch
-                    ? new Color(0.3f, 0.5f, 0.2f, 0.9f)
-                    : new Color(0.4f, 0.28f, 0.15f, 0.9f);
-                var tx0 = cell0.GetComponentInChildren<Text>();
-                if (tx0 != null)
-                {
-                    tx0.text = bld.Type == BuildingType.MantisBranch ? "MB" : "AN";
-                    tx0.color = new Color(0.8f, 1f, 0.7f);
-                }
+                cell0.color = Color.white;
                 return;
             }
 
@@ -783,15 +814,12 @@ namespace InsectWars.RTS
                 if (u != null && u.IsAlive) list.Add(u);
             }
 
-            if (list.Count == 0)
-            {
-                _portraitLabel.text = "No selection";
-                return;
-            }
+            if (list.Count == 0) return;
 
-            _portraitLabel.text = list[0].Definition != null
-                ? $"{list[0].Definition.displayName}\n({list.Count} units)"
-                : $"{list.Count} units";
+            var first = list[0];
+            _portraitLabel.text = first.Definition != null ? first.Definition.displayName : "Unit";
+            _attributeLabel.text = GetAttributes(first);
+            if (_portraitMain != null) _portraitMain.sprite = GetUnitPortrait(first.Archetype);
 
             float totalHp = 0f, totalMax = 0f;
             foreach (var u in list)
@@ -816,17 +844,31 @@ namespace InsectWars.RTS
                 if (!counts.TryGetValue(arch, out var cnt)) continue;
                 if (idx >= _selectionCells.Length) break;
                 var img = _selectionCells[idx];
-                var label = Abbrev(arch);
+                img.sprite = GetUnitPortrait(arch);
+                img.color = Color.white;
                 var tx = img.GetComponentInChildren<Text>();
-                if (tx != null)
-                {
-                    tx.text = cnt > 1 ? $"{label}\n\u00d7{cnt}" : label;
-                    tx.fontSize = 18;
-                    tx.color = Color.white;
-                }
-                img.color = TeamPalette.UnitBody(Team.Player, arch) * 0.45f + new Color(0.05f, 0.05f, 0.05f);
+                if (tx != null) tx.text = cnt > 1 ? $"{cnt}" : "";
                 idx++;
             }
+        }
+
+        string GetAttributes(InsectUnit u)
+        {
+            if (u.Archetype == UnitArchetype.Worker) return "Light - Biological - Worker";
+            if (u.Archetype == UnitArchetype.BasicFighter) return "Armored - Biological - Fighter";
+            if (u.Archetype == UnitArchetype.BasicRanged) return "Light - Biological - Ranged";
+            return "Biological";
+        }
+
+        Sprite GetUnitPortrait(UnitArchetype a)
+        {
+            return a switch
+            {
+                UnitArchetype.Worker => portraitWorker,
+                UnitArchetype.BasicFighter => portraitFighter,
+                UnitArchetype.BasicRanged => portraitRanged,
+                _ => null
+            };
         }
 
         void ShowHpDisplay(float current, float max)

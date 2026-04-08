@@ -1,0 +1,27 @@
+{
+    "asset": "68340c61846bd482ea33e8894fd82d93",
+    "fileName": "019d6d08-afec-7a93-8958-cfd6ab16879b.png",
+    "prompt": "A high-quality 3x3 sprite sheet of StarCraft II Zerg style unit portraits on a white background. Icons: Ant Worker (small ant), Mantis Fighter (large scythe-armed mantis), Bombardier Beetle (beetle with glowing acid sacs), Hatchery (pulsing bio-structure), Hive (large biological complex), Egg (insectoid egg), Larva (slug-like creature), Cocoon (biological shell). Style: biological, organic, detailed. Each portrait in a cell. High-resolution game UI assets. No text.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "b9bb1e48ef4af4f3590e0177a08bb10a",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

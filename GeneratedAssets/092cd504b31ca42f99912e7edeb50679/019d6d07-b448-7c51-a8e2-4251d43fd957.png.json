@@ -1,0 +1,27 @@
+{
+    "asset": "092cd504b31ca42f99912e7edeb50679",
+    "fileName": "019d6d07-b448-7c51-a8e2-4251d43fd957.png",
+    "prompt": "StarCraft II Zerg biological UI bottom bar panel base. Dark metallic and organic texture, insectoid carapace with glowing green elements. Wide landscape aspect ratio. Symmetrical design. Top edge has a slight organic curve. No buttons or text. Pure background panel. High-resolution, detailed game UI asset.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "90cf9dfc27229fadf4dd94987c90c651",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

@@ -1,0 +1,27 @@
+{
+    "asset": "215f19e3a97df41da9381e125ab173b4",
+    "fileName": "019d6d07-d025-7edf-a5d0-8777e7a3e111.png",
+    "prompt": "A high-quality 3x3 sprite sheet of StarCraft II Zerg style ability icons on a white background. Each icon in a clear cell. Icons: Move (green arrow), Stop (red X), Hold (yellow shield), Patrol (blue path), Attack (red claws), Gather (green crystal), Build (biological construction), Repair (biological healing), Cancel (circle with slash). Style: organic, insectoid, glowing, vibrant. Detailed game assets.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "2c61008144f234eb39ac76f21285ee64",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
