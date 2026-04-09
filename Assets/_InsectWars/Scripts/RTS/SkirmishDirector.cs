@@ -713,10 +713,22 @@ namespace InsectWars.RTS
 
             var obs = obsGo.AddComponent<NavMeshObstacle>();
             obs.carving = true;
-            obs.shape = NavMeshObstacleShape.Capsule;
-            obs.radius = Mathf.Max(s.x, s.z) * 0.55f;
-            obs.height = s.y;
-            obs.center = Vector3.zero;
+
+            var rend = fruit.GetComponentInChildren<Renderer>();
+            if (rend != null)
+            {
+                var b = rend.bounds;
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = b.size * 1.05f;
+                obs.center = b.center - fruit.transform.position;
+            }
+            else
+            {
+                obs.shape = NavMeshObstacleShape.Capsule;
+                obs.radius = Mathf.Max(s.x, s.z) * 0.55f;
+                obs.height = s.y;
+                obs.center = Vector3.zero;
+            }
         }
 
         static void SetIgnoreNavMeshRecursive(GameObject go)
