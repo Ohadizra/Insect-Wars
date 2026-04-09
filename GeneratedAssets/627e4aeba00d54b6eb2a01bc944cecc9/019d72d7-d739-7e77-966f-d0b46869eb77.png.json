@@ -1,0 +1,27 @@
+{
+    "asset": "627e4aeba00d54b6eb2a01bc944cecc9",
+    "fileName": "019d72d7-d739-7e77-966f-d0b46869eb77.png",
+    "prompt": "Square UI frame, dark chitinous insectoid texture, sharp spikes at corners, dark brown and black, matching the provided reference image style, empty center, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "6dd7b92e969d2d1a6799d99f92eb536f",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

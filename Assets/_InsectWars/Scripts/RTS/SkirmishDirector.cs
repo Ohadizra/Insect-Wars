@@ -646,9 +646,7 @@ namespace InsectWars.RTS
                 }
             }
 
-            var modifier = apple.GetComponent<NavMeshModifier>();
-            if (modifier == null) modifier = apple.AddComponent<NavMeshModifier>();
-            modifier.ignoreFromBuild = true;
+            SetIgnoreNavMeshRecursive(apple);
 
             AddFruitObstacle(apple);
 
@@ -689,9 +687,7 @@ namespace InsectWars.RTS
                 ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
             }
 
-            var modifier = fruit.GetComponent<NavMeshModifier>();
-            if (modifier == null) modifier = fruit.AddComponent<NavMeshModifier>();
-            modifier.ignoreFromBuild = true;
+            SetIgnoreNavMeshRecursive(fruit);
 
             AddFruitObstacle(fruit);
 
@@ -718,9 +714,18 @@ namespace InsectWars.RTS
             var obs = obsGo.AddComponent<NavMeshObstacle>();
             obs.carving = true;
             obs.shape = NavMeshObstacleShape.Capsule;
-            obs.radius = Mathf.Max(s.x, s.z) * 0.5f;
-            obs.height = s.y * 0.8f;
+            obs.radius = Mathf.Max(s.x, s.z) * 0.55f;
+            obs.height = s.y;
             obs.center = Vector3.zero;
+        }
+
+        static void SetIgnoreNavMeshRecursive(GameObject go)
+        {
+            var mod = go.GetComponent<NavMeshModifier>();
+            if (mod == null) mod = go.AddComponent<NavMeshModifier>();
+            mod.ignoreFromBuild = true;
+            foreach (Transform child in go.transform)
+                SetIgnoreNavMeshRecursive(child.gameObject);
         }
 
         static void AddCactiSeed(Transform parent, CactiSeedPlaced s)

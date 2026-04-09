@@ -1,0 +1,27 @@
+{
+    "asset": "76d1aded3b5ca4a9ba2721efa34f3be5",
+    "fileName": "019d72d7-ae73-7e0c-90a6-da14b0f9679f.png",
+    "prompt": "Large rectangular UI action panel frame, dark chitinous insectoid texture with internal grid segments, matching the provided reference image style, dark brown, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "4619fdad386919222a058dbcc0ba0364",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

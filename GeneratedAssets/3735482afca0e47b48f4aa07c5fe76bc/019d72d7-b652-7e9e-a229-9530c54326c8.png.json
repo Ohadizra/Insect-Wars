@@ -1,0 +1,27 @@
+{
+    "asset": "3735482afca0e47b48f4aa07c5fe76bc",
+    "fileName": "019d72d7-b652-7e9e-a229-9530c54326c8.png",
+    "prompt": "Horizontal UI bar frame, slim dark chitinous insectoid texture, matching the provided reference image style, dark brown, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "c99fee50939ec9ee39767429fad7cb7b",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

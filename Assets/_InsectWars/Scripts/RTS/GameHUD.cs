@@ -8,8 +8,10 @@ namespace InsectWars.RTS
 {
     public class GameHUD : MonoBehaviour
     {
-        /// <summary>Runtime HUD canvas (minimap and other widgets parent here).</summary>
         public static RectTransform HudCanvasRect { get; private set; }
+        public static RectTransform MapPanel { get; private set; }
+        public static RectTransform SelectionPanel { get; private set; }
+        public static RectTransform ActionPanel { get; private set; }
 
         [SerializeField] GameObject hudCanvasPrefab;
 
@@ -27,20 +29,6 @@ namespace InsectWars.RTS
 
         void Awake()
         {
-            if (hudCanvasPrefab != null)
-            {
-                var root = Instantiate(hudCanvasPrefab, transform);
-                var bind = root.GetComponentInChildren<DemoHudBindings>(true);
-                if (bind != null && bind.CalorieText != null && bind.SelectionText != null)
-                {
-                    EnsureEventSystem();
-                    _calorieLabel = bind.CalorieText;
-                    _selectionLabel = bind.SelectionText;
-                    HudCanvasRect = root.GetComponent<RectTransform>();
-                    return;
-                }
-                Destroy(root);
-            }
             BuildHud();
         }
 
@@ -54,7 +42,7 @@ namespace InsectWars.RTS
             }
         }
 
-        void BuildHud()
+                void BuildHud()
         {
             EnsureEventSystem();
 
@@ -71,44 +59,49 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
+#if UNITY_EDITOR
+            // Auto-wire the new Chitin art if null
+            if (barSprite == null) barSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Bar_Chitin_Horizontal.png");
+            if (frameSprite == null) frameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Chitin_Square.png");
+            if (actionGridSprite == null) actionGridSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Chitin.png");
+            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Button_Chitin.png");
+#endif
+
             // --- Top Left: Resources ---
-            // Use horizontal layout for resources
             var resourceContainer = new GameObject("Resources").AddComponent<RectTransform>();
             resourceContainer.SetParent(HudCanvasRect, false);
             resourceContainer.anchorMin = resourceContainer.anchorMax = resourceContainer.pivot = new Vector2(0, 1);
-            resourceContainer.anchoredPosition = new Vector2(20, -20);
-            resourceContainer.sizeDelta = new Vector2(400, 60);
+            resourceContainer.anchoredPosition = new Vector2(30, -30);
+            resourceContainer.sizeDelta = new Vector2(360, 50);
 
             var calPanel = CreatePanel("CaloriePanel", resourceContainer, Vector2.zero, new Vector2(0.48f, 1), new Vector2(0, 0.5f), Vector2.zero, Vector2.zero, barSprite);
-            _calorieLabel = CreateText("Text", calPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(15, 0), new Vector2(-15, 0), "Calories: 0", 20, Color.white);
+            _calorieLabel = CreateText("Text", calPanel.transform, Vector2.zero, Vector2.one, new Vector2(15, 0), new Vector2(-15, 0), new Vector2(0.5f, 0.5f), "Calories: 0", 18, Color.white);
             _calorieLabel.alignment = TextAnchor.MiddleCenter;
 
             var seedPanel = CreatePanel("SeedPanel", resourceContainer, new Vector2(0.52f, 0), Vector2.one, new Vector2(1, 0.5f), Vector2.zero, Vector2.zero, barSprite);
-            _seedLabel = CreateText("Text", seedPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(15, 0), new Vector2(-15, 0), "Seeds: 0", 18, new Color(0.8f, 1f, 0.7f));
+            _seedLabel = CreateText("Text", seedPanel.transform, Vector2.zero, Vector2.one, new Vector2(15, 0), new Vector2(-15, 0), new Vector2(0.5f, 0.5f), "Seeds: 0", 18, new Color(0.8f, 1f, 0.7f));
             _seedLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Top Right: Menu ---
-            var menuPanel = CreatePanel("MenuButton", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -20), new Vector2(160, 50), buttonSprite);
+            var menuPanel = CreatePanel("MenuButton", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -30), new Vector2(140, 50), buttonSprite);
             var menuBtn = menuPanel.gameObject.AddComponent<Button>();
             menuBtn.onClick.AddListener(() => SceneLoader.LoadHome());
             CreateText("Label", menuPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, "MENU", 18, Color.white).alignment = TextAnchor.MiddleCenter;
 
             // --- Mid Left: Assistant ---
-            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(20, 50), new Vector2(120, 120), frameSprite);
-            CreateText("Label", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(120, 20), "ASSISTANT", 12, new Color(0.7f, 0.7f, 0.7f)).alignment = TextAnchor.MiddleCenter;
+            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(30, 80), new Vector2(100, 100), frameSprite);
+            CreateText("Label", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "ASSISTANT", 10, new Color(0.7f, 0.7f, 0.7f)).alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Left: Map ---
-            var mapFrame = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 20), new Vector2(260, 260), frameSprite);
-            CreateText("Label", mapFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "MAP", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+            MapPanel = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(30, 30), new Vector2(280, 280), frameSprite);
 
             // --- Bottom Center: Selection ---
-            var selectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 20), new Vector2(700, 180), frameSprite);
-            _selectionLabel = CreateText("SelectionText", selectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(30, 30), new Vector2(-30, -30), SelectionHint, 18, Color.white);
+            SelectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(640, 140), frameSprite);
+            _selectionLabel = CreateText("SelectionText", SelectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(30, 30), new Vector2(-30, -30), new Vector2(0.5f, 0.5f), SelectionHint, 16, Color.white);
             _selectionLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Right: Actions ---
-            var actionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-20, 20), new Vector2(340, 240), actionGridSprite);
-            CreateText("Label", actionPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 0), new Vector2(0, 5), new Vector2(100, 20), "ACTIONS", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+            ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 260), actionGridSprite);
         }
 
         RectTransform CreatePanel(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPos, Vector2 size, Sprite sprite)
