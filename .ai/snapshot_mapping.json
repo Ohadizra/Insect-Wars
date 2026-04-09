@@ -335,6 +335,12 @@
       "conversation_id": "07be6bc9-c459-4071-90fd-c066c7e51ddc",
       "content": "in the two maps we have, find all the objects that are black boxes and make/assign art objects to them",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "47cbd7de-3b26-4c21-8403-0fff3d95a337",
+      "conversation_id": "07be6bc9-c459-4071-90fd-c066c7e51ddc",
+      "content": "For Unity, **FBX** is the industry-standard and most robust choice. \n\nHere is why **FBX** is the best format for your project:\n*   **Full Support:** It preserves hierarchies, materials, textures, and animations perfectly within Unity.\n*   **Optimization:** Unity's import pipeline is most mature for FBX, allowing you to easily tweak scale, normals, and collider generation.\n*   **Standardization:** Most 3D software (Blender, Maya, Max) exports to it reliably.\n\n**Other options from your list:**\n*   **`.blend`:** Also a great choice if you use Blender. Unity can import these directly (if Blender is installed), which is excellent for rapid iteration.\n*   **`.obj`:** Only use this for very simple, static objects that don't need complex hierarchies or animations.\n*   **`.glb`:** Good for web or lightweight mobile, but FBX is generally preferred for core game assets in Unity.\n\n**Recommendation:** Stick with **FBX** for finalized assets. If you are actively modeling in Blender, use **.blend** for your working files to save time.",
+      "snapshot_message_type": 1
     }
   ]
 }
