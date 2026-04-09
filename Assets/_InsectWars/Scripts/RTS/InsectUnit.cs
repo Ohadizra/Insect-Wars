@@ -363,7 +363,7 @@ namespace InsectWars.RTS
             _order = UnitOrder.Gather;
             _agent.ResetPath();
             _agent.isStopped = false;
-            _agent.SetDestination(node.transform.position);
+            _agent.SetDestination(node.GetGatherPoint(transform.position));
         }
 
         public void OrderReturnToHive()
@@ -515,7 +515,7 @@ namespace InsectWars.RTS
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
                 _agent.isStopped = false;
-                _agent.SetDestination(_gatherTarget.transform.position);
+                _agent.SetDestination(_gatherTarget.GetGatherPoint(transform.position));
                 return;
             }
             _agent.isStopped = true;

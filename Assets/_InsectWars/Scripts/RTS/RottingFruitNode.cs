@@ -23,6 +23,18 @@ namespace InsectWars.RTS
         /// <summary>How close a worker must be (XZ) to start gathering.</summary>
         public float GatherRange => Mathf.Max(transform.localScale.x, transform.localScale.z) * 0.5f + 1.5f;
 
+        /// <summary>Visual radius plus buffer — ants should navigate to this distance, not the center.</summary>
+        public float StopRadius => Mathf.Max(transform.localScale.x, transform.localScale.z) * 0.5f + 0.5f;
+
+        /// <summary>Returns a world position on the fruit surface facing the requester.</summary>
+        public Vector3 GetGatherPoint(Vector3 fromPosition)
+        {
+            var dir = fromPosition - transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
+            return transform.position + dir.normalized * StopRadius;
+        }
+
         void Awake()
         {
             _initialCalories = chargesRemaining;
