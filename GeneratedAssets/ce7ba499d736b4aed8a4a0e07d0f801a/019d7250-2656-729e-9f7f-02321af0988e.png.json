@@ -1,0 +1,27 @@
+{
+    "asset": "ce7ba499d736b4aed8a4a0e07d0f801a",
+    "fileName": "019d7250-2656-729e-9f7f-02321af0988e.png",
+    "prompt": "A very thin, slim, minimalist insectoid frame, square, completely empty center, transparent background, hand-painted dark chitin texture, elegant and refined RTS UI style. NO background. No white boxes.",
+    "negativePrompt": "",
+    "model": "0409c144-da57-44a7-b531-72bc9a32fa4f",
+    "modelName": "GPT Image 1 - High",
+    "customSeed": -1,
+    "w3CTraceId": "bcdaaed1ee357ec57adc8643d9d68592",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

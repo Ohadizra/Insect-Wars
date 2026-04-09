@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 124115342535641429eacdcd7b070759
+guid: f11017e602dfd4b37af2596930200fd4
 labels:
 - UnityAI
 TextureImporter:
@@ -51,7 +51,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 1024
-  spriteBorder: {x: 250, y: 250, z: 250, w: 250}
+  spriteBorder: {x: 80, y: 80, z: 80, w: 80}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1

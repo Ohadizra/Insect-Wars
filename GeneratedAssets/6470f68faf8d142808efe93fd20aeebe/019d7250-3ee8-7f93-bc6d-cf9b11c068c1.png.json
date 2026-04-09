@@ -1,0 +1,27 @@
+{
+    "asset": "6470f68faf8d142808efe93fd20aeebe",
+    "fileName": "019d7250-3ee8-7f93-bc6d-cf9b11c068c1.png",
+    "prompt": "A slim, large rectangular action panel frame for an RTS, empty grid area, thin dark chitinous borders, elegant insectoid design, transparent background. NO background. No white boxes.",
+    "negativePrompt": "",
+    "model": "0409c144-da57-44a7-b531-72bc9a32fa4f",
+    "modelName": "GPT Image 1 - High",
+    "customSeed": -1,
+    "w3CTraceId": "017379400d9ca3f608f7d402d217d98a",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

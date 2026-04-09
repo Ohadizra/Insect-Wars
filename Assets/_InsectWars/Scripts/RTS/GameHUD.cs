@@ -72,36 +72,43 @@ namespace InsectWars.RTS
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
             // --- Top Left: Resources ---
-            var resourcePanel = CreatePanel("Resources", HudCanvasRect, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -16), new Vector2(300, 100), barSprite);
-            
-            _calorieLabel = CreateText("CalorieText", resourcePanel.transform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector2(40, -10), new Vector2(-10, -45), "Calories: 0", 22, Color.white);
-            _calorieLabel.alignment = TextAnchor.MiddleLeft;
+            // Use horizontal layout for resources
+            var resourceContainer = new GameObject("Resources").AddComponent<RectTransform>();
+            resourceContainer.SetParent(HudCanvasRect, false);
+            resourceContainer.anchorMin = resourceContainer.anchorMax = resourceContainer.pivot = new Vector2(0, 1);
+            resourceContainer.anchoredPosition = new Vector2(20, -20);
+            resourceContainer.sizeDelta = new Vector2(400, 60);
 
-            _seedLabel = CreateText("SeedText", resourcePanel.transform, new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(0, 0), new Vector2(40, 10), new Vector2(-10, 45), "Seeds: 0", 20, new Color(0.8f, 1f, 0.7f));
-            _seedLabel.alignment = TextAnchor.MiddleLeft;
+            var calPanel = CreatePanel("CaloriePanel", resourceContainer, Vector2.zero, new Vector2(0.48f, 1), new Vector2(0, 0.5f), Vector2.zero, Vector2.zero, barSprite);
+            _calorieLabel = CreateText("Text", calPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(15, 0), new Vector2(-15, 0), "Calories: 0", 20, Color.white);
+            _calorieLabel.alignment = TextAnchor.MiddleCenter;
+
+            var seedPanel = CreatePanel("SeedPanel", resourceContainer, new Vector2(0.52f, 0), Vector2.one, new Vector2(1, 0.5f), Vector2.zero, Vector2.zero, barSprite);
+            _seedLabel = CreateText("Text", seedPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(15, 0), new Vector2(-15, 0), "Seeds: 0", 18, new Color(0.8f, 1f, 0.7f));
+            _seedLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Top Right: Menu ---
-            var menuPanel = CreatePanel("MenuPanel", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -16), new Vector2(150, 50), buttonSprite);
+            var menuPanel = CreatePanel("MenuButton", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -20), new Vector2(160, 50), buttonSprite);
             var menuBtn = menuPanel.gameObject.AddComponent<Button>();
             menuBtn.onClick.AddListener(() => SceneLoader.LoadHome());
-            CreateText("MenuLabel", menuPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, "MENU", 18, Color.white).alignment = TextAnchor.MiddleCenter;
+            CreateText("Label", menuPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, "MENU", 18, Color.white).alignment = TextAnchor.MiddleCenter;
 
             // --- Mid Left: Assistant ---
-            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(16, 100), new Vector2(128, 128), frameSprite);
-            CreateText("AssistantLabel", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(120, 20), "ASSISTANT", 12, Color.gray).alignment = TextAnchor.MiddleCenter;
+            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(20, 50), new Vector2(120, 120), frameSprite);
+            CreateText("Label", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(120, 20), "ASSISTANT", 12, new Color(0.7f, 0.7f, 0.7f)).alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Left: Map ---
-            var mapFrame = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 16), new Vector2(256, 256), frameSprite);
-            CreateText("MapLabel", mapFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "MAP", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+            var mapFrame = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(20, 20), new Vector2(260, 260), frameSprite);
+            CreateText("Label", mapFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "MAP", 14, Color.white).alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Center: Selection ---
-            var selectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 16), new Vector2(600, 160), barSprite);
-            _selectionLabel = CreateText("SelectionText", selectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20, 20), new Vector2(-20, -20), SelectionHint, 16, Color.white);
+            var selectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 20), new Vector2(700, 180), frameSprite);
+            _selectionLabel = CreateText("SelectionText", selectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(30, 30), new Vector2(-30, -30), SelectionHint, 18, Color.white);
             _selectionLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Right: Actions ---
-            var actionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 16), new Vector2(320, 220), actionGridSprite);
-            CreateText("ActionLabel", actionPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 0), new Vector2(0, 5), new Vector2(100, 20), "ACTIONS", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+            var actionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-20, 20), new Vector2(340, 240), actionGridSprite);
+            CreateText("Label", actionPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 0), new Vector2(0, 5), new Vector2(100, 20), "ACTIONS", 14, Color.white).alignment = TextAnchor.MiddleCenter;
         }
 
         RectTransform CreatePanel(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPos, Vector2 size, Sprite sprite)
@@ -117,7 +124,7 @@ namespace InsectWars.RTS
             var img = go.AddComponent<Image>();
             img.sprite = sprite;
             img.type = Image.Type.Sliced;
-            img.color = Color.white;
+            img.color = new Color(0.1f, 0.1f, 0.1f, 0.7f);
             return rt;
         }
 
@@ -130,12 +137,18 @@ namespace InsectWars.RTS
             t.fontSize = size;
             t.color = color;
             t.text = content;
+            t.raycastTarget = false;
             var rt = t.rectTransform;
             rt.anchorMin = anchorMin;
             rt.anchorMax = anchorMax;
             rt.pivot = pivot;
             rt.offsetMin = offsetMin;
             rt.offsetMax = offsetMax;
+
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0, 0, 0, 0.8f);
+            shadow.effectDistance = new Vector2(1, -1);
+
             return t;
         }
 
