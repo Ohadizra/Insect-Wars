@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -18,12 +17,10 @@ namespace InsectWars.RTS
 
         HiveDeposit _selectedHive;
         RottingFruitNode _selectedResource;
-        CactiSeedNode _selectedSeed;
         ProductionBuilding _selectedBuilding;
 
         public HiveDeposit SelectedHive => _selectedHive;
         public RottingFruitNode SelectedResource => _selectedResource;
-        public CactiSeedNode SelectedSeed => _selectedSeed;
         public ProductionBuilding SelectedBuilding => _selectedBuilding;
 
         RectTransform _marqueeCanvasRt;
@@ -143,7 +140,6 @@ namespace InsectWars.RTS
             _selected.Clear();
             _selectedHive = null;
             _selectedResource = null;
-            _selectedSeed = null;
             _selectedBuilding = null;
         }
 
@@ -189,13 +185,6 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var seed = hit.collider.GetComponentInParent<CactiSeedNode>();
-            if (seed != null)
-            {
-                ClearAll();
-                _selectedSeed = seed;
-                return;
-            }
         }
 
         void BoxSelect(Vector2 a, Vector2 b)

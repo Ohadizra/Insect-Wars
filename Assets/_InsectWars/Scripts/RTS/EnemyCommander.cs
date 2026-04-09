@@ -9,7 +9,7 @@ namespace InsectWars.RTS
     /// <summary>
     /// SC2/WC3-grade strategic AI for the enemy team.
     /// Economy: round-trip resource scoring, worker saturation tracking.
-    /// Construction: expansion nests, multiple MantisBranches with NavMesh-validated placement.
+    /// Construction: expansion nests, multiple Undergrounds with NavMesh-validated placement.
     /// Production: dynamic worker caps, mixed army composition from all buildings.
     /// Combat: army-threshold attacks, worker harass, defensive recall, all-in detection.
     /// </summary>
@@ -114,7 +114,7 @@ namespace InsectWars.RTS
 
         int DesiredWorkers => Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
         int MaxCombat => Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
-        int MaxMantisBranches => _matchTime > 180f ? 2 : 1;
+        int MaxUndergrounds => _matchTime > 180f ? 2 : 1;
 
         void Start()
         {
@@ -168,17 +168,17 @@ namespace InsectWars.RTS
             if (_matchTime < _nextBuildTime) return;
             _nextBuildTime = _matchTime + BuildCheckInterval;
 
-            int mantisBranches = 0, antNests = 0;
+            int undergrounds = 0, antNests = 0;
             foreach (var b in ProductionBuilding.All)
             {
                 if (b == null || b.Team != Team.Enemy) continue;
-                if (b.Type == BuildingType.MantisBranch) mantisBranches++;
+                if (b.Type == BuildingType.Underground) undergrounds++;
                 if (b.Type == BuildingType.AntNest) antNests++;
             }
 
-            if (mantisBranches == 0 && _matchTime > 25f)
+            if (undergrounds == 0 && _matchTime > 25f)
             {
-                TryPlaceMantisBranch();
+                TryPlaceUnderground();
                 return;
             }
 
@@ -188,21 +188,21 @@ namespace InsectWars.RTS
                 if (TryPlaceExpansionNest()) return;
             }
 
-            int branchCost = ProductionBuilding.GetBuildCost(BuildingType.MantisBranch);
-            if (mantisBranches < MaxMantisBranches && _matchTime > 150f
-                && EnemyResources.Calories >= branchCost + 100)
+            int undergroundCost = ProductionBuilding.GetBuildCost(BuildingType.Underground);
+            if (undergrounds < MaxUndergrounds && _matchTime > 150f
+                && EnemyResources.Calories >= undergroundCost + 100)
             {
-                TryPlaceMantisBranch();
+                TryPlaceUnderground();
             }
         }
 
-        void TryPlaceMantisBranch()
+        void TryPlaceUnderground()
         {
-            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.MantisBranch))) return;
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             var hive = HiveDeposit.EnemyHive;
             if (hive == null) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 8f),
-                BuildingType.MantisBranch, Team.Enemy);
+                BuildingType.Underground, Team.Enemy);
         }
 
         bool TryPlaceExpansionNest()
@@ -264,12 +264,12 @@ namespace InsectWars.RTS
             int combat = fighters + ranged;
 
             var nests = new List<ProductionBuilding>(4);
-            var branches = new List<ProductionBuilding>(4);
+            var undergrounds = new List<ProductionBuilding>(4);
             foreach (var b in ProductionBuilding.All)
             {
                 if (b == null || b.Team != Team.Enemy) continue;
                 if (b.Type == BuildingType.AntNest) nests.Add(b);
-                else if (b.Type == BuildingType.MantisBranch) branches.Add(b);
+                else if (b.Type == BuildingType.Underground) undergrounds.Add(b);
             }
 
             // --- Workers from all AntNests ---
@@ -279,7 +279,7 @@ namespace InsectWars.RTS
                 {
                     if (workers >= DesiredWorkers) break;
                     SetNestRallyToFruit(nest);
-                    var unit = nest.ProduceUnit();
+                    var unit = nest.ProduceUnit(UnitArchetype.Worker);
                     if (unit == null) continue;
                     workers++;
                     var fruit = FindBestFruit(unit.transform.position);
@@ -287,28 +287,18 @@ namespace InsectWars.RTS
                 }
             }
 
-            // --- Combat units from all MantisBranches (mixed fighter / ranged) ---
+            // --- Combat units from all Undergrounds (mixed fighter / ranged) ---
             if (combat < MaxCombat && _matchTime > 20f)
             {
-                foreach (var branch in branches)
+                foreach (var ug in undergrounds)
                 {
                     if (combat >= MaxCombat) break;
 
-                    bool produceRanged = (_rangedToggle % 5) >= 3; // ~40 % ranged
+                    bool produceRanged = (_rangedToggle % 5) >= 3;
                     _rangedToggle++;
+                    var arch = produceRanged ? UnitArchetype.BasicRanged : UnitArchetype.BasicFighter;
 
-                    if (produceRanged)
-                    {
-                        int unitCost = branch.UnitCost;
-                        if (!EnemyResources.TrySpend(unitCost)) continue;
-                        var spawnPos = SpawnPosNear(branch.transform);
-                        var unit = SkirmishDirector.SpawnUnit(spawnPos, Team.Enemy, UnitArchetype.BasicRanged);
-                        if (unit != null) combat++;
-                    }
-                    else
-                    {
-                        if (branch.ProduceUnit() != null) combat++;
-                    }
+                    if (ug.ProduceUnit(arch) != null) combat++;
                 }
             }
         }

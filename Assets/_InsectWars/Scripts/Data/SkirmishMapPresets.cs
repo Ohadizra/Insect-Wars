@@ -73,22 +73,6 @@ namespace InsectWars.Data
                 new FruitPlaced { position = new Vector3(40f, 0.6f, -8f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
             };
 
-            map.cactiSeeds = new[]
-            {
-                // Center pair
-                new CactiSeedPlaced { position = new Vector3(0f, 0f, -8f) },
-                new CactiSeedPlaced { position = new Vector3(0f, 0f, 8f) },
-                // Near-base pair
-                new CactiSeedPlaced { position = new Vector3(-20f, 0f, -20f) },
-                new CactiSeedPlaced { position = new Vector3(20f, 0f, 20f) },
-                // Flank pair
-                new CactiSeedPlaced { position = new Vector3(-12f, 0f, 28f) },
-                new CactiSeedPlaced { position = new Vector3(12f, 0f, -28f) },
-                // Outer pair
-                new CactiSeedPlaced { position = new Vector3(35f, 0f, 5f) },
-                new CactiSeedPlaced { position = new Vector3(-35f, 0f, -5f) },
-            };
-
             map.terrainFeatures = new[]
             {
                 // Central water puddle — slows any army that pushes through mid
@@ -280,28 +264,6 @@ namespace InsectWars.Data
                 // Swamp-edge fruits — behind the thorn patches, reward brave flankers
                 new FruitPlaced { position = new Vector3(-66f, 0.6f, -24f), calories = 4000, gatherPerTick = 8, gatherSeconds = 5f },
                 new FruitPlaced { position = new Vector3( 66f, 0.6f,  24f), calories = 4000, gatherPerTick = 8, gatherSeconds = 5f },
-            };
-
-            map.cactiSeeds = new[]
-            {
-                // Near player base
-                new CactiSeedPlaced { position = new Vector3(-44f, 0f, -38f) },
-                new CactiSeedPlaced { position = new Vector3( 44f, 0f,  38f) },
-                // Bridge flanks
-                new CactiSeedPlaced { position = new Vector3( -6f, 0f,  14f) },
-                new CactiSeedPlaced { position = new Vector3(  6f, 0f, -14f) },
-                // Natural area
-                new CactiSeedPlaced { position = new Vector3(-24f, 0f,  -4f) },
-                new CactiSeedPlaced { position = new Vector3( 24f, 0f,   4f) },
-                // Third-base area
-                new CactiSeedPlaced { position = new Vector3(-34f, 0f,  32f) },
-                new CactiSeedPlaced { position = new Vector3( 34f, 0f, -32f) },
-                // Outer lanes
-                new CactiSeedPlaced { position = new Vector3(-48f, 0f,  22f) },
-                new CactiSeedPlaced { position = new Vector3( 48f, 0f, -22f) },
-                // Far edges
-                new CactiSeedPlaced { position = new Vector3(  0f, 0f, -46f) },
-                new CactiSeedPlaced { position = new Vector3(  0f, 0f,  46f) },
             };
 
             // ────────────────────── Terrain features ──────────────────────

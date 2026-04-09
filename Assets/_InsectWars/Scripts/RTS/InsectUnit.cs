@@ -12,14 +12,12 @@ namespace InsectWars.RTS
         Attack,
         Gather,
         ReturnDeposit,
-        Patrol,
-        PickupSeed
+        Patrol
     }
 
     public enum CargoType
     {
-        Calories,
-        CactiSeed
+        Calories
     }
 
     [RequireComponent(typeof(NavMeshAgent))]
@@ -37,9 +35,6 @@ namespace InsectWars.RTS
         RottingFruitNode _lastGatherTarget;
         float _gatherTimer;
         float _idleScanTimer;
-        CactiSeedNode _seedTarget;
-        Vector3? _seedReturnDest;
-
         bool _holdPosition;
         bool _patrolActive;
         Vector3 _patrolA;
@@ -246,9 +241,6 @@ namespace InsectWars.RTS
                 case UnitOrder.Patrol:
                     TickPatrol();
                     break;
-                case UnitOrder.PickupSeed:
-                    TickPickupSeed();
-                    break;
                 case UnitOrder.Idle:
                     TickIdleAutoGather();
                     break;
@@ -380,32 +372,12 @@ namespace InsectWars.RTS
             _agent.SetDestination(dest.Value);
         }
 
-        public void OrderPickupSeed(CactiSeedNode seed)
-        {
-            if (!IsAlive || seed == null || seed.PickedUp || definition == null || !definition.canGather) return;
-
-            var inv = GetComponent<WorkerInventory>();
-            if (inv != null && inv.Carrying > 0) return;
-
-            ClearTargets();
-            _wantsAttackMove = false;
-            _holdPosition = false;
-            _patrolActive = false;
-            _seedTarget = seed;
-            _order = UnitOrder.PickupSeed;
-            _agent.ResetPath();
-            _agent.isStopped = false;
-            _agent.SetDestination(seed.transform.position);
-        }
-
         void ClearTargets()
         {
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
-            _seedTarget = null;
-            _seedReturnDest = null;
             UnlockMelee();
         }
 
@@ -538,25 +510,22 @@ namespace InsectWars.RTS
         void TickReturn()
         {
             var inv = GetComponent<WorkerInventory>();
-            if (inv != null && inv.Cargo == CargoType.CactiSeed)
-            {
-                TickReturnSeed(inv);
-                return;
-            }
-
             var depositDest = FindNearestTeamDepositPoint();
             if (!depositDest.HasValue)
             {
                 _order = UnitOrder.Idle;
                 return;
             }
-            var dest = depositDest.Value;
-            var diff = transform.position - dest;
+
+            var nearestHive = FindNearestTeamHive();
+            float arrivalDist = nearestHive != null ? GetHiveArrivalRadius(nearestHive) : 3.5f;
+            var hivePos = nearestHive != null ? nearestHive.position : depositDest.Value;
+            var diff = transform.position - hivePos;
             diff.y = 0f;
-            if (diff.magnitude > 3.5f)
+            if (diff.magnitude > arrivalDist)
             {
                 _agent.isStopped = false;
-                _agent.SetDestination(dest);
+                _agent.SetDestination(depositDest.Value);
                 return;
             }
             _agent.isStopped = true;
@@ -577,78 +546,6 @@ namespace InsectWars.RTS
             _order = UnitOrder.Idle;
         }
 
-        void TickReturnSeed(WorkerInventory inv)
-        {
-            if (_seedReturnDest == null)
-            {
-                _seedReturnDest = FindNearestTeamDepositPoint();
-                if (_seedReturnDest == null)
-                {
-                    _order = UnitOrder.Idle;
-                    return;
-                }
-            }
-
-            var dest = _seedReturnDest.Value;
-            var diff = transform.position - dest;
-            diff.y = 0f;
-            if (diff.magnitude > 3.5f)
-            {
-                _agent.isStopped = false;
-                _agent.SetDestination(dest);
-                return;
-            }
-
-            _agent.isStopped = true;
-            if (inv.Carrying > 0)
-            {
-                if (team == Team.Player && PlayerResources.Instance != null)
-                    PlayerResources.Instance.AddCactiSeeds(inv.Carrying);
-                inv.Carrying = 0;
-                inv.Cargo = CargoType.Calories;
-            }
-            _seedReturnDest = null;
-            _order = UnitOrder.Idle;
-        }
-
-        void TickPickupSeed()
-        {
-            if (_seedTarget == null || _seedTarget.PickedUp)
-            {
-                _seedTarget = null;
-                _order = UnitOrder.Idle;
-                return;
-            }
-
-            var diff = transform.position - _seedTarget.transform.position;
-            diff.y = 0f;
-            if (diff.magnitude > _seedTarget.PickupRange)
-            {
-                _agent.isStopped = false;
-                _agent.SetDestination(_seedTarget.transform.position);
-                return;
-            }
-
-            _agent.isStopped = true;
-            if (!_seedTarget.TryPickup()) return;
-
-            var inv = GetComponent<WorkerInventory>();
-            if (inv == null) inv = gameObject.AddComponent<WorkerInventory>();
-            inv.Carrying = 1;
-            inv.Cargo = CargoType.CactiSeed;
-            _seedTarget = null;
-
-            _seedReturnDest = FindNearestTeamDepositPoint();
-            if (_seedReturnDest == null)
-            {
-                _order = UnitOrder.Idle;
-                return;
-            }
-            _order = UnitOrder.ReturnDeposit;
-            _agent.ResetPath();
-            _agent.isStopped = false;
-            _agent.SetDestination(_seedReturnDest.Value);
-        }
 
         HiveDeposit GetTeamHive()
         {
@@ -677,6 +574,36 @@ namespace InsectWars.RTS
             return bestPoint;
         }
 
+        Transform FindNearestTeamHive()
+        {
+            float bestDist = float.MaxValue;
+            Transform best = null;
+
+            HiveDeposit teamHive = team == Team.Player ? HiveDeposit.PlayerHive : HiveDeposit.EnemyHive;
+            if (teamHive != null)
+            {
+                float d = Vector3.Distance(transform.position, teamHive.transform.position);
+                if (d < bestDist) { bestDist = d; best = teamHive.transform; }
+            }
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest) continue;
+                float d = Vector3.Distance(transform.position, bld.transform.position);
+                if (d < bestDist) { bestDist = d; best = bld.transform; }
+            }
+
+            return best;
+        }
+
+        float GetHiveArrivalRadius(Transform hive)
+        {
+            var rend = hive.GetComponentInChildren<Renderer>();
+            if (rend != null)
+                return Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.5f;
+            return Mathf.Max(hive.localScale.x, hive.localScale.z) * 0.5f + 1.5f;
+        }
+
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
@@ -687,9 +614,7 @@ namespace InsectWars.RTS
             var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
             var cols = Physics.OverlapSphere(transform.position, 15f, mask, QueryTriggerInteraction.Collide);
             RottingFruitNode bestFruit = null;
-            CactiSeedNode bestSeed = null;
             float bestFruitDist = float.MaxValue;
-            float bestSeedDist = float.MaxValue;
             foreach (var c in cols)
             {
                 var node = c.GetComponent<RottingFruitNode>();
@@ -698,17 +623,9 @@ namespace InsectWars.RTS
                     var d = Vector3.Distance(transform.position, node.transform.position);
                     if (d < bestFruitDist) { bestFruitDist = d; bestFruit = node; }
                 }
-                var seed = c.GetComponent<CactiSeedNode>();
-                if (seed != null && !seed.PickedUp)
-                {
-                    var d = Vector3.Distance(transform.position, seed.transform.position);
-                    if (d < bestSeedDist) { bestSeedDist = d; bestSeed = seed; }
-                }
             }
 
-            if (bestSeed != null && bestSeedDist <= bestFruitDist)
-                OrderPickupSeed(bestSeed);
-            else if (bestFruit != null)
+            if (bestFruit != null)
                 OrderGather(bestFruit);
         }
 
@@ -865,9 +782,7 @@ return;
                 var sh = Shader.Find("Universal Render Pipeline/Lit");
                 if (sh == null) sh = Shader.Find("Standard");
                 var m = new Material(sh);
-                var col = Cargo == CargoType.CactiSeed
-                    ? new Color(0.45f, 0.65f, 0.25f)
-                    : new Color(0.95f, 0.85f, 0.15f);
+                var col = new Color(0.95f, 0.85f, 0.15f);
                 m.color = col;
                 if (m.HasProperty("_BaseColor"))
                     m.SetColor("_BaseColor", col);

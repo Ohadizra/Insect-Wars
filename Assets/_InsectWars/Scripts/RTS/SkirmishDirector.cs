@@ -27,7 +27,6 @@ namespace InsectWars.RTS
         int _scatterSeed;
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
-        CactiSeedPlaced[] _cactiSeedLayout;
         TerrainFeaturePlaced[] _terrainFeatureLayout;
 
         static readonly ClayPlaced[] DefaultClayList =
@@ -52,22 +51,6 @@ namespace InsectWars.RTS
             new() { position = new Vector3(68f, 0.6f, 28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
             new() { position = new Vector3(22f, 0.6f, -58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
             new() { position = new Vector3(-15f, 0.6f, 62f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f }
-        };
-
-        static readonly CactiSeedPlaced[] DefaultCactiSeeds =
-        {
-            new() { position = new Vector3(0f, 0f, 0f) },
-            new() { position = new Vector3(-30f, 0f, 30f) },
-            new() { position = new Vector3(30f, 0f, -30f) },
-            new() { position = new Vector3(-58f, 0f, 22f) },
-            new() { position = new Vector3(58f, 0f, -22f) },
-            new() { position = new Vector3(15f, 0f, 48f) },
-            new() { position = new Vector3(-15f, 0f, -48f) },
-            new() { position = new Vector3(40f, 0f, 8f) },
-            new() { position = new Vector3(-40f, 0f, -8f) },
-            new() { position = new Vector3(0f, 0f, -65f) },
-            new() { position = new Vector3(0f, 0f, 65f) },
-            new() { position = new Vector3(65f, 0f, 55f) }
         };
 
         /// <summary>Used by units for projectile settings when not using a prefab-only pipeline.</summary>
@@ -106,7 +89,6 @@ namespace InsectWars.RTS
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
-            _cactiSeedLayout = m != null && m.cactiSeeds != null && m.cactiSeeds.Length > 0 ? m.cactiSeeds : DefaultCactiSeeds;
             _terrainFeatureLayout = m != null && m.terrainFeatures != null && m.terrainFeatures.Length > 0
                 ? m.terrainFeatures
                 : System.Array.Empty<TerrainFeaturePlaced>();
@@ -184,9 +166,6 @@ namespace InsectWars.RTS
             foreach (var f in _fruitLayout)
                 AddFruit(world.transform, f);
 
-            foreach (var s in _cactiSeedLayout)
-                AddCactiSeed(world.transform, s);
-
             foreach (var tf in _terrainFeatureLayout)
                 AddTerrainFeature(world.transform, tf);
 
@@ -247,8 +226,6 @@ namespace InsectWars.RTS
                 var spread = Mathf.Max(c.scale.x, c.scale.z) * 0.5f + 3f;
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), spread));
             }
-            foreach (var s in _cactiSeedLayout)
-                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(s.position.x, s.position.z), 4f));
             foreach (var tf in _terrainFeatureLayout)
             {
                 float spread = tf.boxHalfExtents.x > 0.01f
@@ -758,13 +735,13 @@ namespace InsectWars.RTS
             {
                 var b = rend.bounds;
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = b.size * 0.9f;
+                obs.size = new Vector3(b.size.x * 0.55f, b.size.y, b.size.z * 0.55f);
                 obs.center = b.center - hive.transform.position;
             }
             else
             {
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(s.x, s.y, s.z);
+                obs.size = new Vector3(s.x * 0.55f, s.y, s.z * 0.55f);
                 obs.center = new Vector3(0f, s.y * 0.5f, 0f);
             }
         }
@@ -776,55 +753,6 @@ namespace InsectWars.RTS
             mod.ignoreFromBuild = true;
             foreach (Transform child in go.transform)
                 SetIgnoreNavMeshRecursive(child.gameObject);
-        }
-
-        static void AddCactiSeed(Transform parent, CactiSeedPlaced s)
-        {
-            var pos = s.position;
-            var seed = new GameObject("CactiSeed");
-            int layer = LayerMask.NameToLayer("Resources");
-            if (layer >= 0) seed.layer = layer;
-            seed.transform.SetParent(parent);
-            float h = GetHeight(pos);
-            seed.transform.position = new Vector3(pos.x, h + 0.35f, pos.z);
-
-            var body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            body.name = "SeedBody";
-            body.transform.SetParent(seed.transform, false);
-            body.transform.localPosition = Vector3.zero;
-            body.transform.localScale = Vector3.one * 0.55f;
-            Object.Destroy(body.GetComponent<Collider>());
-            ApplyMat(body, new Color(0.55f, 0.7f, 0.3f));
-
-            Vector3[] spikeOffsets =
-            {
-                new(0f, 0.28f, 0f),
-                new(0.18f, 0.1f, 0.12f),
-                new(-0.15f, 0.08f, -0.16f),
-                new(0.1f, -0.1f, -0.18f),
-                new(-0.12f, -0.08f, 0.15f)
-            };
-            foreach (var off in spikeOffsets)
-            {
-                var spike = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                spike.name = "Spike";
-                spike.transform.SetParent(seed.transform, false);
-                spike.transform.localPosition = off;
-                spike.transform.localScale = new Vector3(0.08f, 0.14f, 0.08f);
-                spike.transform.localRotation = Quaternion.LookRotation(off.normalized) * Quaternion.Euler(90f, 0f, 0f);
-                Object.Destroy(spike.GetComponent<Collider>());
-                ApplyMat(spike, new Color(0.38f, 0.52f, 0.2f));
-            }
-
-            var col = seed.AddComponent<SphereCollider>();
-            col.center = Vector3.zero;
-            col.radius = 0.4f;
-            col.isTrigger = true;
-
-            var modifier = seed.AddComponent<NavMeshModifier>();
-            modifier.ignoreFromBuild = true;
-
-            seed.AddComponent<CactiSeedNode>();
         }
 
         // ──────────── Terrain Features ────────────

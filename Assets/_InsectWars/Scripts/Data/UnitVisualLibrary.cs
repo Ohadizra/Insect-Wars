@@ -10,8 +10,10 @@ namespace InsectWars.Data
         public GameObject meleePrefab;
         public GameObject rangedPrefab;
 
-        [Header("Command nest")]
+        [Header("Buildings")]
         public GameObject hivePrefab;
+        public GameObject undergroundPrefab;
+        public GameObject skyTowerPrefab;
 
         [Header("Environment")]
         public GameObject rottingApplePrefab;
@@ -48,6 +50,17 @@ namespace InsectWars.Data
                 UnitArchetype.Worker => workerPrefab,
                 UnitArchetype.BasicFighter => meleePrefab,
                 UnitArchetype.BasicRanged => rangedPrefab,
+                _ => null
+            };
+        }
+
+        public GameObject GetBuildingPrefab(RTS.BuildingType type)
+        {
+            return type switch
+            {
+                RTS.BuildingType.AntNest => hivePrefab,
+                RTS.BuildingType.Underground => undergroundPrefab,
+                RTS.BuildingType.SkyTower => skyTowerPrefab,
                 _ => null
             };
         }

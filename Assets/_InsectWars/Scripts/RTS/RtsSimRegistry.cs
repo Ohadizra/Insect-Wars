@@ -9,11 +9,9 @@ namespace InsectWars.RTS
     {
         static readonly List<InsectUnit> s_units = new(256);
         static readonly List<RottingFruitNode> s_fruits = new(64);
-        static readonly List<CactiSeedNode> s_seeds = new(32);
 
         public static IReadOnlyList<InsectUnit> Units => s_units;
         public static IReadOnlyList<RottingFruitNode> FruitNodes => s_fruits;
-        public static IReadOnlyList<CactiSeedNode> CactiSeeds => s_seeds;
 
         public static void Register(InsectUnit u)
         {
@@ -33,16 +31,6 @@ namespace InsectWars.RTS
         public static void Unregister(RottingFruitNode n)
         {
             if (n != null) s_fruits.Remove(n);
-        }
-
-        public static void Register(CactiSeedNode s)
-        {
-            if (s != null && !s_seeds.Contains(s)) s_seeds.Add(s);
-        }
-
-        public static void Unregister(CactiSeedNode s)
-        {
-            if (s != null) s_seeds.Remove(s);
         }
 
         public static int CountAlive(Team team)

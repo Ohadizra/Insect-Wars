@@ -20,12 +20,6 @@ namespace InsectWars.Data
     }
 
     [Serializable]
-    public struct CactiSeedPlaced
-    {
-        public Vector3 position;
-    }
-
-    [Serializable]
     public struct HighGroundPlaced
     {
         /// <summary>UV coordinates (0-1) on the terrain, where (0,0) is terrain origin corner.</summary>
@@ -58,8 +52,6 @@ namespace InsectWars.Data
         public int passiveScatterSeed = 18427;
         public ClayPlaced[] clay = Array.Empty<ClayPlaced>();
         public FruitPlaced[] fruits = Array.Empty<FruitPlaced>();
-        public CactiSeedPlaced[] cactiSeeds = Array.Empty<CactiSeedPlaced>();
-
         /// <summary>Terrain elevation features. Empty = flat terrain. Null falls back to demo defaults.</summary>
         public HighGroundPlaced[] highGrounds;
 

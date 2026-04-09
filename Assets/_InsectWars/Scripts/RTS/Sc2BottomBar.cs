@@ -42,6 +42,7 @@ namespace InsectWars.RTS
         [SerializeField] Sprite minimapFrame;
         [SerializeField] Sprite commandCardFrame;
         [SerializeField] Sprite portraitFrame;
+        [SerializeField] Sprite centerBlockFrame;
 
         [Header("Ability Icons")]
         [SerializeField] Sprite iconMove;
@@ -74,7 +75,7 @@ namespace InsectWars.RTS
         GameObject _ghostPreview;
         Camera _cam;
 
-        enum BarMode { None, Units, WorkerUnits, Hive, Resource, CactiSeed, BuildMenu, Building }
+        enum BarMode { None, Units, WorkerUnits, Hive, Resource, BuildMenu, Building }
         BarMode _currentBarMode = (BarMode)(-1);
 
         void Awake()
@@ -84,10 +85,10 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             // Auto-wire the generated art if null
-            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/BottomBar_BG.png");
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Minimap_Frame.png");
-            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/CommandCard_Frame.png");
-            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_Frame.png");
+            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Square 3.png");
+            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Vines 3.png");
+            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Square 1.png");
+            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Wide 3.png");
 
             if (iconMove == null) iconMove = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Move.png");
             if (iconStop == null) iconStop = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Stop.png");
@@ -106,7 +107,7 @@ namespace InsectWars.RTS
 
         void Start()
         {
-            // BuildBar(); // Removed old Zerg UI
+            BuildBar();
         }
 
         void OnDestroy()
@@ -143,8 +144,10 @@ namespace InsectWars.RTS
             if (_buildMenuActive)
             {
                 if (Keyboard.current.qKey.wasPressedThisFrame)
-                    StartPlaceBuilding(BuildingType.MantisBranch);
+                    StartPlaceBuilding(BuildingType.Underground);
                 if (Keyboard.current.wKey.wasPressedThisFrame)
+                    StartPlaceBuilding(BuildingType.SkyTower);
+                if (Keyboard.current.eKey.wasPressedThisFrame)
                     StartPlaceBuilding(BuildingType.AntNest);
                 return;
             }
@@ -152,8 +155,11 @@ namespace InsectWars.RTS
             var selectedBuilding = SelectionController.Instance.SelectedBuilding;
             if (selectedBuilding != null)
             {
-                if (Keyboard.current.qKey.wasPressedThisFrame)
-                    ProduceFromBuilding(selectedBuilding);
+                var producible = selectedBuilding.ProducibleUnits;
+                if (Keyboard.current.qKey.wasPressedThisFrame && producible.Length > 0)
+                    ProduceFromBuilding(selectedBuilding, producible[0]);
+                if (Keyboard.current.wKey.wasPressedThisFrame && producible.Length > 1)
+                    ProduceFromBuilding(selectedBuilding, producible[1]);
                 if (Keyboard.current.rKey.wasPressedThisFrame)
                     ClearBuildingRally(selectedBuilding);
                 return;
@@ -230,8 +236,6 @@ namespace InsectWars.RTS
                 newMode = BarMode.Hive;
             else if (sc.SelectedResource != null)
                 newMode = BarMode.Resource;
-            else if (sc.SelectedSeed != null)
-                newMode = BarMode.CactiSeed;
             else
             {
                 bool hasUnits = false;
@@ -283,9 +287,11 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Build", "B", EnterBuildMenu);
                     break;
                 case BarMode.BuildMenu:
-                    AddCmdButton(_cmdGridParent, "Manti's Branch\n<size=11>150 cal</size>", "Q",
-                        () => StartPlaceBuilding(BuildingType.MantisBranch));
-                    AddCmdButton(_cmdGridParent, "Ant's Nest\n<size=11>400 cal</size>", "W",
+                    AddCmdButton(_cmdGridParent, "Underground\n<size=11>200 cal</size>", "Q",
+                        () => StartPlaceBuilding(BuildingType.Underground));
+                    AddCmdButton(_cmdGridParent, "Sky Tower\n<size=11>300 cal</size>", "W",
+                        () => StartPlaceBuilding(BuildingType.SkyTower));
+                    AddCmdButton(_cmdGridParent, "Ant's Nest\n<size=11>400 cal</size>", "E",
                         () => StartPlaceBuilding(BuildingType.AntNest));
                     AddCmdButton(_cmdGridParent, "Cancel", "Esc", () =>
                     {
@@ -317,9 +323,16 @@ case BarMode.Building:
                     var bld = SelectionController.Instance?.SelectedBuilding;
                     if (bld != null)
                     {
-                        AddCmdButton(_cmdGridParent,
-                            $"{bld.UnitName}\n<size=11>{bld.UnitCost} cal</size>", "Q",
-                            () => ProduceFromBuilding(bld));
+                        string[] hotkeys = { "Q", "W", "E", "R" };
+                        var units = bld.ProducibleUnits;
+                        for (int i = 0; i < units.Length; i++)
+                        {
+                            var arch = units[i];
+                            string hk = i < hotkeys.Length ? hotkeys[i] : "";
+                            AddCmdButton(_cmdGridParent,
+                                $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>",
+                                hk, () => ProduceFromBuilding(bld, arch));
+                        }
                         AddCmdButton(_cmdGridParent, "Clear Rally", "R",
                             () => ClearBuildingRally(bld));
                     }
@@ -330,7 +343,237 @@ case BarMode.Building:
 
         void BuildBar()
         {
-            // Visuals removed to favor the new Chitinous UI style.
+            var hud = GameHUD.HudCanvasRect;
+            if (hud == null) return;
+
+            var bar = new GameObject("SC2BottomBar");
+            bar.transform.SetParent(hud, false);
+            var barRt = bar.AddComponent<RectTransform>();
+            barRt.anchorMin = new Vector2(0f, 0f);
+            barRt.anchorMax = new Vector2(1f, 0f);
+            barRt.pivot = new Vector2(0.5f, 0f);
+            barRt.anchoredPosition = Vector2.zero;
+            barRt.sizeDelta = new Vector2(0f, barHeight);
+
+            var bg = bar.AddComponent<Image>();
+            bg.color = new Color(0.05f, 0.03f, 0.1f, 0.96f);
+            bg.raycastTarget = true;
+
+            if (barBackground != null)
+            {
+                var barArt = new GameObject("BarArt");
+                barArt.transform.SetParent(bar.transform, false);
+                var artRt = barArt.AddComponent<RectTransform>();
+                artRt.anchorMin = Vector2.zero;
+                artRt.anchorMax = Vector2.one;
+                artRt.offsetMin = artRt.offsetMax = Vector2.zero;
+                var artImg = barArt.AddComponent<Image>();
+                artImg.sprite = barBackground;
+                artImg.type = Image.Type.Tiled;
+                artImg.color = new Color(1f, 1f, 1f, 0.35f);
+                artImg.raycastTarget = false;
+            }
+
+            // Minimap Slot
+            var miniSlot = new GameObject("MinimapHost");
+            miniSlot.transform.SetParent(bar.transform, false);
+            var ms = miniSlot.AddComponent<RectTransform>();
+            ms.anchorMin = new Vector2(0f, 0f);
+            ms.anchorMax = new Vector2(0f, 1f);
+            ms.pivot = new Vector2(0f, 0.5f);
+            ms.anchoredPosition = Vector2.zero;
+            ms.sizeDelta = new Vector2(minimapSlot, 0f);
+
+            var miniFrameImg = miniSlot.AddComponent<Image>();
+            miniFrameImg.sprite = minimapFrame;
+            miniFrameImg.type = Image.Type.Simple;
+            miniFrameImg.color = minimapFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            miniFrameImg.raycastTarget = false;
+
+            var miniInner = new GameObject("MinimapInner");
+            miniInner.transform.SetParent(miniSlot.transform, false);
+            var mi = miniInner.AddComponent<RectTransform>();
+            mi.anchorMin = Vector2.zero;
+            mi.anchorMax = Vector2.one;
+            mi.offsetMin = new Vector2(20f, 20f);
+            mi.offsetMax = new Vector2(-20f, -20f);
+            MinimapHost = mi;
+
+            // Command Panel
+            var cmdPanel = new GameObject("CommandPanel");
+            cmdPanel.transform.SetParent(bar.transform, false);
+            var cp = cmdPanel.AddComponent<RectTransform>();
+            cp.anchorMin = new Vector2(1f, 0f);
+            cp.anchorMax = new Vector2(1f, 1f);
+            cp.pivot = new Vector2(1f, 0.5f);
+            cp.anchoredPosition = Vector2.zero;
+            cp.sizeDelta = new Vector2(commandPanelWidth, 0f);
+
+            var cmdFrameImg = cmdPanel.AddComponent<Image>();
+            cmdFrameImg.sprite = commandCardFrame;
+            cmdFrameImg.type = Image.Type.Simple;
+            cmdFrameImg.color = commandCardFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            cmdFrameImg.raycastTarget = false;
+
+            var grid = new GameObject("CmdGrid");
+            grid.transform.SetParent(cmdPanel.transform, false);
+            var grt = grid.AddComponent<RectTransform>();
+            grt.anchorMin = Vector2.zero;
+            grt.anchorMax = Vector2.one;
+            grt.offsetMin = new Vector2(20f, 24f);
+            grt.offsetMax = new Vector2(-20f, -24f);
+            var gl = grid.AddComponent<GridLayoutGroup>();
+            gl.cellSize = new Vector2(80f, 52f);
+            gl.spacing = new Vector2(6f, 6f);
+            gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gl.constraintCount = 4;
+            gl.childAlignment = TextAnchor.MiddleCenter;
+            _cmdGridParent = grid.transform;
+
+            // Center / Selection Block
+            var center = new GameObject("SelectionBlock");
+            center.transform.SetParent(bar.transform, false);
+            var cr = center.AddComponent<RectTransform>();
+            cr.anchorMin = new Vector2(0f, 0f);
+            cr.anchorMax = new Vector2(1f, 1f);
+            cr.offsetMin = new Vector2(minimapSlot, 0f);
+            cr.offsetMax = new Vector2(-commandPanelWidth, 0f);
+            var centerBg = center.AddComponent<Image>();
+            centerBg.sprite = centerBlockFrame;
+            centerBg.type = Image.Type.Simple;
+            centerBg.color = centerBlockFrame != null ? Color.white : new Color(0.06f, 0.07f, 0.04f, 0.85f);
+            centerBg.raycastTarget = false;
+
+            // Portrait
+            var portrait = new GameObject("PortraitBlock");
+            portrait.transform.SetParent(center.transform, false);
+            var pr = portrait.AddComponent<RectTransform>();
+            pr.anchorMin = new Vector2(0f, 0.5f);
+            pr.anchorMax = new Vector2(0f, 0.5f);
+            pr.pivot = new Vector2(0f, 0.5f);
+            pr.anchoredPosition = new Vector2(16f, 0f);
+            pr.sizeDelta = new Vector2(130f, 130f);
+            var pImg = portrait.AddComponent<Image>();
+            pImg.sprite = portraitFrame;
+            pImg.type = Image.Type.Simple;
+            pImg.color = portraitFrame != null ? Color.white : new Color(0.1f, 0.08f, 0.12f, 0.8f);
+
+            var portraitSub = new GameObject("PortraitInner");
+            portraitSub.transform.SetParent(portrait.transform, false);
+            var psr = portraitSub.AddComponent<RectTransform>();
+            psr.anchorMin = Vector2.zero;
+            psr.anchorMax = Vector2.one;
+            psr.offsetMin = new Vector2(16f, 16f);
+            psr.offsetMax = new Vector2(-16f, -16f);
+            _portraitMain = portraitSub.AddComponent<Image>();
+            _portraitMain.preserveAspect = true;
+
+            // Central Info Block
+            var infoBlock = new GameObject("InfoBlock");
+            infoBlock.transform.SetParent(center.transform, false);
+            var ibr = infoBlock.AddComponent<RectTransform>();
+            ibr.anchorMin = new Vector2(0f, 0f);
+            ibr.anchorMax = new Vector2(1f, 1f);
+            ibr.pivot = new Vector2(0.5f, 0.5f);
+            ibr.offsetMin = new Vector2(155f, 16f);
+            ibr.offsetMax = new Vector2(-16f, -16f);
+
+            _portraitLabel = new GameObject("NameText").AddComponent<Text>();
+            _portraitLabel.transform.SetParent(infoBlock.transform, false);
+            _portraitLabel.font = _font;
+            _portraitLabel.fontSize = 20;
+            _portraitLabel.color = new Color(0.5f, 1f, 0.5f);
+            _portraitLabel.alignment = TextAnchor.MiddleCenter;
+            var pl = _portraitLabel.rectTransform;
+            pl.anchorMin = new Vector2(0f, 0.75f);
+            pl.anchorMax = Vector2.one;
+            pl.offsetMin = pl.offsetMax = Vector2.zero;
+
+            _attributeLabel = new GameObject("AttributeText").AddComponent<Text>();
+            _attributeLabel.transform.SetParent(infoBlock.transform, false);
+            _attributeLabel.font = _font;
+            _attributeLabel.fontSize = 12;
+            _attributeLabel.color = new Color(0.7f, 0.8f, 0.7f);
+            _attributeLabel.alignment = TextAnchor.MiddleCenter;
+            var al = _attributeLabel.rectTransform;
+            al.anchorMin = new Vector2(0f, 0f);
+            al.anchorMax = new Vector2(1f, 0.25f);
+            al.offsetMin = al.offsetMax = Vector2.zero;
+
+            _hpLabel = new GameObject("HpText").AddComponent<Text>();
+            _hpLabel.transform.SetParent(infoBlock.transform, false);
+            _hpLabel.font = _font;
+            _hpLabel.fontSize = 14;
+            _hpLabel.color = Color.white;
+            _hpLabel.alignment = TextAnchor.MiddleCenter;
+            var hpRt = _hpLabel.rectTransform;
+            hpRt.anchorMin = new Vector2(0f, 0.4f);
+            hpRt.anchorMax = new Vector2(1f, 0.6f);
+            hpRt.offsetMin = hpRt.offsetMax = Vector2.zero;
+
+            _hpBarBg = new GameObject("HpBarBg").AddComponent<Image>();
+            _hpBarBg.transform.SetParent(infoBlock.transform, false);
+            _hpBarBg.color = new Color(0.15f, 0.05f, 0.05f, 1f);
+            var hbr = _hpBarBg.rectTransform;
+            hbr.anchorMin = new Vector2(0.1f, 0.3f);
+            hbr.anchorMax = new Vector2(0.9f, 0.38f);
+            hbr.offsetMin = hbr.offsetMax = Vector2.zero;
+
+            _hpBarFill = new GameObject("HpBarFill").AddComponent<Image>();
+            _hpBarFill.transform.SetParent(_hpBarBg.transform, false);
+            _hpBarFill.color = new Color(0.2f, 0.8f, 0.2f, 1f);
+            var hfr = _hpBarFill.rectTransform;
+            hfr.anchorMin = Vector2.zero;
+            hfr.anchorMax = Vector2.one;
+            hfr.offsetMin = hfr.offsetMax = Vector2.zero;
+
+            // Selection Grid
+            var gridRoot = new GameObject("SelectionGrid");
+            gridRoot.transform.SetParent(center.transform, false);
+            var gr = gridRoot.AddComponent<RectTransform>();
+            gr.anchorMin = new Vector2(0.35f, 1f);
+            gr.anchorMax = new Vector2(1f, 1f);
+            gr.pivot = new Vector2(0f, 1f);
+            gr.anchoredPosition = new Vector2(0f, 0f);
+            gr.sizeDelta = new Vector2(0f, 44f);
+
+            var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
+            gridLayout.cellSize = new Vector2(38f, 38f);
+            gridLayout.spacing = new Vector2(2f, 2f);
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+            gridLayout.constraintCount = 1;
+
+            _selectionCells = new Image[24];
+            for (var i = 0; i < 24; i++)
+            {
+                var cell = new GameObject($"Sel_{i}");
+                cell.transform.SetParent(gridRoot.transform, false);
+                var img = cell.AddComponent<Image>();
+                img.color = new Color(1f, 1f, 1f, 0f);
+                var tx = new GameObject("t").AddComponent<Text>();
+                tx.transform.SetParent(cell.transform, false);
+                tx.font = _font;
+                tx.fontSize = 12;
+                tx.color = Color.white;
+                tx.alignment = TextAnchor.LowerRight;
+                var trt = tx.rectTransform;
+                trt.anchorMin = Vector2.zero;
+                trt.anchorMax = Vector2.one;
+                trt.offsetMin = trt.offsetMax = new Vector2(2f, 2f);
+                _selectionCells[i] = img;
+            }
+
+            _pendingHint = new GameObject("PendingHint").AddComponent<Text>();
+            _pendingHint.transform.SetParent(hud, false);
+            _pendingHint.font = _font;
+            _pendingHint.fontSize = 16;
+            _pendingHint.color = new Color(1f, 0.9f, 0.2f);
+            _pendingHint.alignment = TextAnchor.MiddleCenter;
+            var ph = _pendingHint.rectTransform;
+            ph.anchorMin = new Vector2(0.5f, 0.25f);
+            ph.anchorMax = new Vector2(0.5f, 0.25f);
+            ph.anchoredPosition = Vector2.zero;
+            ph.sizeDelta = new Vector2(800f, 30f);
         }
 
         void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick)
@@ -446,9 +689,9 @@ case BarMode.Building:
             ForceRebuild();
         }
 
-        void ProduceFromBuilding(ProductionBuilding bld)
+        void ProduceFromBuilding(ProductionBuilding bld, UnitArchetype archetype)
         {
-            if (bld != null) bld.ProduceUnit();
+            if (bld != null) bld.ProduceUnit(archetype);
         }
 
         static void ClearBuildingRally(ProductionBuilding bld)
@@ -471,13 +714,17 @@ case BarMode.Building:
             Color col;
             switch (type)
             {
-                case BuildingType.MantisBranch:
-                    scale = new Vector3(3f, 3.5f, 3f);
-                    col = new Color(0.45f, 0.7f, 0.3f, 0.4f);
+                case BuildingType.Underground:
+                    scale = new Vector3(4f, 1.5f, 4f);
+                    col = new Color(0.35f, 0.25f, 0.45f, 0.4f);
                     break;
                 case BuildingType.AntNest:
                     scale = new Vector3(3.5f, 2f, 3.5f);
                     col = new Color(0.5f, 0.35f, 0.2f, 0.4f);
+                    break;
+                case BuildingType.SkyTower:
+                    scale = new Vector3(2.5f, 5f, 2.5f);
+                    col = new Color(0.3f, 0.5f, 0.6f, 0.4f);
                     break;
                 default:
                     scale = new Vector3(3f, 2f, 3f);
@@ -563,7 +810,6 @@ case BarMode.Building:
                     UnitOrder.Attack => "Attack",
                     UnitOrder.Gather => "Gather",
                     UnitOrder.ReturnDeposit => "Gather",
-                    UnitOrder.PickupSeed => "Gather",
                     UnitOrder.Patrol => "Patrol",
                     _ => null
                 };
@@ -754,8 +1000,9 @@ case BarMode.Building:
         {
             return t switch
             {
-                BuildingType.MantisBranch => "Manti's Branch",
+                BuildingType.Underground => "Underground",
                 BuildingType.AntNest => "Ant's Nest",
+                BuildingType.SkyTower => "Sky Tower",
                 _ => t.ToString()
             };
         }

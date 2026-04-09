@@ -8,8 +8,9 @@ namespace InsectWars.RTS
 {
     public enum BuildingType
     {
-        MantisBranch,
-        AntNest
+        Underground,
+        AntNest,
+        SkyTower
     }
 
     public class ProductionBuilding : MonoBehaviour
@@ -30,36 +31,41 @@ namespace InsectWars.RTS
 
         public string DisplayName => _type switch
         {
-            BuildingType.MantisBranch => "Manti's\nBranch",
+            BuildingType.Underground => "Underground",
             BuildingType.AntNest => "Ant's\nNest",
+            BuildingType.SkyTower => "Sky Tower",
             _ => _type.ToString()
         };
 
-        public UnitArchetype ProducedArchetype => _type switch
+        public UnitArchetype[] ProducibleUnits => _type switch
         {
-            BuildingType.MantisBranch => UnitArchetype.BasicFighter,
-            BuildingType.AntNest => UnitArchetype.Worker,
-            _ => UnitArchetype.Worker
+            BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
+            BuildingType.AntNest => new[] { UnitArchetype.Worker },
+            BuildingType.SkyTower => System.Array.Empty<UnitArchetype>(),
+            _ => new[] { UnitArchetype.Worker }
         };
 
-        public int UnitCost => _type switch
+        public static int GetUnitCost(UnitArchetype arch) => arch switch
         {
-            BuildingType.MantisBranch => 100,
-            BuildingType.AntNest => 50,
+            UnitArchetype.BasicFighter => 100,
+            UnitArchetype.BasicRanged => 100,
+            UnitArchetype.Worker => 50,
             _ => 50
         };
 
-        public string UnitName => _type switch
+        public static string GetUnitName(UnitArchetype arch) => arch switch
         {
-            BuildingType.MantisBranch => "Mantis",
-            BuildingType.AntNest => "Worker",
+            UnitArchetype.BasicFighter => "Mantis",
+            UnitArchetype.BasicRanged => "Beetle",
+            UnitArchetype.Worker => "Worker",
             _ => "Unit"
         };
 
         public static int GetBuildCost(BuildingType type) => type switch
         {
-            BuildingType.MantisBranch => 150,
+            BuildingType.Underground => 200,
             BuildingType.AntNest => 400,
+            BuildingType.SkyTower => 300,
             _ => 100
         };
 
@@ -76,11 +82,12 @@ namespace InsectWars.RTS
             s_all.Add(this);
         }
 
-        public InsectUnit ProduceUnit()
+        public InsectUnit ProduceUnit(UnitArchetype archetype)
         {
-            if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(UnitCost))
+            int cost = GetUnitCost(archetype);
+            if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
                 return null;
-            if (_team == Team.Enemy && !EnemyResources.TrySpend(UnitCost))
+            if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
                 return null;
 
             var center = new Vector3(transform.position.x, 0f, transform.position.z);
@@ -91,7 +98,7 @@ namespace InsectWars.RTS
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
 
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, ProducedArchetype);
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
             if (unit == null) return null;
 
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
@@ -159,11 +166,16 @@ namespace InsectWars.RTS
 
         public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player)
         {
-            if (type == BuildingType.AntNest)
+            var lib = SkirmishDirector.ActiveVisualLibrary;
+
+            if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
+                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
+
+            if (lib != null)
             {
-                var lib = SkirmishDirector.ActiveVisualLibrary;
-                if (lib != null && lib.hivePrefab != null)
-                    return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
+                var prefab = lib.GetBuildingPrefab(type);
+                if (prefab != null)
+                    return PlaceFromPrefab(position, prefab, type, team);
             }
 
             var go = new GameObject($"Building_{type}");
@@ -173,13 +185,17 @@ namespace InsectWars.RTS
             Vector3 scale;
             switch (type)
             {
-                case BuildingType.MantisBranch:
-                    buildingColor = new Color(0.45f, 0.7f, 0.3f);
-                    scale = new Vector3(3f, 3.5f, 3f);
+                case BuildingType.Underground:
+                    buildingColor = new Color(0.35f, 0.25f, 0.45f);
+                    scale = new Vector3(4f, 1.5f, 4f);
                     break;
                 case BuildingType.AntNest:
                     buildingColor = new Color(0.5f, 0.35f, 0.2f);
                     scale = new Vector3(3.5f, 2f, 3.5f);
+                    break;
+                case BuildingType.SkyTower:
+                    buildingColor = new Color(0.3f, 0.5f, 0.6f);
+                    scale = new Vector3(2.5f, 5f, 2.5f);
                     break;
                 default:
                     buildingColor = Color.gray;
@@ -295,6 +311,50 @@ namespace InsectWars.RTS
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team);
+            return building;
+        }
+
+        static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team)
+        {
+            var go = Object.Instantiate(prefab);
+            go.name = $"Building_{type}";
+            go.transform.position = position;
+
+            Vector3 scale = type switch
+            {
+                BuildingType.Underground => new Vector3(4f, 1.5f, 4f),
+                BuildingType.SkyTower => new Vector3(2.5f, 5f, 2.5f),
+                _ => Vector3.one
+            };
+            go.transform.localScale = scale;
+
+            if (go.GetComponent<Collider>() == null)
+            {
+                var col = go.AddComponent<BoxCollider>();
+                col.center = new Vector3(0f, 0.5f, 0f);
+                col.size = Vector3.one;
+            }
+
+            if (go.GetComponent<NavMeshObstacle>() == null)
+            {
+                var obs = go.AddComponent<NavMeshObstacle>();
+                obs.carving = true;
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = new Vector3(1f, 1f, 1f);
+                obs.center = new Vector3(0f, 0.5f, 0f);
+            }
+
+            var strapColor = TeamPalette.GetTeamColor(team);
+            var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            strap.name = "TeamStrap";
+            strap.transform.SetParent(go.transform, false);
+            strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
+            strap.transform.localScale = new Vector3(0.6f, 0.03f, 0.6f);
+            Destroy(strap.GetComponent<Collider>());
+            ApplyMat(strap, strapColor);
+
+            var building = go.AddComponent<ProductionBuilding>();
+            building.Initialize(type, team);
             return building;
         }
 

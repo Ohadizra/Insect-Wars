@@ -22,7 +22,6 @@ namespace InsectWars.RTS
         [SerializeField] Sprite buttonSprite;
 
         Text _calorieLabel;
-        Text _seedLabel;
         Text _selectionLabel;
         const string SelectionHint =
             "LMB select · RMB move/attack/gather · M/S/H/P/A commands (see bottom bar)";
@@ -74,13 +73,9 @@ namespace InsectWars.RTS
             resourceContainer.anchoredPosition = new Vector2(30, -30);
             resourceContainer.sizeDelta = new Vector2(360, 50);
 
-            var calPanel = CreatePanel("CaloriePanel", resourceContainer, Vector2.zero, new Vector2(0.48f, 1), new Vector2(0, 0.5f), Vector2.zero, Vector2.zero, barSprite);
+            var calPanel = CreatePanel("CaloriePanel", resourceContainer, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, barSprite);
             _calorieLabel = CreateText("Text", calPanel.transform, Vector2.zero, Vector2.one, new Vector2(15, 0), new Vector2(-15, 0), new Vector2(0.5f, 0.5f), "Calories: 0", 18, Color.white);
             _calorieLabel.alignment = TextAnchor.MiddleCenter;
-
-            var seedPanel = CreatePanel("SeedPanel", resourceContainer, new Vector2(0.52f, 0), Vector2.one, new Vector2(1, 0.5f), Vector2.zero, Vector2.zero, barSprite);
-            _seedLabel = CreateText("Text", seedPanel.transform, Vector2.zero, Vector2.one, new Vector2(15, 0), new Vector2(-15, 0), new Vector2(0.5f, 0.5f), "Seeds: 0", 18, new Color(0.8f, 1f, 0.7f));
-            _seedLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Top Right: Menu ---
             var menuPanel = CreatePanel("MenuButton", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -30), new Vector2(140, 50), buttonSprite);
@@ -150,9 +145,7 @@ namespace InsectWars.RTS
             if (PlayerResources.Instance != null)
             {
                 PlayerResources.Instance.OnCaloriesChanged += OnCalories;
-                PlayerResources.Instance.OnCactiSeedsChanged += OnSeeds;
                 OnCalories(PlayerResources.Instance.Calories);
-                OnSeeds(PlayerResources.Instance.CactiSeeds);
             }
         }
 
@@ -161,7 +154,6 @@ namespace InsectWars.RTS
             if (PlayerResources.Instance != null)
             {
                 PlayerResources.Instance.OnCaloriesChanged -= OnCalories;
-                PlayerResources.Instance.OnCactiSeedsChanged -= OnSeeds;
             }
             HudCanvasRect = null;
         }
@@ -170,12 +162,6 @@ namespace InsectWars.RTS
         {
             if (_calorieLabel != null)
                 _calorieLabel.text = $"Calories: {n:N0}";
-        }
-
-        void OnSeeds(int n)
-        {
-            if (_seedLabel != null)
-                _seedLabel.text = $"Cacti Seeds: {n:N0}";
         }
 
         void Update()
