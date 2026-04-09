@@ -693,18 +693,34 @@ namespace InsectWars.RTS
             if (modifier == null) modifier = fruit.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
 
-            if (fruit.GetComponent<NavMeshObstacle>() == null)
-            {
-                var obs = fruit.AddComponent<NavMeshObstacle>();
-                obs.carving = true;
-                obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(1.0f, 0.8f, 1.0f);
-                obs.center = Vector3.zero;
-            }
+            AddFruitObstacle(fruit);
 
             var node = fruit.GetComponent<RottingFruitNode>();
             if (node == null) node = fruit.AddComponent<RottingFruitNode>();
             node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);
+        }
+
+        static void AddFruitObstacle(GameObject fruit)
+        {
+            var existing = fruit.GetComponentInChildren<NavMeshObstacle>();
+            if (existing != null)
+            {
+                if (Application.isPlaying) Object.Destroy(existing);
+                else Object.DestroyImmediate(existing);
+            }
+
+            var s = fruit.transform.localScale;
+            var obsGo = new GameObject("NavObstacle");
+            obsGo.transform.SetParent(fruit.transform, false);
+            obsGo.transform.localPosition = Vector3.zero;
+            obsGo.transform.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
+
+            var obs = obsGo.AddComponent<NavMeshObstacle>();
+            obs.carving = true;
+            obs.shape = NavMeshObstacleShape.Capsule;
+            obs.radius = Mathf.Max(s.x, s.z) * 0.5f;
+            obs.height = s.y * 0.8f;
+            obs.center = Vector3.zero;
         }
 
         static void AddCactiSeed(Transform parent, CactiSeedPlaced s)
