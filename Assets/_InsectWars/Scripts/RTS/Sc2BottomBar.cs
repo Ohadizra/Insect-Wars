@@ -84,7 +84,7 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             // Auto-wire the generated art if null
-            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/ZergHUD_Main.png");
+            if (barBackground == null) barBackground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/BottomBar_BG.png");
             if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Minimap_Frame.png");
             if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/CommandCard_Frame.png");
             if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_Frame.png");
@@ -315,10 +315,20 @@ namespace InsectWars.RTS
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.sprite = barBackground;
-            bg.type = Image.Type.Simple;
-            bg.color = Color.white;
+            bg.color = new Color(0.04f, 0.05f, 0.03f, 0.94f);
             bg.raycastTarget = true;
+
+            var barArt = new GameObject("BarArt");
+            barArt.transform.SetParent(bar.transform, false);
+            var artRt = barArt.AddComponent<RectTransform>();
+            artRt.anchorMin = Vector2.zero;
+            artRt.anchorMax = Vector2.one;
+            artRt.offsetMin = artRt.offsetMax = Vector2.zero;
+            var artImg = barArt.AddComponent<Image>();
+            artImg.sprite = barBackground;
+            artImg.type = Image.Type.Sliced;
+            artImg.color = Color.white;
+            artImg.raycastTarget = false;
 
             // Minimap Slot
             var miniSlot = new GameObject("MinimapHost");
@@ -327,15 +337,22 @@ namespace InsectWars.RTS
             ms.anchorMin = new Vector2(0f, 0f);
             ms.anchorMax = new Vector2(0f, 1f);
             ms.pivot = new Vector2(0f, 0.5f);
-            ms.anchoredPosition = new Vector2(32f, 0f);
-            ms.sizeDelta = new Vector2(180f, -60f);
+            ms.anchoredPosition = new Vector2(8f, 0f);
+            ms.sizeDelta = new Vector2(200f, -12f);
+
+            var miniFrameImg = miniSlot.AddComponent<Image>();
+            miniFrameImg.sprite = minimapFrame;
+            miniFrameImg.type = Image.Type.Sliced;
+            miniFrameImg.color = minimapFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            miniFrameImg.raycastTarget = false;
 
             var miniInner = new GameObject("MinimapInner");
             miniInner.transform.SetParent(miniSlot.transform, false);
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = mi.offsetMax = Vector2.zero;
+            mi.offsetMin = new Vector2(8f, 8f);
+            mi.offsetMax = new Vector2(-8f, -8f);
             MinimapHost = mi;
 
             // Command Panel
@@ -345,15 +362,22 @@ namespace InsectWars.RTS
             cp.anchorMin = new Vector2(1f, 0f);
             cp.anchorMax = new Vector2(1f, 1f);
             cp.pivot = new Vector2(1f, 0.5f);
-            cp.anchoredPosition = new Vector2(-32f, 0f);
-            cp.sizeDelta = new Vector2(280f, -60f);
+            cp.anchoredPosition = new Vector2(-8f, 0f);
+            cp.sizeDelta = new Vector2(300f, -12f);
+
+            var cmdFrameImg = cmdPanel.AddComponent<Image>();
+            cmdFrameImg.sprite = commandCardFrame;
+            cmdFrameImg.type = Image.Type.Sliced;
+            cmdFrameImg.color = commandCardFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            cmdFrameImg.raycastTarget = false;
 
             var grid = new GameObject("CmdGrid");
             grid.transform.SetParent(cmdPanel.transform, false);
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = grt.offsetMax = Vector2.zero;
+            grt.offsetMin = new Vector2(8f, 8f);
+            grt.offsetMax = new Vector2(-8f, -8f);
             var gl = grid.AddComponent<GridLayoutGroup>();
             gl.cellSize = new Vector2(62f, 48f);
             gl.spacing = new Vector2(6f, 6f);
@@ -366,23 +390,23 @@ namespace InsectWars.RTS
             var center = new GameObject("SelectionBlock");
             center.transform.SetParent(bar.transform, false);
             var cr = center.AddComponent<RectTransform>();
-            cr.anchorMin = new Vector2(0.2f, 0f);
-            cr.anchorMax = new Vector2(0.8f, 1f);
-            cr.offsetMin = new Vector2(20f, 20f);
-            cr.offsetMax = new Vector2(-20f, -20f);
+            cr.anchorMin = new Vector2(0f, 0f);
+            cr.anchorMax = new Vector2(1f, 1f);
+            cr.offsetMin = new Vector2(220f, 10f);
+            cr.offsetMax = new Vector2(-320f, -10f);
 
             // Portrait
             var portrait = new GameObject("PortraitBlock");
             portrait.transform.SetParent(center.transform, false);
             var pr = portrait.AddComponent<RectTransform>();
-            pr.anchorMin = new Vector2(0f, 0.5f);
-            pr.anchorMax = new Vector2(0f, 0.5f);
+            pr.anchorMin = new Vector2(0f, 0f);
+            pr.anchorMax = new Vector2(0f, 1f);
             pr.pivot = new Vector2(0f, 0.5f);
             pr.anchoredPosition = new Vector2(0f, 0f);
-            pr.sizeDelta = new Vector2(100f, 140f);
+            pr.sizeDelta = new Vector2(100f, 0f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
-            pImg.type = Image.Type.Simple;
+            pImg.type = Image.Type.Sliced;
             pImg.color = portraitFrame != null ? Color.white : new Color(0.1f, 0.08f, 0.12f, 0.8f);
 
             var portraitSub = new GameObject("PortraitInner");
@@ -399,11 +423,11 @@ namespace InsectWars.RTS
             var infoBlock = new GameObject("InfoBlock");
             infoBlock.transform.SetParent(center.transform, false);
             var ibr = infoBlock.AddComponent<RectTransform>();
-            ibr.anchorMin = new Vector2(0.5f, 0.5f);
-            ibr.anchorMax = new Vector2(0.5f, 0.5f);
+            ibr.anchorMin = new Vector2(0f, 0f);
+            ibr.anchorMax = new Vector2(1f, 1f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.anchoredPosition = new Vector2(20f, -10f);
-            ibr.sizeDelta = new Vector2(220f, 120f);
+            ibr.offsetMin = new Vector2(110f, 4f);
+            ibr.offsetMax = new Vector2(-4f, -4f);
 
             _portraitLabel = new GameObject("NameText").AddComponent<Text>();
             _portraitLabel.transform.SetParent(infoBlock.transform, false);

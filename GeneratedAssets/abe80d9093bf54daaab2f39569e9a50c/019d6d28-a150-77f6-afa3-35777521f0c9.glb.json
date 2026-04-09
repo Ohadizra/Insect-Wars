@@ -1,0 +1,12 @@
+{
+    "asset": "abe80d9093bf54daaab2f39569e9a50c",
+    "fileName": "019d6d28-a150-77f6-afa3-35777521f0c9.glb",
+    "prompt": "Stylized lump of clay or earth, textured, matching the style of a rotting apple environment, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "a5c45501b00622f6118f44f3bdaa0f98",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

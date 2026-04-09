@@ -1,0 +1,12 @@
+{
+    "asset": "a86d3f4d10e4c4b79aa65d94ff2a3721",
+    "fileName": "019d6d29-47ee-7223-9e37-2610e5b2ebfa.glb",
+    "prompt": "Stylized rotting pear fruit, pitted skin, organic texture, matching the style of a rotting apple, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "ef6e65dcef08d62b37e48f64a9c0f2ed",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,12 @@
+{
+    "asset": "7d83a95451d37482eb7588902ff7fa4c",
+    "fileName": "019d6d20-4b20-726b-8ac7-2ec91a8d6b33.glb",
+    "prompt": "Stylized rotting mushroom, pitted cap, organic texture, matching the style of a rotting apple, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "c7a937c60491453f412aabc3730f38ab",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

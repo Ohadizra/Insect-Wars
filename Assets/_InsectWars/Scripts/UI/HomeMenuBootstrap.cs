@@ -55,7 +55,11 @@ namespace InsectWars.UI
             var go = new GameObject("MainMenuCanvas");
             _canvas = go.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            go.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            var menuScaler = go.AddComponent<CanvasScaler>();
+            menuScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            menuScaler.referenceResolution = new Vector2(1920, 1080);
+            menuScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            menuScaler.matchWidthOrHeight = 0.5f;
             go.AddComponent<GraphicRaycaster>();
         }
 

@@ -1,0 +1,12 @@
+{
+    "asset": "33a8f8fae844d4043a18f35673725294",
+    "fileName": "019d6d28-8d15-77b0-8268-9ea8515b8903.glb",
+    "prompt": "Stylized pitted rock, irregular shape, organic texture, matching the style of a rotting apple environment, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "6429531217aa5bfcb0fba1791451e0cc",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

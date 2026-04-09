@@ -1,0 +1,12 @@
+{
+    "asset": "4078186599feb437bae874c431b1d8cd",
+    "fileName": "019d6d24-f6e5-73ae-ac41-e2f8a9a20bdf.glb",
+    "prompt": "Stylized clump of thick grass blades, organic texture, matching the style of a rotting apple environment, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "04b94a9d07f7760eae742ef3cad622cd",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

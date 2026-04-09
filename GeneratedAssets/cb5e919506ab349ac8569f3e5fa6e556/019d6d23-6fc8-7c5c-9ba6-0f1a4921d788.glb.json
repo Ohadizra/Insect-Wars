@@ -1,0 +1,12 @@
+{
+    "asset": "cb5e919506ab349ac8569f3e5fa6e556",
+    "fileName": "019d6d23-6fc8-7c5c-9ba6-0f1a4921d788.glb",
+    "prompt": "Stylized gnarled dry twig, organic texture, matching the style of a rotting apple environment, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "be738552e93eddc03d651ef4dd1a5b44",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
