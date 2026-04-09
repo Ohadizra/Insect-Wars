@@ -436,13 +436,16 @@ namespace InsectWars.RTS
 
         void BuildHive(Transform parent, Vector3 worldPos, Team team, string name)
         {
+            float h = GetHeight(worldPos);
+            var placedPos = new Vector3(worldPos.x, h + worldPos.y, worldPos.z);
+
             GameObject hive;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)
             {
                 hive = Instantiate(visualLibrary.hivePrefab, parent);
                 hive.name = name;
                 if (!hive.CompareTag("Hive")) hive.tag = "Hive";
-                hive.transform.position = worldPos;
+                hive.transform.position = placedPos;
                 var deposit = hive.GetComponent<HiveDeposit>();
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
@@ -483,7 +486,7 @@ namespace InsectWars.RTS
                 hive.name = name;
                 hive.tag = "Hive";
                 hive.transform.SetParent(parent);
-                hive.transform.position = worldPos;
+                hive.transform.position = placedPos;
                 hive.transform.localScale = new Vector3(4f, 2f, 4f);
                 ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
                 
@@ -647,6 +650,8 @@ namespace InsectWars.RTS
             if (modifier == null) modifier = apple.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
 
+            AddFruitObstacle(apple);
+
             if (apple.GetComponent<RottingFruitNode>() == null)
                 apple.AddComponent<RottingFruitNode>();
         }
@@ -687,6 +692,15 @@ namespace InsectWars.RTS
             var modifier = fruit.GetComponent<NavMeshModifier>();
             if (modifier == null) modifier = fruit.AddComponent<NavMeshModifier>();
             modifier.ignoreFromBuild = true;
+
+            if (fruit.GetComponent<NavMeshObstacle>() == null)
+            {
+                var obs = fruit.AddComponent<NavMeshObstacle>();
+                obs.carving = true;
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = new Vector3(1.0f, 0.8f, 1.0f);
+                obs.center = Vector3.zero;
+            }
 
             var node = fruit.GetComponent<RottingFruitNode>();
             if (node == null) node = fruit.AddComponent<RottingFruitNode>();
