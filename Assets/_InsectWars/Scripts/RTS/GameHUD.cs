@@ -27,12 +27,6 @@ namespace InsectWars.RTS
 
         void Awake()
         {
-            // Load default insectoid sprites if not assigned
-            if (barSprite == null) barSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Bar_Slim_Insect.png");
-            if (frameSprite == null) frameSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Slim_Insect.png");
-            if (actionGridSprite == null) actionGridSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Slim_Insect.png");
-            if (buttonSprite == null) buttonSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Button_Slim_Insect.png");
-
             if (hudCanvasPrefab != null)
             {
                 var root = Instantiate(hudCanvasPrefab, transform);
@@ -187,5 +181,5 @@ namespace InsectWars.RTS
                 _selectionLabel.text = c > 0 ? $"Selected: {c} unit(s)" : SelectionHint;
             }
         }
-        }
-        }
+    }
+}
