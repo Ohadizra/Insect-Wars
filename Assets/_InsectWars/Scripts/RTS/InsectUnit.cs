@@ -553,7 +553,7 @@ namespace InsectWars.RTS
             var dest = depositDest.Value;
             var diff = transform.position - dest;
             diff.y = 0f;
-            if (diff.magnitude > 2f)
+            if (diff.magnitude > 3.5f)
             {
                 _agent.isStopped = false;
                 _agent.SetDestination(dest);
@@ -592,7 +592,7 @@ namespace InsectWars.RTS
             var dest = _seedReturnDest.Value;
             var diff = transform.position - dest;
             diff.y = 0f;
-            if (diff.magnitude > 2f)
+            if (diff.magnitude > 3.5f)
             {
                 _agent.isStopped = false;
                 _agent.SetDestination(dest);
@@ -664,7 +664,7 @@ namespace InsectWars.RTS
             if (teamHive != null)
             {
                 float d = Vector3.Distance(transform.position, teamHive.transform.position);
-                if (d < bestDist) { bestDist = d; bestPoint = teamHive.DepositPoint; }
+                if (d < bestDist) { bestDist = d; bestPoint = teamHive.GetDepositPoint(transform.position); }
             }
 
             foreach (var bld in ProductionBuilding.All)

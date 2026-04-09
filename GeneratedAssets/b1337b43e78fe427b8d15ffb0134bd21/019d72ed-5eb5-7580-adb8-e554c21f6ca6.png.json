@@ -1,0 +1,27 @@
+{
+    "asset": "b1337b43e78fe427b8d15ffb0134bd21",
+    "fileName": "019d72ed-5eb5-7580-adb8-e554c21f6ca6.png",
+    "prompt": "Small horizontal UI button frame, dark purple shell, glowing green highlights, minimalist insectoid design, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "41417f647e4755c76a35dc20740a6c98",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

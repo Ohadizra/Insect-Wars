@@ -64,11 +64,34 @@ namespace InsectWars.RTS
         {
             get
             {
+                var rend = GetComponentInChildren<Renderer>();
+                float edgeDist = rend != null
+                    ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 0.8f
+                    : transform.localScale.x * 0.5f + 0.8f;
                 var ground = new Vector3(transform.position.x, 0f, transform.position.z);
-                if (NavMesh.SamplePosition(ground, out var hit, 4f, NavMesh.AllAreas))
+                var edgePoint = ground + Vector3.forward * edgeDist;
+                if (NavMesh.SamplePosition(edgePoint, out var hit, 6f, NavMesh.AllAreas))
+                    return hit.position;
+                if (NavMesh.SamplePosition(ground, out hit, 12f, NavMesh.AllAreas))
                     return hit.position;
                 return ground;
             }
+        }
+
+        public Vector3 GetDepositPoint(Vector3 fromPosition)
+        {
+            var rend = GetComponentInChildren<Renderer>();
+            float edgeDist = rend != null
+                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 0.8f
+                : transform.localScale.x * 0.5f + 0.8f;
+            var dir = fromPosition - transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
+            var edgePoint = new Vector3(transform.position.x, 0f, transform.position.z)
+                            + dir.normalized * edgeDist;
+            if (NavMesh.SamplePosition(edgePoint, out var hit, 6f, NavMesh.AllAreas))
+                return hit.position;
+            return DepositPoint;
         }
 
         public void SetRallyPoint(Vector3 pos)

@@ -1,0 +1,27 @@
+{
+    "asset": "1b276f48599fd4579a39e777fc5820f5",
+    "fileName": "019d72e9-0d4a-75df-978c-b42fa26ee499.png",
+    "prompt": "Large rectangular action panel frame, dark purple chitin, glowing green veins, internal grid markers, sharp organic insectoid design, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "1b299414a62f26510541c134699c1c64",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

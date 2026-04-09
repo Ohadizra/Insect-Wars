@@ -408,11 +408,14 @@ case BarMode.Building:
             var hive = HiveDeposit.PlayerHive;
             if (hive == null) return;
             var center = new Vector3(hive.transform.position.x, 0f, hive.transform.position.z);
-            var hiveExtent = hive.transform.localScale.x * 0.5f + 1.2f;
+            var rend = hive.GetComponentInChildren<Renderer>();
+            float hiveExtent = rend != null
+                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.2f
+                : hive.transform.localScale.x * 0.5f + 1.2f;
             var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
             var offset = new Vector3(Mathf.Cos(angle) * hiveExtent, 0f, Mathf.Sin(angle) * hiveExtent);
             var spawnPos = center + offset;
-            if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(spawnPos, out var hit, 12f, NavMesh.AllAreas))
                 spawnPos = hit.position;
             var unit = SkirmishDirector.SpawnUnit(spawnPos, Team.Player, UnitArchetype.Worker);
 

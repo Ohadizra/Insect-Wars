@@ -439,6 +439,8 @@ namespace InsectWars.RTS
             float h = GetHeight(worldPos);
             var placedPos = new Vector3(worldPos.x, h + worldPos.y, worldPos.z);
 
+            const float hiveScale = 1.75f;
+
             GameObject hive;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)
             {
@@ -446,6 +448,7 @@ namespace InsectWars.RTS
                 hive.name = name;
                 if (!hive.CompareTag("Hive")) hive.tag = "Hive";
                 hive.transform.position = placedPos;
+                hive.transform.localScale *= hiveScale;
                 var deposit = hive.GetComponent<HiveDeposit>();
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
@@ -473,7 +476,7 @@ namespace InsectWars.RTS
                 strap.name = "TeamStrap";
                 strap.transform.SetParent(hive.transform, false);
                 strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
-                strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f); // Thicker strap
+                strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f);
                 Object.Destroy(strap.GetComponent<Collider>());
                 ApplyMat(strap, TeamPalette.GetTeamColor(team));
 
@@ -487,7 +490,7 @@ namespace InsectWars.RTS
                 hive.tag = "Hive";
                 hive.transform.SetParent(parent);
                 hive.transform.position = placedPos;
-                hive.transform.localScale = new Vector3(4f, 2f, 4f);
+                hive.transform.localScale = new Vector3(4f, 2f, 4f) * hiveScale;
                 ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
                 
                 // Add straps to the primitive Hive
@@ -499,8 +502,6 @@ namespace InsectWars.RTS
                 AddPrimitivePart(hive.transform, PrimitiveType.Cube, new Vector3(0f, 0f, -0.52f), new Vector3(0.5f, 1.05f, 0.08f), 
                     Quaternion.identity, strapColor);
 
-                var hiveMod = hive.AddComponent<NavMeshModifier>();
-                hiveMod.ignoreFromBuild = true;
                 var deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
                 hive.AddComponent<HiveVisual>();
@@ -508,6 +509,9 @@ namespace InsectWars.RTS
                 var prod = hive.AddComponent<ProductionBuilding>();
                 prod.Initialize(BuildingType.AntNest, team);
             }
+
+            SetIgnoreNavMeshRecursive(hive);
+            AddHiveObstacle(hive);
         }
 
         void BuildTerrain(Transform parent, float mapHalfExtent)
@@ -719,7 +723,7 @@ namespace InsectWars.RTS
             {
                 var b = rend.bounds;
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = b.size * 1.05f;
+                obs.size = b.size * 0.85f;
                 obs.center = b.center - fruit.transform.position;
             }
             else
@@ -728,6 +732,40 @@ namespace InsectWars.RTS
                 obs.radius = Mathf.Max(s.x, s.z) * 0.55f;
                 obs.height = s.y;
                 obs.center = Vector3.zero;
+            }
+        }
+
+        static void AddHiveObstacle(GameObject hive)
+        {
+            var existing = hive.GetComponentInChildren<NavMeshObstacle>();
+            if (existing != null)
+            {
+                if (Application.isPlaying) Object.Destroy(existing);
+                else Object.DestroyImmediate(existing);
+            }
+
+            var s = hive.transform.localScale;
+            var obsGo = new GameObject("NavObstacle");
+            obsGo.transform.SetParent(hive.transform, false);
+            obsGo.transform.localPosition = Vector3.zero;
+            obsGo.transform.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
+
+            var obs = obsGo.AddComponent<NavMeshObstacle>();
+            obs.carving = true;
+
+            var rend = hive.GetComponentInChildren<Renderer>();
+            if (rend != null)
+            {
+                var b = rend.bounds;
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = b.size * 0.9f;
+                obs.center = b.center - hive.transform.position;
+            }
+            else
+            {
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = new Vector3(s.x, s.y, s.z);
+                obs.center = new Vector3(0f, s.y * 0.5f, 0f);
             }
         }
 

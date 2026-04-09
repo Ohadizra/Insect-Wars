@@ -1,0 +1,27 @@
+{
+    "asset": "428ae564fa72b4d9a914ba5cb18bff7d",
+    "fileName": "019d72e8-d909-7bb4-82cb-0284b6471af9.png",
+    "prompt": "Wide rectangular UI frame, slim dark purple chitin texture, glowing green glowing accents, thorny vine borders, elegant alien insectoid style, empty center, transparent background.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "cb07df9239e39f34b4705afeeb8e7f9c",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

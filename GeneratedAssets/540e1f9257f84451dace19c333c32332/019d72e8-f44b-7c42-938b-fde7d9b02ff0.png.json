@@ -1,0 +1,27 @@
+{
+    "asset": "540e1f9257f84451dace19c333c32332",
+    "fileName": "019d72e8-f44b-7c42-938b-fde7d9b02ff0.png",
+    "prompt": "Square UI frame, dark purple chitin texture, glowing neon green veins and gems, thorny vine details at corners, elegant insectoid exoskeleton style, empty center, transparent background, high resolution.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "3c1e7342593c0a2c6e9e3f5b0e340212",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
