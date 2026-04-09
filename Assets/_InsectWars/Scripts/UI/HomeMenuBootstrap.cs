@@ -517,7 +517,6 @@ namespace InsectWars.UI
                 var block = new MaterialPropertyBlock();
                 foreach (var r in inst.GetComponentsInChildren<Renderer>(true))
                 {
-                    if (r.gameObject.name == "TeamStrap") continue;
                     r.GetPropertyBlock(block);
                     if (r.sharedMaterial != null)
                     {
@@ -525,21 +524,6 @@ namespace InsectWars.UI
                         else if (r.sharedMaterial.HasProperty("_Color")) block.SetColor("_Color", skin);
                     }
                     r.SetPropertyBlock(block);
-                }
-
-                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                strap.name = "TeamStrap";
-                strap.transform.SetParent(inst.transform, false);
-                strap.transform.localPosition = new Vector3(0f, 0.01f, 0f);
-                strap.transform.localScale = new Vector3(0.85f, 0.02f, 0.85f);
-                Destroy(strap.GetComponent<Collider>());
-                var sr = strap.GetComponent<Renderer>();
-                if (sr != null)
-                {
-                    var m = sr.material;
-                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", accent);
-                    else if (m.HasProperty("_Color")) m.color = accent;
-                    sr.material = m;
                 }
                 }
                 else

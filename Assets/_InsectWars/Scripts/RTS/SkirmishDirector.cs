@@ -435,7 +435,6 @@ namespace InsectWars.RTS
                 var skinColor = TeamPalette.GetShellColor(team);
                 foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
                 {
-                    if (renderer.gameObject.name == "TeamStrap") continue;
                     var mats = renderer.sharedMaterials;
                     for (int i = 0; i < mats.Length; i++)
                     {
@@ -447,15 +446,6 @@ namespace InsectWars.RTS
                     }
                     renderer.sharedMaterials = mats;
                 }
-
-                // Add strap to prefab Hive
-                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                strap.name = "TeamStrap";
-                strap.transform.SetParent(hive.transform, false);
-                strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
-                strap.transform.localScale = new Vector3(1.5f, 0.08f, 1.5f);
-                Object.Destroy(strap.GetComponent<Collider>());
-                ApplyMat(strap, TeamPalette.GetTeamColor(team));
 
                 var prod = hive.AddComponent<ProductionBuilding>();
                 prod.Initialize(BuildingType.AntNest, team);
@@ -969,7 +959,6 @@ namespace InsectWars.RTS
                 var block = new MaterialPropertyBlock();
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
-                    if (renderer.gameObject.name == "TeamStrap") continue;
                     renderer.GetPropertyBlock(block);
                     if (renderer.sharedMaterial != null)
                     {
@@ -980,16 +969,6 @@ namespace InsectWars.RTS
                     }
                     renderer.SetPropertyBlock(block);
                 }
-
-                // Add strap to prefab unit (vibrant accent)
-                var strapColor = TeamPalette.GetTeamColor(team);
-                var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                strap.name = "TeamStrap";
-                strap.transform.SetParent(go.transform, false);
-                strap.transform.localPosition = new Vector3(0f, 0.45f, 0f);
-                strap.transform.localScale = new Vector3(1.1f, 0.05f, 1.1f);
-                Object.Destroy(strap.GetComponent<Collider>());
-                ApplyMat(strap, strapColor);
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)
                     go.AddComponent<UnitAnimationDriver>();

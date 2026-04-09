@@ -715,7 +715,7 @@ case BarMode.Building:
             switch (type)
             {
                 case BuildingType.Underground:
-                    scale = new Vector3(4f, 1.5f, 4f);
+                    scale = new Vector3(4f, 2f, 4f);
                     col = new Color(0.35f, 0.25f, 0.45f, 0.4f);
                     break;
                 case BuildingType.AntNest:

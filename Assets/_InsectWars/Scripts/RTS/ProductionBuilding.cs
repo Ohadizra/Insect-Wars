@@ -287,7 +287,6 @@ namespace InsectWars.RTS
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
-                if (renderer.gameObject.name == "TeamStrap") continue;
                 var mats = renderer.sharedMaterials;
                 for (int i = 0; i < mats.Length; i++)
                 {
@@ -300,15 +299,6 @@ namespace InsectWars.RTS
                 renderer.sharedMaterials = mats;
             }
 
-            // Straps for AntNest prefab
-            var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            strap.name = "TeamStrap";
-            strap.transform.SetParent(go.transform, false);
-            strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
-            strap.transform.localScale = new Vector3(1.5f, 0.05f, 1.5f);
-            Destroy(strap.GetComponent<Collider>());
-            ApplyMat(strap, TeamPalette.GetTeamColor(team));
-
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team);
             return building;
@@ -320,19 +310,37 @@ namespace InsectWars.RTS
             go.name = $"Building_{type}";
             go.transform.position = position;
 
+            if (type == BuildingType.Underground)
+                go.transform.position += new Vector3(0f, 0.5f, 0f);
+
             Vector3 scale = type switch
             {
-                BuildingType.Underground => new Vector3(4f, 1.5f, 4f),
-                BuildingType.SkyTower => new Vector3(2.5f, 5f, 2.5f),
+                BuildingType.Underground => new Vector3(1f, 0.7f, 1f),
+                BuildingType.SkyTower => new Vector3(1f, 1.2f, 1f),
                 _ => Vector3.one
             };
             go.transform.localScale = scale;
 
+            var skinColor = TeamPalette.GetShellColor(team);
+            foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = renderer.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null) continue;
+                    var m = new Material(mats[i]);
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
+                    else if (m.HasProperty("_Color")) m.color = skinColor;
+                    mats[i] = m;
+                }
+                renderer.sharedMaterials = mats;
+            }
+
             if (go.GetComponent<Collider>() == null)
             {
                 var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 0.5f, 0f);
-                col.size = Vector3.one;
+                col.center = new Vector3(0f, 1.5f, 0f);
+                col.size = new Vector3(5f, 3f, 5f);
             }
 
             if (go.GetComponent<NavMeshObstacle>() == null)
@@ -340,18 +348,9 @@ namespace InsectWars.RTS
                 var obs = go.AddComponent<NavMeshObstacle>();
                 obs.carving = true;
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(1f, 1f, 1f);
-                obs.center = new Vector3(0f, 0.5f, 0f);
+                obs.size = new Vector3(4f, 3f, 4f);
+                obs.center = new Vector3(0f, 1.5f, 0f);
             }
-
-            var strapColor = TeamPalette.GetTeamColor(team);
-            var strap = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            strap.name = "TeamStrap";
-            strap.transform.SetParent(go.transform, false);
-            strap.transform.localPosition = new Vector3(0f, 0.8f, 0f);
-            strap.transform.localScale = new Vector3(0.6f, 0.03f, 0.6f);
-            Destroy(strap.GetComponent<Collider>());
-            ApplyMat(strap, strapColor);
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(type, team);
