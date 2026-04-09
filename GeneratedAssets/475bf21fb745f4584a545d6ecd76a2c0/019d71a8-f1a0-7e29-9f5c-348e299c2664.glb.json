@@ -1,0 +1,12 @@
+{
+    "asset": "475bf21fb745f4584a545d6ecd76a2c0",
+    "fileName": "019d71a8-f1a0-7e29-9f5c-348e299c2664.glb",
+    "prompt": "Low poly stylized 3D model of a dense cluster of grey-brown rocks (#857B72) forming a solid wall. Impassable ridge. 2-3 units tall. Pivot at ground center. Hand-painted textures, semi-stylized toon style, soft gradients, no transparency. Under 1500 triangles. No colliders. No scripts.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "ce2df8801f4f108dfef187a98194b5c9",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

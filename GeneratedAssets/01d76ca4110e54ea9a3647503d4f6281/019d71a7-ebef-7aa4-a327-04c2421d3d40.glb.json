@@ -1,0 +1,12 @@
+{
+    "asset": "01d76ca4110e54ea9a3647503d4f6281",
+    "fileName": "019d71a7-ebef-7aa4-a327-04c2421d3d40.glb",
+    "prompt": "Low poly stylized 3D model of a thorn patch. Sharp red-brown thorns (#8B3A1A) on a dark olive green base. Dangerous looking spikes. Pivot at ground center. Hand-painted textures, semi-stylized toon style, soft gradients, no transparency. Under 1500 triangles. No colliders. No scripts.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "b0e4add08ffcf3c360977376b834d687",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,12 @@
+{
+    "asset": "d01835fb1f3af49e682e94176e2965ac",
+    "fileName": "019d71a8-13cb-7d6e-8886-8aa77d4b1a88.glb",
+    "prompt": "Low poly stylized 3D model of a water puddle at insect scale. Irregular circular shape. Translucent blue-grey surface (#3878B8) with brownish soil rim. Smooth reflective surface. Pivot at ground center. Hand-painted textures, semi-stylized toon style, soft gradients, no transparency. Under 1500 triangles. No colliders. No scripts.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "21e8351d5b654e1f40f38afdf3b84c27",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

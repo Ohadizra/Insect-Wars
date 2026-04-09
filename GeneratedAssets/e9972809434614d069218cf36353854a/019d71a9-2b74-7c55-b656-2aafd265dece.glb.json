@@ -1,0 +1,12 @@
+{
+    "asset": "e9972809434614d069218cf36353854a",
+    "fileName": "019d71a9-2b74-7c55-b656-2aafd265dece.glb",
+    "prompt": "Low poly stylized 3D model of a cluster of 10-15 tall grass blades. Tapered green blades (#4D9635) with light green tips. Rising 1-2 units tall. Pivot at ground center. Hand-painted textures, semi-stylized toon style, soft gradients, no transparency. Under 1500 triangles. No colliders. No scripts.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "c74c044eaef317f9962d0224f83f329b",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

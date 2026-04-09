@@ -1,0 +1,12 @@
+{
+    "asset": "8baacb2403af44a52ac37de9cbec9460",
+    "fileName": "019d71a7-9be1-71e8-8055-08aa8501f52b.glb",
+    "prompt": "Low poly stylized 3D model of a dark brown mud patch (#614023). Circular lumpy disc. Wet-looking highlights. Pivot at ground center. Hand-painted textures, semi-stylized toon style, soft gradients, no transparency. Under 1500 triangles. No colliders. No scripts.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "53db50149608204c4519d1ebf1d8864b",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
