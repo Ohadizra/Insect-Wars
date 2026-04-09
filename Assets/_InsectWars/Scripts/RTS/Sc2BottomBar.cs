@@ -163,6 +163,19 @@ namespace InsectWars.RTS
             {
                 if (Keyboard.current.wKey.wasPressedThisFrame)
                     BuildWorker();
+                if (Keyboard.current.eKey.wasPressedThisFrame)
+                {
+                    var hive = SelectionController.Instance.SelectedHive;
+                    if (hive != null && hive.Team == Team.Player)
+                    {
+                        var evolution = hive.GetComponent<NestEvolution>();
+                        if (evolution != null && !evolution.IsEvolved)
+                        {
+                            evolution.Evolve();
+                            ForceRebuild();
+                        }
+                    }
+                }
                 if (Keyboard.current.rKey.wasPressedThisFrame)
                     ClearRally();
                 return;
@@ -281,10 +294,25 @@ namespace InsectWars.RTS
                     });
                     break;
                 case BarMode.Hive:
-                    AddCmdButton(_cmdGridParent, "Worker\n<size=11>50 cal</size>", "W", BuildWorker);
-                    AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearRally);
-                    break;
-                case BarMode.Building:
+                            AddCmdButton(_cmdGridParent, "Worker\n<size=11>50 cal</size>", "W", BuildWorker);
+                    
+                            var hive = SelectionController.Instance?.SelectedHive;
+                            if (hive != null && hive.Team == Team.Player)
+                            {
+                                var evolution = hive.GetComponent<NestEvolution>();
+                                if (evolution != null && !evolution.IsEvolved)
+                                {
+                                    AddCmdButton(_cmdGridParent, $"Evolve\n<size=11>{evolution.EvolveCost} cal</size>", "E", () => 
+                                    {
+                                        evolution.Evolve();
+                                        ForceRebuild();
+                                    });
+                                }
+                            }
+
+                            AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearRally);
+                            break;
+case BarMode.Building:
                 {
                     var bld = SelectionController.Instance?.SelectedBuilding;
                     if (bld != null)
@@ -651,7 +679,7 @@ namespace InsectWars.RTS
             if (bld != null) bld.ClearRally();
         }
 
-        void ForceRebuild()
+        public void ForceRebuild()
         {
             _currentBarMode = (BarMode)(-1);
         }

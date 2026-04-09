@@ -263,6 +263,12 @@
       "conversation_id": "b046bc35-2adf-4282-ac58-a803afa34d9b",
       "content": "Meshy_AI_Ants_nest_stage_2_0409104045_texture_emission.png\nMeshy_AI_Ants_nest_stage_2_0409104045_texture_metallic.png\nMeshy_AI_Ants_nest_stage_2_0409104045_texture_normal.png\nMeshy_AI_Ants_nest_stage_2_0409104045_texture_roughness.png\nMeshy_AI_Ants_nest_stage_2_0409104045_texture.fbx\nMeshy_AI_Ants_nest_stage_2_0409104045_texture.png added new arts, make it as an evolution to the current nest. if player pays 300 calories, he can evolve the nest into this stage 2 nest (later on ill add things that are avalulbe only for stage 2)",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "0e15e2aa-93d0-4484-8d75-23c7427eff32",
+      "content": "remake/refine the ingame UI art based on the provieed image, i want the UI to be less bulky, less \"zerg\" and more like the insect/build arts that we made.",
+      "snapshot_message_type": 0
     }
   ]
 }
