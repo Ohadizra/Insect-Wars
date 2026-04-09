@@ -89,6 +89,75 @@ namespace InsectWars.Data
                 new CactiSeedPlaced { position = new Vector3(-35f, 0f, -5f) },
             };
 
+            map.terrainFeatures = new[]
+            {
+                // Central water puddle — slows any army that pushes through mid
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.WaterPuddle,
+                    position = new Vector3(0f, 0f, 0f),
+                    radius = 6f
+                },
+
+                // Tall grass flanks — ambush positions on each side (mirrored)
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.TallGrass,
+                    position = new Vector3(-18f, 0f, 6f),
+                    radius = 5f
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.TallGrass,
+                    position = new Vector3(18f, 0f, -6f),
+                    radius = 5f
+                },
+
+                // Mud patches near expansions — defend your expansion or push through slowly (mirrored)
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.MudPatch,
+                    position = new Vector3(-34f, 0f, 2f),
+                    radius = 4f
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.MudPatch,
+                    position = new Vector3(34f, 0f, -2f),
+                    radius = 4f
+                },
+
+                // Thorn patches guarding side routes — punish reckless flanking (mirrored)
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.ThornPatch,
+                    position = new Vector3(-8f, 0f, 24f),
+                    radius = 3.5f
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.ThornPatch,
+                    position = new Vector3(8f, 0f, -24f),
+                    radius = 3.5f
+                },
+
+                // Rocky ridge walls forming a central choke (mirrored)
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-6f, 0f, -12f),
+                    radius = 0f, rotation = 30f,
+                    boxHalfExtents = new Vector2(4f, 1.5f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(6f, 0f, 12f),
+                    radius = 0f, rotation = 30f,
+                    boxHalfExtents = new Vector2(4f, 1.5f)
+                },
+            };
+
             return map;
         }
     }

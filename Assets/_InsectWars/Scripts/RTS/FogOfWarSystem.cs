@@ -84,7 +84,8 @@ namespace InsectWars.RTS
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 var r = u.Definition != null ? u.Definition.visionRadius : 12f;
-                StampVision(u.transform.position, r);
+                float visMult = TerrainFeatureRegistry.GetVisionMultiplier(u.transform.position);
+                StampVision(u.transform.position, r * visMult);
             }
 
             if (HiveDeposit.PlayerHive != null)
@@ -123,7 +124,24 @@ namespace InsectWars.RTS
                     renderers = u.GetComponentsInChildren<Renderer>(true);
                     _enemyRenderers[u] = renderers;
                 }
-                var show = IsInCurrentVision(u.transform.position);
+
+                bool show;
+                float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
+                if (concealment > 0f)
+                {
+                    show = false;
+                    foreach (var pu in RtsSimRegistry.Units)
+                    {
+                        if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
+                        if (Vector3.Distance(pu.transform.position, u.transform.position) <= concealment)
+                        { show = true; break; }
+                    }
+                }
+                else
+                {
+                    show = IsInCurrentVision(u.transform.position);
+                }
+
                 foreach (var r in renderers)
                 {
                     if (r != null) r.enabled = show;
@@ -184,6 +202,10 @@ namespace InsectWars.RTS
             inner = Mathf.Min(inner, rTex - 0.25f);
             var band = rTex - inner;
 
+            bool checkBlocking = TerrainFeatureRegistry.HasVisionBlockers;
+            var unitXZ = new Vector2(world.x, world.z);
+            float invTexToWorld = (2f * h) / TexRes;
+
             for (var zz = minZ; zz <= maxZ; zz++)
             {
                 for (var xx = minX; xx <= maxX; xx++)
@@ -192,6 +214,15 @@ namespace InsectWars.RTS
                     var dz = zz - cz;
                     var d2 = dx * dx + dz * dz;
                     if (d2 > r2) continue;
+
+                    if (checkBlocking)
+                    {
+                        float twx = xx * invTexToWorld - h;
+                        float twz = zz * invTexToWorld - h;
+                        if (TerrainFeatureRegistry.IsVisionBlocked(unitXZ, new Vector2(twx, twz)))
+                            continue;
+                    }
+
                     var d = Mathf.Sqrt(d2);
                     byte v;
                     if (d <= inner)

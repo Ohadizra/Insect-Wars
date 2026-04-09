@@ -62,5 +62,8 @@ namespace InsectWars.Data
 
         /// <summary>Terrain elevation features. Empty = flat terrain. Null falls back to demo defaults.</summary>
         public HighGroundPlaced[] highGrounds;
+
+        /// <summary>Strategic terrain zones: water, tall grass, mud, thorns, rocky ridges.</summary>
+        public TerrainFeaturePlaced[] terrainFeatures = Array.Empty<TerrainFeaturePlaced>();
     }
 }

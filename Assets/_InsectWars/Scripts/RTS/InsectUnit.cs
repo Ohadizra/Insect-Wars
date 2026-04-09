@@ -50,6 +50,9 @@ namespace InsectWars.RTS
         Vector3? _meleeLockedPos;
         static int s_unitsLayer = -1;
 
+        float _terrainSpeedTimer;
+        float _terrainDmgAccum;
+
         public Team Team => team;
         public UnitDefinition Definition => definition;
         public UnitArchetype Archetype => definition != null ? definition.archetype : UnitArchetype.Worker;
@@ -225,6 +228,7 @@ namespace InsectWars.RTS
         {
             if (!IsAlive) return;
             _attackCooldown -= Time.deltaTime;
+            TickTerrainEffects();
             switch (_order)
             {
                 case UnitOrder.Gather:
@@ -411,6 +415,48 @@ namespace InsectWars.RTS
             _meleeLockedPos = null;
             _agent.updatePosition = true;
             _agent.Warp(transform.position);
+        }
+
+        void TickTerrainEffects()
+        {
+            _terrainSpeedTimer -= Time.deltaTime;
+            if (_terrainSpeedTimer <= 0f)
+            {
+                _terrainSpeedTimer = 0.15f;
+                float baseSpeed = definition != null ? definition.moveSpeed : 4.5f;
+                float mult = TerrainFeatureRegistry.GetSpeedMultiplier(transform.position);
+                _agent.speed = baseSpeed * mult;
+            }
+
+            float dps = TerrainFeatureRegistry.GetDamagePerSecond(transform.position);
+            if (dps > 0f)
+            {
+                _terrainDmgAccum += dps * Time.deltaTime;
+                if (_terrainDmgAccum >= 1f)
+                {
+                    float dmg = Mathf.Floor(_terrainDmgAccum);
+                    _terrainDmgAccum -= dmg;
+                    ApplyEnvironmentDamage(dmg);
+                }
+            }
+        }
+
+        public void ApplyEnvironmentDamage(float dmg)
+        {
+            if (_health <= 0f) return;
+            _health -= dmg;
+            if (_health <= 0)
+            {
+                _health = 0;
+                UnlockMelee();
+                _agent.isStopped = true;
+                SelectionController.Instance?.Deselect(this);
+                var drv = GetComponent<UnitAnimationDriver>();
+                if (drv != null)
+                    drv.NotifyDeath(0.48f);
+                else
+                    Destroy(gameObject, 0.15f);
+            }
         }
 
         void TickPatrol()

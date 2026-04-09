@@ -91,7 +91,10 @@ namespace InsectWars.RTS
                 if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
                 if (u.Archetype == UnitArchetype.Worker) continue;
                 float d = Vector3.Distance(transform.position, u.transform.position);
-                if (d < threatDist) { threatDist = d; threat = u; }
+                if (d >= threatDist) continue;
+                float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
+                if (concealment > 0f && d > concealment) continue;
+                threatDist = d; threat = u;
             }
 
             if (threat != null)
@@ -187,13 +190,14 @@ namespace InsectWars.RTS
                 foreach (var u in RtsSimRegistry.Units)
                 {
                     if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
-                    if (Vector3.Distance(transform.position, u.transform.position) <= vision)
-                    {
-                        _aggro = true;
-                        _engagementOrigin = transform.position;
-                        _hasEngagementOrigin = true;
-                        break;
-                    }
+                    float d = Vector3.Distance(transform.position, u.transform.position);
+                    if (d > vision) continue;
+                    float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
+                    if (concealment > 0f && d > concealment) continue;
+                    _aggro = true;
+                    _engagementOrigin = transform.position;
+                    _hasEngagementOrigin = true;
+                    break;
                 }
                 if (!_aggro) return;
             }
@@ -233,6 +237,8 @@ namespace InsectWars.RTS
                 if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
                 float d = Vector3.Distance(transform.position, u.transform.position);
                 if (d > vision * 2.5f) continue;
+                float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
+                if (concealment > 0f && d > concealment) continue;
 
                 float uHpFrac = u.MaxHealth > 0.01f ? u.CurrentHealth / u.MaxHealth : 1f;
 

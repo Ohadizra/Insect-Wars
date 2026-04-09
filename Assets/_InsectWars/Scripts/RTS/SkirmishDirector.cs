@@ -28,6 +28,7 @@ namespace InsectWars.RTS
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
         CactiSeedPlaced[] _cactiSeedLayout;
+        TerrainFeaturePlaced[] _terrainFeatureLayout;
 
         static readonly ClayPlaced[] DefaultClayList =
         {
@@ -106,6 +107,9 @@ namespace InsectWars.RTS
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
             _cactiSeedLayout = m != null && m.cactiSeeds != null && m.cactiSeeds.Length > 0 ? m.cactiSeeds : DefaultCactiSeeds;
+            _terrainFeatureLayout = m != null && m.terrainFeatures != null && m.terrainFeatures.Length > 0
+                ? m.terrainFeatures
+                : System.Array.Empty<TerrainFeaturePlaced>();
         }
 
         void Start()
@@ -183,6 +187,9 @@ namespace InsectWars.RTS
             foreach (var s in _cactiSeedLayout)
                 AddCactiSeed(world.transform, s);
 
+            foreach (var tf in _terrainFeatureLayout)
+                AddTerrainFeature(world.transform, tf);
+
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
@@ -242,6 +249,13 @@ namespace InsectWars.RTS
             }
             foreach (var s in _cactiSeedLayout)
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(s.position.x, s.position.z), 4f));
+            foreach (var tf in _terrainFeatureLayout)
+            {
+                float spread = tf.boxHalfExtents.x > 0.01f
+                    ? Mathf.Max(tf.boxHalfExtents.x, tf.boxHalfExtents.y) + 2f
+                    : tf.radius + 2f;
+                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(tf.position.x, tf.position.z), spread));
+            }
             return z;
         }
 
@@ -726,6 +740,196 @@ namespace InsectWars.RTS
             modifier.ignoreFromBuild = true;
 
             seed.AddComponent<CactiSeedNode>();
+        }
+
+        // ──────────── Terrain Features ────────────
+
+        void AddTerrainFeature(Transform parent, TerrainFeaturePlaced placed)
+        {
+            var lib = ActiveVisualLibrary;
+            var prefab = lib != null ? lib.GetTerrainFeaturePrefab(placed.type) : null;
+            float h = GetHeight(placed.position);
+            var worldPos = new Vector3(placed.position.x, h, placed.position.z);
+
+            GameObject root;
+            if (prefab != null)
+            {
+                root = Instantiate(prefab, parent);
+                root.name = $"TF_{placed.type}";
+                root.transform.position = worldPos;
+                root.transform.rotation = Quaternion.Euler(0f, placed.rotation, 0f);
+            }
+            else
+            {
+                root = new GameObject($"TF_{placed.type}");
+                root.transform.SetParent(parent);
+                root.transform.position = worldPos;
+                root.transform.rotation = Quaternion.Euler(0f, placed.rotation, 0f);
+                BuildProceduralFeatureVisual(root.transform, placed);
+            }
+
+            var zone = root.AddComponent<TerrainFeatureZone>();
+            zone.Configure(placed);
+
+            if (TerrainFeatureProperties.BlocksPathing(placed.type))
+            {
+                var obs = root.AddComponent<NavMeshObstacle>();
+                obs.carving = true;
+                obs.shape = NavMeshObstacleShape.Box;
+                if (placed.boxHalfExtents.x > 0.01f)
+                    obs.size = new Vector3(placed.boxHalfExtents.x * 2f, 3f, placed.boxHalfExtents.y * 2f);
+                else
+                    obs.size = new Vector3(placed.radius * 2f, 3f, placed.radius * 2f);
+                obs.center = new Vector3(0f, 1.5f, 0f);
+            }
+            else
+            {
+                var mod = root.AddComponent<NavMeshModifier>();
+                mod.ignoreFromBuild = true;
+            }
+        }
+
+        void BuildProceduralFeatureVisual(Transform root, TerrainFeaturePlaced placed)
+        {
+            var color = TerrainFeatureProperties.GetBaseColor(placed.type);
+            switch (placed.type)
+            {
+                case TerrainFeatureType.WaterPuddle:
+                    BuildProceduralWater(root, placed, color);
+                    break;
+                case TerrainFeatureType.TallGrass:
+                    BuildProceduralGrass(root, placed, color);
+                    break;
+                case TerrainFeatureType.MudPatch:
+                    BuildProceduralMud(root, placed, color);
+                    break;
+                case TerrainFeatureType.ThornPatch:
+                    BuildProceduralThorns(root, placed, color);
+                    break;
+                case TerrainFeatureType.RockyRidge:
+                    BuildProceduralRockyRidge(root, placed, color);
+                    break;
+            }
+        }
+
+        void BuildProceduralWater(Transform root, TerrainFeaturePlaced p, Color color)
+        {
+            float r = p.boxHalfExtents.x > 0.01f ? Mathf.Max(p.boxHalfExtents.x, p.boxHalfExtents.y) : p.radius;
+            var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            disc.name = "WaterSurface";
+            disc.transform.SetParent(root, false);
+            disc.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+            disc.transform.localScale = new Vector3(r * 2f, 0.02f, r * 2f);
+            Object.Destroy(disc.GetComponent<Collider>());
+            var mat = GetSharedTinted(color);
+            var rend = disc.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                rend.sharedMaterial = mat;
+                var pb = new MaterialPropertyBlock();
+                if (mat.HasProperty("_Smoothness")) pb.SetFloat("_Smoothness", 0.85f);
+                rend.SetPropertyBlock(pb);
+            }
+        }
+
+        static void BuildProceduralGrass(Transform root, TerrainFeaturePlaced p, Color color)
+        {
+            float r = p.boxHalfExtents.x > 0.01f ? Mathf.Max(p.boxHalfExtents.x, p.boxHalfExtents.y) : p.radius;
+            int bladeCount = Mathf.Clamp(Mathf.RoundToInt(r * 4f), 6, 30);
+            var rng = new System.Random(Mathf.RoundToInt(p.position.x * 100f + p.position.z));
+            for (int i = 0; i < bladeCount; i++)
+            {
+                float angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                float dist = (float)rng.NextDouble() * r * 0.9f;
+                float height = 0.6f + (float)rng.NextDouble() * 1.2f;
+                var blade = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                blade.name = "GrassBlade";
+                blade.transform.SetParent(root, false);
+                blade.transform.localPosition = new Vector3(
+                    Mathf.Cos(angle) * dist,
+                    height * 0.5f,
+                    Mathf.Sin(angle) * dist);
+                blade.transform.localScale = new Vector3(0.12f, height * 0.5f, 0.12f);
+                float lean = 5f + (float)rng.NextDouble() * 15f;
+                blade.transform.localRotation = Quaternion.Euler(lean, angle * Mathf.Rad2Deg, 0f);
+                Object.Destroy(blade.GetComponent<Collider>());
+                float shade = 0.85f + (float)rng.NextDouble() * 0.3f;
+                ApplyMat(blade, color * shade);
+            }
+        }
+
+        void BuildProceduralMud(Transform root, TerrainFeaturePlaced p, Color color)
+        {
+            float r = p.boxHalfExtents.x > 0.01f ? Mathf.Max(p.boxHalfExtents.x, p.boxHalfExtents.y) : p.radius;
+            var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            disc.name = "MudSurface";
+            disc.transform.SetParent(root, false);
+            disc.transform.localPosition = new Vector3(0f, 0.01f, 0f);
+            disc.transform.localScale = new Vector3(r * 2f, 0.015f, r * 2f);
+            Object.Destroy(disc.GetComponent<Collider>());
+            ApplyMat(disc, color);
+        }
+
+        static void BuildProceduralThorns(Transform root, TerrainFeaturePlaced p, Color color)
+        {
+            float r = p.boxHalfExtents.x > 0.01f ? Mathf.Max(p.boxHalfExtents.x, p.boxHalfExtents.y) : p.radius;
+            var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            disc.name = "ThornBase";
+            disc.transform.SetParent(root, false);
+            disc.transform.localPosition = new Vector3(0f, 0.01f, 0f);
+            disc.transform.localScale = new Vector3(r * 2f, 0.015f, r * 2f);
+            Object.Destroy(disc.GetComponent<Collider>());
+            ApplyMat(disc, color * 0.8f);
+
+            int spikeCount = Mathf.Clamp(Mathf.RoundToInt(r * 3f), 4, 20);
+            var rng = new System.Random(Mathf.RoundToInt(p.position.x * 73f + p.position.z * 31f));
+            var spikeColor = new Color(0.35f, 0.22f, 0.08f);
+            for (int i = 0; i < spikeCount; i++)
+            {
+                float angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                float dist = (float)rng.NextDouble() * r * 0.85f;
+                float height = 0.3f + (float)rng.NextDouble() * 0.6f;
+                var spike = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                spike.name = "Thorn";
+                spike.transform.SetParent(root, false);
+                spike.transform.localPosition = new Vector3(
+                    Mathf.Cos(angle) * dist,
+                    height * 0.4f,
+                    Mathf.Sin(angle) * dist);
+                spike.transform.localScale = new Vector3(0.06f, height * 0.35f, 0.06f);
+                float tilt = 15f + (float)rng.NextDouble() * 40f;
+                spike.transform.localRotation = Quaternion.Euler(tilt, angle * Mathf.Rad2Deg, 0f);
+                Object.Destroy(spike.GetComponent<Collider>());
+                ApplyMat(spike, spikeColor);
+            }
+        }
+
+        static void BuildProceduralRockyRidge(Transform root, TerrainFeaturePlaced p, Color color)
+        {
+            float r = p.boxHalfExtents.x > 0.01f ? Mathf.Max(p.boxHalfExtents.x, p.boxHalfExtents.y) : p.radius;
+            int rockCount = Mathf.Clamp(Mathf.RoundToInt(r * 2.5f), 3, 16);
+            var rng = new System.Random(Mathf.RoundToInt(p.position.x * 59f + p.position.z * 41f));
+            for (int i = 0; i < rockCount; i++)
+            {
+                float angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                float dist = (float)rng.NextDouble() * r * 0.7f;
+                float sz = 0.8f + (float)rng.NextDouble() * 1.6f;
+                var rock = GameObject.CreatePrimitive(i % 3 == 0 ? PrimitiveType.Sphere : PrimitiveType.Cube);
+                rock.name = "Rock";
+                rock.transform.SetParent(root, false);
+                rock.transform.localPosition = new Vector3(
+                    Mathf.Cos(angle) * dist,
+                    sz * 0.4f,
+                    Mathf.Sin(angle) * dist);
+                rock.transform.localScale = new Vector3(sz, sz * (0.6f + (float)rng.NextDouble() * 0.8f), sz);
+                rock.transform.localRotation = Quaternion.Euler(
+                    (float)rng.NextDouble() * 20f,
+                    (float)rng.NextDouble() * 360f,
+                    (float)rng.NextDouble() * 20f);
+                Object.Destroy(rock.GetComponent<Collider>());
+                float shade = 0.7f + (float)rng.NextDouble() * 0.5f;
+                ApplyMat(rock, color * shade);
+            }
         }
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)

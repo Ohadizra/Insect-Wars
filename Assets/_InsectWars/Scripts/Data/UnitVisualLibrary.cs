@@ -19,6 +19,23 @@ namespace InsectWars.Data
         public TerrainLayer baseSoilLayer;
         public TerrainLayer drySoilLayer;
 
+        [Header("Terrain Features (optional — falls back to procedural)")]
+        public GameObject waterPuddlePrefab;
+        public GameObject tallGrassPrefab;
+        public GameObject mudPatchPrefab;
+        public GameObject thornPatchPrefab;
+        public GameObject rockyRidgePrefab;
+
+        public GameObject GetTerrainFeaturePrefab(TerrainFeatureType t) => t switch
+        {
+            TerrainFeatureType.WaterPuddle => waterPuddlePrefab,
+            TerrainFeatureType.TallGrass   => tallGrassPrefab,
+            TerrainFeatureType.MudPatch    => mudPatchPrefab,
+            TerrainFeatureType.ThornPatch  => thornPatchPrefab,
+            TerrainFeatureType.RockyRidge  => rockyRidgePrefab,
+            _ => null
+        };
+
         [Header("Combat")]
         public GameObject projectilePrefab;
         public float projectileSpeed = 38f;
