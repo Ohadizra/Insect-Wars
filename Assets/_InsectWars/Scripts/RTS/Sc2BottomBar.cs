@@ -326,8 +326,8 @@ namespace InsectWars.RTS
             artRt.offsetMin = artRt.offsetMax = Vector2.zero;
             var artImg = barArt.AddComponent<Image>();
             artImg.sprite = barBackground;
-            artImg.type = Image.Type.Sliced;
-            artImg.color = Color.white;
+            artImg.type = Image.Type.Tiled;
+            artImg.color = new Color(1f, 1f, 1f, 0.35f);
             artImg.raycastTarget = false;
 
             // Minimap Slot
@@ -338,7 +338,7 @@ namespace InsectWars.RTS
             ms.anchorMax = new Vector2(0f, 1f);
             ms.pivot = new Vector2(0f, 0.5f);
             ms.anchoredPosition = new Vector2(8f, 0f);
-            ms.sizeDelta = new Vector2(200f, -12f);
+            ms.sizeDelta = new Vector2(minimapSlot, -12f);
 
             var miniFrameImg = miniSlot.AddComponent<Image>();
             miniFrameImg.sprite = minimapFrame;
@@ -351,8 +351,8 @@ namespace InsectWars.RTS
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(8f, 8f);
-            mi.offsetMax = new Vector2(-8f, -8f);
+            mi.offsetMin = new Vector2(12f, 12f);
+            mi.offsetMax = new Vector2(-12f, -12f);
             MinimapHost = mi;
 
             // Command Panel
@@ -363,7 +363,7 @@ namespace InsectWars.RTS
             cp.anchorMax = new Vector2(1f, 1f);
             cp.pivot = new Vector2(1f, 0.5f);
             cp.anchoredPosition = new Vector2(-8f, 0f);
-            cp.sizeDelta = new Vector2(300f, -12f);
+            cp.sizeDelta = new Vector2(commandPanelWidth, -12f);
 
             var cmdFrameImg = cmdPanel.AddComponent<Image>();
             cmdFrameImg.sprite = commandCardFrame;
@@ -376,10 +376,10 @@ namespace InsectWars.RTS
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = new Vector2(8f, 8f);
-            grt.offsetMax = new Vector2(-8f, -8f);
+            grt.offsetMin = new Vector2(12f, 12f);
+            grt.offsetMax = new Vector2(-12f, -12f);
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(62f, 48f);
+            gl.cellSize = new Vector2(80f, 52f);
             gl.spacing = new Vector2(6f, 6f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 4;
@@ -392,8 +392,12 @@ namespace InsectWars.RTS
             var cr = center.AddComponent<RectTransform>();
             cr.anchorMin = new Vector2(0f, 0f);
             cr.anchorMax = new Vector2(1f, 1f);
-            cr.offsetMin = new Vector2(220f, 10f);
-            cr.offsetMax = new Vector2(-320f, -10f);
+            float sideMargin = 12f;
+            cr.offsetMin = new Vector2(minimapSlot + sideMargin + 8f, 6f);
+            cr.offsetMax = new Vector2(-(commandPanelWidth + sideMargin + 8f), -6f);
+            var centerBg = center.AddComponent<Image>();
+            centerBg.color = new Color(0.06f, 0.07f, 0.04f, 0.85f);
+            centerBg.raycastTarget = false;
 
             // Portrait
             var portrait = new GameObject("PortraitBlock");
@@ -403,7 +407,7 @@ namespace InsectWars.RTS
             pr.anchorMax = new Vector2(0f, 1f);
             pr.pivot = new Vector2(0f, 0.5f);
             pr.anchoredPosition = new Vector2(0f, 0f);
-            pr.sizeDelta = new Vector2(100f, 0f);
+            pr.sizeDelta = new Vector2(120f, 0f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
             pImg.type = Image.Type.Sliced;
@@ -414,8 +418,8 @@ namespace InsectWars.RTS
             var psr = portraitSub.AddComponent<RectTransform>();
             psr.anchorMin = Vector2.zero;
             psr.anchorMax = Vector2.one;
-            psr.offsetMin = new Vector2(8f, 8f);
-            psr.offsetMax = new Vector2(-8f, -8f);
+            psr.offsetMin = new Vector2(12f, 12f);
+            psr.offsetMax = new Vector2(-12f, -12f);
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
@@ -426,7 +430,7 @@ namespace InsectWars.RTS
             ibr.anchorMin = new Vector2(0f, 0f);
             ibr.anchorMax = new Vector2(1f, 1f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.offsetMin = new Vector2(110f, 4f);
+            ibr.offsetMin = new Vector2(130f, 4f);
             ibr.offsetMax = new Vector2(-4f, -4f);
 
             _portraitLabel = new GameObject("NameText").AddComponent<Text>();

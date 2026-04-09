@@ -1163,7 +1163,8 @@ namespace InsectWars.UI
             sizeGo.fontStyle = FontStyle.Bold;
             sizeGo.color = new Color(0.6f, 0.9f, 0.65f);
             sizeGo.alignment = TextAnchor.UpperRight;
-            sizeGo.text = $"Small — {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
+            string sizeLabel = map.mapHalfExtent < 65f ? "Small" : map.mapHalfExtent < 85f ? "Medium" : "Large";
+            sizeGo.text = $"{sizeLabel} — {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
             var sizeRt = sizeGo.rectTransform;
             sizeRt.anchorMin = new Vector2(0f, 0f);
             sizeRt.anchorMax = new Vector2(1f, 1f);
