@@ -1,0 +1,36 @@
+{
+    "asset": "86c133ebe06f24816a0bdaf1433c944b",
+    "fileName": "019d7246-ee6b-79cf-81d6-2ef49c8b1265.jpg",
+    "prompt": "A small, simple and thin insectoid UI button, chitinous border, dark green center, hand-painted style, minimalist, transparent background.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "c01da657b7dd6f4078954dc14571689a",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "dab9cd4cf166641f0b8ff8eae3c4b390"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

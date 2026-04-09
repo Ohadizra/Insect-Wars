@@ -1,0 +1,36 @@
+{
+    "asset": "fdc2695c4546c45e89df3f5751662644",
+    "fileName": "019d7242-7dd4-7aa3-84eb-8ed5bf1c6f78.png",
+    "prompt": "Hand-painted insectoid UI button, small, chitinous shell design, polished dark brown and green, fantasy RTS style, transparent background, matching the style of the reference image.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "fe8c5d7b9293518a96e8ed33c321e293",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "9fbad3e39ea3f4e05a7cbd71748d006c"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

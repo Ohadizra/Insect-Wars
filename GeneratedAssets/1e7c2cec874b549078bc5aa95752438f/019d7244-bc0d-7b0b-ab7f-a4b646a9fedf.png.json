@@ -1,0 +1,36 @@
+{
+    "asset": "1e7c2cec874b549078bc5aa95752438f",
+    "fileName": "019d7244-bc0d-7b0b-ab7f-a4b646a9fedf.png",
+    "prompt": "Small, polished insectoid UI button, chitinous shell design, dark brown and green, transparent background, hand-painted, matching the reference image's style.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "dc95d8b3fdb10a22dd3a9dfe6f8183d5",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "dab9cd4cf166641f0b8ff8eae3c4b390"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

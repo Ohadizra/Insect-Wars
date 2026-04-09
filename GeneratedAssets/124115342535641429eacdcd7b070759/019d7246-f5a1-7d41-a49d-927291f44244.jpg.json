@@ -1,0 +1,36 @@
+{
+    "asset": "124115342535641429eacdcd7b070759",
+    "fileName": "019d7246-f5a1-7d41-a49d-927291f44244.jpg",
+    "prompt": "A large, slim action panel frame for an RTS, empty grid area, thin chitinous borders, elegant insectoid design, transparent background, hand-painted.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "ca9f0e46e99634a333253d620486bc5c",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "dab9cd4cf166641f0b8ff8eae3c4b390"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

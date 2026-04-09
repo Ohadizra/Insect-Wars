@@ -281,6 +281,12 @@
       "conversation_id": "47b2008f-230f-48c2-87e3-48a77fe92bde",
       "content": "remake/refine the ingame UI art based on the provieed image, i want the UI to be less bulky, less \"zerg\" and more like the insect/build arts that we made.",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "381e0a0f-7ea3-477f-b63a-f095a3272cb8",
+      "conversation_id": "47b2008f-230f-48c2-87e3-48a77fe92bde",
+      "content": "continue",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -1,7 +1,6 @@
 using InsectWars.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -14,6 +13,12 @@ namespace InsectWars.RTS
 
         [SerializeField] GameObject hudCanvasPrefab;
 
+        [Header("Insectoid UI Skin")]
+        [SerializeField] Sprite barSprite;
+        [SerializeField] Sprite frameSprite;
+        [SerializeField] Sprite actionGridSprite;
+        [SerializeField] Sprite buttonSprite;
+
         Text _calorieLabel;
         Text _seedLabel;
         Text _selectionLabel;
@@ -22,6 +27,12 @@ namespace InsectWars.RTS
 
         void Awake()
         {
+            // Load default insectoid sprites if not assigned
+            if (barSprite == null) barSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Bar_Slim_Insect.png");
+            if (frameSprite == null) frameSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Slim_Insect.png");
+            if (actionGridSprite == null) actionGridSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Slim_Insect.png");
+            if (buttonSprite == null) buttonSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Button_Slim_Insect.png");
+
             if (hudCanvasPrefab != null)
             {
                 var root = Instantiate(hudCanvasPrefab, transform);
@@ -66,131 +77,72 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-            var demo = new GameObject("DemoTag").AddComponent<Text>();
-            demo.transform.SetParent(canvas.transform, false);
-            demo.font = UiFontHelper.GetFont();
-            demo.fontSize = 18;
-            demo.color = new Color(1f, 0.92f, 0.4f);
-            var rt = demo.rectTransform;
-            rt.anchorMin = new Vector2(0, 1);
-            rt.anchorMax = new Vector2(0, 1);
-            rt.pivot = new Vector2(0, 1);
-            rt.anchoredPosition = new Vector2(16, -12);
-            rt.sizeDelta = new Vector2(400, 32);
-            demo.text = "INSECT WARS — DEMO 0";
-
-            var barGo = new GameObject("CalorieBar");
-            barGo.transform.SetParent(canvas.transform, false);
-            var barRt = barGo.AddComponent<RectTransform>();
-            barRt.anchorMin = new Vector2(0, 1);
-            barRt.anchorMax = new Vector2(0, 1);
-            barRt.pivot = new Vector2(0, 1);
-            barRt.anchoredPosition = new Vector2(12, -46);
-            barRt.sizeDelta = new Vector2(270, 44);
-            var barBg = barGo.AddComponent<Image>();
-            barBg.color = new Color(0.08f, 0.06f, 0.02f, 0.88f);
-            barBg.raycastTarget = false;
-
-            var iconGo = new GameObject("Icon");
-            iconGo.transform.SetParent(barGo.transform, false);
-            var iconRt = iconGo.AddComponent<RectTransform>();
-            iconRt.anchorMin = new Vector2(0, 0.5f);
-            iconRt.anchorMax = new Vector2(0, 0.5f);
-            iconRt.pivot = new Vector2(0, 0.5f);
-            iconRt.anchoredPosition = new Vector2(10, 0);
-            iconRt.sizeDelta = new Vector2(26, 26);
-            var iconImg = iconGo.AddComponent<Image>();
-            iconImg.color = new Color(0.85f, 0.68f, 0.15f);
-            iconImg.raycastTarget = false;
-
-            _calorieLabel = new GameObject("CalorieText").AddComponent<Text>();
-            _calorieLabel.transform.SetParent(barGo.transform, false);
-            _calorieLabel.font = UiFontHelper.GetFont();
-            _calorieLabel.fontSize = 22;
-            _calorieLabel.color = new Color(1f, 0.95f, 0.7f);
-            var nrt = _calorieLabel.rectTransform;
-            nrt.anchorMin = new Vector2(0, 0);
-            nrt.anchorMax = new Vector2(1, 1);
-            nrt.offsetMin = new Vector2(44, 0);
-            nrt.offsetMax = new Vector2(-8, 0);
+            // --- Top Left: Resources ---
+            var resourcePanel = CreatePanel("Resources", HudCanvasRect, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -16), new Vector2(300, 100), barSprite);
+            
+            _calorieLabel = CreateText("CalorieText", resourcePanel.transform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector2(40, -10), new Vector2(-10, -45), "Calories: 0", 22, Color.white);
             _calorieLabel.alignment = TextAnchor.MiddleLeft;
-            _calorieLabel.text = "Calories: 0";
 
-            var seedBarGo = new GameObject("SeedBar");
-            seedBarGo.transform.SetParent(canvas.transform, false);
-            var seedBarRt = seedBarGo.AddComponent<RectTransform>();
-            seedBarRt.anchorMin = new Vector2(0, 1);
-            seedBarRt.anchorMax = new Vector2(0, 1);
-            seedBarRt.pivot = new Vector2(0, 1);
-            seedBarRt.anchoredPosition = new Vector2(12, -94);
-            seedBarRt.sizeDelta = new Vector2(270, 38);
-            var seedBarBg = seedBarGo.AddComponent<Image>();
-            seedBarBg.color = new Color(0.08f, 0.06f, 0.02f, 0.88f);
-            seedBarBg.raycastTarget = false;
-
-            var seedIconGo = new GameObject("SeedIcon");
-            seedIconGo.transform.SetParent(seedBarGo.transform, false);
-            var seedIconRt = seedIconGo.AddComponent<RectTransform>();
-            seedIconRt.anchorMin = new Vector2(0, 0.5f);
-            seedIconRt.anchorMax = new Vector2(0, 0.5f);
-            seedIconRt.pivot = new Vector2(0, 0.5f);
-            seedIconRt.anchoredPosition = new Vector2(10, 0);
-            seedIconRt.sizeDelta = new Vector2(22, 22);
-            var seedIconImg = seedIconGo.AddComponent<Image>();
-            seedIconImg.color = new Color(0.45f, 0.65f, 0.25f);
-            seedIconImg.raycastTarget = false;
-
-            _seedLabel = new GameObject("SeedText").AddComponent<Text>();
-            _seedLabel.transform.SetParent(seedBarGo.transform, false);
-            _seedLabel.font = UiFontHelper.GetFont();
-            _seedLabel.fontSize = 20;
-            _seedLabel.color = new Color(0.8f, 1f, 0.7f);
-            var seedRt = _seedLabel.rectTransform;
-            seedRt.anchorMin = new Vector2(0, 0);
-            seedRt.anchorMax = new Vector2(1, 1);
-            seedRt.offsetMin = new Vector2(40, 0);
-            seedRt.offsetMax = new Vector2(-8, 0);
+            _seedLabel = CreateText("SeedText", resourcePanel.transform, new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(0, 0), new Vector2(40, 10), new Vector2(-10, 45), "Seeds: 0", 20, new Color(0.8f, 1f, 0.7f));
             _seedLabel.alignment = TextAnchor.MiddleLeft;
-            _seedLabel.text = "Cacti Seeds: 0";
 
-            _selectionLabel = new GameObject("Selection").AddComponent<Text>();
-            _selectionLabel.transform.SetParent(canvas.transform, false);
-            _selectionLabel.font = UiFontHelper.GetFont();
-            _selectionLabel.fontSize = 16;
-            _selectionLabel.color = new Color(0.9f, 0.9f, 0.9f);
-            var srt = _selectionLabel.rectTransform;
-            srt.anchorMin = new Vector2(0.5f, 0);
-            srt.anchorMax = new Vector2(0.5f, 0);
-            srt.pivot = new Vector2(0.5f, 0);
-            srt.anchoredPosition = new Vector2(0, 228);
-            srt.sizeDelta = new Vector2(720, 56);
+            // --- Top Right: Menu ---
+            var menuPanel = CreatePanel("MenuPanel", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -16), new Vector2(150, 50), buttonSprite);
+            var menuBtn = menuPanel.gameObject.AddComponent<Button>();
+            menuBtn.onClick.AddListener(() => SceneLoader.LoadHome());
+            CreateText("MenuLabel", menuPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, "MENU", 18, Color.white).alignment = TextAnchor.MiddleCenter;
+
+            // --- Mid Left: Assistant ---
+            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(16, 100), new Vector2(128, 128), frameSprite);
+            CreateText("AssistantLabel", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(120, 20), "ASSISTANT", 12, Color.gray).alignment = TextAnchor.MiddleCenter;
+
+            // --- Bottom Left: Map ---
+            var mapFrame = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(16, 16), new Vector2(256, 256), frameSprite);
+            CreateText("MapLabel", mapFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "MAP", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+
+            // --- Bottom Center: Selection ---
+            var selectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 16), new Vector2(600, 160), barSprite);
+            _selectionLabel = CreateText("SelectionText", selectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(20, 20), new Vector2(-20, -20), SelectionHint, 16, Color.white);
             _selectionLabel.alignment = TextAnchor.MiddleCenter;
-            _selectionLabel.text = SelectionHint;
 
-            var btnGo = new GameObject("Menu");
-            btnGo.transform.SetParent(canvas.transform, false);
-            var btnRt = btnGo.AddComponent<RectTransform>();
-            btnRt.anchorMin = new Vector2(1, 1);
-            btnRt.anchorMax = new Vector2(1, 1);
-            btnRt.pivot = new Vector2(1, 1);
-            btnRt.anchoredPosition = new Vector2(-16, -16);
-            btnRt.sizeDelta = new Vector2(140, 40);
-            var img = btnGo.AddComponent<Image>();
-            img.color = new Color(0.15f, 0.12f, 0.2f, 0.92f);
-            var btn = btnGo.AddComponent<Button>();
-            var bt = new GameObject("Label").AddComponent<Text>();
-            bt.transform.SetParent(btnGo.transform, false);
-            bt.font = UiFontHelper.GetFont();
-            bt.fontSize = 18;
-            bt.color = Color.white;
-            bt.alignment = TextAnchor.MiddleCenter;
-            bt.text = "Main Menu";
-            var btr = bt.rectTransform;
-            btr.anchorMin = Vector2.zero;
-            btr.anchorMax = Vector2.one;
-            btr.offsetMin = Vector2.zero;
-            btr.offsetMax = Vector2.zero;
-            btn.onClick.AddListener(() => SceneLoader.LoadHome());
+            // --- Bottom Right: Actions ---
+            var actionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 16), new Vector2(320, 220), actionGridSprite);
+            CreateText("ActionLabel", actionPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 0), new Vector2(0, 5), new Vector2(100, 20), "ACTIONS", 14, Color.white).alignment = TextAnchor.MiddleCenter;
+        }
+
+        RectTransform CreatePanel(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPos, Vector2 size, Sprite sprite)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.pivot = pivot;
+            rt.anchoredPosition = anchoredPos;
+            rt.sizeDelta = size;
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.type = Image.Type.Sliced;
+            img.color = Color.white;
+            return rt;
+        }
+
+        Text CreateText(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 offsetMin, Vector2 offsetMax, string content, int size, Color color)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<Text>();
+            t.font = UiFontHelper.GetFont();
+            t.fontSize = size;
+            t.color = color;
+            t.text = content;
+            var rt = t.rectTransform;
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.pivot = pivot;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+            return t;
         }
 
         void Start()
@@ -235,5 +187,5 @@ namespace InsectWars.RTS
                 _selectionLabel.text = c > 0 ? $"Selected: {c} unit(s)" : SelectionHint;
             }
         }
-    }
-}
+        }
+        }
