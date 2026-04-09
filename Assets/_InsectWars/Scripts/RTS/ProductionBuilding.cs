@@ -179,7 +179,11 @@ namespace InsectWars.RTS
             }
 
             var go = new GameObject($"Building_{type}");
-            go.transform.position = position;
+            {
+                var terrain = Terrain.activeTerrain;
+                float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
+                go.transform.position = new Vector3(position.x, terrainY, position.z);
+            }
 
             Color buildingColor;
             Vector3 scale;
@@ -254,7 +258,9 @@ namespace InsectWars.RTS
 
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            go.transform.position = position;
+            var terrain = Terrain.activeTerrain;
+            float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
+            go.transform.position = new Vector3(position.x, terrainY, position.z);
             go.tag = "Untagged";
 
             var hd = go.GetComponent<HiveDeposit>();
@@ -308,10 +314,9 @@ namespace InsectWars.RTS
         {
             var go = Object.Instantiate(prefab);
             go.name = $"Building_{type}";
-            go.transform.position = position;
-
-            if (type == BuildingType.Underground)
-                go.transform.position += new Vector3(0f, 0.5f, 0f);
+            var terrain = Terrain.activeTerrain;
+            float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
+            go.transform.position = new Vector3(position.x, terrainY, position.z);
 
             Vector3 scale = type switch
             {

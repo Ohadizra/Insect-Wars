@@ -17,8 +17,11 @@ namespace InsectWars.Data
             if (skyTowerPrefab == null)
                 skyTowerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Buildings/Meshy_AI_Citadel_of_the_Hexed__0409154908_texture.fbx");
+            if (calorieChunkPrefab == null)
+                calorieChunkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Models/CalorieChunk 4.prefab");
         }
-#endif
+        #endif
 
         [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
         public GameObject workerPrefab;
@@ -32,9 +35,10 @@ namespace InsectWars.Data
 
         [Header("Environment")]
         public GameObject rottingApplePrefab;
+        public GameObject calorieChunkPrefab;
         public Material groundMaterial;
         public TerrainLayer baseSoilLayer;
-        public TerrainLayer drySoilLayer;
+public TerrainLayer drySoilLayer;
 
         [Header("Terrain Features (optional — falls back to procedural)")]
         public GameObject waterPuddlePrefab;

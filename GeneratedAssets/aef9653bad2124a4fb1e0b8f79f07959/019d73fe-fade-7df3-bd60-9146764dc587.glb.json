@@ -1,0 +1,12 @@
+{
+    "asset": "aef9653bad2124a4fb1e0b8f79f07959",
+    "fileName": "019d73fe-fade-7df3-bd60-9146764dc587.glb",
+    "prompt": "a stylized chunk of a glowing rotten apple, organic shape, glowing yellow veins, high quality game prop",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "a62880c0f8804215f23abf8b5061f758",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

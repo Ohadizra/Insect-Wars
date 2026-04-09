@@ -188,7 +188,10 @@ namespace InsectWars.RTS
             var plane = new Plane(Vector3.up, Vector3.zero);
             if (!plane.Raycast(ray, out var enter)) return;
 
-            var worldPos = ray.GetPoint(enter);
+            var flatPos = ray.GetPoint(enter);
+            var terrain = Terrain.activeTerrain;
+            float terrainY = terrain != null ? terrain.SampleHeight(flatPos) : flatPos.y;
+            var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
             var buildType = Sc2BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
 

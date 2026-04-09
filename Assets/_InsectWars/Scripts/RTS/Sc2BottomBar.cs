@@ -763,8 +763,10 @@ case BarMode.Building:
             if (plane.Raycast(ray, out var enter))
             {
                 var worldPos = ray.GetPoint(enter);
+                var terrain = Terrain.activeTerrain;
+                float terrainY = terrain != null ? terrain.SampleHeight(worldPos) : 0f;
                 var halfY = _ghostPreview.transform.localScale.y * 0.5f;
-                _ghostPreview.transform.position = new Vector3(worldPos.x, halfY, worldPos.z);
+                _ghostPreview.transform.position = new Vector3(worldPos.x, terrainY + halfY, worldPos.z);
             }
         }
 

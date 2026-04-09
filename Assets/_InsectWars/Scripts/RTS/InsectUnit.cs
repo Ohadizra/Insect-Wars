@@ -772,25 +772,34 @@ return;
             if (show && (_cargoVisual == null || _visualCargo != Cargo))
             {
                 if (_cargoVisual != null) Destroy(_cargoVisual);
-                _cargoVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                
+                var lib = SkirmishDirector.ActiveVisualLibrary;
+                if (lib != null && lib.calorieChunkPrefab != null)
+                {
+                    _cargoVisual = Instantiate(lib.calorieChunkPrefab, transform);
+                }
+                else
+                {
+                    _cargoVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    Destroy(_cargoVisual.GetComponent<Collider>());
+                    var r = _cargoVisual.GetComponent<Renderer>();
+                    var sh = Shader.Find("Universal Render Pipeline/Lit");
+                    if (sh == null) sh = Shader.Find("Standard");
+                    var m = new Material(sh);
+                    var col = new Color(0.95f, 0.85f, 0.15f);
+                    m.color = col;
+                    if (m.HasProperty("_BaseColor"))
+                        m.SetColor("_BaseColor", col);
+                    r.sharedMaterial = m;
+                }
+                
                 _cargoVisual.name = "CargoVisual";
-                _cargoVisual.transform.SetParent(transform, false);
-                _cargoVisual.transform.localPosition = new Vector3(0f, 0.75f, -0.2f);
-                _cargoVisual.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
-                Destroy(_cargoVisual.GetComponent<Collider>());
-                var r = _cargoVisual.GetComponent<Renderer>();
-                var sh = Shader.Find("Universal Render Pipeline/Lit");
-                if (sh == null) sh = Shader.Find("Standard");
-                var m = new Material(sh);
-                var col = new Color(0.95f, 0.85f, 0.15f);
-                m.color = col;
-                if (m.HasProperty("_BaseColor"))
-                    m.SetColor("_BaseColor", col);
-                r.sharedMaterial = m;
+                _cargoVisual.transform.localPosition = new Vector3(0f, 0.45f, 0.55f);
+                _cargoVisual.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
                 _visualCargo = Cargo;
             }
             if (_cargoVisual != null && _cargoVisual.activeSelf != show)
                 _cargoVisual.SetActive(show);
         }
     }
-}
+    }
