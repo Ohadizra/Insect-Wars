@@ -1,10 +1,25 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace InsectWars.Data
 {
     [CreateAssetMenu(fileName = "UnitVisualLibrary", menuName = "Insect Wars/Unit Visual Library")]
     public class UnitVisualLibrary : ScriptableObject
     {
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            if (undergroundPrefab == null)
+                undergroundPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Buildings/Underground/Meshy_AI_the_underground_0409154300_texture.fbx");
+            if (skyTowerPrefab == null)
+                skyTowerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Buildings/Meshy_AI_Citadel_of_the_Hexed__0409154908_texture.fbx");
+        }
+#endif
+
         [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
         public GameObject workerPrefab;
         public GameObject meleePrefab;
