@@ -1,0 +1,12 @@
+{
+    "asset": "16b04821deb674d9e9a5bb8e56eefbe5",
+    "fileName": "019d70d1-f5cd-7e37-9d8a-db4a73675045.glb",
+    "prompt": "Stylized organic vine ring or root band, twisted texture, matching the style of a rotting apple, low poly, game ready",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "27060728366141d59c9aff81cd8124e6",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

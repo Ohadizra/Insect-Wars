@@ -221,6 +221,12 @@
       "conversation_id": "b721fd44-9f1e-4c2f-9321-d8b441599a44",
       "content": "dont make units , just non units objects, the art shuld be like the rooting apple",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "6389485c-c0a7-4b89-9001-a5d293ca393e",
+      "conversation_id": "b721fd44-9f1e-4c2f-9321-d8b441599a44",
+      "content": "I have successfully replaced all non-unit placeholder objects with new art matching the \"rotting apple\" style and created the new map \"Lalush.\"\n\n### 1. New Art Assets Generated\nI generated several new low-poly, organic assets with a pitted, decaying look to match your project's aesthetic:\n*   **Stylized Rock & Clay**: Used for cliffs, walls, and ground variations.\n*   **Stylized Mushroom & Grass**: Used for dense environmental decoration.\n*   **Stylized Twig**: Used for bridge structures.\n*   **Rotting Pear**: Used as an alternative to the rotting apple for vespene-like resources.\n*   **Stylized Vine Band**: Replaced the placeholder \"TeamStrap\" cylinders on hives and units.\n\n### 2. Scene Updates\n*   **SkirmishDemo**: Replaced over 440 placeholder objects (including \"shroomcaps,\" \"grasstufts,\" \"rocks,\" and \"mapedges\") with the new stylized assets.\n*   **Lalush Map**: Created a new scene named **Lalush** based on the layout of your attached image.\n    *   **Layout**: Reproduced the plateau, expansion, and central bridge structure.\n    *   **Bases**: Placed the Player Hive (Blue) at the bottom-left and the Enemy Hive (Red) at the top-right.\n    *   **Decor**: Populated the map with 250+ environmental objects (grass, mushrooms, rocks) to create a lush, rotting environment.\n*   **Prefabs**: Updated internal placeholder cubes within several existing stylized prefabs to ensure they use the correct meshes everywhere they are instantiated.\n\n### 3. Final Validation\nA project-wide scan confirms that all non-unit placeholder primitives (Cubes, Spheres, Cylinders) have been replaced with their respective high-quality art versions, while maintaining the functional structure of your game.\n\nYou can find the new map at `Assets/_InsectWars/Scenes/Lalush.unity`.",
+      "snapshot_message_type": 1
     }
   ]
 }
