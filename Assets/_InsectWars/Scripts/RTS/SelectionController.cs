@@ -19,6 +19,10 @@ namespace InsectWars.RTS
         RottingFruitNode _selectedResource;
         ProductionBuilding _selectedBuilding;
 
+        float _lastClickTime;
+        InsectUnit _lastClickedUnit;
+        const float DoubleClickThreshold = 0.3f;
+
         public HiveDeposit SelectedHive => _selectedHive;
         public RottingFruitNode SelectedResource => _selectedResource;
         public ProductionBuilding SelectedBuilding => _selectedBuilding;
@@ -151,6 +155,20 @@ namespace InsectWars.RTS
             var u = hit.collider.GetComponentInParent<InsectUnit>();
             if (u != null && u.Team == Team.Player && u.IsAlive)
             {
+                float now = Time.unscaledTime;
+                bool isDoubleClick = _lastClickedUnit != null
+                    && _lastClickedUnit.Definition == u.Definition
+                    && (now - _lastClickTime) <= DoubleClickThreshold;
+
+                _lastClickTime = now;
+                _lastClickedUnit = u;
+
+                if (isDoubleClick)
+                {
+                    SelectAllOfTypeInView(u.Definition);
+                    return;
+                }
+
                 var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
                 if (!shift) ClearAll();
                 if (!_selected.Contains(u))
@@ -239,6 +257,23 @@ namespace InsectWars.RTS
                 {
                     _selectedResource = node;
                     return;
+                }
+            }
+        }
+
+        void SelectAllOfTypeInView(Data.UnitDefinition def)
+        {
+            ClearAll();
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u.Team != Team.Player || !u.IsAlive) continue;
+                if (u.Definition != def) continue;
+                var vp = _cam.WorldToViewportPoint(u.transform.position);
+                if (vp.z <= 0 || vp.x < 0 || vp.x > 1 || vp.y < 0 || vp.y > 1) continue;
+                if (!_selected.Contains(u))
+                {
+                    _selected.Add(u);
+                    u.IsSelected = true;
                 }
             }
         }

@@ -183,7 +183,7 @@ namespace InsectWars.RTS
             }
 
             int nestCost = ProductionBuilding.GetBuildCost(BuildingType.AntNest);
-            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 100)
+            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 50)
             {
                 if (TryPlaceExpansionNest()) return;
             }
@@ -198,9 +198,9 @@ namespace InsectWars.RTS
 
         void TryPlaceUnderground()
         {
-            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             var hive = HiveDeposit.EnemyHive;
             if (hive == null) return;
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 8f),
                 BuildingType.Underground, Team.Enemy);
         }
@@ -212,10 +212,10 @@ namespace InsectWars.RTS
 
             foreach (var f in RtsSimRegistry.FruitNodes)
             {
-                if (f == null || f.Depleted || f.ChargesRemaining < 2000) continue;
+                if (f == null || f.Depleted || f.ChargesRemaining < 500) continue;
                 float distToDeposit = DistToNearestEnemyDeposit(f.transform.position);
-                if (distToDeposit < 25f) continue;
-                float value = f.ChargesRemaining * Mathf.Clamp01(distToDeposit / 60f);
+                if (distToDeposit < 12f) continue;
+                float value = f.ChargesRemaining * Mathf.Clamp01(distToDeposit / 40f);
                 if (value > bestValue) { bestValue = value; bestNode = f; }
             }
 
