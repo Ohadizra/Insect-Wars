@@ -23,24 +23,28 @@ namespace InsectWars.Data
             if (bigAppleMaterial == null)
                 bigAppleMaterial = AssetDatabase.LoadAssetAtPath<Material>(
                     "Assets/_InsectWars/Materials/BigRootedApple.mat");
+            if (clayWallPrefab == null)
+                clayWallPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Models/ClayWall.prefab");
             }
             #endif
 
-        [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
-        public GameObject workerPrefab;
-        public GameObject meleePrefab;
-        public GameObject rangedPrefab;
+            [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
+            public GameObject workerPrefab;
+            public GameObject meleePrefab;
+            public GameObject rangedPrefab;
 
-        [Header("Buildings")]
-        public GameObject hivePrefab;
-        public GameObject undergroundPrefab;
-        public GameObject skyTowerPrefab;
+            [Header("Buildings")]
+            public GameObject hivePrefab;
+            public GameObject undergroundPrefab;
+            public GameObject skyTowerPrefab;
 
-        [Header("Environment")]
-        public GameObject rottingApplePrefab;
-        public GameObject calorieChunkPrefab;
-        public Material bigAppleMaterial;
-        public Material groundMaterial;
+            [Header("Environment")]
+            public GameObject rottingApplePrefab;
+            public GameObject calorieChunkPrefab;
+            public GameObject clayWallPrefab;
+            public Material bigAppleMaterial;
+            public Material groundMaterial;
 public TerrainLayer baseSoilLayer;
 public TerrainLayer drySoilLayer;
 

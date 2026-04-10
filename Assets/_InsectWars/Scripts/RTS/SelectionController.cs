@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -157,7 +158,7 @@ namespace InsectWars.RTS
             {
                 float now = Time.unscaledTime;
                 bool isDoubleClick = _lastClickedUnit != null
-                    && _lastClickedUnit.Definition == u.Definition
+                    && _lastClickedUnit.Archetype == u.Archetype
                     && (now - _lastClickTime) <= DoubleClickThreshold;
 
                 _lastClickTime = now;
@@ -165,7 +166,7 @@ namespace InsectWars.RTS
 
                 if (isDoubleClick)
                 {
-                    SelectAllOfTypeInView(u.Definition);
+                    SelectAllOfTypeInView(u.Archetype);
                     return;
                 }
 
@@ -261,13 +262,13 @@ namespace InsectWars.RTS
             }
         }
 
-        void SelectAllOfTypeInView(Data.UnitDefinition def)
+        void SelectAllOfTypeInView(UnitArchetype archetype)
         {
             ClearAll();
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u.Team != Team.Player || !u.IsAlive) continue;
-                if (u.Definition != def) continue;
+                if (u.Archetype != archetype) continue;
                 var vp = _cam.WorldToViewportPoint(u.transform.position);
                 if (vp.z <= 0 || vp.x < 0 || vp.x > 1 || vp.y < 0 || vp.y > 1) continue;
                 if (!_selected.Contains(u))

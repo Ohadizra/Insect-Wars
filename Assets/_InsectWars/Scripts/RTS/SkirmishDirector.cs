@@ -66,7 +66,8 @@ namespace InsectWars.RTS
         }
 
         /// <summary>How far from the nest centre starting units spawn (toward the apple).</summary>
-        const float NestToArmySpawnDistance = 8f;
+        const float NestToArmySpawnDistance = 5f;
+        const float CombatFlankDistance = 3f;
         const float RecommendedMaxNestToAppleDistance = 25f;
         const float MinNestToAppleDistance = 5f;
 
@@ -85,21 +86,44 @@ namespace InsectWars.RTS
                 ? m.terrainFeatures
                 : System.Array.Empty<TerrainFeaturePlaced>();
 
-            // Auto-derive army start: units spawn near their nest, biased toward the starting apple.
-            _playerStart = DeriveArmyStart(_playerHive, _applePos);
-            _enemyStart  = DeriveArmyStart(_enemyHive, _enemyApplePos);
-            _camFocus    = _playerStart;
+            // Preliminary positions for editor preview & exclusion zones (refined after NavMesh in Start)
+            var pDir = _applePos - _playerHive; pDir.y = 0f;
+            if (pDir.sqrMagnitude < 0.01f) pDir = Vector3.forward;
+            _playerStart = new Vector3(_playerHive.x, 0f, _playerHive.z) + pDir.normalized * NestToArmySpawnDistance;
+
+            var eDir = _enemyApplePos - _enemyHive; eDir.y = 0f;
+            if (eDir.sqrMagnitude < 0.01f) eDir = Vector3.forward;
+            _enemyStart = new Vector3(_enemyHive.x, 0f, _enemyHive.z) + eDir.normalized * NestToArmySpawnDistance;
+
+            _camFocus = _playerStart;
 
             ValidateNestAppleDistance(_playerHive, _applePos, "Player");
             ValidateNestAppleDistance(_enemyHive, _enemyApplePos, "Enemy");
         }
 
-        static Vector3 DeriveArmyStart(Vector3 hivePos, Vector3 applePos)
+        /// <summary>
+        /// Compute a spawn point near the hive on valid NavMesh, biased toward the apple.
+        /// Called after NavMesh is built so we can sample properly.
+        /// </summary>
+        Vector3 DeriveArmyStart(Vector3 hivePos, Vector3 applePos)
         {
             var dir = applePos - hivePos;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            return new Vector3(hivePos.x, 0f, hivePos.z) + dir.normalized * NestToArmySpawnDistance;
+            dir = dir.normalized;
+
+            var hiveFlat = new Vector3(hivePos.x, 0f, hivePos.z);
+            var candidate = hiveFlat + dir * NestToArmySpawnDistance;
+            float h = GetHeight(candidate);
+            candidate.y = h;
+
+            if (NavMesh.SamplePosition(candidate, out var hit, 8f, NavMesh.AllAreas))
+                return hit.position;
+
+            if (NavMesh.SamplePosition(hiveFlat, out hit, 12f, NavMesh.AllAreas))
+                return hit.position;
+
+            return candidate;
         }
 
         static Vector3 FlatDirection(Vector3 from, Vector3 to)
@@ -126,6 +150,16 @@ namespace InsectWars.RTS
             EnemyResources.Reset();
             BuildWorldPreview();
 
+            // Derive army positions AFTER NavMesh is built so we can sample valid spots
+            _playerStart = DeriveArmyStart(_playerHive, _applePos);
+            _enemyStart  = DeriveArmyStart(_enemyHive, _enemyApplePos);
+            _camFocus    = _playerStart;
+
+            // Find apples now so we can order starting workers to gather
+            var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
+            var playerApple = FindNearestFruit(allFruit, _applePos);
+            var enemyApple  = FindNearestFruit(allFruit, _enemyApplePos);
+
             // ── Player starting units ──
             var playerFwd  = FlatDirection(_playerHive, _applePos);
             var playerSide = new Vector3(-playerFwd.z, 0f, playerFwd.x);
@@ -134,13 +168,15 @@ namespace InsectWars.RTS
             for (var i = 0; i < 5; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
-                SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
+                var offset = new Vector3(Mathf.Cos(angle) * 2f, 0f, Mathf.Sin(angle) * 2f);
+                var worker = SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
+                if (worker != null && playerApple != null && !playerApple.Depleted)
+                    worker.OrderGather(playerApple);
             }
-            SpawnUnit(playerStart + playerSide *  3f + playerFwd * 1f, Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + playerSide *  5f,                  Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart - playerSide *  3f + playerFwd * 1f, Team.Player, UnitArchetype.BasicRanged);
-            SpawnUnit(playerStart - playerSide *  5f,                  Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerStart + playerSide * CombatFlankDistance + playerFwd * 1f, Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart + playerSide * (CombatFlankDistance + 2f),           Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart - playerSide * CombatFlankDistance + playerFwd * 1f, Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerStart - playerSide * (CombatFlankDistance + 2f),           Team.Player, UnitArchetype.BasicRanged);
 
             // ── Enemy starting units ──
             var enemyFwd  = FlatDirection(_enemyHive, _enemyApplePos);
@@ -151,8 +187,10 @@ namespace InsectWars.RTS
             for (var i = 0; i < nWorkers; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
-                SpawnUnit(enemyStart + offset, Team.Enemy, UnitArchetype.Worker);
+                var offset = new Vector3(Mathf.Cos(angle) * 2f, 0f, Mathf.Sin(angle) * 2f);
+                var worker = SpawnUnit(enemyStart + offset, Team.Enemy, UnitArchetype.Worker);
+                if (worker != null && enemyApple != null && !enemyApple.Depleted)
+                    worker.OrderGather(enemyApple);
             }
             var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
@@ -529,15 +567,32 @@ AddTerrainFeature(world.transform, tf);
 
         static void AddClay(Transform parent, Vector3 pos, Vector3 scale)
         {
-            var clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            clay.name = "Clay";
-            clay.tag = "Clay";
-            clay.transform.SetParent(parent);
+            GameObject clay;
+            var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
-            clay.transform.position = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
-            clay.transform.localScale = scale;
-            ApplyMat(clay, new Color(0.45f, 0.32f, 0.22f));
-            var obs = clay.AddComponent<NavMeshObstacle>();
+            Vector3 finalPos = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
+
+            if (lib != null && lib.clayWallPrefab != null)
+            {
+                clay = Object.Instantiate(lib.clayWallPrefab, parent);
+                clay.name = "Clay";
+                clay.tag = "Clay";
+                clay.transform.position = finalPos;
+                clay.transform.localScale = scale;
+            }
+            else
+            {
+                clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                clay.name = "Clay";
+                clay.tag = "Clay";
+                clay.transform.SetParent(parent);
+                clay.transform.position = finalPos;
+                clay.transform.localScale = scale;
+                ApplyMat(clay, new Color(0.45f, 0.32f, 0.22f));
+            }
+
+            var obs = clay.GetComponent<NavMeshObstacle>();
+            if (obs == null) obs = clay.AddComponent<NavMeshObstacle>();
             obs.carving = true;
             obs.shape = NavMeshObstacleShape.Box;
             obs.size = Vector3.one;
