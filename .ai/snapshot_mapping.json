@@ -389,6 +389,12 @@
       "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
       "content": "I've updated the calorie chunk carried by the ants to look like a small, bite-sized piece of apple flesh instead of a whole apple.\n\n1.  **Generated New Asset**: Created a 3D model of an \"apple bite chunk\" (`Assets/_InsectWars/Models/AppleBiteChunk.prefab`). This model represents a crescent-shaped piece of apple with red skin on one side and a yellowish interior, matching the appearance of a piece bitten out of a fruit.\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use this new chunk prefab for the `calorieChunkPrefab` field. \n3.  **Scale Check**: Verified that the model's dimensions will work correctly with the existing ant worker's carrying logic.\n\nThe ants will now appear to be carrying the actual \"missing pieces\" from the apples.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "1bd0cc41-5349-4c9a-b302-582ad9e1b6f3",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "I have generated a new 3D model that specifically represents an **irregular chunk of apple flesh** rather than a whole fruit or an apple-like shape.\n\n1.  **New Asset**: Created `Assets/_InsectWars/Models/BiteFleshChunk.prefab`. This model is an irregular, crescent-shaped chunk of \"fruit pulp\" with a thin red peel on one curved side and a yellowish, porous interior on the other sides. I explicitly removed any references to stems, leaves, or spherical shapes in the generation prompt to ensure it looks like a \"raw chunk of food.\"\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use this new `BiteFleshChunk.prefab` for the `calorieChunkPrefab`. \n3.  **Scale Verification**: The model is appropriately sized for the ant workers to carry.\n\nThe ants will now be carrying the specific \"bite-sized\" pieces of the apple flesh.",
+      "snapshot_message_type": 1
     }
   ]
 }

@@ -1,0 +1,12 @@
+{
+    "asset": "10040709f5c2a4f6b8c8ca4d74adee9b",
+    "fileName": "019d7801-033d-701a-b937-a6b373fd3200.glb",
+    "prompt": "An irregular, crescent-shaped chunk of fresh fruit flesh. One side has a curved thin red peel, and the other sides show yellowish-white porous fruit interior. It looks like a single bite-sized piece of an apple that has been carved out. Stylized cartoon look, vibrant colors. No stem, no leaves, not spherical. it is a raw chunk of food.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "959bc4860718ab524c5c6d1fc6535927",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
