@@ -18,6 +18,16 @@ namespace InsectWars.RTS
         static readonly List<ProductionBuilding> s_all = new();
         public static IReadOnlyList<ProductionBuilding> All => s_all;
 
+        struct QueueEntry
+        {
+            public UnitArchetype archetype;
+            public float buildTime;
+            public float elapsed;
+        }
+
+        const int MaxQueueSize = 5;
+        readonly List<QueueEntry> _queue = new();
+
         BuildingType _type;
         Team _team = Team.Player;
         Vector3? _rallyPoint;
@@ -28,6 +38,10 @@ namespace InsectWars.RTS
         public Team Team => _team;
         public Vector3? RallyPoint => _rallyPoint;
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
+        public bool IsProducing => _queue.Count > 0;
+        public int QueueCount => _queue.Count;
+        public float ProductionProgress => _queue.Count > 0 ? Mathf.Clamp01(_queue[0].elapsed / _queue[0].buildTime) : 0f;
+        public UnitArchetype? CurrentProducing => _queue.Count > 0 ? _queue[0].archetype : null;
 
         public string DisplayName => _type switch
         {
@@ -61,6 +75,14 @@ namespace InsectWars.RTS
             _ => "Unit"
         };
 
+        public static float GetBuildTime(UnitArchetype arch) => arch switch
+        {
+            UnitArchetype.Worker => 10f,
+            UnitArchetype.BasicFighter => 18f,
+            UnitArchetype.BasicRanged => 22f,
+            _ => 15f
+        };
+
         public static int GetBuildCost(BuildingType type) => type switch
         {
             BuildingType.Underground => 200,
@@ -82,14 +104,60 @@ namespace InsectWars.RTS
             s_all.Add(this);
         }
 
-        public InsectUnit ProduceUnit(UnitArchetype archetype)
+        void Update()
         {
+            if (_queue.Count == 0) return;
+            var entry = _queue[0];
+            entry.elapsed += Time.deltaTime;
+            _queue[0] = entry;
+            if (entry.elapsed >= entry.buildTime)
+            {
+                _queue.RemoveAt(0);
+                SpawnFinishedUnit(entry.archetype);
+            }
+        }
+
+        public bool QueueUnit(UnitArchetype archetype)
+        {
+            if (_queue.Count >= MaxQueueSize) return false;
+
             int cost = GetUnitCost(archetype);
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
-                return null;
+                return false;
             if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
-                return null;
+                return false;
 
+            _queue.Add(new QueueEntry
+            {
+                archetype = archetype,
+                buildTime = GetBuildTime(archetype),
+                elapsed = 0f
+            });
+            return true;
+        }
+
+        public void CancelLast()
+        {
+            if (_queue.Count == 0) return;
+            var last = _queue[_queue.Count - 1];
+            _queue.RemoveAt(_queue.Count - 1);
+            int refund = GetUnitCost(last.archetype);
+            if (_team == Team.Player && PlayerResources.Instance != null)
+                PlayerResources.Instance.AddCalories(refund);
+            else if (_team == Team.Enemy)
+                EnemyResources.AddCalories(refund);
+        }
+
+        public int QueuedCountOf(UnitArchetype arch)
+        {
+            int count = 0;
+            foreach (var e in _queue)
+                if (e.archetype == arch) count++;
+            return count;
+        }
+
+        void SpawnFinishedUnit(UnitArchetype archetype)
+        {
             var center = new Vector3(transform.position.x, 0f, transform.position.z);
             var extent = transform.localScale.x * 0.5f + 1.5f;
             var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
@@ -99,15 +167,13 @@ namespace InsectWars.RTS
                 spawnPos = hit.position;
 
             var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
-            if (unit == null) return null;
+            if (unit == null) return;
 
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
                 unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);
             else if (_rallyPoint.HasValue)
                 unit.OrderMove(_rallyPoint.Value);
-
-            return unit;
         }
 
         public void SetRallyPoint(Vector3 pos)

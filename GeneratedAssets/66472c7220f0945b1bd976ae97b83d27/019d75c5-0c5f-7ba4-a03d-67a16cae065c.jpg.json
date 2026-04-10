@@ -1,0 +1,36 @@
+{
+    "asset": "66472c7220f0945b1bd976ae97b83d27",
+    "fileName": "019d75c5-0c5f-7ba4-a03d-67a16cae065c.jpg",
+    "prompt": "Tall insect antenna tower icon, bioluminescent, biological chitin, circular frame, RTS ability icon style, matching the style of the provided reference.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "82e0f82be6cdb1c4fd54c77c7ddcc37b",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "8338ff99c5cce4c80ac2391d4c5ddc94"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

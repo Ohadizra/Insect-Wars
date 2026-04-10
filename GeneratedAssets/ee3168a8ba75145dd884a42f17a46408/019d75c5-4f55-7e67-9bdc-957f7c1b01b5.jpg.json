@@ -1,0 +1,36 @@
+{
+    "asset": "ee3168a8ba75145dd884a42f17a46408",
+    "fileName": "019d75c5-4f55-7e67-9bdc-957f7c1b01b5.jpg",
+    "prompt": "Mantis fighter insect icon, scythe arms, biological, circular frame, RTS ability icon style, matching the style of the provided reference.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "98c8c00ccd30e421cb6e2143f47c659b",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "8338ff99c5cce4c80ac2391d4c5ddc94"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

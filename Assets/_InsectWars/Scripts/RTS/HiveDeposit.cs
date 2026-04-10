@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,9 +15,21 @@ namespace InsectWars.RTS
         RottingFruitNode _rallyGatherTarget;
         GameObject _rallyFlag;
 
+        struct WorkerQueueEntry
+        {
+            public float buildTime;
+            public float elapsed;
+        }
+
+        const int MaxQueueSize = 5;
+        readonly List<WorkerQueueEntry> _workerQueue = new();
+
         public Team Team => team;
         public Vector3? RallyPoint => _rallyPoint;
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
+        public bool IsProducing => _workerQueue.Count > 0;
+        public int QueueCount => _workerQueue.Count;
+        public float ProductionProgress => _workerQueue.Count > 0 ? Mathf.Clamp01(_workerQueue[0].elapsed / _workerQueue[0].buildTime) : 0f;
 
         void Awake()
         {
@@ -26,6 +40,67 @@ namespace InsectWars.RTS
         {
             if (PlayerHive == this) PlayerHive = null;
             if (EnemyHive == this) EnemyHive = null;
+        }
+
+        void Update()
+        {
+            if (_workerQueue.Count == 0) return;
+            var entry = _workerQueue[0];
+            entry.elapsed += Time.deltaTime;
+            _workerQueue[0] = entry;
+            if (entry.elapsed >= entry.buildTime)
+            {
+                _workerQueue.RemoveAt(0);
+                SpawnWorker();
+            }
+        }
+
+        public bool QueueWorker()
+        {
+            if (_workerQueue.Count >= MaxQueueSize) return false;
+            int cost = ProductionBuilding.GetUnitCost(UnitArchetype.Worker);
+            if (team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
+                return false;
+            if (team == Team.Enemy && !EnemyResources.TrySpend(cost))
+                return false;
+            _workerQueue.Add(new WorkerQueueEntry
+            {
+                buildTime = ProductionBuilding.GetBuildTime(UnitArchetype.Worker),
+                elapsed = 0f
+            });
+            return true;
+        }
+
+        public void CancelLast()
+        {
+            if (_workerQueue.Count == 0) return;
+            _workerQueue.RemoveAt(_workerQueue.Count - 1);
+            int refund = ProductionBuilding.GetUnitCost(UnitArchetype.Worker);
+            if (team == Team.Player && PlayerResources.Instance != null)
+                PlayerResources.Instance.AddCalories(refund);
+            else if (team == Team.Enemy)
+                EnemyResources.AddCalories(refund);
+        }
+
+        void SpawnWorker()
+        {
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
+            var rend = GetComponentInChildren<Renderer>();
+            float hiveExtent = rend != null
+                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.2f
+                : transform.localScale.x * 0.5f + 1.2f;
+            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            var offset = new Vector3(Mathf.Cos(angle) * hiveExtent, 0f, Mathf.Sin(angle) * hiveExtent);
+            var spawnPos = center + offset;
+            if (NavMesh.SamplePosition(spawnPos, out var hit, 12f, NavMesh.AllAreas))
+                spawnPos = hit.position;
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
+            if (unit == null) return;
+
+            if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted)
+                unit.OrderGather(_rallyGatherTarget);
+            else if (_rallyPoint.HasValue)
+                unit.OrderMove(_rallyPoint.Value);
         }
 
         public void Configure(Team t)

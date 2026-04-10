@@ -1,0 +1,36 @@
+{
+    "asset": "dde023701d5624986b17f5e55b8866fc",
+    "fileName": "019d75c5-1191-7efe-8337-7fd524db340b.jpg",
+    "prompt": "Ant worker insect icon, head and thorax, biological, circular frame, RTS ability icon style, matching the style of the provided reference.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "257e040470b8c82939d0e1d88a712871",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "8338ff99c5cce4c80ac2391d4c5ddc94"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

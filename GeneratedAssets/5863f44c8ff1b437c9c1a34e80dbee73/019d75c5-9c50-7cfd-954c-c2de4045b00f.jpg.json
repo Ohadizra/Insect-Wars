@@ -1,0 +1,36 @@
+{
+    "asset": "5863f44c8ff1b437c9c1a34e80dbee73",
+    "fileName": "019d75c5-9c50-7cfd-954c-c2de4045b00f.jpg",
+    "prompt": "Clear rally point icon, red X over a flag, biological chitin frame, RTS ability icon style, matching the style of the provided reference.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "4564ae5e4ae7b456d263874ecf4c5b72",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "8338ff99c5cce4c80ac2391d4c5ddc94"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

@@ -1,0 +1,36 @@
+{
+    "asset": "ad2ef7ed16bb94b2fba88255f5c1917b",
+    "fileName": "019d75c5-65ac-74b1-a5a1-e6ea4a2ed2a2.jpg",
+    "prompt": "Bombardier beetle insect icon, chemical sprayer, biological, circular frame, RTS ability icon style, matching the style of the provided reference.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "3821eca35de01ce9fd2ab71d203ea4b5",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "8338ff99c5cce4c80ac2391d4c5ddc94"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

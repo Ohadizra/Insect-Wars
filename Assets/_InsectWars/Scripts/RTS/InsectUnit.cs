@@ -667,7 +667,7 @@ namespace InsectWars.RTS
                     {
                         if (targetUnit != null)
                         {
-                            targetUnit.ApplyDamage(definition.attackDamage);
+                            targetUnit.ApplyDamage(definition.attackDamage, this);
                         }
                         GetComponent<UnitAnimationDriver>()?.NotifyAttack();
                         _attackCooldown = definition.attackCooldown;
@@ -719,7 +719,7 @@ return;
             var origin = GetComponent<UnitAnimationDriver>() != null
                 ? GetComponent<UnitAnimationDriver>().GetProjectileSpawnPoint()
                 : transform.position + Vector3.up * 0.45f;
-            Projectile.SpawnHoming(origin, targetUnit, team, definition.attackDamage, spd, life, prefab);
+            Projectile.SpawnHoming(origin, targetUnit, team, definition.attackDamage, spd, life, prefab, this);
             GetComponent<UnitAnimationDriver>()?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
         }
@@ -738,7 +738,9 @@ return;
             _order = UnitOrder.Idle;
         }
 
-        public void ApplyDamage(float dmg)
+        public void ApplyDamage(float dmg) => ApplyDamage(dmg, null);
+
+        public void ApplyDamage(float dmg, InsectUnit attacker)
         {
             if (_health <= 0f) return;
             _health -= dmg;
@@ -755,6 +757,16 @@ return;
                     drv.NotifyDeath(0.48f);
                 else
                     Destroy(gameObject, 0.15f);
+                return;
+            }
+
+            // Auto-retaliate: non-worker units fight back when hit while not already in combat
+            if (attacker != null && attacker.IsAlive
+                && Archetype != UnitArchetype.Worker
+                && _order != UnitOrder.Attack
+                && !_wantsAttackMove)
+            {
+                OrderAttack(attacker);
             }
         }
     }

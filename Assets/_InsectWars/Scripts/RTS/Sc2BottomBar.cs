@@ -53,6 +53,14 @@ namespace InsectWars.RTS
         [SerializeField] Sprite iconGather;
         [SerializeField] Sprite iconBuild;
         [SerializeField] Sprite iconCancel;
+        [SerializeField] Sprite iconWorker;
+        [SerializeField] Sprite iconFighter;
+        [SerializeField] Sprite iconRanged;
+        [SerializeField] Sprite iconUnderground;
+        [SerializeField] Sprite iconSkyTower;
+        [SerializeField] Sprite iconAntNest;
+        [SerializeField] Sprite iconEvolve;
+        [SerializeField] Sprite iconClearRally;
 
         [Header("Unit Portraits")]
         [SerializeField] Sprite portraitWorker;
@@ -70,6 +78,10 @@ namespace InsectWars.RTS
         Font _font;
         Transform _cmdGridParent;
         readonly Dictionary<string, Image> _cmdButtonImages = new();
+
+        GameObject _prodBarRoot;
+        Image _prodBarFill;
+        Text _prodLabel;
 
         bool _buildMenuActive;
         GameObject _ghostPreview;
@@ -98,8 +110,17 @@ namespace InsectWars.RTS
             if (iconGather == null) iconGather = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Gather.png");
             if (iconBuild == null) iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Build.png");
             if (iconCancel == null) iconCancel = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Cancel.png");
+            if (iconWorker == null) iconWorker = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Worker.png");
+            if (iconFighter == null) iconFighter = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Fighter.png");
+            if (iconRanged == null) iconRanged = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Ranged.png");
+            if (iconUnderground == null) iconUnderground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Underground.png");
+            if (iconSkyTower == null) iconSkyTower = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_SkyTower.png");
+            if (iconAntNest == null) iconAntNest = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_AntNest.png");
+            if (iconEvolve == null) iconEvolve = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Evolve.png");
+            if (iconClearRally == null) iconClearRally = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_ClearRally.png");
 
             if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_AntWorker.png");
+
             if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_MantisFighter.png");
             if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_BombardierBeetle.png");
         #endif
@@ -216,6 +237,7 @@ namespace InsectWars.RTS
             RefreshSelectionGrid();
             RefreshCommandHighlights();
             RefreshPendingHint();
+            RefreshProductionBar();
             UpdateGhostPreview();
         }
 
@@ -574,6 +596,38 @@ case BarMode.Building:
             ph.anchorMax = new Vector2(0.5f, 0.25f);
             ph.anchoredPosition = Vector2.zero;
             ph.sizeDelta = new Vector2(800f, 30f);
+
+            // Production progress bar (shown inside info block when building/hive is selected)
+            _prodBarRoot = new GameObject("ProdBar");
+            _prodBarRoot.transform.SetParent(infoBlock.transform, false);
+            var pbr = _prodBarRoot.AddComponent<RectTransform>();
+            pbr.anchorMin = new Vector2(0.05f, 0.62f);
+            pbr.anchorMax = new Vector2(0.95f, 0.72f);
+            pbr.offsetMin = pbr.offsetMax = Vector2.zero;
+            var pbBg = _prodBarRoot.AddComponent<Image>();
+            pbBg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            var fillGo = new GameObject("ProdFill");
+            fillGo.transform.SetParent(_prodBarRoot.transform, false);
+            _prodBarFill = fillGo.AddComponent<Image>();
+            _prodBarFill.color = new Color(0.3f, 0.7f, 1f, 1f);
+            var pfr = _prodBarFill.rectTransform;
+            pfr.anchorMin = Vector2.zero;
+            pfr.anchorMax = new Vector2(0f, 1f);
+            pfr.offsetMin = pfr.offsetMax = Vector2.zero;
+
+            _prodLabel = new GameObject("ProdText").AddComponent<Text>();
+            _prodLabel.transform.SetParent(_prodBarRoot.transform, false);
+            _prodLabel.font = _font;
+            _prodLabel.fontSize = 11;
+            _prodLabel.color = Color.white;
+            _prodLabel.alignment = TextAnchor.MiddleCenter;
+            var plr = _prodLabel.rectTransform;
+            plr.anchorMin = Vector2.zero;
+            plr.anchorMax = Vector2.one;
+            plr.offsetMin = plr.offsetMax = Vector2.zero;
+
+            _prodBarRoot.SetActive(false);
         }
 
         void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick)
@@ -617,6 +671,14 @@ case BarMode.Building:
             if (cmdName.Contains("Gather")) return iconGather;
             if (cmdName.Contains("Build")) return iconBuild;
             if (cmdName.Contains("Cancel")) return iconCancel;
+            if (cmdName.Contains("Worker")) return iconWorker;
+            if (cmdName.Contains("Mantis")) return iconFighter;
+            if (cmdName.Contains("Beetle")) return iconRanged;
+            if (cmdName.Contains("Underground")) return iconUnderground;
+            if (cmdName.Contains("Sky Tower")) return iconSkyTower;
+            if (cmdName.Contains("Ant's Nest")) return iconAntNest;
+            if (cmdName.Contains("Evolve")) return iconEvolve;
+            if (cmdName.Contains("Clear Rally")) return iconClearRally;
             return null;
         }
 
@@ -647,25 +709,9 @@ case BarMode.Building:
 
         void BuildWorker()
         {
-            if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(50)) return;
             var hive = HiveDeposit.PlayerHive;
             if (hive == null) return;
-            var center = new Vector3(hive.transform.position.x, 0f, hive.transform.position.z);
-            var rend = hive.GetComponentInChildren<Renderer>();
-            float hiveExtent = rend != null
-                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.2f
-                : hive.transform.localScale.x * 0.5f + 1.2f;
-            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            var offset = new Vector3(Mathf.Cos(angle) * hiveExtent, 0f, Mathf.Sin(angle) * hiveExtent);
-            var spawnPos = center + offset;
-            if (NavMesh.SamplePosition(spawnPos, out var hit, 12f, NavMesh.AllAreas))
-                spawnPos = hit.position;
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, Team.Player, UnitArchetype.Worker);
-
-            if (unit != null && hive.RallyGatherTarget != null && !hive.RallyGatherTarget.Depleted)
-                unit.OrderGather(hive.RallyGatherTarget);
-            else if (unit != null && hive.RallyPoint.HasValue)
-                unit.OrderMove(hive.RallyPoint.Value);
+            hive.QueueWorker();
         }
 
         void ClearRally()
@@ -691,7 +737,7 @@ case BarMode.Building:
 
         void ProduceFromBuilding(ProductionBuilding bld, UnitArchetype archetype)
         {
-            if (bld != null) bld.ProduceUnit(archetype);
+            if (bld != null) bld.QueueUnit(archetype);
         }
 
         static void ClearBuildingRally(ProductionBuilding bld)
