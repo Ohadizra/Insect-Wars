@@ -702,7 +702,7 @@ namespace InsectWars.UI
             UnitArchetype.BasicFighter =>
                 "Armored melee brawler. Closes distance fast and locks onto targets with scythe-arms. High damage up close.",
             UnitArchetype.BasicRanged =>
-                "Ranged bombardier. Launches homing acid projectiles from distance. Fragile if flanked, deadly in groups.",
+                "Turns its abdomen and unleashes a scalding chemical spray in a cone. Short range, but punishes clumped enemies.",
             _ => ""
         };
 

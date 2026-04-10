@@ -36,6 +36,7 @@ namespace InsectWars.RTS
         Quaternion _lArmBase, _rArmBase, _chestBase, _headBase, _tailBase;
         
         float _attackAnimT;
+        float _attackAnimDuration;
         float _idleT;
         float _instanceOffset;
         bool _dying;
@@ -163,14 +164,34 @@ namespace InsectWars.RTS
             if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
-                float p = 1f - (Mathf.Max(0f, _attackAnimT) / 0.35f); 
-                float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
-                float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
-                modelRoot.localPosition += modelRoot.forward * lunge;
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+                float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
 
-                if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                if (_unit.Archetype == UnitArchetype.BasicRanged)
+                {
+                    float tailLift = Mathf.Sin(p * Mathf.PI) * 55f;
+                    if (_tail != null)
+                        _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift, 0f, 0f);
+
+                    float brace = Mathf.Sin(p * Mathf.PI) * 0.06f;
+                    modelRoot.localScale = Vector3.Scale(_baseScale,
+                        new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
+
+                    float recoil = Mathf.Sin(p * Mathf.PI) * 0.12f;
+                    modelRoot.localPosition += modelRoot.forward * recoil;
+
+                    if (_chest != null)
+                        _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -15f, 0f, 0f);
+                }
+                else
+                {
+                    float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
+                    float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
+                    modelRoot.localPosition += modelRoot.forward * lunge;
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+
+                    if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                    if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                }
             }
             else if (_unit.Archetype != UnitArchetype.BasicFighter)
             {
@@ -237,7 +258,9 @@ namespace InsectWars.RTS
         {
             if (animator != null && animator.runtimeAnimatorController != null)
                 animator.SetTrigger(Attack);
-            _attackAnimT = 0.35f;
+            bool isSpray = _unit != null && _unit.Archetype == UnitArchetype.BasicRanged;
+            _attackAnimDuration = isSpray ? 0.5f : 0.35f;
+            _attackAnimT = _attackAnimDuration;
         }
 
         public void NotifyDeath(float destroyDelay = 0.45f)
@@ -255,6 +278,15 @@ namespace InsectWars.RTS
             if (fp != null) return fp.position;
             if (modelRoot != null)
                 return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f;
+            return transform.position + Vector3.up * 0.4f;
+        }
+
+        public Vector3 GetSprayOrigin()
+        {
+            if (_tail != null)
+                return _tail.position;
+            if (modelRoot != null)
+                return modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f;
             return transform.position + Vector3.up * 0.4f;
         }
 

@@ -780,6 +780,33 @@ return;
         public CargoType Cargo;
         GameObject _cargoVisual;
         CargoType _visualCargo;
+        Transform _mouthAnchor;
+        bool _anchorSearched;
+
+        Transform FindBoneRecursive(Transform parent, string boneName)
+        {
+            if (string.Equals(parent.name, boneName, System.StringComparison.OrdinalIgnoreCase))
+                return parent;
+            foreach (Transform child in parent)
+            {
+                var found = FindBoneRecursive(child, boneName);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        Transform GetMouthAnchor()
+        {
+            if (_anchorSearched) return _mouthAnchor ?? transform;
+            _anchorSearched = true;
+
+            var visual = transform.Find("Visual");
+            if (visual != null)
+                _mouthAnchor = FindBoneRecursive(visual, "headend")
+                            ?? FindBoneRecursive(visual, "head");
+
+            return _mouthAnchor ?? transform;
+        }
 
         void LateUpdate()
         {
@@ -787,16 +814,20 @@ return;
             if (show && (_cargoVisual == null || _visualCargo != Cargo))
             {
                 if (_cargoVisual != null) Destroy(_cargoVisual);
-                
+
+                var anchor = GetMouthAnchor();
+                bool attachedToBone = anchor != transform;
+
                 var lib = SkirmishDirector.ActiveVisualLibrary;
                 if (lib != null && lib.calorieChunkPrefab != null)
                 {
-                    _cargoVisual = Instantiate(lib.calorieChunkPrefab, transform);
+                    _cargoVisual = Instantiate(lib.calorieChunkPrefab, anchor);
                 }
                 else
                 {
                     _cargoVisual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     Destroy(_cargoVisual.GetComponent<Collider>());
+                    _cargoVisual.transform.SetParent(anchor, false);
                     var r = _cargoVisual.GetComponent<Renderer>();
                     var sh = Shader.Find("Universal Render Pipeline/Lit");
                     if (sh == null) sh = Shader.Find("Standard");
@@ -807,10 +838,19 @@ return;
                         m.SetColor("_BaseColor", col);
                     r.sharedMaterial = m;
                 }
-                
+
                 _cargoVisual.name = "CargoVisual";
-                _cargoVisual.transform.localPosition = new Vector3(0f, 0.45f, 0.55f);
-                _cargoVisual.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+
+                if (attachedToBone)
+                {
+                    _cargoVisual.transform.localPosition = new Vector3(0f, -0.02f, 0.03f);
+                    _cargoVisual.transform.localScale = Vector3.one * 0.07f;
+                }
+                else
+                {
+                    _cargoVisual.transform.localPosition = new Vector3(0f, 0.35f, 0.55f);
+                    _cargoVisual.transform.localScale = Vector3.one * 0.1f;
+                }
                 _visualCargo = Cargo;
             }
             if (_cargoVisual != null && _cargoVisual.activeSelf != show)
