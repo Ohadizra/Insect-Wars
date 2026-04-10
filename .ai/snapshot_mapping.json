@@ -371,6 +371,12 @@
       "conversation_id": "eb282367-d806-4e21-a72e-6d50ce7538fe",
       "content": "I have updated the **Actions UI Bar** (part of the `Sc2BottomBar` system) with high-quality biological sprites for all unit and building actions.\n\n### Key Changes:\n1.  **Generated New Sprites**: I generated a full set of custom insectoid icons and portraits to match the project's biological art style:\n    *   **Buildings**: `Icon_AntNest`, `Icon_Underground`, `Icon_SkyTower`.\n    *   **Units**: `Icon_Worker`, `Icon_Fighter` (Mantis), `Icon_Ranged` (Beetle).\n    *   **System Actions**: `Icon_Evolve`, `Icon_ClearRally`.\n    *   **Portraits**: `Portrait_BombardierBeetle` (completing the unit set).\n2.  **Fixed Existing Assets**: I corrected the import settings for the original action icons (`Move`, `Attack`, `Stop`, etc.) ensuring they are set to **Sprite (2D and UI)** so they appear correctly in the UI.\n3.  **Updated `Sc2BottomBar.cs`**:\n    *   Added **16 new sprite fields** to handle the expanded command set.\n    *   Updated the **auto-wiring logic** in `Awake` to automatically find and assign these sprites from `Assets/_InsectWars/Sprites/UI/` when the game starts in the editor.\n    *   Enhanced `GetCommandIcon` to recognize dynamic button labels (e.g., \"Mantis\", \"Underground\", \"Evolve\") and return the correct visual icon.\n\nThe action bar now dynamically displays the appropriate biological icons whether you are controlling units, managing the hive, or placing new structures.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "when the ants take calories they hold a small apple, i need it to just look like an apple bite",
+      "snapshot_message_type": 0
     }
   ]
 }

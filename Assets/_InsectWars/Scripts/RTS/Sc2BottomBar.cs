@@ -86,6 +86,7 @@ namespace InsectWars.RTS
         bool _buildMenuActive;
         GameObject _ghostPreview;
         Camera _cam;
+        int _lastQueueSnapshot = -1;
 
         enum BarMode { None, Units, WorkerUnits, Hive, Resource, BuildMenu, Building }
         BarMode _currentBarMode = (BarMode)(-1);
@@ -155,8 +156,28 @@ namespace InsectWars.RTS
                     _buildMenuActive = false;
                     ForceRebuild();
                 }
-                else
+                else if (Pending != PendingCommand.None)
+                {
                     SetPending(PendingCommand.None);
+                }
+                else if (SelectionController.Instance != null)
+                {
+                    var selBld = SelectionController.Instance.SelectedBuilding;
+                    if (selBld != null && selBld.IsProducing)
+                    {
+                        selBld.CancelLast();
+                        ForceRebuild();
+                    }
+                    else
+                    {
+                        var selHive = SelectionController.Instance.SelectedHive;
+                        if (selHive != null && selHive.IsProducing)
+                        {
+                            selHive.CancelLast();
+                            ForceRebuild();
+                        }
+                    }
+                }
                 return;
             }
 
@@ -276,9 +297,22 @@ namespace InsectWars.RTS
             if (newMode != BarMode.BuildMenu && newMode != BarMode.WorkerUnits)
                 _buildMenuActive = false;
 
-            if (newMode != _currentBarMode)
+            int queueSnap = 0;
+            if (newMode == BarMode.Building)
+            {
+                var bld = sc.SelectedBuilding;
+                if (bld != null) queueSnap = bld.QueueCount;
+            }
+            else if (newMode == BarMode.Hive)
+            {
+                var hive = sc.SelectedHive;
+                if (hive != null) queueSnap = hive.QueueCount;
+            }
+
+            if (newMode != _currentBarMode || queueSnap != _lastQueueSnapshot)
             {
                 _currentBarMode = newMode;
+                _lastQueueSnapshot = queueSnap;
                 RebuildCommandButtons();
             }
         }
@@ -322,7 +356,7 @@ namespace InsectWars.RTS
                     });
                     break;
                 case BarMode.Hive:
-                            AddCmdButton(_cmdGridParent, "Worker\n<size=11>50 cal</size>", "W", BuildWorker);
+                            AddCmdButton(_cmdGridParent, "Worker\n<size=11>50 cal  10s</size>", "W", BuildWorker);
                     
                             var hive = SelectionController.Instance?.SelectedHive;
                             if (hive != null && hive.Team == Team.Player)
@@ -335,6 +369,11 @@ namespace InsectWars.RTS
                                         evolution.Evolve();
                                         ForceRebuild();
                                     });
+                                }
+
+                                if (hive.IsProducing)
+                                {
+                                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => hive.CancelLast());
                                 }
                             }
 
@@ -351,9 +390,15 @@ case BarMode.Building:
                         {
                             var arch = units[i];
                             string hk = i < hotkeys.Length ? hotkeys[i] : "";
+                            int buildSec = Mathf.RoundToInt(ProductionBuilding.GetBuildTime(arch));
                             AddCmdButton(_cmdGridParent,
-                                $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>",
+                                $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal  {buildSec}s</size>",
                                 hk, () => ProduceFromBuilding(bld, arch));
+                        }
+                        if (bld.IsProducing)
+                        {
+                            AddCmdButton(_cmdGridParent, "Cancel", "Esc",
+                                () => bld.CancelLast());
                         }
                         AddCmdButton(_cmdGridParent, "Clear Rally", "R",
                             () => ClearBuildingRally(bld));
@@ -864,6 +909,48 @@ case BarMode.Building:
                 if (key != null && _cmdButtonImages.TryGetValue(key, out var img))
                     img.color = CmdActive;
             }
+        }
+
+        void RefreshProductionBar()
+        {
+            if (_prodBarRoot == null) return;
+
+            float progress = 0f;
+            string label = null;
+            int queueCount = 0;
+
+            if (SelectionController.Instance != null)
+            {
+                var bld = SelectionController.Instance.SelectedBuilding;
+                if (bld != null && bld.IsProducing)
+                {
+                    progress = bld.ProductionProgress;
+                    var arch = bld.CurrentProducing;
+                    label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
+                    queueCount = bld.QueueCount;
+                }
+                else
+                {
+                    var hive = SelectionController.Instance.SelectedHive;
+                    if (hive != null && hive.IsProducing)
+                    {
+                        progress = hive.ProductionProgress;
+                        label = "Worker";
+                        queueCount = hive.QueueCount;
+                    }
+                }
+            }
+
+            if (label == null)
+            {
+                _prodBarRoot.SetActive(false);
+                return;
+            }
+
+            _prodBarRoot.SetActive(true);
+            _prodBarFill.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
+            string queueSuffix = queueCount > 1 ? $" [{queueCount}]" : "";
+            _prodLabel.text = $"{label} {Mathf.RoundToInt(progress * 100f)}%{queueSuffix}";
         }
 
         void RefreshPendingHint()

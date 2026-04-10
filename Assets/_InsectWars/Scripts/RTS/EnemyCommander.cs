@@ -272,33 +272,41 @@ namespace InsectWars.RTS
                 else if (b.Type == BuildingType.Underground) undergrounds.Add(b);
             }
 
+            // Count units already queued across buildings to avoid over-producing
+            int queuedWorkers = 0, queuedCombat = 0;
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || b.Team != Team.Enemy) continue;
+                queuedWorkers += b.QueuedCountOf(UnitArchetype.Worker);
+                queuedCombat += b.QueuedCountOf(UnitArchetype.BasicFighter) + b.QueuedCountOf(UnitArchetype.BasicRanged);
+            }
+
             // --- Workers from all AntNests ---
-            if (workers < DesiredWorkers)
+            if (workers + queuedWorkers < DesiredWorkers)
             {
                 foreach (var nest in nests)
                 {
-                    if (workers >= DesiredWorkers) break;
+                    if (workers + queuedWorkers >= DesiredWorkers) break;
+                    if (nest.IsProducing) continue;
                     SetNestRallyToFruit(nest);
-                    var unit = nest.ProduceUnit(UnitArchetype.Worker);
-                    if (unit == null) continue;
-                    workers++;
-                    var fruit = FindBestFruit(unit.transform.position);
-                    if (fruit != null) unit.OrderGather(fruit);
+                    if (nest.QueueUnit(UnitArchetype.Worker))
+                        queuedWorkers++;
                 }
             }
 
             // --- Combat units from all Undergrounds (mixed fighter / ranged) ---
-            if (combat < MaxCombat && _matchTime > 20f)
+            if (combat + queuedCombat < MaxCombat && _matchTime > 20f)
             {
                 foreach (var ug in undergrounds)
                 {
-                    if (combat >= MaxCombat) break;
+                    if (combat + queuedCombat >= MaxCombat) break;
+                    if (ug.IsProducing) continue;
 
                     bool produceRanged = (_rangedToggle % 5) >= 3;
                     _rangedToggle++;
                     var arch = produceRanged ? UnitArchetype.BasicRanged : UnitArchetype.BasicFighter;
 
-                    if (ug.ProduceUnit(arch) != null) combat++;
+                    if (ug.QueueUnit(arch)) queuedCombat++;
                 }
             }
         }
