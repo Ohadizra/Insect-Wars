@@ -114,7 +114,8 @@ namespace InsectWars.RTS
                 {
                     var t = _unit.AttackTarget.position - transform.position;
                     t.y = 0f;
-                    if (t.sqrMagnitude > 0.01f) face = t;
+                    if (t.sqrMagnitude > 0.01f)
+                        face = _unit.Archetype == UnitArchetype.BasicRanged ? -t : t;
                 }
 
                 if (face.sqrMagnitude > 0.01f)

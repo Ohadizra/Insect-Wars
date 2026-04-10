@@ -1,0 +1,12 @@
+{
+    "asset": "f3ba2519f185b4599819e31841e2f470",
+    "fileName": "019d7806-14fd-74cb-b566-246ddf5e5ad6.glb",
+    "prompt": "a small, circular, slightly raised patch of white fungal growth, pale beige and off-white color, fuzzy mold texture, looks like a spore colony or fruit decay spot, organic irregular edges, flat bottom, low poly 3d model, game asset prop",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "c232c49ff524396ae91f7d98b8b27f09",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

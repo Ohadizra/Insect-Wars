@@ -704,23 +704,26 @@ return;
             _agent.ResetPath();
             _agent.velocity = Vector3.zero;
 
+            var animDriver = GetComponent<UnitAnimationDriver>();
+
             var rangedDir = _attackTarget.position - transform.position;
             rangedDir.y = 0f;
             if (rangedDir.sqrMagnitude > 0.001f)
+            {
+                var rearDir = -rangedDir.normalized;
                 transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(rangedDir), Time.deltaTime * 12f);
+                    Quaternion.LookRotation(rearDir), Time.deltaTime * 12f);
+            }
 
             if (_attackCooldown > 0) return;
 
-            var lib = SkirmishDirector.ActiveVisualLibrary;
-            var spd = lib != null ? lib.projectileSpeed : 38f;
-            var life = lib != null ? lib.projectileMaxLifetime : 4f;
-            var prefab = lib != null ? lib.projectilePrefab : null;
-            var origin = GetComponent<UnitAnimationDriver>() != null
-                ? GetComponent<UnitAnimationDriver>().GetProjectileSpawnPoint()
+            var sprayOrigin = animDriver != null
+                ? animDriver.GetSprayOrigin()
                 : transform.position + Vector3.up * 0.45f;
-            Projectile.SpawnHoming(origin, targetUnit, team, definition.attackDamage, spd, life, prefab, this);
-            GetComponent<UnitAnimationDriver>()?.NotifyAttack();
+            var sprayDir = rangedDir.normalized;
+            SprayAttack.Fire(sprayOrigin, sprayDir, definition.attackRange,
+                team, definition.attackDamage, this);
+            animDriver?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
         }
 

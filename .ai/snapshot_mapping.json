@@ -395,6 +395,12 @@
       "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
       "content": "I have generated a new 3D model that specifically represents an **irregular chunk of apple flesh** rather than a whole fruit or an apple-like shape.\n\n1.  **New Asset**: Created `Assets/_InsectWars/Models/BiteFleshChunk.prefab`. This model is an irregular, crescent-shaped chunk of \"fruit pulp\" with a thin red peel on one curved side and a yellowish, porous interior on the other sides. I explicitly removed any references to stems, leaves, or spherical shapes in the generation prompt to ensure it looks like a \"raw chunk of food.\"\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use this new `BiteFleshChunk.prefab` for the `calorieChunkPrefab`. \n3.  **Scale Verification**: The model is appropriately sized for the ant workers to carry.\n\nThe ants will now be carrying the specific \"bite-sized\" pieces of the apple flesh.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "0c0262bd-cb06-49f0-99e0-858f9cae9f9b",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "I've updated the calorie chunk model based on the image you provided.\n\n1.  **New Asset**: Created `Assets/_InsectWars/Models/FungalSpot.prefab`. This model represents a small, circular, slightly raised patch of **off-white fungal growth or mold**, exactly like the small decay spots shown on the apple's surface in your reference image.\n2.  **No Apple Shape**: This is an organic, irregular \"spot\" or \"bump\" rather than a spherical fruit or a missing chunk of apple. \n3.  **Updated Visual Library**: Set this new `FungalSpot` as the `calorieChunkPrefab` in the `DefaultVisualLibrary.asset`.\n\nThe ants will now appear to be picking off and carrying the small, white fungal colonies from the rotting apples.",
+      "snapshot_message_type": 1
     }
   ]
 }
