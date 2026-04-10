@@ -1,0 +1,12 @@
+{
+    "asset": "42ce140c5e1b74da8a403860f7f6ac2d",
+    "fileName": "019d781d-17db-73c3-b73c-01d72f06c944.glb",
+    "prompt": "a stylized mound of dried brown clay, organic lumpy surface, clay wall texture, brown and earthy colors, low poly but smooth, matching an insect-scale world, a barricade made of clay",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "78a064fbdcbe2bcc284421f4a3413da3",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

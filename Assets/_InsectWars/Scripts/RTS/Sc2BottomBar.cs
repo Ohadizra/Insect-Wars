@@ -858,6 +858,17 @@ case BarMode.Building:
                 float terrainY = terrain != null ? terrain.SampleHeight(worldPos) : 0f;
                 var halfY = _ghostPreview.transform.localScale.y * 0.5f;
                 _ghostPreview.transform.position = new Vector3(worldPos.x, terrainY + halfY, worldPos.z);
+
+                bool valid = BuildZoneRegistry.IsInBuildZone(worldPos);
+                var tint = valid
+                    ? new Color(0.3f, 0.85f, 0.4f, 0.45f)
+                    : new Color(0.85f, 0.25f, 0.2f, 0.45f);
+                var r = _ghostPreview.GetComponent<Renderer>();
+                if (r != null && r.material != null)
+                {
+                    if (r.material.HasProperty("_Color")) r.material.color = tint;
+                    if (r.material.HasProperty("_BaseColor")) r.material.SetColor("_BaseColor", tint);
+                }
             }
         }
 
@@ -964,7 +975,7 @@ case BarMode.Building:
                     ? "Patrol: click second waypoint (P)"
                     : "Patrol: click first waypoint (P)",
                 PendingCommand.Gather => "Click resource to gather (G)",
-                PendingCommand.PlaceBuilding => $"Click ground to place {BuildingName(PendingBuildingType)} (Esc to cancel)",
+                PendingCommand.PlaceBuilding => $"Place {BuildingName(PendingBuildingType)} inside a build zone (green ring) · Esc to cancel",
                 _ => ""
             };
         }

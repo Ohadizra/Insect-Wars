@@ -192,6 +192,10 @@ namespace InsectWars.RTS
             var terrain = Terrain.activeTerrain;
             float terrainY = terrain != null ? terrain.SampleHeight(flatPos) : flatPos.y;
             var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
+
+            if (!BuildZoneRegistry.IsInBuildZone(worldPos))
+                return;
+
             var buildType = Sc2BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
 

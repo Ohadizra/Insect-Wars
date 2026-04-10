@@ -868,8 +868,8 @@ return;
 
                 if (attachedToBone)
                 {
-                    _cargoVisual.transform.localPosition = new Vector3(0f, -0.02f, 0.03f);
-                    _cargoVisual.transform.localScale = Vector3.one * 0.07f;
+                    _cargoVisual.transform.localPosition = new Vector3(0f, -0.04f, 0.05f);
+                    _cargoVisual.transform.localScale = Vector3.one * 0.14f;
                 }
                 else
                 {

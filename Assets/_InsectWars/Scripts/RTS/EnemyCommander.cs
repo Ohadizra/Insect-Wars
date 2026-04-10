@@ -108,13 +108,13 @@ namespace InsectWars.RTS
         float TickInterval => 1.5f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
         const float ProduceBaseInterval = 4f;
-        const float BuildCheckInterval = 10f;
+        const float BuildCheckInterval = 5f;
         const float HarassInterval = 45f;
         const float AttackCooldown = 50f;
 
         int DesiredWorkers => Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
         int MaxCombat => Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
-        int MaxUndergrounds => _matchTime > 180f ? 2 : 1;
+        int MaxUndergrounds => _matchTime > 120f ? 3 : (_matchTime > 60f ? 2 : 1);
 
         void Start()
         {
@@ -189,8 +189,8 @@ namespace InsectWars.RTS
             }
 
             int undergroundCost = ProductionBuilding.GetBuildCost(BuildingType.Underground);
-            if (undergrounds < MaxUndergrounds && _matchTime > 150f
-                && EnemyResources.Calories >= undergroundCost + 100)
+            if (undergrounds < MaxUndergrounds && _matchTime > 45f
+                && EnemyResources.Calories >= undergroundCost + 50)
             {
                 TryPlaceUnderground();
             }

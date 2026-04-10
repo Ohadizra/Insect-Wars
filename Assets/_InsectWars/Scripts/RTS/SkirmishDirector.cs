@@ -65,15 +65,17 @@ namespace InsectWars.RTS
                 DestroyImmediate(go);
         }
 
+        /// <summary>How far from the nest centre starting units spawn (toward the apple).</summary>
+        const float NestToArmySpawnDistance = 8f;
+        const float RecommendedMaxNestToAppleDistance = 25f;
+        const float MinNestToAppleDistance = 5f;
+
         void ApplyMapLayout()
         {
             var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
             _mapHalfExtent = m != null ? m.mapHalfExtent : 88f;
-            _playerStart = m != null ? m.playerArmyStart : new Vector3(-54f, 0f, -44f);
-            _enemyStart = m != null ? m.enemyArmyStart : new Vector3(62f, 0f, 52f);
             _playerHive = m != null ? m.playerHivePosition : new Vector3(-62f, 1f, -52f);
             _enemyHive = m != null ? m.enemyHivePosition : new Vector3(62f, 1f, 52f);
-            _camFocus = m != null ? m.cameraFocusWorld : new Vector3(-48f, 0f, -38f);
             _applePos = m != null ? m.bigApplePosition : new Vector3(-50f, 1.5f, -42f);
             _enemyApplePos = m != null ? m.enemyBigApplePosition : new Vector3(50f, 1.5f, 42f);
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
@@ -82,6 +84,40 @@ namespace InsectWars.RTS
             _terrainFeatureLayout = m != null && m.terrainFeatures != null && m.terrainFeatures.Length > 0
                 ? m.terrainFeatures
                 : System.Array.Empty<TerrainFeaturePlaced>();
+
+            // Auto-derive army start: units spawn near their nest, biased toward the starting apple.
+            _playerStart = DeriveArmyStart(_playerHive, _applePos);
+            _enemyStart  = DeriveArmyStart(_enemyHive, _enemyApplePos);
+            _camFocus    = _playerStart;
+
+            ValidateNestAppleDistance(_playerHive, _applePos, "Player");
+            ValidateNestAppleDistance(_enemyHive, _enemyApplePos, "Enemy");
+        }
+
+        static Vector3 DeriveArmyStart(Vector3 hivePos, Vector3 applePos)
+        {
+            var dir = applePos - hivePos;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
+            return new Vector3(hivePos.x, 0f, hivePos.z) + dir.normalized * NestToArmySpawnDistance;
+        }
+
+        static Vector3 FlatDirection(Vector3 from, Vector3 to)
+        {
+            var d = to - from;
+            d.y = 0f;
+            return d.sqrMagnitude > 0.01f ? d.normalized : Vector3.forward;
+        }
+
+        static void ValidateNestAppleDistance(Vector3 hivePos, Vector3 applePos, string label)
+        {
+            float dist = Vector3.Distance(
+                new Vector3(hivePos.x, 0f, hivePos.z),
+                new Vector3(applePos.x, 0f, applePos.z));
+            if (dist > RecommendedMaxNestToAppleDistance)
+                Debug.LogWarning($"[SkirmishDirector] {label} nest-to-apple distance ({dist:F0}) exceeds recommended max ({RecommendedMaxNestToAppleDistance}). Workers may struggle to gather efficiently.");
+            if (dist < MinNestToAppleDistance)
+                Debug.LogWarning($"[SkirmishDirector] {label} nest-to-apple distance ({dist:F0}) is very short. Units may clip into structures.");
         }
 
         void Start()
@@ -90,19 +126,27 @@ namespace InsectWars.RTS
             EnemyResources.Reset();
             BuildWorldPreview();
 
+            // ── Player starting units ──
+            var playerFwd  = FlatDirection(_playerHive, _applePos);
+            var playerSide = new Vector3(-playerFwd.z, 0f, playerFwd.x);
             var playerStart = _playerStart;
+
             for (var i = 0; i < 5; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
                 var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
                 SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
             }
-            SpawnUnit(playerStart + new Vector3(1f, 0, 1f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(3.5f, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(-1f, 0, -1.5f), Team.Player, UnitArchetype.BasicRanged);
-            SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerStart + playerSide *  3f + playerFwd * 1f, Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart + playerSide *  5f,                  Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerStart - playerSide *  3f + playerFwd * 1f, Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerStart - playerSide *  5f,                  Team.Player, UnitArchetype.BasicRanged);
 
+            // ── Enemy starting units ──
+            var enemyFwd  = FlatDirection(_enemyHive, _enemyApplePos);
+            var enemySide = new Vector3(-enemyFwd.z, 0f, enemyFwd.x);
             var enemyStart = _enemyStart;
+
             var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
             for (var i = 0; i < nWorkers; i++)
             {
@@ -114,15 +158,117 @@ namespace InsectWars.RTS
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
             for (var i = 0; i < nCombat; i++)
             {
-                var angle = (i + nWorkers) * 60f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 4f, 0f, Mathf.Sin(angle) * 4f);
+                float sign = (i % 2 == 0) ? 1f : -1f;
+                float lane = (i / 2 + 1) * 2.5f;
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
-                SpawnUnit(enemyStart + offset, Team.Enemy, arch);
+                SpawnUnit(enemyStart + enemySide * sign * lane + enemyFwd * 1f, Team.Enemy, arch);
             }
+
+            SetStartingRallyPoints();
+            RegisterBuildZones();
 
             var camCtrl = FindFirstObjectByType<RTSCameraController>();
             if (camCtrl != null)
                 camCtrl.FocusWorldPosition(_camFocus);
+        }
+
+        void RegisterBuildZones()
+        {
+            BuildZoneRegistry.Clear();
+
+            BuildZoneRegistry.Register(
+                new Vector3(_playerHive.x, 0f, _playerHive.z), BuildZoneRegistry.HiveRadius);
+            BuildZoneRegistry.Register(
+                new Vector3(_enemyHive.x, 0f, _enemyHive.z), BuildZoneRegistry.HiveRadius);
+
+            var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
+            foreach (var f in allFruit)
+            {
+                if (f == null) continue;
+                BuildZoneRegistry.Register(f.transform.position, BuildZoneRegistry.FruitRadius);
+            }
+
+            SpawnBuildZoneRings();
+        }
+
+        void SpawnBuildZoneRings()
+        {
+            var world = GameObject.Find("WorldRoot");
+            if (world == null) return;
+
+            for (int i = 0; i < BuildZoneRegistry.Count; i++)
+            {
+                BuildZoneRegistry.GetZone(i, out var center, out var radius);
+                var ring = new GameObject($"BuildZoneRing_{i}");
+                ring.transform.SetParent(world.transform, false);
+
+                float h = GetHeight(center);
+                ring.transform.position = new Vector3(center.x, h + 0.06f, center.z);
+
+                const int segments = 64;
+                var lr = ring.AddComponent<LineRenderer>();
+                lr.useWorldSpace = false;
+                lr.loop = true;
+                lr.positionCount = segments;
+                lr.startWidth = 0.25f;
+                lr.endWidth = 0.25f;
+                lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                lr.receiveShadows = false;
+
+                var sh = Shader.Find("Sprites/Default");
+                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+                var mat = new Material(sh);
+                var c = new Color(0.3f, 0.85f, 0.4f, 0.22f);
+                if (mat.HasProperty("_Color")) mat.color = c;
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+                lr.sharedMaterial = mat;
+
+                for (int s = 0; s < segments; s++)
+                {
+                    float a = s * Mathf.PI * 2f / segments;
+                    lr.SetPosition(s, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+                }
+            }
+        }
+
+        void SetStartingRallyPoints()
+        {
+            var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
+
+            if (HiveDeposit.PlayerHive != null)
+            {
+                var apple = FindNearestFruit(allFruit, _applePos);
+                if (apple != null)
+                {
+                    HiveDeposit.PlayerHive.SetRallyGather(_applePos, apple);
+                    var prod = HiveDeposit.PlayerHive.GetComponent<ProductionBuilding>();
+                    if (prod != null) prod.SetRallyGather(_applePos, apple);
+                }
+            }
+
+            if (HiveDeposit.EnemyHive != null)
+            {
+                var apple = FindNearestFruit(allFruit, _enemyApplePos);
+                if (apple != null)
+                {
+                    HiveDeposit.EnemyHive.SetRallyGather(_enemyApplePos, apple);
+                    var prod = HiveDeposit.EnemyHive.GetComponent<ProductionBuilding>();
+                    if (prod != null) prod.SetRallyGather(_enemyApplePos, apple);
+                }
+            }
+        }
+
+        static RottingFruitNode FindNearestFruit(RottingFruitNode[] fruits, Vector3 target)
+        {
+            RottingFruitNode best = null;
+            float bestDist = float.MaxValue;
+            foreach (var f in fruits)
+            {
+                if (f == null) continue;
+                float d = (f.transform.position - target).sqrMagnitude;
+                if (d < bestDist) { bestDist = d; best = f; }
+            }
+            return best;
         }
 
         public void BuildWorldPreview()
