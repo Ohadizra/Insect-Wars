@@ -28,20 +28,30 @@ namespace InsectWars.RTS
         }
 
         static Material s_lit;
+        static readonly Dictionary<uint, Material> s_matCache = new();
 
         static void EnsureLit()
         {
             if (s_lit != null) return;
             var sh = Shader.Find("Universal Render Pipeline/Lit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
+            if (sh == null) sh = Shader.Find("Standard");
             s_lit = new Material(sh);
         }
 
         static Material Mat(Color c)
         {
             EnsureLit();
+            uint key = (uint)(Mathf.RoundToInt(c.r * 255f) << 16) | 
+                       (uint)(Mathf.RoundToInt(c.g * 255f) << 8) | 
+                       (uint)Mathf.RoundToInt(c.b * 255f);
+            
+            if (s_matCache.TryGetValue(key, out var existing))
+                return existing;
+
             var m = new Material(s_lit);
-            m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            else if (m.HasProperty("_Color")) m.color = c;
+            s_matCache[key] = m;
             return m;
         }
 

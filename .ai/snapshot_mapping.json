@@ -401,6 +401,12 @@
       "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
       "content": "I've updated the calorie chunk model based on the image you provided.\n\n1.  **New Asset**: Created `Assets/_InsectWars/Models/FungalSpot.prefab`. This model represents a small, circular, slightly raised patch of **off-white fungal growth or mold**, exactly like the small decay spots shown on the apple's surface in your reference image.\n2.  **No Apple Shape**: This is an organic, irregular \"spot\" or \"bump\" rather than a spherical fruit or a missing chunk of apple. \n3.  **Updated Visual Library**: Set this new `FungalSpot` as the `calorieChunkPrefab` in the `DefaultVisualLibrary.asset`.\n\nThe ants will now appear to be picking off and carrying the small, white fungal colonies from the rotting apples.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "080c4500-690a-4a0f-bf74-f2407e868bee",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "I have implemented several optimizations to address the lag and improve runtime performance:\n\n1.  **Fixed NavMesh Errors**: The console was being flooded with `NavMeshAgent` errors (e.g., \"Resume can only be called on an active agent...\"), which is a major CPU bottleneck. I've updated `InsectUnit.cs` to safely check if an agent is active and on a NavMesh before issuing movement or stop orders.\n2.  **Draw Call Optimization (Materials)**: The procedural scatter system (`SkirmishPassiveScatter.cs`) was creating up to 950 unique materials at runtime, which prevented GPU batching and caused massive rendering overhead. I've implemented a material caching system to ensure that objects with the same color share the same material.\n3.  **Building Rendering Optimization**: Updated `SkirmishDirector.cs` to use `MaterialPropertyBlock` for applying team colors to buildings. This allows Unity to batch the drawing of buildings efficiently without creating unique material instances for every structure.\n4.  **Unit Logic Safety**: Added null and state checks to `Update` loops in `InsectUnit.cs` to ensure that logic only runs when units are properly initialized and alive.\n\nThese changes should significantly reduce CPU and GPU overhead, especially when there are many units or decorative props on screen.",
+      "snapshot_message_type": 1
     }
   ]
 }

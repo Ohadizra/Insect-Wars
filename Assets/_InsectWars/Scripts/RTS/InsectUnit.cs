@@ -72,6 +72,26 @@ namespace InsectWars.RTS
                 s_unitsLayer = LayerMask.NameToLayer("Units");
         }
 
+        bool AgentActiveOnNavMesh => _agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh;
+
+        void SafeSetDestination(Vector3 dest)
+        {
+            if (AgentActiveOnNavMesh)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(dest);
+            }
+        }
+
+        void SafeStopAgent()
+        {
+            if (AgentActiveOnNavMesh)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+            }
+        }
+
         void OnEnable()
         {
             RtsSimRegistry.Register(this);
@@ -397,7 +417,8 @@ namespace InsectWars.RTS
                 _terrainSpeedTimer = 0.15f;
                 float baseSpeed = definition != null ? definition.moveSpeed : 4.5f;
                 float mult = TerrainFeatureRegistry.GetSpeedMultiplier(transform.position);
-                _agent.speed = baseSpeed * mult;
+                if (_agent != null)
+                    _agent.speed = baseSpeed * mult;
             }
 
             float dps = TerrainFeatureRegistry.GetDamagePerSecond(transform.position);
@@ -433,7 +454,7 @@ namespace InsectWars.RTS
 
         void TickPatrol()
         {
-            if (!_patrolActive) return;
+            if (!_patrolActive || !AgentActiveOnNavMesh) return;
             var dest = _patrolToB ? _patrolB : _patrolA;
             _agent.SetDestination(dest);
             if (_agent.pathPending) return;
@@ -446,7 +467,7 @@ namespace InsectWars.RTS
             if (_wantsAttackMove)
                 TickAttackMoveScan();
 
-            if (_agent.pathPending) return;
+            if (!AgentActiveOnNavMesh || _agent.pathPending) return;
             if (!_wantsAttackMove && _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
                 _order = UnitOrder.Idle;
         }
@@ -681,28 +702,32 @@ return;
                 if (dist <= range)
                 {
                     _meleeLockedPos = transform.position;
-                    _agent.isStopped = true;
-                    _agent.ResetPath();
-                    _agent.velocity = Vector3.zero;
-                    _agent.updatePosition = false;
+                    if (AgentActiveOnNavMesh)
+                    {
+                        _agent.isStopped = true;
+                        _agent.ResetPath();
+                        _agent.velocity = Vector3.zero;
+                        _agent.updatePosition = false;
+                    }
                     return;
                 }
 
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackTarget.position);
+                SafeSetDestination(_attackTarget.position);
                 return;
-            }
+                }
 
-            if (dist > range)
-            {
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackTarget.position);
+                if (dist > range)
+                {
+                SafeSetDestination(_attackTarget.position);
                 return;
-            }
+                }
 
-            _agent.isStopped = true;
-            _agent.ResetPath();
-            _agent.velocity = Vector3.zero;
+                if (AgentActiveOnNavMesh)
+                {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+                }
 
             var animDriver = GetComponent<UnitAnimationDriver>();
 

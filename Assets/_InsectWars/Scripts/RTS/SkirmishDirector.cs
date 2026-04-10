@@ -418,20 +418,20 @@ AddTerrainFeature(world.transform, tf);
                 deposit.Configure(team);
                 if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
                 
-                // Apply skin color to prefab renderers
+                // Apply skin color using MaterialPropertyBlock to avoid unique materials
                 var skinColor = TeamPalette.GetShellColor(team);
+                var block = new MaterialPropertyBlock();
                 foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
                 {
-                    var mats = renderer.sharedMaterials;
-                    for (int i = 0; i < mats.Length; i++)
+                    renderer.GetPropertyBlock(block);
+                    if (renderer.sharedMaterial != null)
                     {
-                        if (mats[i] == null) continue;
-                        var m = new Material(mats[i]);
-                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
-                        else if (m.HasProperty("_Color")) m.color = skinColor;
-                        mats[i] = m;
+                        if (renderer.sharedMaterial.HasProperty("_BaseColor"))
+                            block.SetColor("_BaseColor", skinColor);
+                        else if (renderer.sharedMaterial.HasProperty("_Color"))
+                            block.SetColor("_Color", skinColor);
                     }
-                    renderer.sharedMaterials = mats;
+                    renderer.SetPropertyBlock(block);
                 }
 
                 var prod = hive.AddComponent<ProductionBuilding>();
