@@ -17,15 +17,13 @@ namespace InsectWars.RTS
         [SerializeField] UnitVisualLibrary visualLibrary;
 
         float _mapHalfExtent;
-        Vector3 _playerStart;
-        Vector3 _enemyStart;
         Vector3 _playerHive;
         Vector3 _enemyHive;
-        Vector3 _camFocus;
         Vector3 _applePos;
         Vector3 _enemyApplePos;
         int _scatterSeed;
         ClayPlaced[] _clayLayout;
+        GameObject _clayWallOverride;
         FruitPlaced[] _fruitLayout;
         TerrainFeaturePlaced[] _terrainFeatureLayout;
 
@@ -65,9 +63,8 @@ namespace InsectWars.RTS
                 DestroyImmediate(go);
         }
 
-        /// <summary>How far from the nest centre starting units spawn (toward the apple).</summary>
-        const float NestToArmySpawnDistance = 5f;
-        const float CombatFlankDistance = 3f;
+        const float WorkerSpawnRadius = 7f;
+        const float CombatSpawnRadius = 9f;
         const float RecommendedMaxNestToAppleDistance = 25f;
         const float MinNestToAppleDistance = 5f;
 
@@ -81,56 +78,28 @@ namespace InsectWars.RTS
             _enemyApplePos = m != null ? m.enemyBigApplePosition : new Vector3(50f, 1.5f, 42f);
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
+            _clayWallOverride = m != null ? m.clayWallPrefabOverride : null;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
             _terrainFeatureLayout = m != null && m.terrainFeatures != null && m.terrainFeatures.Length > 0
                 ? m.terrainFeatures
                 : System.Array.Empty<TerrainFeaturePlaced>();
-
-            // Preliminary positions for editor preview & exclusion zones (refined after NavMesh in Start)
-            var pDir = _applePos - _playerHive; pDir.y = 0f;
-            if (pDir.sqrMagnitude < 0.01f) pDir = Vector3.forward;
-            _playerStart = new Vector3(_playerHive.x, 0f, _playerHive.z) + pDir.normalized * NestToArmySpawnDistance;
-
-            var eDir = _enemyApplePos - _enemyHive; eDir.y = 0f;
-            if (eDir.sqrMagnitude < 0.01f) eDir = Vector3.forward;
-            _enemyStart = new Vector3(_enemyHive.x, 0f, _enemyHive.z) + eDir.normalized * NestToArmySpawnDistance;
-
-            _camFocus = _playerStart;
 
             ValidateNestAppleDistance(_playerHive, _applePos, "Player");
             ValidateNestAppleDistance(_enemyHive, _enemyApplePos, "Enemy");
         }
 
         /// <summary>
-        /// Compute a spawn point near the hive on valid NavMesh, biased toward the apple.
-        /// Called after NavMesh is built so we can sample properly.
+        /// Compute a spawn position at a given angle and radius around a building center,
+        /// snapped to the NavMesh for walkability.
         /// </summary>
-        Vector3 DeriveArmyStart(Vector3 hivePos, Vector3 applePos)
+        static Vector3 SpawnPositionAroundBuilding(Vector3 buildingPos, float radius, float angleDeg)
         {
-            var dir = applePos - hivePos;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            dir = dir.normalized;
-
-            var hiveFlat = new Vector3(hivePos.x, 0f, hivePos.z);
-            var candidate = hiveFlat + dir * NestToArmySpawnDistance;
-            float h = GetHeight(candidate);
-            candidate.y = h;
-
-            if (NavMesh.SamplePosition(candidate, out var hit, 8f, NavMesh.AllAreas))
+            var center = new Vector3(buildingPos.x, 0f, buildingPos.z);
+            float rad = angleDeg * Mathf.Deg2Rad;
+            var pos = center + new Vector3(Mathf.Cos(rad) * radius, 0f, Mathf.Sin(rad) * radius);
+            if (NavMesh.SamplePosition(pos, out var hit, 8f, NavMesh.AllAreas))
                 return hit.position;
-
-            if (NavMesh.SamplePosition(hiveFlat, out hit, 12f, NavMesh.AllAreas))
-                return hit.position;
-
-            return candidate;
-        }
-
-        static Vector3 FlatDirection(Vector3 from, Vector3 to)
-        {
-            var d = to - from;
-            d.y = 0f;
-            return d.sqrMagnitude > 0.01f ? d.normalized : Vector3.forward;
+            return pos;
         }
 
         static void ValidateNestAppleDistance(Vector3 hivePos, Vector3 applePos, string label)
@@ -150,56 +119,41 @@ namespace InsectWars.RTS
             EnemyResources.Reset();
             BuildWorldPreview();
 
-            // Derive army positions AFTER NavMesh is built so we can sample valid spots
-            _playerStart = DeriveArmyStart(_playerHive, _applePos);
-            _enemyStart  = DeriveArmyStart(_enemyHive, _enemyApplePos);
-            _camFocus    = _playerStart;
-
-            // Find apples now so we can order starting workers to gather
             var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
             var playerApple = FindNearestFruit(allFruit, _applePos);
             var enemyApple  = FindNearestFruit(allFruit, _enemyApplePos);
 
-            // ── Player starting units ──
-            var playerFwd  = FlatDirection(_playerHive, _applePos);
-            var playerSide = new Vector3(-playerFwd.z, 0f, playerFwd.x);
-            var playerStart = _playerStart;
-
-            for (var i = 0; i < 5; i++)
+            // ── Player starting units — ring around the hive building ──
+            for (int i = 0; i < 5; i++)
             {
-                var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2f, 0f, Mathf.Sin(angle) * 2f);
-                var worker = SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
+                float angle = i * (360f / 5f);
+                var pos = SpawnPositionAroundBuilding(_playerHive, WorkerSpawnRadius, angle);
+                var worker = SpawnUnit(pos, Team.Player, UnitArchetype.Worker);
                 if (worker != null && playerApple != null && !playerApple.Depleted)
                     worker.OrderGather(playerApple);
             }
-            SpawnUnit(playerStart + playerSide * CombatFlankDistance + playerFwd * 1f, Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + playerSide * (CombatFlankDistance + 2f),           Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart - playerSide * CombatFlankDistance + playerFwd * 1f, Team.Player, UnitArchetype.BasicRanged);
-            SpawnUnit(playerStart - playerSide * (CombatFlankDistance + 2f),           Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, 45f),  Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, 135f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, 225f), Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, 315f), Team.Player, UnitArchetype.BasicRanged);
 
-            // ── Enemy starting units ──
-            var enemyFwd  = FlatDirection(_enemyHive, _enemyApplePos);
-            var enemySide = new Vector3(-enemyFwd.z, 0f, enemyFwd.x);
-            var enemyStart = _enemyStart;
-
+            // ── Enemy starting units — ring around the enemy hive building ──
             var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
-            for (var i = 0; i < nWorkers; i++)
+            for (int i = 0; i < nWorkers; i++)
             {
-                var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2f, 0f, Mathf.Sin(angle) * 2f);
-                var worker = SpawnUnit(enemyStart + offset, Team.Enemy, UnitArchetype.Worker);
+                float angle = i * (360f / Mathf.Max(nWorkers, 1));
+                var pos = SpawnPositionAroundBuilding(_enemyHive, WorkerSpawnRadius, angle);
+                var worker = SpawnUnit(pos, Team.Enemy, UnitArchetype.Worker);
                 if (worker != null && enemyApple != null && !enemyApple.Depleted)
                     worker.OrderGather(enemyApple);
             }
             var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
-            for (var i = 0; i < nCombat; i++)
+            for (int i = 0; i < nCombat; i++)
             {
-                float sign = (i % 2 == 0) ? 1f : -1f;
-                float lane = (i / 2 + 1) * 2.5f;
+                float angle = i * (360f / nCombat) + 180f;
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
-                SpawnUnit(enemyStart + enemySide * sign * lane + enemyFwd * 1f, Team.Enemy, arch);
+                SpawnUnit(SpawnPositionAroundBuilding(_enemyHive, CombatSpawnRadius, angle), Team.Enemy, arch);
             }
 
             SetStartingRallyPoints();
@@ -207,7 +161,7 @@ namespace InsectWars.RTS
 
             var camCtrl = FindFirstObjectByType<RTSCameraController>();
             if (camCtrl != null)
-                camCtrl.FocusWorldPosition(_camFocus);
+                camCtrl.FocusWorldPosition(new Vector3(_playerHive.x, 0f, _playerHive.z));
         }
 
         void RegisterBuildZones()
@@ -329,7 +283,7 @@ namespace InsectWars.RTS
             AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
 
             foreach (var c in _clayLayout)
-                AddClay(world.transform, c.position, c.scale);
+                AddClay(world.transform, c.position, c.scale, _clayWallOverride);
 
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
             BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
@@ -343,11 +297,14 @@ AddTerrainFeature(world.transform, tf);
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                SpawnUnit(_playerStart + Vector3.forward * 2f, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
-                SpawnUnit(_playerStart + Vector3.right * 2f, Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-                SpawnUnit(_playerStart + new Vector3(2f, 0f, 2f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
-                SpawnUnit(_enemyStart + Vector3.back * 2f, Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-                SpawnUnit(_enemyStart + Vector3.left * 2f, Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+                const float r = 7f;
+                var ph = new Vector3(_playerHive.x, 0f, _playerHive.z);
+                var eh = new Vector3(_enemyHive.x, 0f, _enemyHive.z);
+                SpawnUnit(ph + Vector3.forward * r, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
+                SpawnUnit(ph + Vector3.right * r,   Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(ph + new Vector3(r * 0.7f, 0f, r * 0.7f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+                SpawnUnit(eh + Vector3.back * r,    Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(eh + Vector3.left * r,    Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
             }
 #endif
 
@@ -383,10 +340,8 @@ AddTerrainFeature(world.transform, tf);
         {
             var z = new List<SkirmishPassiveScatter.ExclusionZone>
             {
-                new(new Vector2(_playerStart.x, _playerStart.z), 26f),
-                new(new Vector2(_enemyStart.x, _enemyStart.z), 26f),
-                new(new Vector2(_playerHive.x, _playerHive.z), 18f),
-                new(new Vector2(_enemyHive.x, _enemyHive.z), 18f),
+                new(new Vector2(_playerHive.x, _playerHive.z), 28f),
+                new(new Vector2(_enemyHive.x, _enemyHive.z), 28f),
                 new(new Vector2(_applePos.x, _applePos.z), 12f),
                 new(new Vector2(_enemyApplePos.x, _enemyApplePos.z), 12f)
             };
@@ -565,16 +520,19 @@ AddTerrainFeature(world.transform, tf);
             return s_terrain.SampleHeight(worldPos);
         }
 
-        static void AddClay(Transform parent, Vector3 pos, Vector3 scale)
+        static void AddClay(Transform parent, Vector3 pos, Vector3 scale, GameObject prefabOverride = null)
         {
             GameObject clay;
             var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
             Vector3 finalPos = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
 
-            if (lib != null && lib.clayWallPrefab != null)
+            var prefab = prefabOverride != null ? prefabOverride
+                       : (lib != null ? lib.clayWallPrefab : null);
+
+            if (prefab != null)
             {
-                clay = Object.Instantiate(lib.clayWallPrefab, parent);
+                clay = Object.Instantiate(prefab, parent);
                 clay.name = "Clay";
                 clay.tag = "Clay";
                 clay.transform.position = finalPos;

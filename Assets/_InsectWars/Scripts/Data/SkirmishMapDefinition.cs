@@ -42,15 +42,15 @@ namespace InsectWars.Data
         public string description = "";
 
         public float mapHalfExtent = 88f;
-        public Vector3 playerArmyStart = new Vector3(-54f, 0f, -44f);
-        public Vector3 enemyArmyStart = new Vector3(62f, 0f, 52f);
         public Vector3 playerHivePosition = new Vector3(-62f, 1f, -52f);
         public Vector3 enemyHivePosition = new Vector3(62f, 1f, 52f);
-        public Vector3 cameraFocusWorld = new Vector3(-48f, 0f, -38f);
         public Vector3 bigApplePosition = new Vector3(-50f, 1.5f, -42f);
         public Vector3 enemyBigApplePosition = new Vector3(50f, 1.5f, 42f);
         public int passiveScatterSeed = 18427;
         public ClayPlaced[] clay = Array.Empty<ClayPlaced>();
+
+        /// <summary>Per-map clay wall prefab override. When set, used instead of UnitVisualLibrary.clayWallPrefab.</summary>
+        [NonSerialized] public GameObject clayWallPrefabOverride;
         public FruitPlaced[] fruits = Array.Empty<FruitPlaced>();
         /// <summary>Terrain elevation features. Empty = flat terrain. Null falls back to demo defaults.</summary>
         public HighGroundPlaced[] highGrounds;

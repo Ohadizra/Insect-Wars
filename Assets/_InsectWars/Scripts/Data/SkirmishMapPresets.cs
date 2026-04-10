@@ -1,4 +1,7 @@
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace InsectWars.Data
 {
@@ -31,9 +34,6 @@ namespace InsectWars.Data
 
             map.playerHivePosition = new Vector3(-38f, 1f, -38f);
             map.enemyHivePosition = new Vector3(38f, 1f, 38f);
-            map.playerArmyStart = new Vector3(-30f, 0f, -30f);
-            map.enemyArmyStart = new Vector3(30f, 0f, 30f);
-            map.cameraFocusWorld = new Vector3(-28f, 0f, -26f);
 
             map.bigApplePosition = new Vector3(-30f, 1.5f, -22f);
             map.enemyBigApplePosition = new Vector3(30f, 1.5f, 22f);
@@ -151,12 +151,8 @@ namespace InsectWars.Data
 
             map.mapHalfExtent = 78f;
 
-            // ── Spawns (diagonal mirror: negate both X and Z) ──
             map.playerHivePosition       = new Vector3(-60f, 1f, -54f);
             map.enemyHivePosition        = new Vector3( 60f, 1f,  54f);
-            map.playerArmyStart          = new Vector3(-50f, 0f, -46f);
-            map.enemyArmyStart           = new Vector3( 50f, 0f,  46f);
-            map.cameraFocusWorld         = new Vector3(-46f, 0f, -40f);
             map.bigApplePosition         = new Vector3(-52f, 1.5f, -40f);
             map.enemyBigApplePosition    = new Vector3( 52f, 1.5f,  40f);
 
@@ -356,12 +352,8 @@ namespace InsectWars.Data
 
             map.mapHalfExtent = 110f;
 
-            // ── Spawns — reversed diagonal (player SE, enemy NW) ──
             map.playerHivePosition    = new Vector3( 82f, 1f, -80f);
             map.enemyHivePosition     = new Vector3(-82f, 1f,  80f);
-            map.playerArmyStart       = new Vector3( 68f, 0f, -64f);
-            map.enemyArmyStart        = new Vector3(-68f, 0f,  64f);
-            map.cameraFocusWorld      = new Vector3( 62f, 0f, -58f);
             map.bigApplePosition      = new Vector3( 72f, 1.5f, -68f);
             map.enemyBigApplePosition = new Vector3(-72f, 1.5f,  68f);
 
@@ -638,6 +630,13 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-24f, 0f, -36f), radius = 3f },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 24f, 0f,  36f), radius = 3f },
             };
+
+#if UNITY_EDITOR
+            var bnwClay = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_InsectWars/Models/ClayWall_BNW.glb");
+            if (bnwClay != null)
+                map.clayWallPrefabOverride = bnwClay;
+#endif
 
             return map;
         }

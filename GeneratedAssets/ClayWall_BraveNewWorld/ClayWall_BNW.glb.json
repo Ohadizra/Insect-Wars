@@ -1,0 +1,20 @@
+{
+    "asset": "ClayWall_BraveNewWorld",
+    "fileName": "ClayWall_BNW.glb",
+    "prompt": "A stylized dried clay barricade wall for an insect-scale RTS game. Organic lumpy surface with cracks and weathered texture. The wall is a thick fortified mound of sun-baked reddish-brown clay with visible layers, small holes from burrowing insects, and dried mud drips along the sides. Earthy tones with subtle orange and ochre highlights. Low poly stylized art style suitable for a top-down strategy game environment piece.",
+    "texturePrompt": "Sun-baked reddish-brown clay with visible cracks, dried mud texture, earthy tones with subtle orange and ochre highlights, weathered natural surface, dusty and organic look fitting an insect-scale world",
+    "negativePrompt": "",
+    "model": "meshy-6",
+    "modelName": "Meshy 6",
+    "previewTaskId": "019d7834-5d47-7f86-b7fe-cb1433aa69ad",
+    "refineTaskId": "019d7837-6746-766c-9043-534323d88a30",
+    "enablePbr": true,
+    "removeLighting": true,
+    "seed": 3861365318,
+    "targetPolycount": 5000,
+    "topology": "quad",
+    "targetFormats": ["glb", "fbx"],
+    "map": "BraveNewWorld",
+    "feedback": 0,
+    "refinementMode": "Refine"
+}
