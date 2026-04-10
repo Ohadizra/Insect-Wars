@@ -1,0 +1,12 @@
+{
+    "asset": "f7354122a7cdd4ce0bc5d9178886c3e9",
+    "fileName": "019d77f9-5079-78a2-8b1c-61abcf4cd3b8.glb",
+    "prompt": "a red apple with a single bite taken out of it, stylized cartoon game asset, vibrant colors, low poly but smooth, glossy finish",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "5bc61d4fb765adaf55b90adbfe1103cc",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

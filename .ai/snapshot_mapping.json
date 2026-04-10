@@ -377,6 +377,12 @@
       "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
       "content": "when the ants take calories they hold a small apple, i need it to just look like an apple bite",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "be088c89-f310-4b3a-a8c4-32826ae8500d",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "I have updated the visual representation of the calories held by ants to look like an apple bite.\n\n1.  **Generated New Asset**: Created a 3D mesh of a stylized red apple with a bite taken out of it (`Assets/_InsectWars/Models/AppleBite.prefab`).\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use the new `AppleBite` prefab for the `calorieChunkPrefab` field. This ensures that whenever an ant worker gathers calories, it will now display the bitten apple model instead of the previous \"small apple\" placeholder.\n3.  **Scale Alignment**: Verified that the new model's dimensions are consistent with the original asset, maintaining the correct proportions when carried by the ants.\n\nThe ants will now visually carry an \"apple bite\" when they have collected calories.",
+      "snapshot_message_type": 1
     }
   ]
 }
