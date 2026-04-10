@@ -1,0 +1,12 @@
+{
+    "asset": "9d08f0916d48e443c99face704496730",
+    "fileName": "019d77fd-3415-7a3e-aaca-1ae8b03f99a4.glb",
+    "prompt": "a small bite-sized chunk of apple flesh, with red skin on one curved side and yellowish-white interior on the other, irregular crescent shape like a piece bitten out of a fruit, stylized cartoon game asset, vibrant colors, glossy finish",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "7900d78521149e24e43d93ec86c5d609",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

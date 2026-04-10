@@ -383,6 +383,12 @@
       "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
       "content": "I have updated the visual representation of the calories held by ants to look like an apple bite.\n\n1.  **Generated New Asset**: Created a 3D mesh of a stylized red apple with a bite taken out of it (`Assets/_InsectWars/Models/AppleBite.prefab`).\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use the new `AppleBite` prefab for the `calorieChunkPrefab` field. This ensures that whenever an ant worker gathers calories, it will now display the bitten apple model instead of the previous \"small apple\" placeholder.\n3.  **Scale Alignment**: Verified that the new model's dimensions are consistent with the original asset, maintaining the correct proportions when carried by the ants.\n\nThe ants will now visually carry an \"apple bite\" when they have collected calories.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "91cd9c12-f0e9-4cd2-b964-f60397c5769a",
+      "conversation_id": "c037cc09-02ac-454f-ae5a-bbe74729ca73",
+      "content": "I've updated the calorie chunk carried by the ants to look like a small, bite-sized piece of apple flesh instead of a whole apple.\n\n1.  **Generated New Asset**: Created a 3D model of an \"apple bite chunk\" (`Assets/_InsectWars/Models/AppleBiteChunk.prefab`). This model represents a crescent-shaped piece of apple with red skin on one side and a yellowish interior, matching the appearance of a piece bitten out of a fruit.\n2.  **Updated Visual Library**: Modified the `DefaultVisualLibrary.asset` to use this new chunk prefab for the `calorieChunkPrefab` field. \n3.  **Scale Check**: Verified that the model's dimensions will work correctly with the existing ant worker's carrying logic.\n\nThe ants will now appear to be carrying the actual \"missing pieces\" from the apples.",
+      "snapshot_message_type": 1
     }
   ]
 }
