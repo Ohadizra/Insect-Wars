@@ -41,17 +41,7 @@ namespace InsectWars.RTS
             new() { position = new Vector3(-48f, 0f, 48f), scale = new Vector3(6f, 2f, 4f) }
         };
 
-        static readonly FruitPlaced[] DefaultFruitList =
-        {
-            new() { position = new Vector3(-48f, 0.6f, -28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(-72f, 0.6f, -15f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(-25f, 0.6f, 8f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(8f, 0.6f, 12f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(42f, 0.6f, 58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(68f, 0.6f, 28f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(22f, 0.6f, -58f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-            new() { position = new Vector3(-15f, 0.6f, 62f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f }
-        };
+        static readonly FruitPlaced[] DefaultFruitList = System.Array.Empty<FruitPlaced>();
 
         /// <summary>Used by units for projectile settings when not using a prefab-only pipeline.</summary>
         public static UnitVisualLibrary ActiveVisualLibrary { get; private set; }
@@ -163,11 +153,8 @@ namespace InsectWars.RTS
             AddRottingApple(world.transform, _applePos);
             AddRottingApple(world.transform, _enemyApplePos);
 
-            foreach (var f in _fruitLayout)
-                AddFruit(world.transform, f);
-
             foreach (var tf in _terrainFeatureLayout)
-                AddTerrainFeature(world.transform, tf);
+AddTerrainFeature(world.transform, tf);
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -604,16 +591,17 @@ namespace InsectWars.RTS
                 apple.transform.SetParent(parent);
                 apple.transform.position = new Vector3(pos.x, posY, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
-                var col = new Color(0.85f, 0.68f, 0.15f);
+                
                 var r = apple.GetComponent<Renderer>();
                 if (r != null)
                 {
-                    r.sharedMaterial = GetSharedTinted(col);
-                    var pb = new MaterialPropertyBlock();
-                    r.GetPropertyBlock(pb);
-                    if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Smoothness"))
-                        pb.SetFloat("_Smoothness", 0.15f);
-                    r.SetPropertyBlock(pb);
+                    if (lib != null && lib.bigAppleMaterial != null)
+                        r.sharedMaterial = lib.bigAppleMaterial;
+                    else
+                    {
+                        var col = new Color(0.85f, 0.68f, 0.15f);
+                        r.sharedMaterial = GetSharedTinted(col);
+                    }
                 }
             }
 

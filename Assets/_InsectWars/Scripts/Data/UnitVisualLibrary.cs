@@ -20,8 +20,11 @@ namespace InsectWars.Data
             if (calorieChunkPrefab == null)
                 calorieChunkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Models/CalorieChunk 4.prefab");
-        }
-        #endif
+            if (bigAppleMaterial == null)
+                bigAppleMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/BigRootedApple.mat");
+            }
+            #endif
 
         [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
         public GameObject workerPrefab;
@@ -36,8 +39,9 @@ namespace InsectWars.Data
         [Header("Environment")]
         public GameObject rottingApplePrefab;
         public GameObject calorieChunkPrefab;
+        public Material bigAppleMaterial;
         public Material groundMaterial;
-        public TerrainLayer baseSoilLayer;
+public TerrainLayer baseSoilLayer;
 public TerrainLayer drySoilLayer;
 
         [Header("Terrain Features (optional — falls back to procedural)")]

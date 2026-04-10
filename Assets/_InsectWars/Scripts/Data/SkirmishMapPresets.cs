@@ -61,17 +61,7 @@ namespace InsectWars.Data
                 new ClayPlaced { position = new Vector3(22f, 0f, 18f), scale = new Vector3(3f, 2.4f, 4f) },
             };
 
-            map.fruits = new[]
-            {
-                // Contested center fruit
-                new FruitPlaced { position = new Vector3(0f, 0.6f, 0f), calories = 8000, gatherPerTick = 10, gatherSeconds = 5f },
-                // Side expansion fruits — mirrored pair
-                new FruitPlaced { position = new Vector3(-18f, 0.6f, 14f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3(18f, 0.6f, -14f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-                // Far flank fruits — mirrored pair
-                new FruitPlaced { position = new Vector3(-40f, 0.6f, 8f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3(40f, 0.6f, -8f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
-            };
+            map.fruits = System.Array.Empty<FruitPlaced>();
 
             map.terrainFeatures = new[]
             {
@@ -239,32 +229,7 @@ namespace InsectWars.Data
             };
 
             // ────────────────────── Resources ──────────────────────
-            map.fruits = new[]
-            {
-                // Player natural expansion fruit (rich — incentivizes early expand)
-                new FruitPlaced { position = new Vector3(-32f, 0.6f, -12f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-                // Mirror
-                new FruitPlaced { position = new Vector3( 32f, 0.6f,  12f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
-
-                // Center fruit on the bridge — high-value, highly contested
-                new FruitPlaced { position = new Vector3(0f, 0.6f, 0f), calories = 8000, gatherPerTick = 10, gatherSeconds = 5f },
-
-                // Third-base pocket fruits (NW / SE)
-                new FruitPlaced { position = new Vector3(-40f, 0.6f,  40f), calories = 8000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3( 40f, 0.6f, -40f), calories = 8000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                // Far-edge fruits — risky, far from bases
-                new FruitPlaced { position = new Vector3(-60f, 0.6f,  32f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3( 60f, 0.6f, -32f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                // Off-bridge contested fruits (between natural and bridge)
-                new FruitPlaced { position = new Vector3(-18f, 0.6f, -28f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3( 18f, 0.6f,  28f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                // Swamp-edge fruits — behind the thorn patches, reward brave flankers
-                new FruitPlaced { position = new Vector3(-66f, 0.6f, -24f), calories = 4000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3( 66f, 0.6f,  24f), calories = 4000, gatherPerTick = 8, gatherSeconds = 5f },
-            };
+            map.fruits = System.Array.Empty<FruitPlaced>();
 
             // ────────────────────── Terrain features ──────────────────────
             map.terrainFeatures = new[]

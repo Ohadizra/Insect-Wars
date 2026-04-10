@@ -1,0 +1,12 @@
+{
+    "asset": "3abd950d42d054622a828d7c2ed14f17",
+    "fileName": "019d740f-6645-7037-9a3a-68233aebb45c.glb",
+    "prompt": "a flat, angular, cracked stylized rock, sharp edges, low poly aesthetic, dark gray stone texture",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "a2bff2126b6d1eadd4ceb4eedf334cd9",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

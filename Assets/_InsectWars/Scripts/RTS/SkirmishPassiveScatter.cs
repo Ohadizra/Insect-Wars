@@ -101,18 +101,18 @@ namespace InsectWars.RTS
 
         static void SpawnRock(Transform parent, float x, float z, System.Random rng)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Rock";
             go.transform.SetParent(parent, false);
             Object.Destroy(go.GetComponent<Collider>());
-            var s = 0.25f + (float)rng.NextDouble() * 0.55f;
+            var s = 0.3f + (float)rng.NextDouble() * 0.7f;
             go.transform.position = new Vector3(x, s * 0.4f, z);
-            go.transform.localScale = new Vector3(s, s * (0.55f + (float)rng.NextDouble() * 0.35f), s * (0.8f + (float)rng.NextDouble() * 0.4f));
+            go.transform.localScale = new Vector3(s, s * (0.4f + (float)rng.NextDouble() * 0.6f), s * (0.7f + (float)rng.NextDouble() * 0.5f));
             go.transform.rotation = Quaternion.Euler(
-                (float)rng.NextDouble() * 20f - 10f,
                 (float)rng.NextDouble() * 360f,
-                (float)rng.NextDouble() * 20f - 10f);
-            var c = Color.Lerp(new Color(0.32f, 0.3f, 0.26f), new Color(0.48f, 0.44f, 0.38f), (float)rng.NextDouble());
+                (float)rng.NextDouble() * 360f,
+                (float)rng.NextDouble() * 360f);
+            var c = Color.Lerp(new Color(0.35f, 0.33f, 0.3f), new Color(0.45f, 0.43f, 0.4f), (float)rng.NextDouble());
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
 

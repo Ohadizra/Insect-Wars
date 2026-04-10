@@ -1,0 +1,12 @@
+{
+    "asset": "eee315be8f61a4554a37fb0815ad3126",
+    "fileName": "019d740d-f4df-79ce-8df2-e5e2b5f5567a.glb",
+    "prompt": "a sharp, jagged, stylized gray rock, irregular crystal-like shapes, no roundness, high quality game prop",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "1fd9b32b96d17ddb2494f677e6ce20f0",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
