@@ -44,9 +44,9 @@ namespace InsectWars.UI
 
         #if UNITY_EDITOR
             string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
-            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
+            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
-            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "top_bar_frame.png");
+            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
         #endif
 
             SetupEventSystem();
@@ -212,12 +212,12 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             var img = go.AddComponent<Image>();
             img.sprite = mainFrameSprite;
             img.color = ColWhite;
-            img.type = Image.Type.Simple; // Frame is likely complex, use simple
+            img.type = Image.Type.Sliced; // Use Sliced for better frame quality
             return go;
-        }
+            }
 
-        void PanelHeader(Transform parent, string text, float y)
-        {
+            void PanelHeader(Transform parent, string text, float y)
+            {
             var t = Txt(parent, text, 36, ColTitle, TextAnchor.MiddleCenter);
             t.fontStyle = FontStyle.Bold;
             AnchorTopCenter(t.rectTransform, new Vector2(0, y), new Vector2(500, 50));
@@ -236,6 +236,7 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             var img = b.AddComponent<Image>();
             img.sprite = buttonSprite;
             img.color = ColWhite;
+            img.type = Image.Type.Sliced; // Use Sliced for better button quality
             
             var btn = b.AddComponent<Button>();
             var cols = btn.colors;
