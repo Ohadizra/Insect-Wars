@@ -539,7 +539,10 @@ namespace InsectWars.UI
             btn.onClick.AddListener(() =>
             {
                 GameSession.SetSelectedMap(map);
-                SceneLoader.LoadSkirmishDemo();
+                if (!string.IsNullOrEmpty(map.name) && Application.CanStreamedLevelBeLoaded(map.name))
+                    SceneLoader.LoadSkirmishDemo(map.name);
+                else
+                    SceneLoader.LoadSkirmishDemo();
             });
 
             var nameGo = Txt(card.transform, map.displayName, 22, ColTitle, TextAnchor.UpperLeft);

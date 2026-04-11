@@ -497,6 +497,12 @@
       "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
       "content": "retry",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "e44dbfc2-5ac1-402e-a189-c3a9d4f77c65",
+      "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
+      "content": "The issue was caused by two main factors:\n1.  **Persistence Loss**: The \"Shazu Den\" map (and others) were created as runtime `ScriptableObject` instances. In Unity, such instances are destroyed when a new scene is loaded unless specifically marked persistent. This caused the `SkirmishDirector` in the game scene to find a null `SelectedMap` and fall back to the default \"Skirmish\" (demo defaults) layout.\n2.  **Hardcoded Scene Loading**: The game was hardcoded to load the generic `SkirmishDemo.unity` scene for all maps. However, a dedicated `ShazuDen.unity` scene existed in the project with its own pre-configured director, which was being ignored.\n\n### **Fixes Applied:**\n\n#### **1. Ensured Runtime Map Persistence**\nUpdated `Assets/_InsectWars/Scripts/Data/SkirmishMapPresets.cs` to set `hideFlags = HideFlags.HideAndDontSave` on all procedurally generated map definitions. This prevents them from being destroyed during scene transitions. I also updated the `GetAll()` method to be more robust, ensuring the map array is re-populated if any references are lost.\n\n#### **2. Dynamic Scene Loading**\nModified the map selection logic in `Assets/_InsectWars/Scripts/UI/HomeMenuBootstrap.cs`. It now checks if a scene exists with the same name as the selected map (e.g., \"ShazuDen\"). If found in the Build Settings, it loads that specific scene; otherwise, it falls back to the procedural `SkirmishDemo` scene.\n\n#### **3. Updated Build Settings**\nAdded `Lalush.unity` to the Build Settings to ensure it follows the same logic as `ShazuDen`. This allows maps with dedicated handcrafted scenes to be used correctly while keeping others on the procedural system.\n\nThese changes ensure that selecting \"Shazu Den\" now correctly loads the specialized `ShazuDen` scene with its intended layout and visuals.",
+      "snapshot_message_type": 1
     }
   ]
 }

@@ -14,7 +14,7 @@ namespace InsectWars.Data
 
         public static SkirmishMapDefinition[] GetAll()
         {
-            if (s_maps != null) return s_maps;
+            if (s_maps != null && s_maps.Length > 0 && s_maps[0] != null) return s_maps;
             s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell(), CreateShazuDen() };
             return s_maps;
         }
@@ -22,6 +22,7 @@ namespace InsectWars.Data
         static SkirmishMapDefinition CreateThornBasin()
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ThornBasin";
             map.displayName = "Thorn Basin";
             map.description = "A small clearing between twisted roots.\nEach side controls one calorie deposit. Fight for the contested center.";
@@ -62,6 +63,7 @@ namespace InsectWars.Data
         static SkirmishMapDefinition CreateLalush()
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "Lalush";
             map.displayName = "Lalush Depths";
             map.description = "Swamp lowlands split by a diagonal ridge bridge.\nCorner bases, tight ramp chokes, and contested third-base pockets on each flank.";
@@ -139,6 +141,7 @@ namespace InsectWars.Data
         static SkirmishMapDefinition CreateBraveNewWorld()
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "BraveNewWorld";
             map.displayName = "Brave New World";
             map.description = "A vast battlefield with fortified corner bases and narrow ramp chokes.\nSeize the central plateau, contest multiple expansions, and use vision blockers to ambush.";
@@ -238,16 +241,17 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-24f, 0f, -36f), radius = 3f },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 24f, 0f,  36f), radius = 3f },
             };
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
             var bnwClay = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_InsectWars/Models/ClayWall_BNW.glb");
             if (bnwClay != null) map.clayWallPrefabOverride = bnwClay;
-#endif
+        #endif
             return map;
         }
 
         static SkirmishMapDefinition CreateShazuBell()
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ShazuBell";
             map.displayName = "Shazu Bell";
             map.description = "A strategic frozen outpost with fortified corner mains and tiered lanes.\nCapture the high-calorie Apples at the expansions to fuel your swarm.";
@@ -310,6 +314,7 @@ namespace InsectWars.Data
         static SkirmishMapDefinition CreateShazuDen()
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ShazuDen";
             map.displayName = "Shazu Den";
             map.description = "A frozen organic hive station. Broad gentle ramps and massive chitinous barriers define this defensive outpost.";
@@ -372,11 +377,11 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 50f },
             };
 
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
             var denVisuals = AssetDatabase.LoadAssetAtPath<UnitVisualLibrary>("Assets/_InsectWars/Data/VisualLibrary_ShazuDen.asset");
             if (denVisuals != null && denVisuals.clayWallPrefab != null)
                 map.clayWallPrefabOverride = denVisuals.clayWallPrefab;
-#endif
+        #endif
             return map;
         }
     }
