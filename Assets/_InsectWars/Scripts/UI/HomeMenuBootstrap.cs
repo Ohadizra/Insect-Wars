@@ -185,7 +185,7 @@ namespace InsectWars.UI
                 var mapName = m.displayName;
                 DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
                     GameSession.SetSelectedMap(m);
-                    SceneLoader.LoadSkirmishDemo(); // Fixed: Load the common skirmish scene
+                    SceneLoader.LoadGame();
                 });
             }
 DarkButton(box.transform, "BACK", ref y, () => ShowPlay());

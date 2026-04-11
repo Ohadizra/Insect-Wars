@@ -49,7 +49,8 @@ SkirmishDirector (bootstrap)
 │   ├── MatchDirector (win/lose by alive count, overlay, Time.timeScale)
 │   └── PauseController
 └── Cross-Scene
-    └── GameSession (static — difficulty, selected map, PlayerPrefs keys)
+    ├── GameSession (static — difficulty, selected map, PlayerPrefs keys)
+    └── SceneLoader (Home → Game; SkirmishDemo is dev-only)
 ```
 
 ## Unit Archetypes
