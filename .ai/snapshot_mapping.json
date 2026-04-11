@@ -569,6 +569,12 @@
       "conversation_id": "199ebf28-e060-41ff-a858-f87fdbfc70b0",
       "content": "fix",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "c949f745-b9de-4bee-ba66-041bcdd2ddec",
+      "conversation_id": "199ebf28-e060-41ff-a858-f87fdbfc70b0",
+      "content": "I have fixed the scene loading issue that was preventing the map selection menu from working.\n\n### The Problem:\nThe UI was trying to load scenes using the **name of the map** (e.g., \"BraveNewWorld\", \"ShazuBell\"), but these maps are procedurally generated at runtime. In Unity, there is a single, common scene named `SkirmishDemo` that handles building all maps based on your selection. Since no scenes existed with those specific map names in the Build Settings, the game failed to load them.\n\n### The Fix:\n*   Updated `HomeMenuBootstrap.cs` to correctly call `SceneLoader.LoadSkirmishDemo()` without arguments.\n*   This ensures the game always loads the central `SkirmishDemo` scene, which is already configured in your Build Settings.\n*   The `SkirmishDirector` within that scene will then automatically pick up your selected map from the `GameSession` and build the terrain and units accordingly.\n\nYou should now be able to select any map from the Main Menu and enter the battle without errors.",
+      "snapshot_message_type": 1
     }
   ]
 }
