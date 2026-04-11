@@ -902,9 +902,11 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
                 {
                     UnitOrder.Move => "Move",
                     UnitOrder.Attack => "Attack",
+                    UnitOrder.AttackBuilding => "Attack",
                     UnitOrder.Gather => "Gather",
                     UnitOrder.ReturnDeposit => "Gather",
                     UnitOrder.Patrol => "Patrol",
+                    UnitOrder.Build => "Build",
                     _ => null
                 };
                 if (key != null && _cmdButtonImages.TryGetValue(key, out var img))

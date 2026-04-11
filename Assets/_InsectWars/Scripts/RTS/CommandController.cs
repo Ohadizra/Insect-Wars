@@ -180,6 +180,26 @@ namespace InsectWars.RTS
                 return;
             }
 
+            if (pending == PendingCommand.Attack)
+            {
+                var enemyBuildingL = hit.collider.GetComponentInParent<ProductionBuilding>();
+                if (enemyBuildingL != null && enemyBuildingL.Team == Team.Enemy && enemyBuildingL.IsAlive)
+                {
+                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                        u.OrderAttackBuilding(enemyBuildingL);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
+                    return;
+                }
+                var enemyHiveL = hit.collider.GetComponentInParent<HiveDeposit>();
+                if (enemyHiveL != null && enemyHiveL.Team == Team.Enemy && enemyHiveL.IsAlive)
+                {
+                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                        u.OrderAttackHive(enemyHiveL);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
+                    return;
+                }
+            }
+
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Resources"))
                 return;
 

@@ -20,6 +20,31 @@ namespace InsectWars.RTS
         float _matchTimer;
         const float MatchStartupGrace = 4.0f;
 
+        void OnEnable()
+        {
+            HiveDeposit.OnDestroyed += OnHiveDestroyed;
+        }
+
+        void OnDisable()
+        {
+            HiveDeposit.OnDestroyed -= OnHiveDestroyed;
+        }
+
+        void OnHiveDestroyed(HiveDeposit hive)
+        {
+            if (_state != MatchState.Playing) return;
+            if (hive.Team == Team.Player)
+            {
+                Debug.Log("[MatchDirector] Defeat: Player hive destroyed.");
+                EndMatch(MatchState.Lost);
+            }
+            else if (hive.Team == Team.Enemy)
+            {
+                Debug.Log("[MatchDirector] Victory: Enemy hive destroyed.");
+                EndMatch(MatchState.Won);
+            }
+        }
+
         void Update()
         {
             if (_state != MatchState.Playing) return;
@@ -28,14 +53,14 @@ namespace InsectWars.RTS
             _matchTimer += Time.deltaTime;
             if (_matchTimer < MatchStartupGrace) return;
 
-            if (RtsSimRegistry.CountAlive(Team.Enemy) == 0)
+            if (RtsSimRegistry.CountAlive(Team.Enemy) == 0 && HiveDeposit.EnemyHive == null)
             {
-                Debug.Log("[MatchDirector] Victory: No Enemy combatants found.");
+                Debug.Log("[MatchDirector] Victory: No Enemy combatants or hive found.");
                 EndMatch(MatchState.Won);
             }
-            else if (RtsSimRegistry.CountAlive(Team.Player) == 0)
+            else if (RtsSimRegistry.CountAlive(Team.Player) == 0 && HiveDeposit.PlayerHive == null)
             {
-                Debug.Log("[MatchDirector] Defeat: No Player combatants found.");
+                Debug.Log("[MatchDirector] Defeat: No Player combatants or hive found.");
                 EndMatch(MatchState.Lost);
             }
         }

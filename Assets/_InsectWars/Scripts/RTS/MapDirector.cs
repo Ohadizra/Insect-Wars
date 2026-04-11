@@ -477,7 +477,7 @@ namespace InsectWars.RTS
             var hive = go.AddComponent<HiveDeposit>();
             hive.Configure(team);
             var prod = go.AddComponent<ProductionBuilding>();
-            prod.Initialize(BuildingType.AntNest, team);
+            prod.Initialize(BuildingType.AntNest, team, startActive: true);
         }
 
         static void SitOnGround(GameObject go)

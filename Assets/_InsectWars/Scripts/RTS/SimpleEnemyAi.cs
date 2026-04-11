@@ -231,6 +231,38 @@ namespace InsectWars.RTS
                 && !(_self.CurrentOrder == UnitOrder.Attack && _self.AttackTarget == best.transform))
             {
                 _self.OrderAttack(best);
+                return;
+            }
+
+            // No units in range — attack a nearby player building if visible
+            if (_self.CurrentOrder != UnitOrder.AttackBuilding)
+                TryAttackNearbyBuilding(vision * 2.5f);
+        }
+
+        void TryAttackNearbyBuilding(float searchRadius)
+        {
+            // Check player production buildings
+            ProductionBuilding bestBuilding = null;
+            float bestDist = searchRadius;
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                float d = Vector3.Distance(transform.position, b.transform.position);
+                if (d < bestDist) { bestDist = d; bestBuilding = b; }
+            }
+            if (bestBuilding != null)
+            {
+                _self.OrderAttackBuilding(bestBuilding);
+                return;
+            }
+
+            // Check player hive
+            var playerHive = HiveDeposit.PlayerHive;
+            if (playerHive != null && playerHive.IsAlive)
+            {
+                float d = Vector3.Distance(transform.position, playerHive.transform.position);
+                if (d < searchRadius)
+                    _self.OrderAttackHive(playerHive);
             }
         }
 
