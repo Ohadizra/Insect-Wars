@@ -32,11 +32,11 @@ namespace InsectWars.RTS
         void Start()
         {
             var lp = transform.localPosition;
-            if (lp.sqrMagnitude > 0.0001f)
-            {
-                var d = Mathf.Clamp(defaultOrbitDistance, minHeight, maxHeight);
-                transform.localPosition = lp.normalized * d;
-            }
+            if (lp.sqrMagnitude < 0.0001f)
+                lp = new Vector3(0f, 1f, -1f);
+                
+            var d = Mathf.Clamp(defaultOrbitDistance, minHeight, maxHeight);
+            transform.localPosition = lp.normalized * d;
         }
 
         void Update()
