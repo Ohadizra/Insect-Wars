@@ -1,0 +1,27 @@
+{
+    "asset": "523d6d9010dfc4ed9b5c5e312e25769b",
+    "fileName": "019d7c61-c8d1-7dd2-9b7e-f7868df79d05.png",
+    "prompt": "A Unity game asset sprite sheet. White background. STRICT 3x3 grid (3 columns, 3 rows = 9 equal cells). Style: Dark steampunk insectoid fantasy. Heavy dark bronze and copper metal with ornate baroque carvings. Contains: 1. A square ornate dark bronze UI frame with amber glowing gems at corners. 2. A wide horizontal copper pipe with mechanical hydraulic arms at ends. 3. A circular dark bronze mechanical button. 4. A small Larva resource icon. 5. A small Amber Egg resource icon. 6. A small Blue Crystal resource icon. 7. A square etched beetle portrait frame. 8. A vertical dark metal separator line with gears. 9. A square UI slot frame with bronze studs. Rules: High detail, matching the provided reference style perfectly. No text. White background. Clear grid lines. Negative prompt: text, labels, white panels, flat design, modern, bright colors.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "6dd740facb14a3a2b100eb5b36e182e4",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

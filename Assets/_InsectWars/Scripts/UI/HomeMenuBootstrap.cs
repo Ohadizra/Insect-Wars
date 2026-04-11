@@ -15,26 +15,25 @@ namespace InsectWars.UI
         [SerializeField] string streamingVideoName = "MenuLoop.mp4";
         [SerializeField] UnitVisualLibrary visualLibrary;
 
-        [Header("Sketch Style Assets")]
-        [SerializeField] Sprite whitePanelSprite;
-        [SerializeField] Sprite separatorLineSprite;
+        [Header("Steampunk Sketch Assets")]
+        [SerializeField] Sprite mainFrameSprite;
+        [SerializeField] Sprite buttonSprite;
+        [SerializeField] Sprite separatorSprite;
 
         // ── Sketch Palette ──
-        static readonly Color ColGold      = new(0.65f, 0.45f, 0.10f); // Darker, more saturated gold for readability
-        static readonly Color ColWhite     = new(1f, 1f, 1f, 0.92f);   // Slight transparency to panel
-        static readonly Color ColDim       = new(0f, 0f, 0f, 0.50f);
-        static readonly Color ColBtnHover  = new(0, 0, 0, 0.08f);
-        static readonly Color ColBtnPress  = new(0, 0, 0, 0.15f);
+        static readonly Color ColTitle     = new(0.95f, 0.85f, 0.60f); // Warm Amber/Gold
+        static readonly Color ColSub       = new(0.75f, 0.65f, 0.45f); // Copper
+        static readonly Color ColDim       = new(0f, 0f, 0f, 0.60f);
+        static readonly Color ColWhite     = Color.white;
 
-        const float PanelW = 700f, PanelH = 820f;
-const float BtnW = 400f, BtnH = 60f, BtnGap = 75f;
-        const int TitleSize = 72, SubSize = 20, BtnFontSize = 26;
+        const float PanelW = 600f, PanelH = 800f;
+        const float BtnW = 420f, BtnH = 70f, BtnGap = 85f;
+        const int TitleSize = 52, SubSize = 16, BtnFontSize = 24;
 
         Canvas _canvas;
         Font _font;
         GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelSettings, _panelAbout;
         Text _volValueLabel, _diffLabelInMapSelect;
-        Toggle _fullToggle;
 
         void Awake()
         {
@@ -44,8 +43,10 @@ const float BtnW = 400f, BtnH = 60f, BtnGap = 75f;
             _font = UiFontHelper.GetFont();
 
 #if UNITY_EDITOR
-            if (whitePanelSprite == null) whitePanelSprite = UnityEditor.AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
-            if (separatorLineSprite == null) separatorLineSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Extracted/bar_hp_xp.png");
+            string p = "Assets/_InsectWars/Sprites/UI/StyleMatch/";
+            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square.png");
+            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_round.png");
+            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "separator_gear.png");
 #endif
 
             SetupEventSystem();
@@ -66,19 +67,11 @@ const float BtnW = 400f, BtnH = 60f, BtnGap = 75f;
 
         void BuildCanvas()
         {
-            // Clear existing Canvases to ensure replacement
-            var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var c in canvases)
-            {
-                if (c.name.Contains("Menu") || c.name.Contains("Canvas") || c.name.Contains("UI"))
-                {
-                    c.gameObject.SetActive(false);
-                    if (c.name == "MainMenuCanvas") DestroyImmediate(c.gameObject);
-                }
-            }
+            var existing = GameObject.Find("MainMenuCanvas");
+            if (existing != null) DestroyImmediate(existing);
 
             var go = new GameObject("MainMenuCanvas");
-_canvas = go.AddComponent<Canvas>();
+            _canvas = go.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -95,7 +88,7 @@ _canvas = go.AddComponent<Canvas>();
             Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
-            raw.color = Color.white;
+            raw.color = new Color(0.1f, 0.08f, 0.05f); // Dark tint
 
             var vgo = new GameObject("VideoPlayer");
             vgo.transform.SetParent(bg.transform, false);
@@ -115,11 +108,7 @@ _canvas = go.AddComponent<Canvas>();
                     ? "file://" + path : path;
                 vp.Play();
             }
-            else
-            {
-                raw.color = new Color(0.12f, 0.10f, 0.08f);
-                vp.enabled = false;
-            }
+            else vp.enabled = false;
 
             var dim = new GameObject("Dim");
             dim.transform.SetParent(bg.transform, false);
@@ -130,63 +119,63 @@ _canvas = go.AddComponent<Canvas>();
         void BuildMainMenu()
         {
             _panelMain = MakePanel("MainPanel");
-            var box = SketchBox(_panelMain.transform, PanelW, PanelH);
+            var box = DarkBox(_panelMain.transform, PanelW, PanelH);
 
-            var title = Txt(box.transform, "STAGBEETLE", TitleSize, ColGold, TextAnchor.MiddleCenter);
+            var title = Txt(box.transform, "STAGBEETLE ODYSSEY", TitleSize, ColTitle, TextAnchor.MiddleCenter);
             title.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(title.rectTransform, new Vector2(0, -100f), new Vector2(500, 100));
+            AnchorTopCenter(title.rectTransform, new Vector2(0, -80f), new Vector2(500, 100));
 
-            var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColGold, TextAnchor.MiddleCenter);
+            var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
             sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -155f), new Vector2(460, 30));
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -145f), new Vector2(460, 30));
 
-            MakeSeparator(box.transform, -185f, 380f);
+            MakeSeparator(box.transform, -185f, 320f);
 
             float y = -240f;
-            SketchButton(box.transform, "START MISSION", ref y, () => ShowPlay());
-            SketchButton(box.transform, "CODEX", ref y, () => ShowHow());
-            SketchButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
-            SketchButton(box.transform, "LOGS", ref y, () => ShowAbout());
+            DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
+            DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
+            DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
+            DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
-            MakeSeparator(box.transform, y + 20f, 380f);
+            MakeSeparator(box.transform, y + 20f, 320f);
             y -= 20f;
-            SketchButton(box.transform, "ABANDON", ref y, () => Application.Quit());
+            DarkButton(box.transform, "ABANDON", ref y, () => Application.Quit());
         }
 
         void BuildSubPanels()
         {
             _panelPlay = MakePanel("PlayPanel");
-            var boxPlay = SketchBox(_panelPlay.transform, 500, 500);
+            var boxPlay = DarkBox(_panelPlay.transform, 550, 550);
             PanelHeader(boxPlay.transform, "SELECT DIFFICULTY", -50f);
             float yP = -150f;
-            SketchButton(boxPlay.transform, "EASY", ref yP, () => { SetDiff(DemoDifficulty.Easy); ShowMapSelect(); });
-            SketchButton(boxPlay.transform, "NORMAL", ref yP, () => { SetDiff(DemoDifficulty.Normal); ShowMapSelect(); });
-            SketchButton(boxPlay.transform, "HARD", ref yP, () => { SetDiff(DemoDifficulty.Hard); ShowMapSelect(); });
-            SketchButton(boxPlay.transform, "BACK", ref yP, () => ShowMain());
+            DarkButton(boxPlay.transform, "EASY", ref yP, () => { SetDiff(DemoDifficulty.Easy); ShowMapSelect(); });
+            DarkButton(boxPlay.transform, "NORMAL", ref yP, () => { SetDiff(DemoDifficulty.Normal); ShowMapSelect(); });
+            DarkButton(boxPlay.transform, "HARD", ref yP, () => { SetDiff(DemoDifficulty.Hard); ShowMapSelect(); });
+            DarkButton(boxPlay.transform, "BACK", ref yP, () => ShowMain());
 
             _panelSettings = MakePanel("SettingsPanel");
-            var boxSet = SketchBox(_panelSettings.transform, 500, 500);
+            var boxSet = DarkBox(_panelSettings.transform, 550, 550);
             PanelHeader(boxSet.transform, "CONFIGURATION", -50f);
             float yS = -150f;
-            SketchButton(boxSet.transform, "TOGGLE FULLSCREEN", ref yS, () => { Screen.fullScreen = !Screen.fullScreen; });
-            SketchButton(boxSet.transform, "BACK", ref yS, () => ShowMain());
+            DarkButton(boxSet.transform, "TOGGLE FULLSCREEN", ref yS, () => { Screen.fullScreen = !Screen.fullScreen; });
+            DarkButton(boxSet.transform, "BACK", ref yS, () => ShowMain());
 
             _panelAbout = MakePanel("AboutPanel");
-            var boxAb = SketchBox(_panelAbout.transform, 600, 500);
+            var boxAb = DarkBox(_panelAbout.transform, 650, 500);
             PanelHeader(boxAb.transform, "LOGS", -50f);
-            var body = Txt(boxAb.transform, "STAGBEETLE ODYSSEY\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 18, ColGold, TextAnchor.UpperCenter);
+            var body = Txt(boxAb.transform, "STAGBEETLE ODYSSEY\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
             AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
             float yA = -380f;
-            SketchButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
+            DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
 
             BuildMapSelectPanel();
-            _panelHow = MakePanel("HowPanel"); // Placeholder
+            _panelHow = MakePanel("HowPanel");
         }
 
         void BuildMapSelectPanel()
         {
             _panelMapSelect = MakePanel("MapSelectPanel");
-            var box = SketchBox(_panelMapSelect.transform, 700, 700);
+            var box = DarkBox(_panelMapSelect.transform, 750, 750);
             PanelHeader(box.transform, "SELECT MAP", -40f);
             
             var maps = SkirmishMapPresets.GetAll();
@@ -194,12 +183,12 @@ _canvas = go.AddComponent<Canvas>();
             foreach(var m in maps)
             {
                 var mapName = m.displayName;
-                SketchButton(box.transform, mapName.ToUpper(), ref y, () => {
+                DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
                     GameSession.SetSelectedMap(m);
                     SceneLoader.LoadSkirmishDemo(m.name);
                 });
             }
-            SketchButton(box.transform, "BACK", ref y, () => ShowPlay());
+            DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
         }
 
         // ── Helpers ──
@@ -213,7 +202,7 @@ _canvas = go.AddComponent<Canvas>();
             return p;
         }
 
-        GameObject SketchBox(Transform parent, float w, float h)
+        GameObject DarkBox(Transform parent, float w, float h)
         {
             var go = new GameObject("Box");
             go.transform.SetParent(parent, false);
@@ -221,20 +210,20 @@ _canvas = go.AddComponent<Canvas>();
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = new Vector2(w, h);
             var img = go.AddComponent<Image>();
-            img.sprite = whitePanelSprite;
-            img.type = Image.Type.Sliced;
+            img.sprite = mainFrameSprite;
             img.color = ColWhite;
+            img.type = Image.Type.Simple; // Frame is likely complex, use simple
             return go;
         }
 
         void PanelHeader(Transform parent, string text, float y)
         {
-            var t = Txt(parent, text, 32, ColGold, TextAnchor.MiddleCenter);
+            var t = Txt(parent, text, 36, ColTitle, TextAnchor.MiddleCenter);
             t.fontStyle = FontStyle.Bold;
             AnchorTopCenter(t.rectTransform, new Vector2(0, y), new Vector2(500, 50));
         }
 
-        void SketchButton(Transform parent, string label, ref float y, UnityEngine.Events.UnityAction onClick)
+        void DarkButton(Transform parent, string label, ref float y, UnityEngine.Events.UnityAction onClick)
         {
             var b = new GameObject(label);
             b.transform.SetParent(parent, false);
@@ -245,16 +234,17 @@ _canvas = go.AddComponent<Canvas>();
             y -= BtnGap;
 
             var img = b.AddComponent<Image>();
-            img.color = new Color(1, 1, 1, 0.01f); 
+            img.sprite = buttonSprite;
+            img.color = ColWhite;
+            
             var btn = b.AddComponent<Button>();
             var cols = btn.colors;
-            cols.normalColor = Color.clear;
-            cols.highlightedColor = ColBtnHover;
-            cols.pressedColor = ColBtnPress;
+            cols.highlightedColor = new Color(1, 0.9f, 0.7f, 1f);
+            cols.pressedColor = new Color(0.8f, 0.7f, 0.5f, 1f);
             btn.colors = cols;
             btn.onClick.AddListener(onClick);
 
-            var tx = Txt(b.transform, label, BtnFontSize, ColGold, TextAnchor.MiddleCenter);
+            var tx = Txt(b.transform, label, BtnFontSize, ColTitle, TextAnchor.MiddleCenter);
             tx.fontStyle = FontStyle.Bold;
             Stretch(tx.rectTransform);
         }
@@ -266,10 +256,10 @@ _canvas = go.AddComponent<Canvas>();
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(width, 10f);
+            rt.sizeDelta = new Vector2(width, 12f);
             var img = go.AddComponent<Image>();
-            img.sprite = separatorLineSprite;
-            img.color = ColGold;
+            img.sprite = separatorSprite;
+            img.color = ColSub;
         }
 
         Text Txt(Transform parent, string text, int size, Color color, TextAnchor anchor)
@@ -281,15 +271,13 @@ _canvas = go.AddComponent<Canvas>();
             t.text = text; t.supportRichText = true;
             
             var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(0, 0, 0, 0.2f);
+            outline.effectColor = new Color(0, 0, 0, 0.5f);
             outline.effectDistance = new Vector2(1, -1);
-            
             return t;
         }
 
         static void Stretch(RectTransform rt) { rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; }
         static void AnchorTopCenter(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
-        static void AnchorBottomCenter(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
 
         void ShowMain() => SetActivePanels(_panelMain);
         void ShowPlay() => SetActivePanels(_panelPlay);
@@ -309,6 +297,5 @@ _canvas = go.AddComponent<Canvas>();
         }
 
         void SetDiff(DemoDifficulty d) => GameSession.SetDifficulty(d);
-        void CycleQuality() => GameSession.SetQualityLevel((QualitySettings.GetQualityLevel() + 1) % QualitySettings.names.Length);
     }
 }
