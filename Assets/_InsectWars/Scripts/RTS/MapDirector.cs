@@ -166,19 +166,31 @@ namespace InsectWars.RTS
             if (camCtrl != null)
                 camCtrl.FocusWorldPosition(new Vector3(_playerHive.x, 0f, _playerHive.z));
 
-            // Wait two frames: frame 1 lets every unit's Start() run and bind to the NavMesh;
-            // frame 2 gives the NavMesh path-request queue a chance to settle.
+            // Wait several frames so NavMeshAgent components can fully bind to the baked mesh.
+            // Two frames covers Start() + first Update(); extra frames handle slower machines
+            // or scenes where baking completes slightly after the first render tick.
+            yield return null;
+            yield return null;
+            yield return null;
             yield return null;
             yield return null;
 
-            // Now issue initial gather orders — agents are on the NavMesh.
+            // Issue initial gather orders. Workers whose agents didn't bind yet will
+            // still be set to Gather state and will start moving as soon as binding succeeds
+            // (SafeSetDestination warps automatically; TickIdleAutoGather acts as fallback).
             foreach (var w in playerWorkers)
-                if (w != null && playerApple != null && !playerApple.Depleted)
+            {
+                if (w == null) continue;
+                if (playerApple != null && !playerApple.Depleted)
                     w.OrderGather(playerApple);
+            }
 
             foreach (var w in enemyWorkers)
-                if (w != null && enemyApple != null && !enemyApple.Depleted)
+            {
+                if (w == null) continue;
+                if (enemyApple != null && !enemyApple.Depleted)
                     w.OrderGather(enemyApple);
+            }
         }
 
         void RegisterBuildZones()

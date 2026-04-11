@@ -55,6 +55,7 @@ namespace InsectWars.RTS
         float _terrainSpeedTimer;
         float _terrainDmgAccum;
         float _navBindRetryTimer;
+        float _gatherNavStuckTimer;
 
         public Team Team => team;
         public UnitDefinition Definition => definition;
@@ -634,7 +635,21 @@ namespace InsectWars.RTS
                 _order = UnitOrder.Idle;
                 return;
             }
-            if (!AgentActiveOnNavMesh) return;
+            if (!AgentActiveOnNavMesh)
+            {
+                // If NavMesh never becomes available, abandon this gather so
+                // TickIdleAutoGather can retry once the agent eventually binds.
+                _gatherNavStuckTimer += Time.deltaTime;
+                if (_gatherNavStuckTimer > 8f)
+                {
+                    _gatherTarget = null;
+                    _lastGatherTarget = null;
+                    _gatherNavStuckTimer = 0f;
+                    _order = UnitOrder.Idle;
+                }
+                return;
+            }
+            _gatherNavStuckTimer = 0f;
             var diff = transform.position - _gatherTarget.transform.position;
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
@@ -894,7 +909,9 @@ namespace InsectWars.RTS
         {
             if (definition == null || !definition.canGather) return;
             if (_holdPosition) return;
-            if (!AgentActiveOnNavMesh) return;
+            // Do NOT guard on AgentActiveOnNavMesh here — the scan and OrderGather call
+            // are safe when the agent is not yet bound; SafeSetDestination will attempt
+            // a Warp so movement begins as soon as the NavMesh is available.
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;

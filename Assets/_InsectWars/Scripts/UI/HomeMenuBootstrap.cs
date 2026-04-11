@@ -26,9 +26,9 @@ namespace InsectWars.UI
         static readonly Color ColDim       = new(0f, 0f, 0f, 0.70f); // Dark Charcoal Dimmer
         static readonly Color ColWhite     = Color.white;
 
-        const float PanelW = 750f, PanelH = 850f;
-        const float BtnW = 550f, BtnH = 100f, BtnGap = 120f;
-        const int TitleSize = 56, SubSize = 18, BtnFontSize = 26;
+        const float PanelW = 750f, PanelH = 722.5f;
+        const float BtnW = 550f, BtnH = 85f, BtnGap = 102f;
+        const int TitleSize = 48, SubSize = 15, BtnFontSize = 22;
 
         Canvas _canvas;
         Font _font;
@@ -183,15 +183,15 @@ namespace InsectWars.UI
 
             var title = Txt(box.transform, "STAGBEETLE ODYSSEY", TitleSize, ColTitle, TextAnchor.MiddleCenter);
             title.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(title.rectTransform, new Vector2(0, -100f), new Vector2(700, 120));
+            AnchorTopCenter(title.rectTransform, new Vector2(0, -85f), new Vector2(700, 100));
 
             var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
             sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -170f), new Vector2(600, 40));
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -145f), new Vector2(600, 34));
 
-            MakeSeparator(box.transform, -210f, 400f);
+            MakeSeparator(box.transform, -178.5f, 400f);
 
-            float y = -280f;
+            float y = -238f;
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());

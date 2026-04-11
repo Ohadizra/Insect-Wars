@@ -119,23 +119,15 @@ namespace InsectWars.RTS
 
         void UpdateMarqueeVisual(Vector2 screenA, Vector2 screenB)
         {
-            if (_marqueeFill == null || _marqueeCanvasRt == null) return;
+            if (_marqueeFill == null) return;
             var min = Vector2.Min(screenA, screenB);
             var max = Vector2.Max(screenA, screenB);
-            var size = max - min;
-            size.x = Mathf.Max(size.x, 2f);
-            size.y = Mathf.Max(size.y, 2f);
-
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _marqueeCanvasRt, min, null, out var localMin);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _marqueeCanvasRt, max, null, out var localMax);
-            var center = (localMin + localMax) * 0.5f;
-
-            _marqueeFill.anchoredPosition = center;
+            // With ConstantPixelSize and bottom-left anchor/pivot,
+            // anchoredPosition == bottom-left screen pixel and sizeDelta == pixel size.
+            _marqueeFill.anchoredPosition = min;
             _marqueeFill.sizeDelta = new Vector2(
-                Mathf.Abs(localMax.x - localMin.x),
-                Mathf.Abs(localMax.y - localMin.y));
+                Mathf.Max(max.x - min.x, 2f),
+                Mathf.Max(max.y - min.y, 2f));
         }
 
         void ClearAll()

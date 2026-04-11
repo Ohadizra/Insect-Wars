@@ -110,14 +110,14 @@ namespace InsectWars.RTS
             var container = new GameObject("CalorieDisplay").AddComponent<RectTransform>();
             container.SetParent(HudCanvasRect, false);
             container.anchorMin = container.anchorMax = container.pivot = new Vector2(0, 1);
-            container.anchoredPosition = new Vector2(30, -30);
-            container.sizeDelta = new Vector2(200, 50);
+            container.anchoredPosition = new Vector2(30, -25.5f);
+            container.sizeDelta = new Vector2(170, 42.5f);
             
             _calorieLabel = CreateResourceItem(container, appleIcon != null ? appleIcon : larvaIcon, "0");
 
 
             // --- Top Right: Menu Button ---
-            var menuBtnGo = CreatePanel("MenuBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -30), new Vector2(80, 80), buttonRoundSprite);
+            var menuBtnGo = CreatePanel("MenuBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -25.5f), new Vector2(68, 68), buttonRoundSprite);
             menuBtnGo.gameObject.AddComponent<Button>().onClick.AddListener(() => SceneLoader.LoadHome());
 
             // --- Bottom Left: Map ---
