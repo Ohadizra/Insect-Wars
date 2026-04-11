@@ -312,63 +312,64 @@ namespace InsectWars.Data
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
             map.name = "ShazuDen";
             map.displayName = "Shazu Den";
-            map.description = "An organic hive station deep in the frost. Functional ramps and massive chitinous barriers define this defensive outpost.";
+            map.description = "A frozen organic hive station. Broad gentle ramps and massive chitinous barriers define this defensive outpost.";
             map.mapHalfExtent = 120f;
             
-            // Re-centered hives to be perfectly on the center of the large plateaus
-            // Plateaus are at (0.145, 0.854) and (0.854, 0.145) in UV space.
-            // pos = uv * 240 - 120.
-            // NW: 0.145 * 240 - 120 = 34.8 - 120 = -85.2. 0.854 * 240 - 120 = 204.96 - 120 = 84.96.
-            map.playerHivePosition    = new Vector3(-85f, 1f,  85f); 
-            map.enemyHivePosition     = new Vector3( 85f, 1f, -85f);
+            // Re-centered hives: NW at (-80, 80), SE at (80, -80). Large plateaus ensure clear spawning.
+            map.playerHivePosition    = new Vector3(-80f, 1f,  80f); 
+            map.enemyHivePosition     = new Vector3( 80f, 1f, -80f);
             
-            // Starting Apples shifted slightly inward but still on high ground
-            map.bigApplePosition      = new Vector3(-75f, 1.5f, 75f);
-            map.enemyBigApplePosition = new Vector3( 75f, 1.5f, -75f);
+            // Apples shifted inward to be clearly on high ground and accessible
+            map.bigApplePosition      = new Vector3(-65f, 1.5f, 65f);
+            map.enemyBigApplePosition = new Vector3( 65f, 1.5f, -65f);
             
-            map.passiveScatterSeed = 7788;
+            map.passiveScatterSeed = 1122;
             
             map.highGrounds = new[]
             {
-                // Main Bases: Large box pods with a VERY wide ramp (rampWidth 0.15 UV = 36m)
-                new HighGroundPlaced { uv = new Vector2(0.145f, 0.854f), boxSize = new Vector2(0.35f, 0.35f), rotation = 45f, rampWidth = 0.15f, heightFraction = 0.15f },
-                new HighGroundPlaced { uv = new Vector2(0.854f, 0.145f), boxSize = new Vector2(0.35f, 0.35f), rotation = 45f, rampWidth = 0.15f, heightFraction = 0.15f },
+                // Main Bases: Massive circular plateaus with extra-wide gentle ramps (rampWidth 0.40 UV = 96m!)
+                new HighGroundPlaced { uv = new Vector2(0.166f, 0.833f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
+                new HighGroundPlaced { uv = new Vector2(0.833f, 0.166f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
                 
-                // Secondary Expansion pods (Natural)
-                new HighGroundPlaced { uv = new Vector2(0.35f, 0.65f), radius = 0.12f, rampWidth = 0.15f, heightFraction = 0.08f },
-                new HighGroundPlaced { uv = new Vector2(0.65f, 0.35f), radius = 0.12f, rampWidth = 0.15f, heightFraction = 0.08f },
+                // Natural Expansion Platforms (Large and accessible)
+                new HighGroundPlaced { uv = new Vector2(0.35f, 0.65f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
+                new HighGroundPlaced { uv = new Vector2(0.65f, 0.35f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
                 
-                // Pocket Thirds (Corners)
-                new HighGroundPlaced { uv = new Vector2(0.92f, 0.92f), radius = 0.15f, rampWidth = 0.15f, heightFraction = 0.10f },
-                new HighGroundPlaced { uv = new Vector2(0.08f, 0.08f), radius = 0.15f, rampWidth = 0.15f, heightFraction = 0.10f },
+                // Secondary Expansion Pockets (NE and SW Corners for future bases)
+                new HighGroundPlaced { uv = new Vector2(0.92f, 0.92f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
+                new HighGroundPlaced { uv = new Vector2(0.08f, 0.08f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
             };
             
             map.fruits = new[]
             {
-                // Natural Expansion resources
-                new FruitPlaced { position = new Vector3(-40f, 1.5f, 35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                new FruitPlaced { position = new Vector3( 40f, 1.5f, -35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                // Pocket Third resources
-                new FruitPlaced { position = new Vector3( 105f, 1.5f, 105f), calories = 8000, gatherPerTick = 2, gatherSeconds = 0.75f },
-                new FruitPlaced { position = new Vector3(-105f, 1.5f, -105f), calories = 8000, gatherPerTick = 2, gatherSeconds = 0.75f },
+                // Natural Expansion Apples
+                new FruitPlaced { position = new Vector3(-45f, 1.5f, 35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
+                new FruitPlaced { position = new Vector3( 45f, 1.5f, -35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
+                // Corner Third Apples (Secondary bases)
+                new FruitPlaced { position = new Vector3( 105f, 1.5f, 105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
+                new FruitPlaced { position = new Vector3(-105f, 1.5f, -105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
+                // High-Yield Center
+                new FruitPlaced { position = new Vector3(15f, 3.5f, 15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
+                new FruitPlaced { position = new Vector3(-15f, 3.5f, -15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
             };
             
             map.clay = new[]
             {
-                // "Rim" Pillars: Organic Spires placed at the corners of the base pods
-                new ClayPlaced { position = new Vector3(-115f, 0f, 115f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3(-118f, 0f, 60f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3(-60f, 0f, 118f), scale = new Vector3(12f, 20f, 12f) },
+                // Organic "Rim" Barriers - Large Frozen Horns placed at the far edges
+                new ClayPlaced { position = new Vector3(-118f, 0f, 118f), scale = new Vector3(15f, 25f, 15f) },
+                new ClayPlaced { position = new Vector3(-118f, 0f, 50f), scale = new Vector3(12f, 20f, 12f) },
+                new ClayPlaced { position = new Vector3(-50f, 0f, 118f), scale = new Vector3(12f, 20f, 12f) },
                 
-                new ClayPlaced { position = new Vector3( 110f, 0f, -110f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3( 118f, 0f, -60f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3( 60f, 0f, -118f), scale = new Vector3(12f, 20f, 12f) },
+                new ClayPlaced { position = new Vector3( 118f, 0f, -118f), scale = new Vector3(15f, 25f, 15f) },
+                new ClayPlaced { position = new Vector3( 118f, 0f, -50f), scale = new Vector3(12f, 20f, 12f) },
+                new ClayPlaced { position = new Vector3( 50f, 0f, -118f), scale = new Vector3(12f, 20f, 12f) },
             };
             
             map.terrainFeatures = new[]
             {
-                // Central High-Yield sludges
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 40f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-120, 0, 40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 120, 0, -40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 50f },
             };
 
 #if UNITY_EDITOR

@@ -7,18 +7,46 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using UnityEngine.Video;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace InsectWars.UI
 {
-    /// <summary>
-    /// Builds main menu at runtime: optional video loop, navigation, settings, difficulty.
-    /// </summary>
     public class HomeMenuBootstrap : MonoBehaviour
     {
         [SerializeField] string streamingVideoName = "MenuLoop.mp4";
         [SerializeField] UnitVisualLibrary visualLibrary;
 
+        [Header("Menu UI Art")]
+        [SerializeField] Sprite titleFrame;
+        [SerializeField] Sprite panelFrame;
+        [SerializeField] Sprite buttonSprite;
+        [SerializeField] Sprite mapCardFrame;
+
+        // ── Palette constants ──
+        static readonly Color ColTitleGold    = new(1f, 0.92f, 0.45f);
+        static readonly Color ColSubtitle     = new(0.7f, 0.85f, 0.65f);
+        static readonly Color ColPanelBg      = new(0.04f, 0.03f, 0.08f, 0.94f);
+        static readonly Color ColBtnNormal    = new(0.14f, 0.28f, 0.16f, 0.95f);
+        static readonly Color ColBtnHighlight = new(0.22f, 0.42f, 0.24f, 1f);
+        static readonly Color ColBtnPressed   = new(0.30f, 0.52f, 0.30f, 1f);
+        static readonly Color ColBtnText      = new(0.88f, 1f, 0.88f);
+        static readonly Color ColBodyText     = new(0.90f, 0.92f, 0.88f);
+        static readonly Color ColLabel        = new(0.7f, 0.8f, 0.7f);
+        static readonly Color ColDimOverlay   = new(0f, 0f, 0f, 0.55f);
+        static readonly Color ColFallbackBg   = new(0.06f, 0.08f, 0.04f);
+        static readonly Color ColMapCardBg    = new(0.10f, 0.20f, 0.12f, 0.95f);
+        static readonly Color ColMapCardHover = new(0.18f, 0.36f, 0.20f);
+
+        const float BtnWidth  = 420f;
+        const float BtnHeight = 62f;
+        const float BtnGap    = 72f;
+        const int   BtnFont   = 26;
+        const int   TitleFont = 68;
+
         Canvas _canvas;
+        Font _font;
         GameObject _panelMain;
         GameObject _panelPlay;
         GameObject _panelMapSelect;
@@ -34,12 +62,25 @@ namespace InsectWars.UI
             GameSession.LoadPrefs();
             AudioListener.volume = GameSession.GetSavedMasterVolume();
             Screen.fullScreen = GameSession.GetSavedFullscreen();
+
+            _font = UiFontHelper.GetFont();
+            AutoWireSprites();
             SetupEventSystem();
             BuildCanvas();
             BuildVideoBackground();
             BuildMainMenu();
             BuildSubPanels();
             ShowMain();
+        }
+
+        void AutoWireSprites()
+        {
+        #if UNITY_EDITOR
+            if (titleFrame == null) titleFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Wide 3.png");
+            if (panelFrame == null) panelFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Vines 3.png");
+            if (buttonSprite == null) buttonSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Button_Vines 3.png");
+            if (mapCardFrame == null) mapCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Square 3.png");
+        #endif
         }
 
         void SetupEventSystem()
@@ -55,23 +96,23 @@ namespace InsectWars.UI
             var go = new GameObject("MainMenuCanvas");
             _canvas = go.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            var menuScaler = go.AddComponent<CanvasScaler>();
-            menuScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            menuScaler.referenceResolution = new Vector2(1920, 1080);
-            menuScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            menuScaler.matchWidthOrHeight = 0.5f;
+            var scaler = go.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
             go.AddComponent<GraphicRaycaster>();
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Background
+        // ═══════════════════════════════════════════════════════════════
 
         void BuildVideoBackground()
         {
             var bg = new GameObject("VideoBackground");
             bg.transform.SetParent(_canvas.transform, false);
-            var rt = bg.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
+            Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
             raw.color = Color.white;
@@ -89,76 +130,161 @@ namespace InsectWars.UI
             var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
             if (System.IO.File.Exists(path))
             {
-                vp.url = Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.OSXEditor
+                vp.url = Application.platform == RuntimePlatform.OSXPlayer ||
+                         Application.platform == RuntimePlatform.OSXEditor
                     ? "file://" + path
                     : path;
                 vp.Play();
             }
             else
             {
-                raw.color = new Color(0.12f, 0.18f, 0.28f);
+                raw.color = ColFallbackBg;
                 vp.enabled = false;
+                BuildFallbackGradient(bg.transform);
             }
 
             var dim = new GameObject("Dim");
             dim.transform.SetParent(bg.transform, false);
-            var dimImg = dim.AddComponent<Image>();
-            dimImg.color = new Color(0f, 0f, 0f, 0.45f);
-            var drt = dim.GetComponent<RectTransform>();
-            drt.anchorMin = Vector2.zero;
-            drt.anchorMax = Vector2.one;
-            drt.offsetMin = Vector2.zero;
-            drt.offsetMax = Vector2.zero;
+            Stretch(dim.AddComponent<RectTransform>());
+            dim.AddComponent<Image>().color = ColDimOverlay;
         }
+
+        void BuildFallbackGradient(Transform parent)
+        {
+            var tex = new Texture2D(1, 4, TextureFormat.RGBA32, false);
+            tex.SetPixel(0, 0, new Color(0.02f, 0.04f, 0.02f));
+            tex.SetPixel(0, 1, new Color(0.06f, 0.10f, 0.05f));
+            tex.SetPixel(0, 2, new Color(0.08f, 0.14f, 0.06f));
+            tex.SetPixel(0, 3, new Color(0.04f, 0.07f, 0.03f));
+            tex.Apply();
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+
+            var grad = new GameObject("Gradient");
+            grad.transform.SetParent(parent, false);
+            Stretch(grad.AddComponent<RectTransform>());
+            var ri = grad.AddComponent<RawImage>();
+            ri.texture = tex;
+            ri.uvRect = new Rect(0, 0, 1, 1);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Main Menu
+        // ═══════════════════════════════════════════════════════════════
 
         void BuildMainMenu()
         {
-            _panelMain = Panel("MainPanel", _canvas.transform);
-            var v = GetFont();
-            AddTitle(_panelMain.transform, "INSECT WARS", v, 42);
-            float y = -120f;
-            AddMenuButton(_panelMain.transform, "Play Demo", v, ref y, () => ShowPlay());
-            AddMenuButton(_panelMain.transform, "How To Play", v, ref y, () => ShowHow());
-            AddMenuButton(_panelMain.transform, "Settings", v, ref y, () => ShowSettings());
-            AddMenuButton(_panelMain.transform, "About", v, ref y, () => ShowAbout());
-            AddMenuButton(_panelMain.transform, "Quit", v, ref y, () => Application.Quit());
+            _panelMain = MakePanel("MainPanel");
+
+            var center = new GameObject("CenterGroup");
+            center.transform.SetParent(_panelMain.transform, false);
+            var crt = center.AddComponent<RectTransform>();
+            crt.anchorMin = new Vector2(0.5f, 0.5f);
+            crt.anchorMax = new Vector2(0.5f, 0.5f);
+            crt.pivot = new Vector2(0.5f, 0.5f);
+            crt.anchoredPosition = new Vector2(0, 30f);
+            crt.sizeDelta = new Vector2(600, 620);
+
+            AddArtPanel(center.transform, panelFrame, new Vector2(-40, -40), new Vector2(40, 40), ColPanelBg);
+
+            AddTitleBlock(center.transform, "INSECT WARS", TitleFont, 220f,
+                "Command your colony. Conquer the garden.", 20);
+
+            float y = -10f;
+            AddStyledButton(center.transform, "Play Demo", ref y, () => ShowPlay());
+            AddStyledButton(center.transform, "How To Play", ref y, () => ShowHow());
+            AddStyledButton(center.transform, "Settings", ref y, () => ShowSettings());
+            AddStyledButton(center.transform, "About", ref y, () => ShowAbout());
+            AddStyledButton(center.transform, "Quit", ref y, () => Application.Quit());
+
+            AddVersionLabel(_panelMain.transform);
         }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Sub-panels
+        // ═══════════════════════════════════════════════════════════════
 
         void BuildSubPanels()
         {
-            var v = GetFont();
-            _panelPlay = Panel("PlayPanel", _canvas.transform);
-            AddTitle(_panelPlay.transform, "Select Difficulty", v, 32);
-            AddLabel(_panelPlay.transform, "Difficulty affects enemy durability and AI speed.", v, -90f);
-            float y = -140f;
-            AddMenuButton(_panelPlay.transform, "Easy", v, ref y, () => { SetDiff(DemoDifficulty.Easy); ShowMapSelect(); });
-            AddMenuButton(_panelPlay.transform, "Normal", v, ref y, () => { SetDiff(DemoDifficulty.Normal); ShowMapSelect(); });
-            AddMenuButton(_panelPlay.transform, "Hard", v, ref y, () => { SetDiff(DemoDifficulty.Hard); ShowMapSelect(); });
-            AddMenuButton(_panelPlay.transform, "Back", v, ref y, () => ShowMain());
-
-            BuildMapSelectPanel(v);
-
-            _panelHow = Panel("HowPanel", _canvas.transform);
-            BuildHowToPlayPanel(_panelHow.transform, v);
-
-            _panelSettings = Panel("SettingsPanel", _canvas.transform);
-            AddTitle(_panelSettings.transform, "Settings", v, 32);
-            AddVolumeRow(_panelSettings.transform, v, -100f);
-            _fullToggle = AddToggle(_panelSettings.transform, "Fullscreen", GameSession.GetSavedFullscreen(), v, -180f, x => GameSession.SetFullscreen(x));
-            AddLabel(_panelSettings.transform, $"Quality: {QualitySettings.names[QualitySettings.GetQualityLevel()]}", v, -240f);
-            y = -280f;
-            AddMenuButton(_panelSettings.transform, "Cycle Quality", v, ref y, CycleQuality);
-            y -= 8f;
-            AddMenuButton(_panelSettings.transform, "Back", v, ref y, () => ShowMain());
-
-            _panelAbout = Panel("AboutPanel", _canvas.transform);
-            AddTitle(_panelAbout.transform, "About", v, 32);
-            AddMultiline(_panelAbout.transform, "Insect Wars — Demo 0\n\nUnity 6 RTS vertical slice: NavMesh units, economy, fog of war, skirmish flow.\nProcedural primitives are the default when no UnitVisualLibrary prefabs are assigned.\n\nOptional: assign a Skirmish Map Definition on SkirmishDirector for authored layouts.", v, -70f);
-            y = -280f;
-            AddMenuButton(_panelAbout.transform, "Back", v, ref y, () => ShowMain());
+            BuildPlayPanel();
+            BuildMapSelectPanel();
+            BuildHowToPlayPanel();
+            BuildSettingsPanel();
+            BuildAboutPanel();
         }
 
-        // ───────── How To Play with 3D Unit Codex ─────────
+        void BuildPlayPanel()
+        {
+            _panelPlay = MakePanel("PlayPanel");
+
+            var center = CenteredBox(_panelPlay.transform, 500, 520);
+            AddArtPanel(center.transform, panelFrame, new Vector2(-30, -30), new Vector2(30, 30), ColPanelBg);
+
+            AddTitleBlock(center.transform, "Select Difficulty", 42, 130f,
+                "Difficulty affects enemy durability and AI speed.", 18);
+
+            float y = -20f;
+            AddStyledButton(center.transform, "Easy", ref y, () => { SetDiff(DemoDifficulty.Easy); ShowMapSelect(); });
+            AddStyledButton(center.transform, "Normal", ref y, () => { SetDiff(DemoDifficulty.Normal); ShowMapSelect(); });
+            AddStyledButton(center.transform, "Hard", ref y, () => { SetDiff(DemoDifficulty.Hard); ShowMapSelect(); });
+            y -= 10f;
+            AddStyledButton(center.transform, "Back", ref y, () => ShowMain());
+        }
+
+        void BuildSettingsPanel()
+        {
+            _panelSettings = MakePanel("SettingsPanel");
+
+            var center = CenteredBox(_panelSettings.transform, 540, 520);
+            AddArtPanel(center.transform, panelFrame, new Vector2(-30, -30), new Vector2(30, 30), ColPanelBg);
+
+            AddPanelTitle(center.transform, "Settings", 42, -30f);
+
+            AddSettingsLabel(center.transform, "Master Volume", -110f);
+            AddVolumeRow(center.transform, -150f);
+
+            _fullToggle = AddToggle(center.transform, "Fullscreen",
+                GameSession.GetSavedFullscreen(), -230f, x => GameSession.SetFullscreen(x));
+
+            AddSettingsLabel(center.transform,
+                $"Quality: {QualitySettings.names[QualitySettings.GetQualityLevel()]}", -300f);
+
+            float y = -350f;
+            AddStyledButton(center.transform, "Cycle Quality", ref y, CycleQuality);
+            y -= 10f;
+            AddStyledButton(center.transform, "Back", ref y, () => ShowMain());
+        }
+
+        void BuildAboutPanel()
+        {
+            _panelAbout = MakePanel("AboutPanel");
+
+            var center = CenteredBox(_panelAbout.transform, 600, 480);
+            AddArtPanel(center.transform, panelFrame, new Vector2(-30, -30), new Vector2(30, 30), ColPanelBg);
+
+            AddPanelTitle(center.transform, "About", 42, -30f);
+
+            var body = MakeText(center.transform, "BodyText",
+                "Insect Wars — Demo\n\n" +
+                "A Unity 6 RTS vertical slice set at insect scale.\n" +
+                "NavMesh units, single-resource economy, fog of war,\n" +
+                "skirmish AI, and procedural terrain generation.\n\n" +
+                "Built with URP and the New Input System.",
+                19, ColBodyText, TextAnchor.UpperCenter);
+            var brt = body.rectTransform;
+            brt.anchorMin = new Vector2(0.5f, 1f);
+            brt.anchorMax = new Vector2(0.5f, 1f);
+            brt.pivot = new Vector2(0.5f, 1f);
+            brt.anchoredPosition = new Vector2(0, -110f);
+            brt.sizeDelta = new Vector2(520, 240);
+
+            float y = -380f;
+            AddStyledButton(center.transform, "Back", ref y, () => ShowMain());
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  How To Play with 3D Unit Codex
+        // ═══════════════════════════════════════════════════════════════
 
         Text _unitDetailText;
         RawImage _previewImage;
@@ -173,38 +299,37 @@ namespace InsectWars.UI
         float _previewYaw;
         float _previewBob;
 
-        void BuildHowToPlayPanel(Transform parent, Font font)
+        void BuildHowToPlayPanel()
         {
-            AddTitle(parent, "How To Play", font, 26);
+            _panelHow = MakePanel("HowPanel");
+            var parent = _panelHow.transform;
 
-            // ── Controls strip below title ──
+            AddArtPanel(parent, panelFrame,
+                new Vector2(40, 20), new Vector2(-40, -20), ColPanelBg);
+
+            AddPanelTitle(parent, "How To Play", 36, -30f);
+
             var ctrlGo = new GameObject("Controls");
             ctrlGo.transform.SetParent(parent, false);
             var ctrlRt = ctrlGo.AddComponent<RectTransform>();
-            ctrlRt.anchorMin = new Vector2(0.03f, 0.89f);
-            ctrlRt.anchorMax = new Vector2(0.97f, 0.95f);
+            ctrlRt.anchorMin = new Vector2(0.05f, 0.89f);
+            ctrlRt.anchorMax = new Vector2(0.95f, 0.95f);
             ctrlRt.offsetMin = ctrlRt.offsetMax = Vector2.zero;
             var ctrlBg = ctrlGo.AddComponent<Image>();
-            ctrlBg.color = new Color(0.06f, 0.08f, 0.14f, 0.85f);
+            ctrlBg.color = new Color(0.04f, 0.06f, 0.10f, 0.85f);
             ctrlBg.raycastTarget = false;
-            var ctrlTx = new GameObject("T").AddComponent<Text>();
-            ctrlTx.transform.SetParent(ctrlGo.transform, false);
-            ctrlTx.font = font;
-            ctrlTx.fontSize = 13;
-            ctrlTx.color = new Color(0.82f, 0.84f, 0.88f);
-            ctrlTx.alignment = TextAnchor.MiddleCenter;
-            ctrlTx.supportRichText = true;
-            ctrlTx.text = "LMB select · RMB move/attack/gather · A atk-move · S stop · H hold · P patrol · B build · Esc pause · Scroll zoom · Win: kill all foes";
-            var crt = ctrlTx.rectTransform;
-            crt.anchorMin = Vector2.zero; crt.anchorMax = Vector2.one;
-            crt.offsetMin = new Vector2(12f, 2f); crt.offsetMax = new Vector2(-12f, -2f);
+            var ctrlTx = MakeText(ctrlGo.transform, "T",
+                "LMB select · RMB command · A atk-move · S stop · H hold · P patrol · B build · Esc pause · Scroll zoom · Win: destroy enemy hive",
+                14, new Color(0.82f, 0.88f, 0.82f), TextAnchor.MiddleCenter);
+            var cTrt = ctrlTx.rectTransform;
+            cTrt.anchorMin = Vector2.zero; cTrt.anchorMax = Vector2.one;
+            cTrt.offsetMin = new Vector2(12f, 2f); cTrt.offsetMax = new Vector2(-12f, -2f);
 
-            // ── Unit tab row ──
             var tabGo = new GameObject("Tabs");
             tabGo.transform.SetParent(parent, false);
             var tabRt = tabGo.AddComponent<RectTransform>();
-            tabRt.anchorMin = new Vector2(0.03f, 0.82f);
-            tabRt.anchorMax = new Vector2(0.97f, 0.88f);
+            tabRt.anchorMin = new Vector2(0.05f, 0.82f);
+            tabRt.anchorMax = new Vector2(0.95f, 0.88f);
             tabRt.offsetMin = tabRt.offsetMax = Vector2.zero;
             var tabHL = tabGo.AddComponent<HorizontalLayoutGroup>();
             tabHL.childAlignment = TextAnchor.MiddleCenter;
@@ -217,21 +342,17 @@ namespace InsectWars.UI
                 var idx = i;
                 var arch = _codexOrder[i];
                 var def = UnitDefinition.CreateRuntimeDefault(arch, Color.white);
-                _tabButtons[i] = BuildCodexTab(tabGo.transform, font, def.displayName.ToUpperInvariant(),
+                _tabButtons[i] = BuildCodexTab(tabGo.transform, def.displayName.ToUpperInvariant(),
                     () => ShowCodexUnit(_codexOrder[idx], idx));
             }
 
-            // ── Left half: 3D preview ──
             var leftGo = new GameObject("PreviewArea");
             leftGo.transform.SetParent(parent, false);
             var leftRt = leftGo.AddComponent<RectTransform>();
-            leftRt.anchorMin = new Vector2(0.03f, 0.08f);
+            leftRt.anchorMin = new Vector2(0.05f, 0.08f);
             leftRt.anchorMax = new Vector2(0.42f, 0.81f);
             leftRt.offsetMin = leftRt.offsetMax = Vector2.zero;
-
-            var previewBg = leftGo.AddComponent<Image>();
-            previewBg.color = new Color(0.04f, 0.06f, 0.10f, 0.92f);
-            previewBg.raycastTarget = false;
+            leftGo.AddComponent<Image>().color = new Color(0.03f, 0.05f, 0.08f, 0.92f);
 
             var rawGo = new GameObject("PreviewRaw");
             rawGo.transform.SetParent(leftGo.transform, false);
@@ -244,7 +365,6 @@ namespace InsectWars.UI
 
             SetupPreviewCamera();
 
-            // ── Anim buttons below preview ──
             var animBar = new GameObject("AnimButtons");
             animBar.transform.SetParent(leftGo.transform, false);
             var abRt = animBar.AddComponent<RectTransform>();
@@ -256,28 +376,23 @@ namespace InsectWars.UI
             abHL.childControlWidth = true; abHL.childControlHeight = true;
             abHL.childForceExpandWidth = true; abHL.childForceExpandHeight = true;
             abHL.spacing = 4f;
-            BuildAnimBtn(animBar.transform, font, "Idle", () => PreviewSetAnim(0));
-            BuildAnimBtn(animBar.transform, font, "Walk", () => PreviewSetAnim(1));
-            BuildAnimBtn(animBar.transform, font, "Attack", () => PreviewSetAnim(2));
+            BuildAnimBtn(animBar.transform, "Idle", () => PreviewSetAnim(0));
+            BuildAnimBtn(animBar.transform, "Walk", () => PreviewSetAnim(1));
+            BuildAnimBtn(animBar.transform, "Attack", () => PreviewSetAnim(2));
 
-            // ── Right half: stats scroll ──
             var rightGo = new GameObject("StatsArea");
             rightGo.transform.SetParent(parent, false);
             var rightRt = rightGo.AddComponent<RectTransform>();
             rightRt.anchorMin = new Vector2(0.44f, 0.08f);
-            rightRt.anchorMax = new Vector2(0.97f, 0.81f);
+            rightRt.anchorMax = new Vector2(0.95f, 0.81f);
             rightRt.offsetMin = rightRt.offsetMax = Vector2.zero;
-
-            var rightBg = rightGo.AddComponent<Image>();
-            rightBg.color = new Color(0.05f, 0.07f, 0.12f, 0.90f);
-            rightBg.raycastTarget = false;
+            rightGo.AddComponent<Image>().color = new Color(0.04f, 0.06f, 0.10f, 0.90f);
 
             var scrollGo = new GameObject("Scroll");
             scrollGo.transform.SetParent(rightGo.transform, false);
             var sRt = scrollGo.AddComponent<RectTransform>();
             sRt.anchorMin = Vector2.zero; sRt.anchorMax = Vector2.one;
             sRt.offsetMin = new Vector2(4f, 4f); sRt.offsetMax = new Vector2(-4f, -4f);
-
             var sr = scrollGo.AddComponent<ScrollRect>();
             sr.horizontal = false;
             sr.movementType = ScrollRect.MovementType.Clamped;
@@ -289,8 +404,7 @@ namespace InsectWars.UI
             vpRt.anchorMin = Vector2.zero; vpRt.anchorMax = Vector2.one;
             vpRt.offsetMin = Vector2.zero; vpRt.offsetMax = Vector2.zero;
             vpRt.pivot = new Vector2(0f, 1f);
-            var vpImg = viewportGo.AddComponent<Image>();
-            vpImg.color = new Color(0, 0, 0, 0.01f);
+            viewportGo.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f);
             viewportGo.AddComponent<Mask>().showMaskGraphic = false;
             sr.viewport = vpRt;
 
@@ -312,13 +426,12 @@ namespace InsectWars.UI
             txtRt.pivot = new Vector2(0f, 1f);
             txtRt.anchoredPosition = new Vector2(8f, -4f);
             txtRt.sizeDelta = new Vector2(-16f, 0f);
-
             _unitDetailText = textGo.AddComponent<Text>();
-            _unitDetailText.font = font;
-            _unitDetailText.fontSize = 14;
+            _unitDetailText.font = _font;
+            _unitDetailText.fontSize = 15;
             _unitDetailText.lineSpacing = 1.15f;
             _unitDetailText.supportRichText = true;
-            _unitDetailText.color = new Color(0.92f, 0.93f, 0.95f);
+            _unitDetailText.color = ColBodyText;
             _unitDetailText.alignment = TextAnchor.UpperLeft;
             _unitDetailText.horizontalOverflow = HorizontalWrapMode.Wrap;
             _unitDetailText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -326,11 +439,9 @@ namespace InsectWars.UI
             var csf = textGo.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-
             var cntFitter = contentGo.AddComponent<ContentSizeFitter>();
             cntFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             cntFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-
             var vLayout = contentGo.AddComponent<VerticalLayoutGroup>();
             vLayout.childControlWidth = true;
             vLayout.childControlHeight = true;
@@ -338,9 +449,8 @@ namespace InsectWars.UI
             vLayout.childForceExpandHeight = false;
             vLayout.padding = new RectOffset(0, 0, 4, 4);
 
-            // ── Back button at bottom ──
             float backY = 0f;
-            AddMenuButton(parent, "Back", font, ref backY, () => ShowMain());
+            AddStyledButton(parent, "Back", ref backY, () => ShowMain());
             var backObj = parent.Find("Back");
             if (backObj != null)
             {
@@ -348,31 +458,136 @@ namespace InsectWars.UI
                 brt.anchorMin = new Vector2(0.5f, 0f);
                 brt.anchorMax = new Vector2(0.5f, 0f);
                 brt.pivot = new Vector2(0.5f, 0f);
-                brt.anchoredPosition = new Vector2(0f, 10f);
+                brt.anchoredPosition = new Vector2(0f, 14f);
             }
 
             ShowCodexUnit(UnitArchetype.Worker, 0);
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        //  Map Select
+        // ═══════════════════════════════════════════════════════════════
+
+        void BuildMapSelectPanel()
+        {
+            _panelMapSelect = MakePanel("MapSelectPanel");
+
+            var backdrop = new GameObject("Backdrop");
+            backdrop.transform.SetParent(_panelMapSelect.transform, false);
+            var bdRt = backdrop.AddComponent<RectTransform>();
+            bdRt.anchorMin = new Vector2(0.12f, 0.04f);
+            bdRt.anchorMax = new Vector2(0.88f, 0.96f);
+            bdRt.offsetMin = bdRt.offsetMax = Vector2.zero;
+
+            AddArtPanel(backdrop.transform, panelFrame, Vector2.zero, Vector2.zero, ColPanelBg);
+
+            AddPanelTitle(_panelMapSelect.transform, "Select Map", 42, -40f);
+
+            var diffLabel = MakeText(_panelMapSelect.transform, "DiffLabel",
+                $"Difficulty: {GameSession.Difficulty}", 18, ColSubtitle, TextAnchor.UpperCenter);
+            var dlRt = diffLabel.rectTransform;
+            dlRt.anchorMin = new Vector2(0.5f, 1f);
+            dlRt.anchorMax = new Vector2(0.5f, 1f);
+            dlRt.pivot = new Vector2(0.5f, 1f);
+            dlRt.anchoredPosition = new Vector2(0, -95f);
+            dlRt.sizeDelta = new Vector2(400, 32);
+            _diffLabelInMapSelect = diffLabel;
+
+            var maps = SkirmishMapPresets.GetAll();
+            float y = -140f;
+            AddSettingsLabel(_panelMapSelect.transform, "Click a map to start:", y);
+            y -= 44f;
+
+            for (int i = 0; i < maps.Length; i++)
+                AddMapCard(_panelMapSelect.transform, maps[i], ref y);
+
+            y -= 14f;
+            AddStyledButton(_panelMapSelect.transform, "Back", ref y, () => ShowPlay());
+        }
+
+        void AddMapCard(Transform parent, SkirmishMapDefinition map, ref float y)
+        {
+            var card = new GameObject(map.displayName);
+            card.transform.SetParent(parent, false);
+            var rt = card.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(520, 120);
+            y -= 134f;
+
+            var bg = card.AddComponent<Image>();
+            bg.sprite = mapCardFrame;
+            bg.type = mapCardFrame != null ? Image.Type.Sliced : Image.Type.Simple;
+            bg.color = mapCardFrame != null ? new Color(1f, 1f, 1f, 0.9f) : ColMapCardBg;
+
+            var btn = card.AddComponent<Button>();
+            var btnColors = btn.colors;
+            btnColors.normalColor = mapCardFrame != null ? new Color(0.85f, 0.9f, 0.85f) : ColMapCardBg;
+            btnColors.highlightedColor = mapCardFrame != null ? Color.white : ColMapCardHover;
+            btnColors.pressedColor = mapCardFrame != null ? new Color(0.7f, 0.85f, 0.7f) : new Color(0.30f, 0.50f, 0.30f);
+            btn.colors = btnColors;
+            btn.onClick.AddListener(() =>
+            {
+                GameSession.SetSelectedMap(map);
+                if (map.name == "ShazuDen")
+                    SceneLoader.LoadSkirmishDemo("ShazuDen");
+                else
+                    SceneLoader.LoadSkirmishDemo();
+            });
+
+            var nameGo = MakeText(card.transform, "MapName", map.displayName,
+                24, ColTitleGold, TextAnchor.UpperLeft);
+            nameGo.fontStyle = FontStyle.Bold;
+            var nameRt = nameGo.rectTransform;
+            nameRt.anchorMin = Vector2.zero;
+            nameRt.anchorMax = Vector2.one;
+            nameRt.offsetMin = new Vector2(20f, 52f);
+            nameRt.offsetMax = new Vector2(-20f, -12f);
+
+            var descGo = MakeText(card.transform, "MapDesc", map.description,
+                15, ColBodyText, TextAnchor.UpperLeft);
+            descGo.horizontalOverflow = HorizontalWrapMode.Wrap;
+            var descRt = descGo.rectTransform;
+            descRt.anchorMin = Vector2.zero;
+            descRt.anchorMax = new Vector2(1f, 0.55f);
+            descRt.offsetMin = new Vector2(20f, 10f);
+            descRt.offsetMax = new Vector2(-20f, 0f);
+
+            string sizeLabel = map.mapHalfExtent < 65f ? "Small" : map.mapHalfExtent < 85f ? "Medium" : "Large";
+            var sizeGo = MakeText(card.transform, "MapSize",
+                $"{sizeLabel} — {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}",
+                15, ColSubtitle, TextAnchor.UpperRight);
+            sizeGo.fontStyle = FontStyle.Bold;
+            var sizeRt = sizeGo.rectTransform;
+            sizeRt.anchorMin = Vector2.zero;
+            sizeRt.anchorMax = Vector2.one;
+            sizeRt.offsetMin = new Vector2(20f, 52f);
+            sizeRt.offsetMax = new Vector2(-20f, -12f);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Preview camera & animation (unchanged logic, cleaned up)
+        // ═══════════════════════════════════════════════════════════════
+
         GameObject _previewLightFill;
 
         void SetupPreviewCamera()
         {
-            _previewRT = new RenderTexture(512, 512, 24);
-            _previewRT.antiAliasing = 4;
+            _previewRT = new RenderTexture(512, 512, 24) { antiAliasing = 4 };
             _previewImage.texture = _previewRT;
 
             var camGo = new GameObject("CodexPreviewCam");
             _previewCam = camGo.AddComponent<Camera>();
             _previewCam.targetTexture = _previewRT;
             _previewCam.clearFlags = CameraClearFlags.SolidColor;
-            _previewCam.backgroundColor = new Color(0.07f, 0.09f, 0.14f, 1f);
+            _previewCam.backgroundColor = new Color(0.05f, 0.07f, 0.10f, 1f);
             _previewCam.fieldOfView = 30f;
             _previewCam.nearClipPlane = 0.05f;
             _previewCam.farClipPlane = 30f;
             _previewCam.cullingMask = ~0;
             _previewCam.depth = -10;
-
             FrameCameraOnUnit();
 
             var keyGo = new GameObject("CodexKeyLight");
@@ -395,12 +610,11 @@ namespace InsectWars.UI
         {
             if (_previewCam == null) return;
             var unitCenter = new Vector3(500f, 0.45f, 500f);
-            var camPos = unitCenter + new Vector3(0f, 0.4f, -2.2f);
-            _previewCam.transform.position = camPos;
+            _previewCam.transform.position = unitCenter + new Vector3(0f, 0.4f, -2.2f);
             _previewCam.transform.LookAt(unitCenter);
         }
 
-        int _previewAnimMode; // 0=idle 1=walk 2=attack
+        int _previewAnimMode;
         float _walkPhase;
         float _attackPhase = -1f;
         Vector3 _previewBasePos;
@@ -410,24 +624,18 @@ namespace InsectWars.UI
             _previewAnimMode = mode;
             _walkPhase = 0f;
             _attackPhase = mode == 2 ? 0.35f : -1f;
-            if (_previewModelRoot != null)
+            if (_previewModelRoot == null) return;
+            _previewModelRoot.transform.position = _previewBasePos;
+            _previewModelRoot.transform.localScale = Vector3.one;
+            var driver = _previewModelRoot.GetComponentInChildren<UnitAnimationDriver>();
+            if (driver != null)
             {
-                _previewModelRoot.transform.position = _previewBasePos;
-                _previewModelRoot.transform.localScale = Vector3.one;
-
-                var driver = _previewModelRoot.GetComponentInChildren<UnitAnimationDriver>();
-                if (driver != null)
-                {
-                    driver.previewSpeed = (mode == 1) ? 3.5f : 0f;
-                    if (mode == 2) driver.NotifyAttack();
-                }
+                driver.previewSpeed = (mode == 1) ? 3.5f : 0f;
+                if (mode == 2) driver.NotifyAttack();
             }
         }
 
-        void LateUpdate()
-        {
-            UpdatePreviewAnim();
-        }
+        void LateUpdate() => UpdatePreviewAnim();
 
         void UpdatePreviewAnim()
         {
@@ -441,19 +649,18 @@ namespace InsectWars.UI
 
             switch (_previewAnimMode)
             {
-                case 0: // idle breathe
+                case 0:
                     _previewBob += Time.unscaledDeltaTime;
                     var breathe = 1f + Mathf.Sin(_previewBob * 2f) * 0.02f;
                     t.localScale = new Vector3(breathe, 1f, breathe);
                     t.position = _previewBasePos;
                     break;
-                case 1: // walk bob
+                case 1:
                     _walkPhase += Time.unscaledDeltaTime * 10f;
-                    var yBob = Mathf.Sin(_walkPhase) * 0.04f;
-                    t.position = _previewBasePos + new Vector3(0f, yBob, 0f);
+                    t.position = _previewBasePos + new Vector3(0f, Mathf.Sin(_walkPhase) * 0.04f, 0f);
                     t.localScale = Vector3.one;
                     break;
-                case 2: // attack lunge
+                case 2:
                     if (_attackPhase >= 0f)
                     {
                         _attackPhase -= Time.unscaledDeltaTime;
@@ -482,7 +689,7 @@ namespace InsectWars.UI
             var skin = TeamPalette.GetShellColor(team);
             var accent = TeamPalette.GetTeamColor(team);
 
-            GameObject prefab = (visualLibrary != null) ? visualLibrary.GetUnitPrefab(arch) : null;
+            GameObject prefab = visualLibrary != null ? visualLibrary.GetUnitPrefab(arch) : null;
             if (prefab != null)
             {
                 var inst = Instantiate(prefab, _previewModelRoot.transform, false);
@@ -491,7 +698,6 @@ namespace InsectWars.UI
 
                 var agent = inst.GetComponent<UnityEngine.AI.NavMeshAgent>();
                 if (agent != null) agent.enabled = false;
-
                 var col = inst.GetComponent<Collider>();
                 if (col != null) col.enabled = false;
 
@@ -507,7 +713,6 @@ namespace InsectWars.UI
                 if (driver == null) driver = inst.AddComponent<UnitAnimationDriver>();
                 driver.enabled = true;
 
-                // Ensure actual skirmish Animator is active and smooth in menus
                 foreach (var anim in inst.GetComponentsInChildren<Animator>(true))
                 {
                     anim.enabled = true;
@@ -525,9 +730,9 @@ namespace InsectWars.UI
                     }
                     r.SetPropertyBlock(block);
                 }
-                }
-                else
-                {
+            }
+            else
+            {
                 switch (arch)
                 {
                     case UnitArchetype.Worker:
@@ -539,7 +744,6 @@ namespace InsectWars.UI
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
                             new Vector3(0f, 0.01f, 0f), new Vector3(0.85f, 0.02f, 0.85f), Quaternion.identity, accent);
                         break;
-
                     case UnitArchetype.BasicFighter:
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
                             new Vector3(0f, 0.35f, -0.1f), new Vector3(0.45f, 0.6f, 0.45f),
@@ -559,7 +763,6 @@ namespace InsectWars.UI
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Cylinder,
                             new Vector3(0f, 0.01f, 0f), new Vector3(1.1f, 0.02f, 1.1f), Quaternion.identity, accent);
                         break;
-
                     case UnitArchetype.BasicRanged:
                         BuildPreviewPart(_previewModelRoot.transform, PrimitiveType.Capsule,
                             new Vector3(0f, 0.52f, 0f), new Vector3(0.42f, 0.5f, 0.42f), Quaternion.identity, skin);
@@ -570,19 +773,15 @@ namespace InsectWars.UI
                             new Vector3(0f, 0.01f, 0f), new Vector3(0.85f, 0.02f, 0.85f), Quaternion.identity, accent);
                         break;
                 }
-                }
+            }
 
-                _previewYaw = 0f;
-                _previewBob = 0f;
-                _previewAnimMode = 0;
-                _attackPhase = -1f;
-                _currentPreviewArch = arch;
-                PreviewSetAnim(0);
-                FrameCameraForArch(arch);
-
-            Debug.Log($"[CodexPreview] Spawned {arch}, children={_previewModelRoot.transform.childCount}, " +
-                      $"library={(visualLibrary != null ? "Yes" : "No")}, " +
-                      $"shader={_previewModelRoot.GetComponentInChildren<Renderer>()?.material?.shader?.name}");
+            _previewYaw = 0f;
+            _previewBob = 0f;
+            _previewAnimMode = 0;
+            _attackPhase = -1f;
+            _currentPreviewArch = arch;
+            PreviewSetAnim(0);
+            FrameCameraForArch(arch);
         }
 
         void FrameCameraForArch(UnitArchetype arch)
@@ -603,8 +802,7 @@ namespace InsectWars.UI
                 _ => 4.0f
             };
             var target = new Vector3(500f, centerY, 500f);
-            var camPos = target + new Vector3(0f, 0.6f, -dist);
-            _previewCam.transform.position = camPos;
+            _previewCam.transform.position = target + new Vector3(0f, 0.6f, -dist);
             _previewCam.transform.LookAt(target);
         }
 
@@ -619,8 +817,6 @@ namespace InsectWars.UI
             Object.Destroy(p.GetComponent<Collider>());
             var r = p.GetComponent<Renderer>();
             if (r == null) return;
-
-            // Use the property block on the existing material to tint — avoids all shader/material issues
             var m = r.material;
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
@@ -638,7 +834,7 @@ namespace InsectWars.UI
             var sb = new StringBuilder(1024);
 
             sb.AppendLine($"<b><size=20><color=#8CFFA8>{def.displayName.ToUpperInvariant()}</color></size></b>");
-            sb.AppendLine($"<i><size=12><color=#AAB0BB>{ArchetypeFlavorText(arch)}</color></size></i>");
+            sb.AppendLine($"<i><size=13><color=#AAB0BB>{ArchetypeFlavorText(arch)}</color></size></i>");
             sb.AppendLine();
 
             Stat(sb, "VISION");
@@ -672,15 +868,11 @@ namespace InsectWars.UI
             _unitDetailText.text = sb.ToString();
         }
 
-        static void Stat(StringBuilder sb, string heading)
-        {
+        static void Stat(StringBuilder sb, string heading) =>
             sb.AppendLine($"<b><color=#FFE87A>{heading}</color></b>");
-        }
 
-        static void Row(StringBuilder sb, string label, string value)
-        {
+        static void Row(StringBuilder sb, string label, string value) =>
             sb.AppendLine($"  {label}: <b>{value}</b>");
-        }
 
         void HighlightTab(int active)
         {
@@ -690,8 +882,8 @@ namespace InsectWars.UI
                 var img = _tabButtons[i].GetComponent<Image>();
                 if (img != null)
                     img.color = i == active
-                        ? new Color(0.2f, 0.52f, 0.3f, 1f)
-                        : new Color(0.14f, 0.22f, 0.16f, 0.85f);
+                        ? new Color(0.18f, 0.48f, 0.24f, 1f)
+                        : new Color(0.10f, 0.18f, 0.12f, 0.85f);
             }
         }
 
@@ -750,46 +942,402 @@ namespace InsectWars.UI
             sb.AppendLine("  Death: scale shrink (or Death trigger)");
         }
 
-        Button BuildCodexTab(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
+        // ═══════════════════════════════════════════════════════════════
+        //  Reusable UI builders
+        // ═══════════════════════════════════════════════════════════════
+
+        GameObject MakePanel(string name)
+        {
+            var p = new GameObject(name);
+            p.transform.SetParent(_canvas.transform, false);
+            Stretch(p.AddComponent<RectTransform>());
+            p.SetActive(false);
+            return p;
+        }
+
+        void AddArtPanel(Transform parent, Sprite sprite, Vector2 insetMin, Vector2 insetMax, Color fallback)
+        {
+            var bg = new GameObject("ArtBg");
+            bg.transform.SetParent(parent, false);
+            var rt = bg.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = insetMin;
+            rt.offsetMax = insetMax;
+            var img = bg.AddComponent<Image>();
+            img.raycastTarget = false;
+            if (sprite != null)
+            {
+                img.sprite = sprite;
+                img.type = Image.Type.Sliced;
+                img.color = new Color(1f, 1f, 1f, 0.95f);
+            }
+            else
+            {
+                img.color = fallback;
+            }
+        }
+
+        void AddTitleBlock(Transform parent, string title, int titleSize, float blockHeight,
+            string subtitle, int subSize)
+        {
+            var block = new GameObject("TitleBlock");
+            block.transform.SetParent(parent, false);
+            var brt = block.AddComponent<RectTransform>();
+            brt.anchorMin = new Vector2(0f, 1f);
+            brt.anchorMax = new Vector2(1f, 1f);
+            brt.pivot = new Vector2(0.5f, 1f);
+            brt.anchoredPosition = new Vector2(0, -20f);
+            brt.sizeDelta = new Vector2(0, blockHeight);
+
+            if (titleFrame != null)
+            {
+                var frameGo = new GameObject("TitleFrame");
+                frameGo.transform.SetParent(block.transform, false);
+                var frt = frameGo.AddComponent<RectTransform>();
+                frt.anchorMin = new Vector2(0.05f, 0.1f);
+                frt.anchorMax = new Vector2(0.95f, 0.9f);
+                frt.offsetMin = frt.offsetMax = Vector2.zero;
+                var fimg = frameGo.AddComponent<Image>();
+                fimg.sprite = titleFrame;
+                fimg.type = Image.Type.Sliced;
+                fimg.color = new Color(1f, 1f, 1f, 0.8f);
+                fimg.raycastTarget = false;
+            }
+
+            var t = MakeText(block.transform, "Title", title, titleSize, ColTitleGold, TextAnchor.MiddleCenter);
+            t.fontStyle = FontStyle.Bold;
+            var trt = t.rectTransform;
+            trt.anchorMin = new Vector2(0f, 0.35f);
+            trt.anchorMax = new Vector2(1f, 1f);
+            trt.offsetMin = trt.offsetMax = Vector2.zero;
+
+            if (!string.IsNullOrEmpty(subtitle))
+            {
+                var s = MakeText(block.transform, "Subtitle", subtitle, subSize, ColSubtitle, TextAnchor.UpperCenter);
+                s.fontStyle = FontStyle.Italic;
+                var srt = s.rectTransform;
+                srt.anchorMin = new Vector2(0f, 0f);
+                srt.anchorMax = new Vector2(1f, 0.38f);
+                srt.offsetMin = srt.offsetMax = Vector2.zero;
+            }
+        }
+
+        void AddPanelTitle(Transform parent, string text, int size, float yPos)
+        {
+            var t = MakeText(parent, "Title", text, size, ColTitleGold, TextAnchor.UpperCenter);
+            t.fontStyle = FontStyle.Bold;
+            var rt = t.rectTransform;
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, yPos);
+            rt.sizeDelta = new Vector2(800, 64);
+        }
+
+        void AddStyledButton(Transform parent, string label, ref float y,
+            UnityEngine.Events.UnityAction onClick)
+        {
+            var b = new GameObject(label);
+            b.transform.SetParent(parent, false);
+            var rt = b.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(BtnWidth, BtnHeight);
+            y -= BtnGap;
+
+            var img = b.AddComponent<Image>();
+            if (buttonSprite != null)
+            {
+                img.sprite = buttonSprite;
+                img.type = Image.Type.Sliced;
+                img.color = new Color(0.85f, 0.92f, 0.85f);
+            }
+            else
+            {
+                img.color = ColBtnNormal;
+            }
+
+            var btn = b.AddComponent<Button>();
+            var cols = btn.colors;
+            if (buttonSprite != null)
+            {
+                cols.normalColor = new Color(0.78f, 0.88f, 0.78f);
+                cols.highlightedColor = Color.white;
+                cols.pressedColor = new Color(0.65f, 0.80f, 0.65f);
+                cols.selectedColor = new Color(0.78f, 0.88f, 0.78f);
+            }
+            else
+            {
+                cols.normalColor = ColBtnNormal;
+                cols.highlightedColor = ColBtnHighlight;
+                cols.pressedColor = ColBtnPressed;
+                cols.selectedColor = ColBtnNormal;
+            }
+            btn.colors = cols;
+            btn.onClick.AddListener(onClick);
+
+            var tx = MakeText(b.transform, "T", label, BtnFont, ColBtnText, TextAnchor.MiddleCenter);
+            tx.fontStyle = FontStyle.Bold;
+            var trt = tx.rectTransform;
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.offsetMin = Vector2.zero;
+            trt.offsetMax = Vector2.zero;
+
+            if (buttonSprite != null)
+                tx.color = new Color(0.12f, 0.20f, 0.10f);
+        }
+
+        void AddSettingsLabel(Transform parent, string text, float y)
+        {
+            var t = MakeText(parent, "Lbl", text, 20, ColLabel, TextAnchor.UpperCenter);
+            var rt = t.rectTransform;
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(460, 36);
+        }
+
+        void AddVersionLabel(Transform parent)
+        {
+            var v = MakeText(parent, "Version", "Insect Wars — Demo",
+                14, new Color(0.5f, 0.55f, 0.45f, 0.6f), TextAnchor.LowerRight);
+            var vrt = v.rectTransform;
+            vrt.anchorMin = new Vector2(1f, 0f);
+            vrt.anchorMax = new Vector2(1f, 0f);
+            vrt.pivot = new Vector2(1f, 0f);
+            vrt.anchoredPosition = new Vector2(-20f, 12f);
+            vrt.sizeDelta = new Vector2(300, 30);
+        }
+
+        Text MakeText(Transform parent, string goName, string text, int size, Color color, TextAnchor anchor)
+        {
+            var t = new GameObject(goName).AddComponent<Text>();
+            t.transform.SetParent(parent, false);
+            t.font = _font;
+            t.fontSize = size;
+            t.color = color;
+            t.alignment = anchor;
+            t.supportRichText = true;
+            t.text = text;
+            return t;
+        }
+
+        GameObject CenteredBox(Transform parent, float w, float h)
+        {
+            var go = new GameObject("CenterBox");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(0, 20f);
+            rt.sizeDelta = new Vector2(w, h);
+            return go;
+        }
+
+        Button BuildCodexTab(Transform parent, string label, UnityEngine.Events.UnityAction onClick)
         {
             var go = new GameObject(label);
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.14f, 0.22f, 0.16f, 0.85f);
+            img.color = new Color(0.10f, 0.18f, 0.12f, 0.85f);
             var btn = go.AddComponent<Button>();
             btn.onClick.AddListener(onClick);
-            var tx = new GameObject("T").AddComponent<Text>();
-            tx.transform.SetParent(go.transform, false);
-            tx.font = font;
-            tx.fontSize = 16;
+            var tx = MakeText(go.transform, "T", label, 17, Color.white, TextAnchor.MiddleCenter);
             tx.fontStyle = FontStyle.Bold;
-            tx.color = Color.white;
-            tx.alignment = TextAnchor.MiddleCenter;
-            tx.text = label;
             var trt = tx.rectTransform;
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = trt.offsetMax = Vector2.zero;
             return btn;
         }
 
-        void BuildAnimBtn(Transform parent, Font font, string label, UnityEngine.Events.UnityAction onClick)
+        void BuildAnimBtn(Transform parent, string label, UnityEngine.Events.UnityAction onClick)
         {
             var go = new GameObject(label);
             go.transform.SetParent(parent, false);
-            var img = go.AddComponent<Image>();
-            img.color = new Color(0.12f, 0.18f, 0.22f, 0.9f);
+            go.AddComponent<Image>().color = new Color(0.08f, 0.14f, 0.18f, 0.9f);
             var btn = go.AddComponent<Button>();
             btn.onClick.AddListener(onClick);
-            var tx = new GameObject("T").AddComponent<Text>();
-            tx.transform.SetParent(go.transform, false);
-            tx.font = font;
-            tx.fontSize = 13;
-            tx.color = new Color(0.8f, 0.9f, 1f);
-            tx.alignment = TextAnchor.MiddleCenter;
-            tx.text = label;
+            var tx = MakeText(go.transform, "T", label, 14, new Color(0.8f, 0.9f, 1f), TextAnchor.MiddleCenter);
             var trt = tx.rectTransform;
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = trt.offsetMax = Vector2.zero;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Volume & Toggle widgets
+        // ═══════════════════════════════════════════════════════════════
+
+        void AddVolumeRow(Transform parent, float y)
+        {
+            var row = new GameObject("VolRow");
+            row.transform.SetParent(parent, false);
+            var rt = row.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(420, 50);
+
+            float v = GameSession.GetSavedMasterVolume();
+            void RefreshLabel()
+            {
+                if (_volValueLabel != null)
+                    _volValueLabel.text = $"{Mathf.RoundToInt(v * 100)}%";
+            }
+
+            MakeVolBtn(row.transform, "−", new Vector2(0f, 0f), new Vector2(0.28f, 1f), () =>
+            {
+                v = Mathf.Clamp01(v - 0.1f);
+                GameSession.SetMasterVolume(v);
+                RefreshLabel();
+            });
+
+            var lblGo = new GameObject("VolPct");
+            lblGo.transform.SetParent(row.transform, false);
+            _volValueLabel = lblGo.AddComponent<Text>();
+            _volValueLabel.font = _font;
+            _volValueLabel.fontSize = 24;
+            _volValueLabel.fontStyle = FontStyle.Bold;
+            _volValueLabel.color = ColTitleGold;
+            _volValueLabel.alignment = TextAnchor.MiddleCenter;
+            var lrt = _volValueLabel.rectTransform;
+            lrt.anchorMin = new Vector2(0.32f, 0f);
+            lrt.anchorMax = new Vector2(0.68f, 1f);
+            lrt.offsetMin = Vector2.zero;
+            lrt.offsetMax = Vector2.zero;
+            RefreshLabel();
+
+            MakeVolBtn(row.transform, "+", new Vector2(0.72f, 0f), new Vector2(1f, 1f), () =>
+            {
+                v = Mathf.Clamp01(v + 0.1f);
+                GameSession.SetMasterVolume(v);
+                RefreshLabel();
+            });
+        }
+
+        void MakeVolBtn(Transform parent, string label, Vector2 anchorMin, Vector2 anchorMax,
+            UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject($"Vol{label}");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            var img = go.AddComponent<Image>();
+            if (buttonSprite != null)
+            {
+                img.sprite = buttonSprite;
+                img.type = Image.Type.Sliced;
+                img.color = new Color(0.8f, 0.88f, 0.8f);
+            }
+            else
+            {
+                img.color = ColBtnNormal;
+            }
+            go.AddComponent<Button>().onClick.AddListener(onClick);
+            var tx = MakeText(go.transform, "T", label, 26, ColBtnText, TextAnchor.MiddleCenter);
+            tx.fontStyle = FontStyle.Bold;
+            if (buttonSprite != null) tx.color = new Color(0.12f, 0.20f, 0.10f);
+            var trt = tx.rectTransform;
+            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+            trt.offsetMin = Vector2.zero; trt.offsetMax = Vector2.zero;
+        }
+
+        Toggle AddToggle(Transform parent, string label, bool on, float y, System.Action<bool> onSet)
+        {
+            var row = new GameObject(label);
+            row.transform.SetParent(parent, false);
+            var rt = row.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(420, 40);
+
+            var tgl = row.AddComponent<Toggle>();
+            var bg = new GameObject("Bg").AddComponent<Image>();
+            bg.transform.SetParent(row.transform, false);
+            bg.color = new Color(0.20f, 0.20f, 0.24f);
+            var bgrt = bg.rectTransform;
+            bgrt.anchorMin = new Vector2(0f, 0.5f);
+            bgrt.anchorMax = new Vector2(0f, 0.5f);
+            bgrt.pivot = new Vector2(0f, 0.5f);
+            bgrt.anchoredPosition = Vector2.zero;
+            bgrt.sizeDelta = new Vector2(34, 34);
+
+            var ch = new GameObject("Check").AddComponent<Image>();
+            ch.transform.SetParent(bg.transform, false);
+            ch.color = new Color(0.45f, 0.85f, 0.35f);
+            var crt = ch.rectTransform;
+            crt.anchorMin = new Vector2(0.1f, 0.1f);
+            crt.anchorMax = new Vector2(0.9f, 0.9f);
+            crt.offsetMin = Vector2.zero;
+            crt.offsetMax = Vector2.zero;
+
+            tgl.targetGraphic = bg;
+            tgl.graphic = ch;
+            tgl.isOn = on;
+            tgl.onValueChanged.AddListener(val => onSet(val));
+
+            var tx = MakeText(row.transform, "Txt", label, 20, ColBodyText, TextAnchor.MiddleLeft);
+            tx.rectTransform.anchorMin = Vector2.zero;
+            tx.rectTransform.anchorMax = Vector2.one;
+            tx.rectTransform.offsetMin = new Vector2(46f, 0f);
+            tx.rectTransform.offsetMax = Vector2.zero;
+            return tgl;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  Navigation & utilities
+        // ═══════════════════════════════════════════════════════════════
+
+        void ShowMain() => SetActivePanels(_panelMain);
+        void ShowPlay() => SetActivePanels(_panelPlay);
+        void ShowHow() => SetActivePanels(_panelHow);
+        void ShowSettings() => SetActivePanels(_panelSettings);
+        void ShowAbout() => SetActivePanels(_panelAbout);
+
+        void ShowMapSelect()
+        {
+            if (_diffLabelInMapSelect != null)
+                _diffLabelInMapSelect.text = $"Difficulty: {GameSession.Difficulty}";
+            SetActivePanels(_panelMapSelect);
+        }
+
+        void SetDiff(DemoDifficulty d) => GameSession.SetDifficulty(d);
+
+        void CycleQuality()
+        {
+            int n = QualitySettings.names.Length;
+            int next = (QualitySettings.GetQualityLevel() + 1) % n;
+            GameSession.SetQualityLevel(next);
+        }
+
+        static void SetActivePanels(GameObject on)
+        {
+            var parent = on.transform.parent;
+            foreach (Transform c in parent)
+            {
+                if (c.name is "MainPanel" or "PlayPanel" or "MapSelectPanel"
+                    or "HowPanel" or "SettingsPanel" or "AboutPanel")
+                    c.gameObject.SetActive(c.gameObject == on);
+            }
+        }
+
+        static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
 
         void OnDestroy()
@@ -799,408 +1347,6 @@ namespace InsectWars.UI
             if (_previewLight != null) Destroy(_previewLight.gameObject);
             if (_previewLightFill != null) Destroy(_previewLightFill);
             if (_previewRT != null) _previewRT.Release();
-        }
-
-        static Font GetFont()
-        {
-            var f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (f == null) f = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            return f;
-        }
-
-        static GameObject Panel(string name, Transform parent)
-        {
-            var p = new GameObject(name);
-            p.transform.SetParent(parent, false);
-            var rt = p.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
-            p.SetActive(false);
-            return p;
-        }
-
-        void AddTitle(Transform parent, string text, Font font, int size)
-        {
-            var t = new GameObject("Title").AddComponent<Text>();
-            t.transform.SetParent(parent, false);
-            t.font = font;
-            t.fontSize = size;
-            t.fontStyle = FontStyle.Bold;
-            t.color = new Color(1f, 0.95f, 0.55f);
-            t.alignment = TextAnchor.UpperCenter;
-            t.text = text;
-            var rt = t.rectTransform;
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, -40f);
-            rt.sizeDelta = new Vector2(800, 64);
-        }
-
-        void AddLabel(Transform parent, string text, Font font, float y)
-        {
-            var t = new GameObject("Lbl").AddComponent<Text>();
-            t.transform.SetParent(parent, false);
-            t.font = font;
-            t.fontSize = 18;
-            t.color = Color.white;
-            t.alignment = TextAnchor.UpperCenter;
-            t.text = text;
-            var rt = t.rectTransform;
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(700, 40);
-        }
-
-        void AddMultiline(Transform parent, string text, Font font, float yTop)
-        {
-            var t = new GameObject("Body").AddComponent<Text>();
-            t.transform.SetParent(parent, false);
-            t.font = font;
-            t.fontSize = 17;
-            t.color = new Color(0.92f, 0.92f, 0.92f);
-            t.alignment = TextAnchor.UpperCenter;
-            t.text = text;
-            var rt = t.rectTransform;
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, yTop);
-            rt.sizeDelta = new Vector2(640, 360);
-        }
-
-        void AddMenuButton(Transform parent, string label, Font font, ref float y, UnityEngine.Events.UnityAction onClick)
-        {
-            var b = new GameObject(label);
-            b.transform.SetParent(parent, false);
-            var rt = b.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(280, 44);
-            y -= 52f;
-            var img = b.AddComponent<Image>();
-            img.color = new Color(0.2f, 0.35f, 0.22f, 0.95f);
-            var btn = b.AddComponent<Button>();
-            btn.onClick.AddListener(onClick);
-            var tx = new GameObject("T").AddComponent<Text>();
-            tx.transform.SetParent(b.transform, false);
-            tx.font = font;
-            tx.fontSize = 20;
-            tx.color = Color.white;
-            tx.alignment = TextAnchor.MiddleCenter;
-            tx.text = label;
-            var trt = tx.rectTransform;
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
-            trt.offsetMin = Vector2.zero;
-            trt.offsetMax = Vector2.zero;
-        }
-
-        void AddVolumeRow(Transform parent, Font font, float y)
-        {
-            AddLabel(parent, "Master volume", font, y);
-            var row = new GameObject("VolRow");
-            row.transform.SetParent(parent, false);
-            var rt = row.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, y - 36f);
-            rt.sizeDelta = new Vector2(400, 40);
-            float v = GameSession.GetSavedMasterVolume();
-            void RefreshLabel()
-            {
-                if (_volValueLabel != null)
-                    _volValueLabel.text = $"{Mathf.RoundToInt(v * 100)}%";
-            }
-            var minusBtn = new GameObject("VolMinus");
-            minusBtn.transform.SetParent(row.transform, false);
-            var mrt = minusBtn.AddComponent<RectTransform>();
-            mrt.anchorMin = new Vector2(0f, 0f);
-            mrt.anchorMax = new Vector2(0.3f, 1f);
-            mrt.offsetMin = Vector2.zero;
-            mrt.offsetMax = Vector2.zero;
-            minusBtn.AddComponent<Image>().color = new Color(0.2f, 0.35f, 0.22f, 0.95f);
-            var mbtn = minusBtn.AddComponent<Button>();
-            mbtn.onClick.AddListener(() =>
-            {
-                v = Mathf.Clamp01(v - 0.1f);
-                GameSession.SetMasterVolume(v);
-                RefreshLabel();
-            });
-            var mtx = new GameObject("T").AddComponent<Text>();
-            mtx.transform.SetParent(minusBtn.transform, false);
-            mtx.font = font;
-            mtx.fontSize = 20;
-            mtx.color = Color.white;
-            mtx.alignment = TextAnchor.MiddleCenter;
-            mtx.text = "-";
-            mtx.rectTransform.anchorMin = Vector2.zero;
-            mtx.rectTransform.anchorMax = Vector2.one;
-            mtx.rectTransform.offsetMin = Vector2.zero;
-            mtx.rectTransform.offsetMax = Vector2.zero;
-            var lblGo = new GameObject("VolPct");
-            lblGo.transform.SetParent(row.transform, false);
-            _volValueLabel = lblGo.AddComponent<Text>();
-            _volValueLabel.font = font;
-            _volValueLabel.fontSize = 22;
-            _volValueLabel.color = Color.white;
-            _volValueLabel.alignment = TextAnchor.MiddleCenter;
-            var lrt = _volValueLabel.rectTransform;
-            lrt.anchorMin = new Vector2(0.35f, 0f);
-            lrt.anchorMax = new Vector2(0.65f, 1f);
-            lrt.offsetMin = Vector2.zero;
-            lrt.offsetMax = Vector2.zero;
-            RefreshLabel();
-            var plusBtn = new GameObject("VolPlus");
-            plusBtn.transform.SetParent(row.transform, false);
-            var prt = plusBtn.AddComponent<RectTransform>();
-            prt.anchorMin = new Vector2(0.7f, 0f);
-            prt.anchorMax = new Vector2(1f, 1f);
-            prt.offsetMin = Vector2.zero;
-            prt.offsetMax = Vector2.zero;
-            var pimg = plusBtn.AddComponent<Image>();
-            pimg.color = new Color(0.2f, 0.35f, 0.22f, 0.95f);
-            var pbtn = plusBtn.AddComponent<Button>();
-            pbtn.onClick.AddListener(() =>
-            {
-                v = Mathf.Clamp01(v + 0.1f);
-                GameSession.SetMasterVolume(v);
-                RefreshLabel();
-            });
-            var ptx = new GameObject("T").AddComponent<Text>();
-            ptx.transform.SetParent(plusBtn.transform, false);
-            ptx.font = font;
-            ptx.fontSize = 20;
-            ptx.color = Color.white;
-            ptx.alignment = TextAnchor.MiddleCenter;
-            ptx.text = "+";
-            var ptrt = ptx.rectTransform;
-            ptrt.anchorMin = Vector2.zero;
-            ptrt.anchorMax = Vector2.one;
-            ptrt.offsetMin = Vector2.zero;
-            ptrt.offsetMax = Vector2.zero;
-        }
-
-        Toggle AddToggle(Transform parent, string label, bool on, Font font, float y, System.Action<bool> onSet)
-        {
-            var row = new GameObject(label);
-            row.transform.SetParent(parent, false);
-            var rt = row.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(400, 32);
-            var tgl = row.AddComponent<Toggle>();
-            var bg = new GameObject("Bg").AddComponent<Image>();
-            bg.transform.SetParent(row.transform, false);
-            bg.color = new Color(0.25f, 0.25f, 0.3f);
-            var bgrt = bg.rectTransform;
-            bgrt.anchorMin = new Vector2(0f, 0.5f);
-            bgrt.anchorMax = new Vector2(0f, 0.5f);
-            bgrt.pivot = new Vector2(0f, 0.5f);
-            bgrt.anchoredPosition = new Vector2(0, 0);
-            bgrt.sizeDelta = new Vector2(28, 28);
-            var ch = new GameObject("Check").AddComponent<Image>();
-            ch.transform.SetParent(bg.transform, false);
-            ch.color = new Color(0.5f, 0.85f, 0.4f);
-            var crt = ch.rectTransform;
-            crt.anchorMin = new Vector2(0.1f, 0.1f);
-            crt.anchorMax = new Vector2(0.9f, 0.9f);
-            crt.offsetMin = Vector2.zero;
-            crt.offsetMax = Vector2.zero;
-            tgl.targetGraphic = bg;
-            tgl.graphic = ch;
-            tgl.isOn = on;
-            tgl.onValueChanged.AddListener(v => onSet(v));
-            var tx = new GameObject("Txt").AddComponent<Text>();
-            tx.transform.SetParent(row.transform, false);
-            tx.font = font;
-            tx.fontSize = 18;
-            tx.color = Color.white;
-            tx.text = label;
-            tx.rectTransform.anchorMin = new Vector2(0f, 0f);
-            tx.rectTransform.anchorMax = new Vector2(1f, 1f);
-            tx.rectTransform.offsetMin = new Vector2(40f, 0f);
-            tx.rectTransform.offsetMax = Vector2.zero;
-            return tgl;
-        }
-
-        void CycleQuality()
-        {
-            int n = QualitySettings.names.Length;
-            int next = (QualitySettings.GetQualityLevel() + 1) % n;
-            GameSession.SetQualityLevel(next);
-        }
-
-        void BuildMapSelectPanel(Font font)
-        {
-            _panelMapSelect = Panel("MapSelectPanel", _canvas.transform);
-
-            var backdrop = new GameObject("Backdrop");
-            backdrop.transform.SetParent(_panelMapSelect.transform, false);
-            var bdImg = backdrop.AddComponent<Image>();
-            bdImg.color = new Color(0.04f, 0.06f, 0.10f, 0.88f);
-            bdImg.raycastTarget = false;
-            var bdRt = backdrop.GetComponent<RectTransform>();
-            bdRt.anchorMin = new Vector2(0.15f, 0.05f);
-            bdRt.anchorMax = new Vector2(0.85f, 0.95f);
-            bdRt.offsetMin = bdRt.offsetMax = Vector2.zero;
-
-            AddTitle(_panelMapSelect.transform, "Select Map", font, 32);
-
-            var diffLabel = new GameObject("DiffLabel").AddComponent<Text>();
-            diffLabel.transform.SetParent(_panelMapSelect.transform, false);
-            diffLabel.font = font;
-            diffLabel.fontSize = 16;
-            diffLabel.color = new Color(0.7f, 0.85f, 0.7f);
-            diffLabel.alignment = TextAnchor.UpperCenter;
-            diffLabel.text = $"Difficulty: {GameSession.Difficulty}";
-            var dlRt = diffLabel.rectTransform;
-            dlRt.anchorMin = new Vector2(0.5f, 1f);
-            dlRt.anchorMax = new Vector2(0.5f, 1f);
-            dlRt.pivot = new Vector2(0.5f, 1f);
-            dlRt.anchoredPosition = new Vector2(0, -80f);
-            dlRt.sizeDelta = new Vector2(400, 30);
-            _diffLabelInMapSelect = diffLabel;
-
-            var maps = SkirmishMapPresets.GetAll();
-            float y = -120f;
-
-            AddLabel(_panelMapSelect.transform, "Click a map to start:", font, y);
-            y -= 40f;
-
-            for (int i = 0; i < maps.Length; i++)
-            {
-                var map = maps[i];
-                AddMapCard(_panelMapSelect.transform, font, map, ref y);
-            }
-
-            y -= 12f;
-            AddMenuButton(_panelMapSelect.transform, "Back", font, ref y, () => ShowPlay());
-        }
-
-        void AddMapCard(Transform parent, Font font, SkirmishMapDefinition map, ref float y)
-        {
-            var card = new GameObject(map.displayName);
-            card.transform.SetParent(parent, false);
-            var rt = card.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0.5f, 1f);
-            rt.anchorMax = new Vector2(0.5f, 1f);
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(420, 110);
-            y -= 122f;
-
-            var bg = card.AddComponent<Image>();
-            bg.color = new Color(0.18f, 0.32f, 0.20f, 0.95f);
-            var btn = card.AddComponent<Button>();
-            var btnColors = btn.colors;
-            btnColors.highlightedColor = new Color(0.28f, 0.48f, 0.30f);
-            btnColors.pressedColor = new Color(0.35f, 0.55f, 0.35f);
-            btn.colors = btnColors;
-            btn.onClick.AddListener(() =>
-            {
-                GameSession.SetSelectedMap(map);
-                SceneLoader.LoadSkirmishDemo();
-            });
-
-            var nameGo = new GameObject("MapName").AddComponent<Text>();
-            nameGo.transform.SetParent(card.transform, false);
-            nameGo.font = font;
-            nameGo.fontSize = 22;
-            nameGo.fontStyle = FontStyle.Bold;
-            nameGo.color = new Color(1f, 0.95f, 0.55f);
-            nameGo.alignment = TextAnchor.UpperLeft;
-            nameGo.text = map.displayName;
-            var nameRt = nameGo.rectTransform;
-            nameRt.anchorMin = new Vector2(0f, 0f);
-            nameRt.anchorMax = new Vector2(1f, 1f);
-            nameRt.offsetMin = new Vector2(16f, 50f);
-            nameRt.offsetMax = new Vector2(-16f, -10f);
-
-            var descGo = new GameObject("MapDesc").AddComponent<Text>();
-            descGo.transform.SetParent(card.transform, false);
-            descGo.font = font;
-            descGo.fontSize = 14;
-            descGo.color = new Color(0.88f, 0.90f, 0.92f);
-            descGo.alignment = TextAnchor.UpperLeft;
-            descGo.text = map.description;
-            descGo.horizontalOverflow = HorizontalWrapMode.Wrap;
-            var descRt = descGo.rectTransform;
-            descRt.anchorMin = new Vector2(0f, 0f);
-            descRt.anchorMax = new Vector2(1f, 0.55f);
-            descRt.offsetMin = new Vector2(16f, 8f);
-            descRt.offsetMax = new Vector2(-16f, 0f);
-
-            var sizeGo = new GameObject("MapSize").AddComponent<Text>();
-            sizeGo.transform.SetParent(card.transform, false);
-            sizeGo.font = font;
-            sizeGo.fontSize = 14;
-            sizeGo.fontStyle = FontStyle.Bold;
-            sizeGo.color = new Color(0.6f, 0.9f, 0.65f);
-            sizeGo.alignment = TextAnchor.UpperRight;
-            string sizeLabel = map.mapHalfExtent < 65f ? "Small" : map.mapHalfExtent < 85f ? "Medium" : "Large";
-            sizeGo.text = $"{sizeLabel} — {(int)(map.mapHalfExtent * 2)}x{(int)(map.mapHalfExtent * 2)}";
-            var sizeRt = sizeGo.rectTransform;
-            sizeRt.anchorMin = new Vector2(0f, 0f);
-            sizeRt.anchorMax = new Vector2(1f, 1f);
-            sizeRt.offsetMin = new Vector2(16f, 50f);
-            sizeRt.offsetMax = new Vector2(-16f, -10f);
-        }
-
-        void ShowMapSelect()
-        {
-            if (_diffLabelInMapSelect != null)
-                _diffLabelInMapSelect.text = $"Difficulty: {GameSession.Difficulty}";
-            SetActivePanels(_panelMapSelect);
-        }
-
-        void ShowMain()
-        {
-            SetActivePanels(_panelMain);
-        }
-
-        void ShowPlay()
-        {
-            SetActivePanels(_panelPlay);
-        }
-
-        void ShowHow()
-        {
-            SetActivePanels(_panelHow);
-        }
-
-        void ShowSettings()
-        {
-            SetActivePanels(_panelSettings);
-        }
-
-        void ShowAbout()
-        {
-            SetActivePanels(_panelAbout);
-        }
-
-        static void SetActivePanels(GameObject on)
-        {
-            var parent = on.transform.parent;
-            foreach (Transform c in parent)
-            {
-                if (c.name is "MainPanel" or "PlayPanel" or "MapSelectPanel" or "HowPanel" or "SettingsPanel" or "AboutPanel" or "UnitCodexPanel")
-                    c.gameObject.SetActive(c.gameObject == on);
-            }
-        }
-
-        void SetDiff(DemoDifficulty d)
-        {
-            GameSession.SetDifficulty(d);
         }
     }
 }

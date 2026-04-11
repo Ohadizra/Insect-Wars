@@ -13,9 +13,9 @@ namespace InsectWars.Core
             SceneManager.LoadScene(HomeScene);
         }
 
-        public static void LoadSkirmishDemo()
+        public static void LoadSkirmishDemo(string sceneName = SkirmishScene)
         {
-            SceneManager.LoadScene(SkirmishScene);
+            SceneManager.LoadScene(sceneName);
         }
-    }
+}
 }
