@@ -29,9 +29,9 @@ namespace InsectWars.RTS
         public static PendingCommand Pending { get; private set; }
         public static BuildingType PendingBuildingType { get; private set; }
 
-        [SerializeField] float barHeight = 360f;
-        [SerializeField] float minimapSlot = 400f;
-        [SerializeField] float commandPanelWidth = 500f;
+        [SerializeField] float barHeight = 440f;
+        [SerializeField] float minimapSlot = 420f;
+        [SerializeField] float commandPanelWidth = 620f;
 
         [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barBackground;
@@ -413,7 +413,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0, 0, 0, 0.4f); // Semi-transparent black background
+            bg.color = new Color(0, 0, 0, 0.05f); // Very faint background
             bg.raycastTarget = false; // Allow clicking through to the world
 
             var miniContainer = new GameObject("MinimapContainer");
@@ -466,12 +466,12 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = new Vector2(10f, 10f);
-            grt.offsetMax = new Vector2(-10f, -10f);
+            grt.offsetMin = new Vector2(100f, 60f);
+            grt.offsetMax = new Vector2(-100f, -60f);
             
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(120f, 120f);
-            gl.spacing = new Vector2(16f, 16f);
+            gl.cellSize = new Vector2(96f, 96f);
+            gl.spacing = new Vector2(64f, 20f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 3;
             gl.childAlignment = TextAnchor.MiddleCenter;
@@ -655,7 +655,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             img.color = Color.white;
             img.preserveAspect = true;
             var irt = img.rectTransform;
-            irt.anchorMin = new Vector2(0.32f, 0.32f); irt.anchorMax = new Vector2(0.68f, 0.68f);
+            irt.anchorMin = new Vector2(0.18f, 0.18f); irt.anchorMax = new Vector2(0.82f, 0.82f);
             irt.offsetMin = irt.offsetMax = Vector2.zero;
             
             var btn = go.AddComponent<Button>();
@@ -668,8 +668,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var keyLabel = CreateText("Key", go.transform, 13, ColTitle, TextAnchor.UpperRight);
             keyLabel.text = key;
             var krt = keyLabel.rectTransform;
-            krt.offsetMin = new Vector2(4f, 4f);
-            krt.offsetMax = new Vector2(-6f, -4f);
+            krt.offsetMin = new Vector2(2f, 2f);
+            krt.offsetMax = new Vector2(-2f, -1f);
 
             var label = CreateText("Label", go.transform, 11, ColTitle, TextAnchor.LowerCenter);
             label.supportRichText = true;
