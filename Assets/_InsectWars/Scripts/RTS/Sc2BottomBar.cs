@@ -191,6 +191,8 @@ namespace InsectWars.RTS
                     StartPlaceBuilding(BuildingType.SkyTower);
                 if (Keyboard.current.eKey.wasPressedThisFrame)
                     StartPlaceBuilding(BuildingType.AntNest);
+                if (Keyboard.current.rKey.wasPressedThisFrame)
+                    StartPlaceBuilding(BuildingType.RootCellar);
                 return;
             }
 
@@ -352,6 +354,9 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent,
                         $"Ant's Nest\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.AntNest)} cal</size>", "E",
                         () => StartPlaceBuilding(BuildingType.AntNest));
+                    AddCmdButton(_cmdGridParent,
+                        $"Root Cellar\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.RootCellar)} cal</size>", "R",
+                        () => StartPlaceBuilding(BuildingType.RootCellar));
                     AddCmdButton(_cmdGridParent, "Cancel", "Esc", () =>
                     {
                         _buildMenuActive = false;
@@ -841,6 +846,10 @@ case BarMode.Building:
                     scale = new Vector3(3.5f, 2f, 3.5f);
                     col = new Color(0.5f, 0.35f, 0.2f, 0.4f);
                     break;
+                case BuildingType.RootCellar:
+                    scale = new Vector3(3.5f, 2f, 3.5f);
+                    col = new Color(0.5f, 0.35f, 0.2f, 0.4f);
+                    break;
                 case BuildingType.SkyTower:
                     scale = new Vector3(2.5f, 5f, 2.5f);
                     col = new Color(0.3f, 0.5f, 0.6f, 0.4f);
@@ -1177,6 +1186,7 @@ case BarMode.Building:
                 BuildingType.Underground => "Underground",
                 BuildingType.AntNest => "Ant's Nest",
                 BuildingType.SkyTower => "Sky Tower",
+                BuildingType.RootCellar => "Root Cellar",
                 _ => t.ToString()
             };
         }

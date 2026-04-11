@@ -10,7 +10,8 @@ namespace InsectWars.RTS
     {
         Underground,
         AntNest,
-        SkyTower
+        SkyTower,
+        RootCellar
     }
 
     public class ProductionBuilding : MonoBehaviour
@@ -48,6 +49,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => "Underground",
             BuildingType.AntNest => "Ant's\nNest",
             BuildingType.SkyTower => "Sky Tower",
+            BuildingType.RootCellar => "Root\nCellar",
             _ => _type.ToString()
         };
 
@@ -56,6 +58,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
             BuildingType.SkyTower => System.Array.Empty<UnitArchetype>(),
+            BuildingType.RootCellar => System.Array.Empty<UnitArchetype>(),
             _ => new[] { UnitArchetype.Worker }
         };
 
@@ -88,6 +91,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => 200,
             BuildingType.AntNest => 400,
             BuildingType.SkyTower => 300,
+            BuildingType.RootCellar => 150,
             _ => 100
         };
 
@@ -282,6 +286,10 @@ namespace InsectWars.RTS
                     buildingColor = new Color(0.3f, 0.5f, 0.6f);
                     scale = new Vector3(2.5f, 5f, 2.5f);
                     break;
+                case BuildingType.RootCellar:
+                    buildingColor = new Color(0.5f, 0.35f, 0.2f);
+                    scale = new Vector3(3.5f, 2f, 3.5f);
+                    break;
                 default:
                     buildingColor = Color.gray;
                     scale = new Vector3(3f, 2f, 3f);
@@ -403,6 +411,7 @@ namespace InsectWars.RTS
             {
                 BuildingType.Underground => new Vector3(1f, 0.7f, 1f),
                 BuildingType.SkyTower => new Vector3(1f, 1.2f, 1f),
+                BuildingType.RootCellar => Vector3.one,
                 _ => Vector3.one
             };
             go.transform.localScale = scale;

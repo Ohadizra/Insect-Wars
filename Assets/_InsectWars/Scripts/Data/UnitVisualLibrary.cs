@@ -38,6 +38,7 @@ namespace InsectWars.Data
             public GameObject hivePrefab;
             public GameObject undergroundPrefab;
             public GameObject skyTowerPrefab;
+            public GameObject rootCellarPrefab;
 
             [Header("Environment")]
             public GameObject rottingApplePrefab;
@@ -88,6 +89,7 @@ public TerrainLayer drySoilLayer;
                 RTS.BuildingType.AntNest => hivePrefab,
                 RTS.BuildingType.Underground => undergroundPrefab,
                 RTS.BuildingType.SkyTower => skyTowerPrefab,
+                RTS.BuildingType.RootCellar => rootCellarPrefab,
                 _ => null
             };
         }

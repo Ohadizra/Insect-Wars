@@ -86,7 +86,8 @@ namespace InsectWars.RTS
 
             foreach (var bld in ProductionBuilding.All)
             {
-                if (bld == null || bld.Team != Team.Enemy || bld.Type != BuildingType.AntNest) continue;
+                if (bld == null || bld.Team != Team.Enemy) continue;
+                if (bld.Type != BuildingType.AntNest && bld.Type != BuildingType.RootCellar) continue;
                 float d = Vector3.Distance(pos, bld.transform.position);
                 if (d < best) best = d;
             }
