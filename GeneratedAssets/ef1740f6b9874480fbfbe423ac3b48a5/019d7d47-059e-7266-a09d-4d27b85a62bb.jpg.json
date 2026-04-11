@@ -1,0 +1,36 @@
+{
+    "asset": "ef1740f6b9874480fbfbe423ac3b48a5",
+    "fileName": "019d7d47-059e-7266-a09d-4d27b85a62bb.jpg",
+    "prompt": "A hollow square ornate picture frame for a game UI, steampunk style, aged copper with gears and insect motifs, the center must be completely empty/hollow to act as a window, isolated on a solid green background for transparency removal.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "79b493227175404426519b9bab14f875",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "f967b909b8db04d378648a18b56cbc50"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

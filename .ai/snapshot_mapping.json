@@ -749,6 +749,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "I have significantly enlarged the minimap and implemented a new \"picture frame\" UI that covers it for a cleaner, more integrated look.\n\n### Changes implemented:\n1.  **Enlarged UI Slot**: Increased the bottom bar height and minimap area to accommodate a much larger map.\n2.  **New Minimap Frame**:\n    *   Generated a new **Picture Frame** sprite (`frame_minimap_picture.png`) in the project's steampunk naturalist style.\n    *   Redesigned the UI hierarchy in `BottomBar.cs` so that this ornate frame is drawn **on top** of the map texture, acting as a window for the minimap.\n3.  **Corrected Layout**:\n    *   Adjusted the `MinimapInner` offsets so the map texture fits perfectly within the hole of the new frame.\n    *   Positioned the \"MAP\" text label to sit clearly above the new, larger frame.\n    *   Moved the entire minimap container slightly to ensure it doesn't overlap other UI elements.\n\nThe minimap is now a large, square \"picture\" in the corner of your screen, framed with a detailed copper and wood border.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "2728f343-ecb0-455f-8a96-97e17b60a814",
+      "content": "fix bug where units are not responding after starting a game",
+      "snapshot_message_type": 0
     }
   ]
 }
