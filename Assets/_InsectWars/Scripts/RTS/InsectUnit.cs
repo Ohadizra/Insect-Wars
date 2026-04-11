@@ -178,8 +178,11 @@ namespace InsectWars.RTS
         public void Configure(Team t, UnitDefinition def, UnitArchetype archetype = UnitArchetype.Worker)
         {
             team = t;
-            if (def != null) definition = def;
-            EnsureDefinition(archetype);
+            if (def != null)
+                definition = def;
+            else
+                definition = UnitDefinition.CreateRuntimeDefault(archetype,
+                    TeamPalette.UnitBody(team, archetype));
             ApplyDefinition();
             _health = definition.maxHealth;
             if (team == Team.Enemy)
@@ -281,8 +284,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Move;
-            _agent.isStopped = false;
-            _agent.SetDestination(world);
+            SafeSetDestination(world);
         }
 
         public void OrderAttackMove(Vector3 world)
@@ -294,8 +296,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Move;
-            _agent.isStopped = false;
-            _agent.SetDestination(world);
+            SafeSetDestination(world);
         }
 
         public void OrderAttack(InsectUnit target, bool keepAttackMoveIntent = false)
@@ -310,7 +311,7 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _attackTarget = target.transform;
             _order = UnitOrder.Attack;
-            _agent.isStopped = false;
+            if (AgentActiveOnNavMesh) _agent.isStopped = false;
         }
 
         public void OrderStop()
@@ -321,8 +322,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Idle;
-            _agent.isStopped = true;
-            _agent.ResetPath();
+            SafeStopAgent();
         }
 
         public void OrderHoldPosition()
@@ -333,8 +333,7 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _holdPosition = true;
             _order = UnitOrder.Idle;
-            _agent.isStopped = true;
-            _agent.ResetPath();
+            SafeStopAgent();
         }
 
         public void OrderPatrol(Vector3 a, Vector3 b)
@@ -348,8 +347,7 @@ namespace InsectWars.RTS
             _patrolB = b;
             _patrolToB = true;
             _order = UnitOrder.Patrol;
-            _agent.isStopped = false;
-            _agent.SetDestination(_patrolB);
+            SafeSetDestination(_patrolB);
         }
 
         public void OrderGather(RottingFruitNode node)
@@ -366,9 +364,7 @@ namespace InsectWars.RTS
                 _holdPosition = false;
                 _patrolActive = false;
                 _order = UnitOrder.ReturnDeposit;
-                _agent.ResetPath();
-                _agent.isStopped = false;
-                _agent.SetDestination(depositDest.Value);
+                SafeSetDestination(depositDest.Value);
                 return;
             }
 
@@ -379,9 +375,7 @@ namespace InsectWars.RTS
             _gatherTarget = node;
             _lastGatherTarget = node;
             _order = UnitOrder.Gather;
-            _agent.ResetPath();
-            _agent.isStopped = false;
-            _agent.SetDestination(node.GetGatherPoint(transform.position));
+            SafeSetDestination(node.GetGatherPoint(transform.position));
         }
 
         public void OrderReturnToHive()
@@ -394,8 +388,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.ReturnDeposit;
-            _agent.isStopped = false;
-            _agent.SetDestination(dest.Value);
+            SafeSetDestination(dest.Value);
         }
 
         void ClearTargets()
@@ -411,8 +404,11 @@ namespace InsectWars.RTS
         {
             if (_meleeLockedPos == null) return;
             _meleeLockedPos = null;
-            _agent.updatePosition = true;
-            _agent.Warp(transform.position);
+            if (_agent != null)
+            {
+                _agent.updatePosition = true;
+                _agent.Warp(transform.position);
+            }
         }
 
         void TickTerrainEffects()
@@ -448,7 +444,7 @@ namespace InsectWars.RTS
             {
                 _health = 0;
                 UnlockMelee();
-                _agent.isStopped = true;
+                SafeStopAgent();
                 SelectionController.Instance?.Deselect(this);
                 var drv = GetComponent<UnitAnimationDriver>();
                 if (drv != null)
@@ -509,15 +505,15 @@ namespace InsectWars.RTS
                 _order = UnitOrder.Idle;
                 return;
             }
+            if (!AgentActiveOnNavMesh) return;
             var diff = transform.position - _gatherTarget.transform.position;
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
-                _agent.isStopped = false;
-                _agent.SetDestination(_gatherTarget.GetGatherPoint(transform.position));
+                SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
                 return;
             }
-            _agent.isStopped = true;
+            SafeStopAgent();
             _gatherTimer += Time.deltaTime;
             if (_gatherTimer < _gatherTarget.GatherTickSeconds) return;
             _gatherTimer = 0f;
@@ -527,11 +523,9 @@ namespace InsectWars.RTS
             inv.Carrying += amt;
             _gatherTarget = null;
             _order = UnitOrder.ReturnDeposit;
-            _agent.ResetPath();
-            _agent.isStopped = false;
             var returnDest = FindNearestTeamDepositPoint();
             if (returnDest.HasValue)
-                _agent.SetDestination(returnDest.Value);
+                SafeSetDestination(returnDest.Value);
         }
 
         void TickReturn()
@@ -544,6 +538,8 @@ namespace InsectWars.RTS
                 return;
             }
 
+            if (!AgentActiveOnNavMesh) return;
+
             var nearestHive = FindNearestTeamHive();
             float arrivalDist = nearestHive != null ? GetHiveArrivalRadius(nearestHive) : 3.5f;
             var hivePos = nearestHive != null ? nearestHive.position : depositDest.Value;
@@ -551,11 +547,10 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > arrivalDist)
             {
-                _agent.isStopped = false;
-                _agent.SetDestination(depositDest.Value);
+                SafeSetDestination(depositDest.Value);
                 return;
             }
-            _agent.isStopped = true;
+            SafeStopAgent();
             if (inv != null && inv.Carrying > 0)
             {
                 if (team == Team.Player && PlayerResources.Instance != null)
@@ -636,22 +631,19 @@ namespace InsectWars.RTS
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
+            if (!AgentActiveOnNavMesh) return;
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
-            var resLayer = LayerMask.NameToLayer("Resources");
-            var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
-            var cols = Physics.OverlapSphere(transform.position, 15f, mask, QueryTriggerInteraction.Collide);
+
             RottingFruitNode bestFruit = null;
             float bestFruitDist = float.MaxValue;
-            foreach (var c in cols)
+
+            foreach (var node in RtsSimRegistry.FruitNodes)
             {
-                var node = c.GetComponentInParent<RottingFruitNode>();
-                if (node != null && !node.Depleted)
-                {
-                    var d = Vector3.Distance(transform.position, node.transform.position);
-                    if (d < bestFruitDist) { bestFruitDist = d; bestFruit = node; }
-                }
+                if (node == null || node.Depleted) continue;
+                var d = Vector3.Distance(transform.position, node.transform.position);
+                if (d < bestFruitDist) { bestFruitDist = d; bestFruit = node; }
             }
 
             if (bestFruit != null)
@@ -767,8 +759,7 @@ return;
             if (_wantsAttackMove)
             {
                 _order = UnitOrder.Move;
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackMoveDest);
+                SafeSetDestination(_attackMoveDest);
                 return;
             }
             _order = UnitOrder.Idle;
@@ -786,7 +777,7 @@ return;
             {
                 _health = 0;
                 UnlockMelee();
-                _agent.isStopped = true;
+                SafeStopAgent();
                 SelectionController.Instance?.Deselect(this);
                 var drv = GetComponent<UnitAnimationDriver>();
                 if (drv != null)

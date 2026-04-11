@@ -128,8 +128,8 @@ else
             lrt.anchorMin = new Vector2(0.5f, 1f);
             lrt.anchorMax = new Vector2(0.5f, 1f);
             lrt.pivot = new Vector2(0.5f, 1f);
-            lrt.anchoredPosition = new Vector2(0f, 12f);
-            lrt.sizeDelta = new Vector2(120f, 22f);
+            lrt.anchoredPosition = new Vector2(0f, 25f);
+            lrt.sizeDelta = new Vector2(120f, 30f);
 }
 
         void BuildMinimapCamera()

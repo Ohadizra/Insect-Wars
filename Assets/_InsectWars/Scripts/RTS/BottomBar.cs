@@ -29,8 +29,8 @@ namespace InsectWars.RTS
         public static PendingCommand Pending { get; private set; }
         public static BuildingType PendingBuildingType { get; private set; }
 
-        [SerializeField] float barHeight = 220f;
-        [SerializeField] float minimapSlot = 280f;
+        [SerializeField] float barHeight = 280f;
+        [SerializeField] float minimapSlot = 360f;
         [SerializeField] float commandPanelWidth = 380f;
 
         [Header("Natural Ornate Assets")]
@@ -100,9 +100,10 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_picture.png");
             if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
             if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid_empty.png");
-            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
+if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
             if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (slotFrame == null) slotFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
 
@@ -394,29 +395,35 @@ namespace InsectWars.RTS
             bg.color = new Color(0, 0, 0, 0); // Transparent background
             bg.raycastTarget = true;
 
-            var miniSlot = new GameObject("MinimapHost");
-            miniSlot.transform.SetParent(bar.transform, false);
-            var ms = miniSlot.AddComponent<RectTransform>();
-            ms.anchorMin = new Vector2(0f, 0f);
-            ms.anchorMax = new Vector2(0f, 1f);
-            ms.pivot = new Vector2(0f, 0.5f);
-            ms.anchoredPosition = new Vector2(30, 0); // Moved slightly further right for a nicer look
-            ms.sizeDelta = new Vector2(minimapSlot - 40, -30);
-
-            var miniFrameImg = miniSlot.AddComponent<Image>();
-            miniFrameImg.sprite = minimapFrame;
-            miniFrameImg.type = Image.Type.Simple; 
-            miniFrameImg.color = Color.white;
-            miniFrameImg.raycastTarget = false;
+            var miniContainer = new GameObject("MinimapContainer");
+            miniContainer.transform.SetParent(bar.transform, false);
+            var mcrt = miniContainer.AddComponent<RectTransform>();
+            mcrt.anchorMin = new Vector2(0f, 0f);
+            mcrt.anchorMax = new Vector2(0f, 1f);
+            mcrt.pivot = new Vector2(0f, 0.5f);
+            mcrt.anchoredPosition = new Vector2(30, 0);
+            mcrt.sizeDelta = new Vector2(minimapSlot - 60, -20);
 
             var miniInner = new GameObject("MinimapInner");
-            miniInner.transform.SetParent(miniSlot.transform, false);
+            miniInner.transform.SetParent(miniContainer.transform, false);
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(14f, 14f); // Reduced offsets to fit the frame hole better
-            mi.offsetMax = new Vector2(-14f, -14f);
+            mi.offsetMin = new Vector2(25, 25);
+            mi.offsetMax = new Vector2(-25, -25);
             MinimapHost = mi;
+
+            var miniFrameGo = new GameObject("MinimapFrame");
+            miniFrameGo.transform.SetParent(miniContainer.transform, false);
+            var mfrt = miniFrameGo.AddComponent<RectTransform>();
+            mfrt.anchorMin = Vector2.zero;
+            mfrt.anchorMax = Vector2.one;
+            mfrt.offsetMin = Vector2.zero;
+            mfrt.offsetMax = Vector2.zero;
+            var frameImg = miniFrameGo.AddComponent<Image>();
+            frameImg.sprite = minimapFrame;
+            frameImg.raycastTarget = false;
+            frameImg.type = Image.Type.Simple;
 
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);
