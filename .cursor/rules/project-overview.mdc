@@ -1,0 +1,52 @@
+---
+description: Insect Wars project overview — what this project is, how it's organized, key facts
+alwaysApply: true
+---
+
+# Insect Wars — Project Overview
+
+## What This Is
+
+Insect Wars is a **real-time strategy (RTS) game** built in **Unity 6** (6000.x) using **URP** (Universal Render Pipeline). The game is set at **insect scale** — a patch of garden soil where pebbles are mountains, grass blades are trees, and dewdrops are lakes. Players command insect colonies (workers, fighters, ranged bombardiers) to gather resources, build structures, and destroy the enemy hive.
+
+**Current state:** Single-player skirmish demo with AI opponent. No multiplayer/networking. Two scenes in the build: `Home` (menu) and `SkirmishDemo` (match).
+
+## Folder Structure
+
+```
+Assets/
+  _InsectWars/          ← PRIMARY game content (all gameplay lives here)
+    Scripts/
+      Core/             ← Session, audio, scene loading, input, fonts
+      Data/             ← ScriptableObject definitions (units, maps, visuals, terrain)
+      RTS/              ← All gameplay systems (~40 scripts): units, buildings, AI, 
+                          selection, commands, camera, fog, minimap, economy, combat, HUD
+      RTS/Editor/       ← Custom inspectors
+      UI/               ← Menu bootstrap
+    Scenes/             ← Home.unity, SkirmishDemo.unity
+    Models/             ← GLB-backed prefabs
+    Materials/
+    Sprites/            ← UI and VFX sprites
+    Data/               ← ScriptableObject asset instances
+    Editor/             ← Editor utilities and tests
+  Settings/             ← URP pipeline assets, volume profiles
+  Plans/                ← Design docs (markdown)
+Packages/               ← manifest.json, embedded packages
+ProjectSettings/        ← Unity project config
+```
+
+## Key Technologies
+
+- **Unity 6** with **Universal Render Pipeline (URP)**
+- **New Input System** (`Mouse.current`, `Keyboard.current` — direct polling, not action-mapped)
+- **AI Navigation** (NavMesh) for unit pathfinding
+- No networking libraries; single-player only
+- No assembly definitions for game code (uses default assembly)
+
+## Single Resource Economy
+
+There is only **one resource: Calories**. Workers gather from `RottingFruitNode` and deposit at the hive or nests.
+
+## Two Teams Only
+
+`Team.Player` and `Team.Enemy` (plus `Team.Neutral`). No multiple playable races or tech trees. Flavor distinction is cosmetic (naming and art).

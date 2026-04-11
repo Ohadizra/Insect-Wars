@@ -1,0 +1,50 @@
+---
+description: Art style, prefab conventions, and visual rules for Insect Wars
+alwaysApply: false
+---
+
+# Art and Prefab Conventions
+
+## Visual Identity
+
+Insect Wars is set at **insect scale** on natural ground. Everything is organic — no metal, plastic, or man-made materials. A 3 cm pebble is a 3-story boulder. A grass blade is a 20 m tree. Water droplets are lakes.
+
+- **Art style:** Semi-stylized / toon with soft gradients and muted earth tones
+- **Camera:** Top-down RTS at 30–60 m altitude — all art must be readable from above
+- **Color pops:** Reserved for game-critical features (team colors, resource nodes, danger zones)
+- **No glowing/emissive effects** — use material properties (smoothness, color) for visual distinction
+
+## Scale Reference
+
+- An insect unit is roughly **0.5–1.1 m** tall in Unity units
+- Terrain features with `radius = 5` cover ~10 m diameter
+
+## Prefab Rules
+
+- **Pivot** at ground level, center XZ
+- **No colliders** — added programmatically by the system
+- **No NavMeshObstacle/NavMeshModifier** — added by code
+- **No MonoBehaviour scripts** on prefabs
+- **No lights or cameras**
+- **Y rotation** is set by the system from data — don't bake rotation
+- **Not scaled by the system** — model at 1:1 for radius = 1
+
+## Performance Budgets
+
+- Each terrain feature prefab: **under 1500 triangles**
+- **1–2 materials** per prefab (URP/Lit or URP/Simple Lit)
+- Avoid transparency where possible (use alpha-clip if needed)
+- No real-time lights, reflections, or heavy transparency
+- Use LODs for complex meshes (rocky ridges)
+
+## Visual Library
+
+All prefabs are assigned via `UnitVisualLibrary` (ScriptableObject). The runtime falls back to **procedural placeholder geometry** when no prefab is provided — this is intentional and expected during development.
+
+## Team Colors
+
+`TeamPalette` provides blue (Player) vs red (Enemy) shell/accent colors. Unit visuals use material tint caching (`Dictionary<Color, Material>`) to avoid runtime instantiation.
+
+## Minimap
+
+Uses an **orthographic RenderTexture camera**. Top-down footprint of all features must be visually distinct and color-coded. Optional `InsectWars/MinimapFog` material overlays fog of war.

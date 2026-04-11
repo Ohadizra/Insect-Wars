@@ -158,7 +158,7 @@ namespace InsectWars.RTS
 
         void SpawnFinishedUnit(UnitArchetype archetype)
         {
-            var center = new Vector3(transform.position.x, 0f, transform.position.z);
+            var center = transform.position;
             var extent = transform.localScale.x * 0.5f + 1.5f;
             var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
             var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);

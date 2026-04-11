@@ -15,7 +15,7 @@ namespace InsectWars.Data
         public static SkirmishMapDefinition[] GetAll()
         {
             if (s_maps != null) return s_maps;
-            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld() };
+            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell() };
             return s_maps;
         }
 

@@ -63,7 +63,7 @@ namespace InsectWars.RTS
                 DestroyImmediate(go);
         }
 
-        const float StartingSpawnRadius = 5f;
+        const float StartingSpawnRadius = 7f;
         const float RecommendedMaxNestToAppleDistance = 25f;
         const float MinNestToAppleDistance = 5f;
 
@@ -95,12 +95,12 @@ namespace InsectWars.RTS
         static Vector3 SpawnPositionAroundBuilding(Vector3 buildingPos, float radius, float angleDeg)
         {
             float rad = angleDeg * Mathf.Deg2Rad;
+            float baseY = GetHeight(buildingPos);
             var pos = new Vector3(
                 buildingPos.x + Mathf.Cos(rad) * radius,
-                0f,
+                baseY,
                 buildingPos.z + Mathf.Sin(rad) * radius);
-            pos.y = GetHeight(pos);
-            if (NavMesh.SamplePosition(pos, out var hit, 6f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(pos, out var hit, 8f, NavMesh.AllAreas))
                 return hit.position;
             return pos;
         }
@@ -1097,6 +1097,8 @@ AddTerrainFeature(world.transform, tf);
             var prefab = lib != null ? lib.GetUnitPrefab(arch) : null;
             float h = GetHeight(pos);
             Vector3 finalPos = new Vector3(pos.x, h + 0.02f, pos.z);
+            if (NavMesh.SamplePosition(finalPos, out var navHit, 8f, NavMesh.AllAreas))
+                finalPos = navHit.position;
 
             if (prefab != null)
             {
