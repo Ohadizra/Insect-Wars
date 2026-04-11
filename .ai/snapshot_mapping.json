@@ -797,6 +797,12 @@
       "conversation_id": "f21e4473-2cd2-44c0-9036-3f3ad6cc8e46",
       "content": "I have updated the game UI to match your requirements. \n\n**Changes made to `BottomBar.cs`:**\n- **Increased the frame size**: The command panel width was increased from `380` to `440`, and the overall bottom bar height was increased from `280` to `320`.\n- **Made icons smaller**: \n    - Reduced the slot size in the grid from `90x90` to `86x86`.\n    - Reduced the icon's anchor area inside the slot from `70%` to `52%` (anchors changed from `0.15-0.85` to `0.24-0.76`), making the individual action icons visibly smaller relative to their frames.\n- **Improved readability**: Increased the default brightness of non-active icons significantly (from a dark brown `0.12` to a bright gold/cream `0.72` tint). This ensures that icons like \"Attack\" and \"Build\" are clearly visible and readable even when not currently active.\n\nThe UI will now feel more spacious with smaller, clearer action buttons.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "590cf2c8-c0d8-4ec7-8dc5-5ddd7dcb8ab5",
+      "conversation_id": "f21e4473-2cd2-44c0-9036-3f3ad6cc8e46",
+      "content": "I have further expanded the UI frame and reduced the icon sizes to ensure full coverage and a balanced layout.\n\n**Key Updates in `BottomBar.cs`:**\n- **Maximized Frame Size**:\n    - Increased `barHeight` to `360` and `commandPanelWidth` to `500`.\n    - Tightened the layout offsets (from `20-40px` down to `10px`) so the panel frames reach much closer to the edges of the bar, effectively covering more of the background \"gray area\".\n    - Added a **semi-transparent black background** (`0, 0, 0, 0.4`) to the entire bottom bar to ensure it visually blocks the world/gray area underneath the ornate frames.\n- **Micro Icons**:\n    - Reduced action icon anchors to `0.32 - 0.68`, making the icons occupy only about **36%** of their slot area.\n    - Increased the button slot size to `120x120` with `16px` spacing to fill the larger command panel while keeping the actual icons inside them very small and sleek.\n- **Scaled Selection View**:\n    - Increased the unit portrait size to `180x180` and the selection grid cell size to `60x60` to match the larger overall HUD scale.\n    - Increased font sizes for unit names and HP for better readability on the larger panels.\n\nThe HUD now feels much more substantial and robust, with the action icons styled as small, high-detail stamps within their larger ornate frames.",
+      "snapshot_message_type": 1
     }
   ]
 }

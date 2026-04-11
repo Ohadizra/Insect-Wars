@@ -29,9 +29,9 @@ namespace InsectWars.RTS
         public static PendingCommand Pending { get; private set; }
         public static BuildingType PendingBuildingType { get; private set; }
 
-        [SerializeField] float barHeight = 320f;
-        [SerializeField] float minimapSlot = 360f;
-        [SerializeField] float commandPanelWidth = 440f;
+        [SerializeField] float barHeight = 360f;
+        [SerializeField] float minimapSlot = 400f;
+        [SerializeField] float commandPanelWidth = 500f;
 
         [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barBackground;
@@ -413,7 +413,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0, 0, 0, 0); // Transparent background
+            bg.color = new Color(0, 0, 0, 0.4f); // Semi-transparent black background
             bg.raycastTarget = false; // Allow clicking through to the world
 
             var miniContainer = new GameObject("MinimapContainer");
@@ -423,15 +423,15 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             mcrt.anchorMax = new Vector2(0f, 1f);
             mcrt.pivot = new Vector2(0f, 0.5f);
             mcrt.anchoredPosition = new Vector2(30, 0);
-            mcrt.sizeDelta = new Vector2(minimapSlot - 60, -20);
+            mcrt.sizeDelta = new Vector2(minimapSlot - 40, -10);
 
             var miniInner = new GameObject("MinimapInner");
             miniInner.transform.SetParent(miniContainer.transform, false);
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(25, 25);
-            mi.offsetMax = new Vector2(-25, -25);
+            mi.offsetMin = new Vector2(15, 15);
+            mi.offsetMax = new Vector2(-15, -15);
             MinimapHost = mi;
 
             var miniFrameGo = new GameObject("MinimapFrame");
@@ -453,7 +453,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             cp.anchorMax = new Vector2(1f, 1f);
             cp.pivot = new Vector2(1f, 0.5f);
             cp.anchoredPosition = new Vector2(-20, 0);
-            cp.sizeDelta = new Vector2(commandPanelWidth - 40, -40);
+            cp.sizeDelta = new Vector2(commandPanelWidth - 20, -10);
 
             var cmdFrameImg = cmdPanel.AddComponent<Image>();
             cmdFrameImg.sprite = commandCardFrame;
@@ -466,12 +466,12 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = new Vector2(20f, 20f);
-            grt.offsetMax = new Vector2(-20f, -20f);
+            grt.offsetMin = new Vector2(10f, 10f);
+            grt.offsetMax = new Vector2(-10f, -10f);
             
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(86f, 86f);
-            gl.spacing = new Vector2(12f, 12f);
+            gl.cellSize = new Vector2(120f, 120f);
+            gl.spacing = new Vector2(16f, 16f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 3;
             gl.childAlignment = TextAnchor.MiddleCenter;
@@ -483,8 +483,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var cr = center.AddComponent<RectTransform>();
             cr.anchorMin = new Vector2(0f, 0f);
             cr.anchorMax = new Vector2(1f, 1f);
-            cr.offsetMin = new Vector2(minimapSlot, 20f);
-            cr.offsetMax = new Vector2(-commandPanelWidth, -20f);
+            cr.offsetMin = new Vector2(minimapSlot, 10f);
+            cr.offsetMax = new Vector2(-commandPanelWidth, -10f);
             var centerBg = center.AddComponent<Image>();
             centerBg.sprite = centerBlockFrame;
             centerBg.type = Image.Type.Sliced;
@@ -497,8 +497,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             pr.anchorMin = new Vector2(0f, 0.5f);
             pr.anchorMax = new Vector2(0f, 0.5f);
             pr.pivot = new Vector2(0f, 0.5f);
-            pr.anchoredPosition = new Vector2(32f, 0f);
-            pr.sizeDelta = new Vector2(130f, 130f);
+            pr.anchoredPosition = new Vector2(48f, 0f);
+            pr.sizeDelta = new Vector2(180f, 180f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
             pImg.type = Image.Type.Simple; 
@@ -509,8 +509,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var psr = portraitSub.AddComponent<RectTransform>();
             psr.anchorMin = Vector2.zero;
             psr.anchorMax = Vector2.one;
-            psr.offsetMin = new Vector2(24f, 24f);
-            psr.offsetMax = new Vector2(-24f, -24f);
+            psr.offsetMin = new Vector2(32f, 32f);
+            psr.offsetMax = new Vector2(-32f, -32f);
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
@@ -520,22 +520,22 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             ibr.anchorMin = new Vector2(0f, 0f);
             ibr.anchorMax = new Vector2(1f, 1f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.offsetMin = new Vector2(180f, 24f);
-            ibr.offsetMax = new Vector2(-24f, -24f);
+            ibr.offsetMin = new Vector2(250f, 12f);
+            ibr.offsetMax = new Vector2(-12f, -12f);
 
-            _portraitLabel = CreateText("NameText", infoBlock.transform, 22, ColTitle, TextAnchor.MiddleCenter);
+            _portraitLabel = CreateText("NameText", infoBlock.transform, 26, ColTitle, TextAnchor.MiddleCenter);
             var pl = _portraitLabel.rectTransform;
             pl.anchorMin = new Vector2(0f, 0.75f); 
             pl.anchorMax = new Vector2(1f, 0.95f);
             pl.offsetMin = pl.offsetMax = Vector2.zero;
 
-            _attributeLabel = CreateText("AttributeText", infoBlock.transform, 13, ColSub, TextAnchor.MiddleCenter);
+            _attributeLabel = CreateText("AttributeText", infoBlock.transform, 16, ColSub, TextAnchor.MiddleCenter);
             var al = _attributeLabel.rectTransform;
             al.anchorMin = new Vector2(0f, 0.05f);
             al.anchorMax = new Vector2(1f, 0.15f);
             al.offsetMin = al.offsetMax = Vector2.zero;
 
-            _hpLabel = CreateText("HpText", infoBlock.transform, 14, Color.white, TextAnchor.MiddleCenter);
+            _hpLabel = CreateText("HpText", infoBlock.transform, 18, Color.white, TextAnchor.MiddleCenter);
             var hpRt = _hpLabel.rectTransform;
             hpRt.anchorMin = new Vector2(0f, 0.45f);
             hpRt.anchorMax = new Vector2(1f, 0.55f);
@@ -563,12 +563,12 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             gr.anchorMin = new Vector2(0.40f, 1f);
             gr.anchorMax = new Vector2(1f, 1f);
             gr.pivot = new Vector2(0f, 1f);
-            gr.anchoredPosition = new Vector2(0f, -8f); 
-            gr.sizeDelta = new Vector2(0f, 44f);
+            gr.anchoredPosition = new Vector2(0f, -12f); 
+            gr.sizeDelta = new Vector2(0f, 80f);
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
-            gridLayout.cellSize = new Vector2(40f, 40f);
-            gridLayout.spacing = new Vector2(4f, 4f);
+            gridLayout.cellSize = new Vector2(60f, 60f);
+            gridLayout.spacing = new Vector2(8f, 8f);
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
             gridLayout.constraintCount = 1;
 
@@ -580,7 +580,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
                 var img = cell.AddComponent<Image>();
                 img.color = new Color(1f, 1f, 1f, 0f);
                 img.raycastTarget = false; 
-                var tx = CreateText("t", cell.transform, 12, Color.white, TextAnchor.LowerRight);
+                var tx = CreateText("t", cell.transform, 16, Color.white, TextAnchor.LowerRight);
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
                 trt.anchorMax = Vector2.one;
@@ -655,7 +655,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             img.color = Color.white;
             img.preserveAspect = true;
             var irt = img.rectTransform;
-            irt.anchorMin = new Vector2(0.24f, 0.24f); irt.anchorMax = new Vector2(0.76f, 0.76f);
+            irt.anchorMin = new Vector2(0.32f, 0.32f); irt.anchorMax = new Vector2(0.68f, 0.68f);
             irt.offsetMin = irt.offsetMax = Vector2.zero;
             
             var btn = go.AddComponent<Button>();
