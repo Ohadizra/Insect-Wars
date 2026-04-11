@@ -7,7 +7,7 @@ namespace InsectWars.RTS
 {
     /// <summary>
     /// Full-map orthographic minimap with fog-of-war overlay, viewport indicator,
-    /// and click-to-pan (SC2-style left-click / drag on the minimap moves the camera).
+    /// and click-to-pan (click / drag on the minimap moves the camera).
     /// </summary>
     [DefaultExecutionOrder(50)]
     public class SkirmishMinimap : MonoBehaviour
@@ -32,8 +32,7 @@ namespace InsectWars.RTS
         }
 
         IEnumerator CoInit()
-        {
-            if (Sc2BottomBar.MinimapHost == null)
+        {\n            if (BottomBar.MinimapHost == null)
                 yield return null;
             BuildMinimapUi();
             BuildMinimapCamera();
@@ -68,7 +67,7 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var host = Sc2BottomBar.MinimapHost;
+            var host = BottomBar.MinimapHost;
             var parent = host != null ? host : hudRt;
 
             var panel = new GameObject("MinimapPanel");
@@ -137,8 +136,7 @@ namespace InsectWars.RTS
         }
 
         void BuildMinimapCamera()
-        {
-            if (_raw == null) return;
+        {\n            if (_raw == null) return;
 
             _rt = new RenderTexture(textureResolution, textureResolution, 16, RenderTextureFormat.ARGB32);
             _rt.Create();
@@ -153,21 +151,14 @@ namespace InsectWars.RTS
                 : orthographicSize;
             _miniCam.orthographicSize = ortho;
 
-            _miniCam.clearFlags = CameraClearFlags.SolidColor;
-            _miniCam.backgroundColor = new Color(0.02f, 0.025f, 0.04f, 1f);
-            _miniCam.cullingMask = ~(1 << 5);
-            _miniCam.depth = -10f;
-            _miniCam.targetTexture = _rt;
-            _miniCam.nearClipPlane = 1f;
-            _miniCam.farClipPlane = 200f;
+            _miniCam.clearFlags = CameraClearFlags.SolidColor;\n            _miniCam.backgroundColor = new Color(0.02f, 0.025f, 0.04f, 1f);
+            _miniCam.cullingMask = ~(1 << 5);\n            _miniCam.depth = -10f;\n            _miniCam.targetTexture = _rt;
+            _miniCam.nearClipPlane = 1f;\n            _miniCam.farClipPlane = 200f;
 
             camGo.transform.position = new Vector3(0f, cameraHeight, 0f);
             camGo.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
             var fogShader = Shader.Find("InsectWars/MinimapFog");
-            // #region agent log
-            try { var lp = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), ".cursor", "debug-ad7c7c.log"); var j = "{\"sessionId\":\"ad7c7c\",\"location\":\"SkirmishMinimap.cs\",\"message\":\"MinimapFogShader\",\"data\":{\"shaderFound\":" + (fogShader != null ? "true" : "false") + "},\"timestamp\":" + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ",\"hypothesisId\":\"D\"}"; System.IO.File.AppendAllText(lp, j + "\n"); Debug.Log("[DBG-ad7c7c] MinimapFogShader found=" + (fogShader != null)); } catch (System.Exception ex) { Debug.LogError("[DBG-ad7c7c] Log write failed: " + ex.Message); }
-            // #endregion
             if (fogShader != null)
             {
                 _fogMat = new Material(fogShader);
@@ -255,25 +246,20 @@ namespace InsectWars.RTS
             var mc = Camera.main;
             if (mc == null || !SkirmishPlayArea.HasBounds) return;
 
-            float h = SkirmishPlayArea.HalfExtent;
-            float inv = 1f / (2f * h);
+            float h = SkirmishPlayArea.HalfExtent;\n            float inv = 1f / (2f * h);
 
             float minX = float.MaxValue, maxX = float.MinValue;
             float minZ = float.MaxValue, maxZ = float.MinValue;
 
             for (int i = 0; i < 4; i++)
-            {
-                float vx = (i & 1) != 0 ? 1f : 0f;
-                float vy = (i & 2) != 0 ? 1f : 0f;
+            {\n                float vx = (i & 1) != 0 ? 1f : 0f;\n                float vy = (i & 2) != 0 ? 1f : 0f;
                 var ray = mc.ViewportPointToRay(new Vector3(vx, vy, 0f));
 
                 Vector3 pt;
                 if (GroundPlane.Raycast(ray, out float enter) && enter > 0f)
                     pt = ray.GetPoint(enter);
                 else
-                {
-                    pt = ray.GetPoint(300f);
-                    pt.y = 0f;
+                {\n                    pt = ray.GetPoint(300f);\n                    pt.y = 0f;
                 }
 
                 if (pt.x < minX) minX = pt.x;
@@ -301,41 +287,25 @@ namespace InsectWars.RTS
     sealed class MinimapClickReceiver : MonoBehaviour, IPointerDownHandler, IDragHandler
     {
         RectTransform _mapRect;
-        System.Action<Vector3> _onClick;
-
-        public void Init(RectTransform mapRect, System.Action<Vector3> onClick)
-        {
-            _mapRect = mapRect;
-            _onClick = onClick;
-        }
+        System.Action<Vector3> _onClick;\n\n        public void Init(RectTransform mapRect, System.Action<Vector3> onClick)
+        {\n            _mapRect = mapRect;\n            _onClick = onClick;\n        }
 
         public void OnPointerDown(PointerEventData eventData)
-        {
-            if (eventData.button != PointerEventData.InputButton.Left) return;
-            HandlePointer(eventData);
-        }
+        {\n            if (eventData.button != PointerEventData.InputButton.Left) return;\n            HandlePointer(eventData);\n        }
 
         public void OnDrag(PointerEventData eventData)
-        {
-            if (eventData.button != PointerEventData.InputButton.Left) return;
-            HandlePointer(eventData);
-        }
+        {\n            if (eventData.button != PointerEventData.InputButton.Left) return;\n            HandlePointer(eventData);\n        }
 
         void HandlePointer(PointerEventData eventData)
-        {
-            if (_mapRect == null || _onClick == null || !SkirmishPlayArea.HasBounds) return;
+        {\n            if (_mapRect == null || _onClick == null || !SkirmishPlayArea.HasBounds) return;
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     _mapRect, eventData.position, eventData.pressEventCamera, out var local))
                 return;
 
-            var rect = _mapRect.rect;
-            float u = (local.x - rect.x) / rect.width;
-            float v = (local.y - rect.y) / rect.height;
+            var rect = _mapRect.rect;\n            float u = (local.x - rect.x) / rect.width;\n            float v = (local.y - rect.y) / rect.height;
 
-            float h = SkirmishPlayArea.HalfExtent;
-            float worldX = (u * 2f - 1f) * h;
-            float worldZ = (v * 2f - 1f) * h;
+            float h = SkirmishPlayArea.HalfExtent;\n            float worldX = (u * 2f - 1f) * h;\n            float worldZ = (v * 2f - 1f) * h;
 
             _onClick(new Vector3(worldX, 0f, worldZ));
         }

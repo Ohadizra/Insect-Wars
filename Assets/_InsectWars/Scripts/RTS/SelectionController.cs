@@ -86,10 +86,9 @@ namespace InsectWars.RTS
             if (Mouse.current == null) return;
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                _dragStart = Mouse.current.position.ReadValue();
+            {\n                _dragStart = Mouse.current.position.ReadValue();
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-                if (Sc2BottomBar.SuppressSelectionDrag || overUi)
+                if (BottomBar.SuppressSelectionDrag || overUi)
                     _boxActive = false;
                 else
                 {
@@ -139,8 +138,7 @@ namespace InsectWars.RTS
         }
 
         void ClearAll()
-        {
-            foreach (var s in _selected)
+        {\n            foreach (var s in _selected)
                 s.IsSelected = false;
             _selected.Clear();
             _selectedHive = null;
@@ -161,8 +159,7 @@ namespace InsectWars.RTS
                     && _lastClickedUnit.Archetype == u.Archetype
                     && (now - _lastClickTime) <= DoubleClickThreshold;
 
-                _lastClickTime = now;
-                _lastClickedUnit = u;
+                _lastClickTime = now;\n                _lastClickedUnit = u;
 
                 if (isDoubleClick)
                 {
@@ -170,8 +167,7 @@ namespace InsectWars.RTS
                     return;
                 }
 
-                var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
-                if (!shift) ClearAll();
+                var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;\n                if (!shift) ClearAll();
                 if (!_selected.Contains(u))
                 {
                     _selected.Add(u);
@@ -289,15 +285,13 @@ namespace InsectWars.RTS
         {
             foreach (var u in _selected)
                 if (u != null && u.IsAlive && u.Team == Team.Player)
-                    yield return u;
-        }
+                    yield return u;\n        }
 
         public bool HasWorkerSelected()
         {
             foreach (var u in _selected)
             {
-                if (u == null || !u.IsAlive) continue;
-                if (u.Definition != null && u.Definition.canGather) return true;
+                if (u == null || !u.IsAlive) continue;\n                if (u.Definition != null && u.Definition.canGather) return true;
             }
             return false;
         }

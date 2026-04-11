@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Edge pan, MMB drag orbit, scroll zoom — SC2-style on a tilted pivot.
+    /// Edge pan, MMB drag orbit, scroll zoom — RTS-style on a tilted pivot.
     /// </summary>
     public class RTSCameraController : MonoBehaviour
     {

@@ -44,7 +44,7 @@ namespace InsectWars.RTS
 
             if (!Mouse.current.rightButton.wasPressedThisFrame) return;
             if (PointerOverUi()) return;
-            Sc2BottomBar.Instance?.SetPending(PendingCommand.None);
+            BottomBar.Instance?.SetPending(PendingCommand.None);
 
             if (SelectionController.Instance == null) return;
             var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
@@ -74,8 +74,7 @@ namespace InsectWars.RTS
 
             var fruit = hit.collider.GetComponentInParent<RottingFruitNode>();
             if (fruit != null && !fruit.Depleted && SelectionController.Instance.HasWorkerSelected())
-            {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+            {\n                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                 {
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
@@ -100,11 +99,11 @@ namespace InsectWars.RTS
 
         void TryLeftClickCommand(Vector2 screen)
         {
-            var pending = Sc2BottomBar.Pending;
+            var pending = BottomBar.Pending;
             if (pending == PendingCommand.None && !PatrolCoordinator.WaitingForSecondPoint)
                 return;
             if (PointerOverUi()) return;
-            if (SelectionController.Instance == null || Sc2BottomBar.Instance == null) return;
+            if (SelectionController.Instance == null || BottomBar.Instance == null) return;
 
             if (pending == PendingCommand.PlaceBuilding)
             {
@@ -133,7 +132,7 @@ namespace InsectWars.RTS
                         if (u.Definition != null && u.Definition.canGather)
                             u.OrderGather(fruit);
                     }
-                    Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
                 }
                 return;
@@ -141,11 +140,10 @@ namespace InsectWars.RTS
 
             if (pending == PendingCommand.Patrol || PatrolCoordinator.WaitingForSecondPoint)
             {
-                if (PatrolCoordinator.TryHandlePatrolClick(hit.point, out var a, out var b))
-                    return;
+                if (PatrolCoordinator.TryHandlePatrolClick(hit.point, out var a, out var b))\n                    return;
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderPatrol(a, b);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
                 return;
             }
 
@@ -160,7 +158,7 @@ namespace InsectWars.RTS
                 {
                     foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                         u.OrderAttack(enemy);
-                    Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
                 }
                 return;
             }
@@ -172,13 +170,13 @@ namespace InsectWars.RTS
             {
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderMove(hit.point);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
             }
             else if (pending == PendingCommand.Attack)
             {
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderAttackMove(hit.point);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
             }
         }
 
@@ -194,9 +192,7 @@ namespace InsectWars.RTS
             var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
 
             if (!BuildZoneRegistry.IsInBuildZone(worldPos))
-                return;
-
-            var buildType = Sc2BottomBar.PendingBuildingType;
+                return;\n\n            var buildType = BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
 
             if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(cost))
@@ -213,7 +209,7 @@ namespace InsectWars.RTS
                 }
             }
 
-            Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+            BottomBar.Instance.SetPending(PendingCommand.None);
         }
     }
 }

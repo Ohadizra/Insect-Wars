@@ -6,7 +6,7 @@ namespace InsectWars.RTS
 {
     /// <summary>
     /// Fog map: R = ever explored, G = current vision (this frame). Rebuilt before the main camera renders.
-    /// Enemies are hidden unless their cell has current vision (SC2-style).
+    /// Enemies are hidden unless their cell has current vision (RTS-style).
     /// </summary>
     public class FogOfWarSystem : MonoBehaviour
     {
@@ -18,26 +18,15 @@ namespace InsectWars.RTS
         static readonly int FogActiveId = Shader.PropertyToID("_IW_FogActive");
 
         [SerializeField] float hiveVisionRadius = 16f;
-        [SerializeField] float visionFalloffWorld = 2.2f;
-
-        Texture2D _tex;
+        [SerializeField] float visionFalloffWorld = 2.2f;\n\n        Texture2D _tex;
         Color32[] _pix;
         Color32 _black;
         readonly Dictionary<InsectUnit, Renderer[]> _enemyRenderers = new();
-
-        // #region agent log
-        static readonly string _dbgLog = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), ".cursor", "debug-ad7c7c.log");
-        static int _dbgCount;
-        static void DbgLog(string msg, string data, string hyp) { try { var j = "{\"sessionId\":\"ad7c7c\",\"location\":\"FogOfWarSystem.cs\",\"message\":\"" + msg + "\",\"data\":" + data + ",\"timestamp\":" + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ",\"hypothesisId\":\"" + hyp + "\"}"; System.IO.File.AppendAllText(_dbgLog, j + "\n"); Debug.Log("[DBG-ad7c7c] " + msg + " " + data); } catch (System.Exception ex) { Debug.LogError("[DBG-ad7c7c] Log write failed: " + ex.Message); } }
-        // #endregion
 
         void OnEnable()
         {
             Instance = this;
             Shader.SetGlobalFloat(FogActiveId, 1f);
-            // #region agent log
-            DbgLog("FogOfWarSystem.OnEnable", "{\"fogActive\":1}", "E");
-            // #endregion
             _black = new Color32(0, 0, 0, 255);
             _pix = new Color32[TexRes * TexRes];
             for (var i = 0; i < _pix.Length; i++)
@@ -48,7 +37,6 @@ namespace InsectWars.RTS
                 wrapMode = TextureWrapMode.Clamp,
                 name = "FogOfWarData"
             };
-            // Must stay CPU-writable so LateUpdate/beginCamera can update every frame.
             _tex.SetPixels32(_pix);
             _tex.Apply(false, false);
             Shader.SetGlobalTexture(FogTexId, _tex);
@@ -79,9 +67,6 @@ namespace InsectWars.RTS
                 RebuildVisionGrid();
                 _tex.SetPixels32(_pix);
                 _tex.Apply(false, false);
-                // #region agent log
-                if (_dbgCount < 3) { _dbgCount++; int mid = TexRes/2 * TexRes + TexRes/2; int corner = 0; var midP = _pix[mid]; var cornerP = _pix[corner]; DbgLog("RebuildVisionGrid", "{\"frame\":" + Time.frameCount + ",\"midR\":" + midP.r + ",\"midG\":" + midP.g + ",\"cornerR\":" + cornerP.r + ",\"cornerG\":" + cornerP.g + ",\"fogActive\":" + Shader.GetGlobalFloat(FogActiveId) + "}", "A,B,E"); }
-                // #endregion
             }
 
             UpdateEnemyVisibility();
@@ -112,16 +97,12 @@ namespace InsectWars.RTS
 
         void UpdateEnemyVisibility()
         {
-            // #region agent log
-            if (_dbgCount <= 3 && HiveDeposit.EnemyHive != null) { var hp = HiveDeposit.EnemyHive.transform.position; bool hiveVis = IsInCurrentVision(hp); bool hiveExpl = IsExplored(hp); var rends = HiveDeposit.EnemyHive.GetComponentsInChildren<Renderer>(); int enabledCount = 0; foreach(var rr in rends) if(rr != null && rr.enabled) enabledCount++; DbgLog("EnemyHiveVisibility", "{\"hivePos\":\"" + hp + "\",\"inVision\":" + (hiveVis?"true":"false") + ",\"explored\":" + (hiveExpl?"true":"false") + ",\"rendererCount\":" + rends.Length + ",\"enabledRenderers\":" + enabledCount + "}", "C"); }
-            // #endregion
             var toRemove = (List<InsectUnit>)null;
             foreach (var kv in _enemyRenderers)
             {
                 var u = kv.Key;
                 if (u == null || !u.IsAlive)
-                {
-                    toRemove ??= new List<InsectUnit>();
+                {\n                    toRemove ??= new List<InsectUnit>();
                     toRemove.Add(u);
                 }
             }
@@ -143,8 +124,7 @@ namespace InsectWars.RTS
                 bool show;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
                 if (concealment > 0f)
-                {
-                    show = false;
+                {\n                    show = false;
                     foreach (var pu in RtsSimRegistry.Units)
                     {
                         if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
@@ -153,8 +133,7 @@ namespace InsectWars.RTS
                     }
                 }
                 else
-                {
-                    show = IsInCurrentVision(u.transform.position);
+                {\n                    show = IsInCurrentVision(u.transform.position);
                 }
 
                 foreach (var r in renderers)
@@ -164,7 +143,6 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>True if this XZ is lit by current player vision (not merely explored).</summary>
         public bool IsInCurrentVision(Vector3 world)
         {
             if (_pix == null || !SkirmishPlayArea.HasBounds) return true;
@@ -172,7 +150,6 @@ namespace InsectWars.RTS
             return _pix[z * TexRes + x].g >= 96;
         }
 
-        /// <summary>True if tile was ever seen (explored fog or visible).</summary>
         public bool IsExplored(Vector3 world)
         {
             if (_pix == null || !SkirmishPlayArea.HasBounds) return true;
@@ -222,8 +199,7 @@ namespace InsectWars.RTS
             float invTexToWorld = (2f * h) / TexRes;
 
             for (var zz = minZ; zz <= maxZ; zz++)
-            {
-                for (var xx = minX; xx <= maxX; xx++)
+            {\n                for (var xx = minX; xx <= maxX; xx++)
                 {
                     var dx = xx - cx;
                     var dz = zz - cz;
