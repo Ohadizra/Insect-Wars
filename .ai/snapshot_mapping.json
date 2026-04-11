@@ -827,6 +827,12 @@
       "conversation_id": "9da64bf2-330b-4f2b-9772-57124efcba39",
       "content": "make ui 15% shorter vertically, adjust ui parts acordingly,",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "15403eee-5739-4123-a1ae-27eb6ab6ae48",
+      "conversation_id": "9da64bf2-330b-4f2b-9772-57124efcba39",
+      "content": "I have reduced the UI height by 15% and adjusted all its internal parts (minimap, unit info, and action grid) to maintain proportional scaling.\n\n### Changes Made:\n- **Main Bar Height**: Reduced from **310** to **263.5 units** (15% reduction).\n- **Layout Panels**:\n    - **Minimap Slot**: Reduced width to **357** to maintain proportion with the new height.\n    - **Command Panel**: Reduced width to **527**.\n    - **Portrait Block**: Scaled down to **128x128** (from 150x150) and adjusted its position.\n- **Grids & Cells**:\n    - **Command Grid**: Reduced button cell size to **48x48** and adjusted horizontal/vertical spacing.\n    - **Selection Grid**: Reduced height to **51** and unit cell size to **42x42**.\n- **Typography**:\n    - Scaled down font sizes across the HUD (e.g., Unit Name from 22 to 19, Attributes from 13 to 11) to fit the smaller panels.\n- **Margins & Offsets**: Adjusted internal padding and offsets for the Selection and Info blocks to ensure elements aren't cramped.\n\nThe UI system builds itself dynamically at runtime, so these changes will be reflected immediately in the `Gameplay` scene.",
+      "snapshot_message_type": 1
     }
   ]
 }
