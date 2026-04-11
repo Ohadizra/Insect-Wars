@@ -532,6 +532,17 @@ AddTerrainFeature(world.transform, tf);
             return s_terrain.SampleHeight(worldPos);
         }
 
+        static void SitOnGround(GameObject go)
+        {
+            var renderer = go.GetComponentInChildren<Renderer>();
+            if (renderer == null) return;
+            float bottomY = renderer.bounds.min.y;
+            float groundY = GetHeight(go.transform.position);
+            float offset = groundY - bottomY;
+            if (offset > 0.01f || offset < -0.01f)
+                go.transform.position += new Vector3(0f, offset, 0f);
+        }
+
         static void AddClay(Transform parent, Vector3 pos, Vector3 scale, GameObject prefabOverride = null)
         {
             GameObject clay;
@@ -620,6 +631,8 @@ AddTerrainFeature(world.transform, tf);
 
                 var prod = hive.AddComponent<ProductionBuilding>();
                 prod.Initialize(BuildingType.AntNest, team);
+
+                SitOnGround(hive);
             }
             else
             {
@@ -789,8 +802,6 @@ AddTerrainFeature(world.transform, tf);
             var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
             const float appleHeight = 3f;
-            // Center Y = h + (Height/6) to bury the bottom 1/3 (assuming pivot at center)
-            float posY = h + (appleHeight / 6f);
 
             if (lib != null && lib.rottingApplePrefab != null)
             {
@@ -799,8 +810,9 @@ AddTerrainFeature(world.transform, tf);
                 apple.tag = "Fruit";
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) apple.layer = layer;
-                apple.transform.position = new Vector3(pos.x, posY, pos.z);
+                apple.transform.position = new Vector3(pos.x, h, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
+                SitOnGround(apple);
             }
             else
             {
@@ -810,8 +822,9 @@ AddTerrainFeature(world.transform, tf);
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) apple.layer = layer;
                 apple.transform.SetParent(parent);
-                apple.transform.position = new Vector3(pos.x, posY, pos.z);
+                apple.transform.position = new Vector3(pos.x, h, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
+                SitOnGround(apple);
                 
                 var r = apple.GetComponent<Renderer>();
                 if (r != null)
