@@ -339,52 +339,26 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Build", "B", EnterBuildMenu);
                     break;
                 case BarMode.BuildMenu:
-                    AddCmdButton(_cmdGridParent,
-                        $"Underground\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.Underground)} cal</size>", "Q",
-                        () => StartPlaceBuilding(BuildingType.Underground));
-                    AddCmdButton(_cmdGridParent,
-                        $"Sky Tower\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.SkyTower)} cal</size>", "W",
-                        () => StartPlaceBuilding(BuildingType.SkyTower));
-                    AddCmdButton(_cmdGridParent,
-                        $"Ant's Nest\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.AntNest)} cal</size>", "E",
-                        () => StartPlaceBuilding(BuildingType.AntNest));
-                    AddCmdButton(_cmdGridParent,
-                        $"Root Cellar\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.RootCellar)} cal</size>", "R",
-                        () => StartPlaceBuilding(BuildingType.RootCellar));
-                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () =>
-                    {
-                        _buildMenuActive = false;
-                        ForceRebuild();
-                    });
+                    AddCmdButton(_cmdGridParent, $"Underground\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.Underground)} cal</size>", "Q", () => StartPlaceBuilding(BuildingType.Underground));
+                    AddCmdButton(_cmdGridParent, $"Sky Tower\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.SkyTower)} cal</size>", "W", () => StartPlaceBuilding(BuildingType.SkyTower));
+                    AddCmdButton(_cmdGridParent, $"Ant's Nest\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.AntNest)} cal</size>", "E", () => StartPlaceBuilding(BuildingType.AntNest));
+                    AddCmdButton(_cmdGridParent, $"Root Cellar\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.RootCellar)} cal</size>", "R", () => StartPlaceBuilding(BuildingType.RootCellar));
+                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => { _buildMenuActive = false; ForceRebuild(); });
                     break;
                 case BarMode.Hive:
-                            AddCmdButton(_cmdGridParent,
-                                $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal  {Mathf.RoundToInt(ProductionBuilding.GetBuildTime(UnitArchetype.Worker))}s</size>",
-                                "W", BuildWorker);
-                    
-                            var hive = SelectionController.Instance?.SelectedHive;
-                            if (hive != null && hive.Team == Team.Player)
-                            {
-                                var evolution = hive.GetComponent<NestEvolution>();
-                                if (evolution != null && !evolution.IsEvolved)
-                                {
-                                    AddCmdButton(_cmdGridParent, $"Evolve\n<size=11>{evolution.EvolveCost} cal</size>", "E", () => 
-                                    {
-                                        evolution.Evolve();
-                                        ForceRebuild();
-                                    });
-                                }
-
-                                if (hive.IsProducing)
-                                {
-                                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => hive.CancelLast());
-                                }
-                            }
-
-                            AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearRally);
-                            break;
-        case BarMode.Building:
-                {
+                    AddCmdButton(_cmdGridParent, $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal</size>", "W", BuildWorker);
+                    var hive = SelectionController.Instance?.SelectedHive;
+                    if (hive != null && hive.Team == Team.Player)
+                    {
+                        var evolution = hive.GetComponent<NestEvolution>();
+                        if (evolution != null && !evolution.IsEvolved)
+                            AddCmdButton(_cmdGridParent, $"Evolve\n<size=11>{evolution.EvolveCost} cal</size>", "E", () => { evolution.Evolve(); ForceRebuild(); });
+                        if (hive.IsProducing)
+                            AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => hive.CancelLast());
+                    }
+                    AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearRally);
+                    break;
+                case BarMode.Building:
                     var bld = SelectionController.Instance?.SelectedBuilding;
                     if (bld != null)
                     {
@@ -394,21 +368,13 @@ namespace InsectWars.RTS
                         {
                             var arch = units[i];
                             string hk = i < hotkeys.Length ? hotkeys[i] : "";
-                            int buildSec = Mathf.RoundToInt(ProductionBuilding.GetBuildTime(arch));
-                            AddCmdButton(_cmdGridParent,
-                                $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal  {buildSec}s</size>",
-                                hk, () => ProduceFromBuilding(bld, arch));
+                            AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromBuilding(bld, arch));
                         }
                         if (bld.IsProducing)
-                        {
-                            AddCmdButton(_cmdGridParent, "Cancel", "Esc",
-                                () => bld.CancelLast());
-                        }
-                        AddCmdButton(_cmdGridParent, "Clear Rally", "R",
-                            () => ClearBuildingRally(bld));
+                            AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => bld.CancelLast());
+                        AddCmdButton(_cmdGridParent, "Clear Rally", "R", () => ClearBuildingRally(bld));
                     }
                     break;
-                }
             }
         }
 
@@ -427,23 +393,8 @@ namespace InsectWars.RTS
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0.06f, 0.05f, 0.04f, 0.98f); // Organic Dark
+            bg.color = new Color(0.06f, 0.05f, 0.04f, 0.98f); 
             bg.raycastTarget = true;
-
-            if (barBackground != null)
-            {
-                var barArt = new GameObject("BarArt");
-                barArt.transform.SetParent(bar.transform, false);
-                var artRt = barArt.AddComponent<RectTransform>();
-                artRt.anchorMin = Vector2.zero;
-                artRt.anchorMax = Vector2.one;
-                artRt.offsetMin = artRt.offsetMax = Vector2.zero;
-                var artImg = barArt.AddComponent<Image>();
-                artImg.sprite = barBackground;
-                artImg.type = Image.Type.Tiled;
-                artImg.color = new Color(1f, 1f, 1f, 0.35f);
-                artImg.raycastTarget = false;
-            }
 
             // Minimap Slot
             var miniSlot = new GameObject("MinimapHost");
@@ -457,7 +408,7 @@ namespace InsectWars.RTS
 
             var miniFrameImg = miniSlot.AddComponent<Image>();
             miniFrameImg.sprite = minimapFrame;
-            miniFrameImg.type = Image.Type.Sliced;
+            miniFrameImg.type = Image.Type.Simple; 
             miniFrameImg.color = Color.white;
             miniFrameImg.raycastTarget = false;
 
@@ -491,14 +442,16 @@ namespace InsectWars.RTS
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = new Vector2(32f, 32f);
-            grt.offsetMax = new Vector2(-32f, -32f);
+            grt.offsetMin = new Vector2(20f, 20f);
+            grt.offsetMax = new Vector2(-20f, -20f);
+            
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(74f, 48f);
-            gl.spacing = new Vector2(8f, 8f);
+            gl.cellSize = new Vector2(100f, 100f);
+            gl.spacing = new Vector2(10f, 10f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            gl.constraintCount = 4;
-            gl.childAlignment = TextAnchor.MiddleCenter;
+            gl.constraintCount = 3;
+            gl.childAlignment = TextAnchor.UpperLeft;
+            
             _cmdGridParent = grid.transform;
 
             // Center / Selection Block
@@ -522,11 +475,11 @@ namespace InsectWars.RTS
             pr.anchorMin = new Vector2(0f, 0.5f);
             pr.anchorMax = new Vector2(0f, 0.5f);
             pr.pivot = new Vector2(0f, 0.5f);
-            pr.anchoredPosition = new Vector2(24f, 0f);
+            pr.anchoredPosition = new Vector2(32f, 0f);
             pr.sizeDelta = new Vector2(140f, 140f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
-            pImg.type = Image.Type.Sliced;
+            pImg.type = Image.Type.Simple; 
             pImg.color = Color.white;
 
             var portraitSub = new GameObject("PortraitInner");
@@ -534,8 +487,8 @@ namespace InsectWars.RTS
             var psr = portraitSub.AddComponent<RectTransform>();
             psr.anchorMin = Vector2.zero;
             psr.anchorMax = Vector2.one;
-            psr.offsetMin = new Vector2(20f, 20f);
-            psr.offsetMax = new Vector2(-20f, -20f);
+            psr.offsetMin = new Vector2(24f, 24f);
+            psr.offsetMax = new Vector2(-24f, -24f);
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
@@ -549,30 +502,30 @@ namespace InsectWars.RTS
             ibr.offsetMin = new Vector2(180f, 24f);
             ibr.offsetMax = new Vector2(-24f, -24f);
 
-            _portraitLabel = CreateText("NameText", infoBlock.transform, 22, ColTitle, TextAnchor.MiddleCenter);
+            _portraitLabel = CreateText("NameText", infoBlock.transform, 24, ColTitle, TextAnchor.MiddleCenter);
             var pl = _portraitLabel.rectTransform;
-            pl.anchorMin = new Vector2(0f, 0.75f);
-            pl.anchorMax = Vector2.one;
+            pl.anchorMin = new Vector2(0f, 0.70f); 
+            pl.anchorMax = new Vector2(1f, 0.95f);
             pl.offsetMin = pl.offsetMax = Vector2.zero;
 
             _attributeLabel = CreateText("AttributeText", infoBlock.transform, 14, ColSub, TextAnchor.MiddleCenter);
             var al = _attributeLabel.rectTransform;
-            al.anchorMin = new Vector2(0f, 0f);
-            al.anchorMax = new Vector2(1f, 0.25f);
+            al.anchorMin = new Vector2(0f, 0.05f);
+            al.anchorMax = new Vector2(1f, 0.20f);
             al.offsetMin = al.offsetMax = Vector2.zero;
 
             _hpLabel = CreateText("HpText", infoBlock.transform, 16, Color.white, TextAnchor.MiddleCenter);
             var hpRt = _hpLabel.rectTransform;
-            hpRt.anchorMin = new Vector2(0f, 0.4f);
-            hpRt.anchorMax = new Vector2(1f, 0.6f);
+            hpRt.anchorMin = new Vector2(0f, 0.45f);
+            hpRt.anchorMax = new Vector2(1f, 0.60f);
             hpRt.offsetMin = hpRt.offsetMax = Vector2.zero;
 
             _hpBarBg = new GameObject("HpBarBg").AddComponent<Image>();
             _hpBarBg.transform.SetParent(infoBlock.transform, false);
             _hpBarBg.color = new Color(0.12f, 0.08f, 0.06f, 0.9f);
             var hbr = _hpBarBg.rectTransform;
-            hbr.anchorMin = new Vector2(0.1f, 0.32f);
-            hbr.anchorMax = new Vector2(0.9f, 0.40f);
+            hbr.anchorMin = new Vector2(0.1f, 0.35f);
+            hbr.anchorMax = new Vector2(0.9f, 0.42f);
             hbr.offsetMin = hbr.offsetMax = Vector2.zero;
 
             _hpBarFill = new GameObject("HpBarFill").AddComponent<Image>();
@@ -590,7 +543,7 @@ namespace InsectWars.RTS
             gr.anchorMin = new Vector2(0.40f, 1f);
             gr.anchorMax = new Vector2(1f, 1f);
             gr.pivot = new Vector2(0f, 1f);
-            gr.anchoredPosition = new Vector2(0f, 0f);
+            gr.anchoredPosition = new Vector2(0f, -8f); 
             gr.sizeDelta = new Vector2(0f, 48f);
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
@@ -606,6 +559,7 @@ namespace InsectWars.RTS
                 cell.transform.SetParent(gridRoot.transform, false);
                 var img = cell.AddComponent<Image>();
                 img.color = new Color(1f, 1f, 1f, 0f);
+                img.raycastTarget = false; 
                 var tx = CreateText("t", cell.transform, 13, Color.white, TextAnchor.LowerRight);
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
@@ -616,12 +570,12 @@ namespace InsectWars.RTS
 
             _pendingHint = CreateText("PendingHint", hud, 18, ColTitle, TextAnchor.MiddleCenter);
             var ph = _pendingHint.rectTransform;
-            ph.anchorMin = new Vector2(0.5f, 0.28f);
-            ph.anchorMax = new Vector2(0.5f, 0.28f);
+            ph.anchorMin = new Vector2(0.5f, 0.32f);
+            ph.anchorMax = new Vector2(0.5f, 0.32f);
             ph.anchoredPosition = Vector2.zero;
             ph.sizeDelta = new Vector2(800f, 32f);
 
-            // Production progress bar (shown inside info block when building/hive is selected)
+            // Production progress bar
             _prodBarRoot = new GameObject("ProdBar");
             _prodBarRoot.transform.SetParent(infoBlock.transform, false);
             var pbr = _prodBarRoot.AddComponent<RectTransform>();
@@ -669,10 +623,21 @@ namespace InsectWars.RTS
         {
             var go = new GameObject($"Cmd_{name}");
             go.transform.SetParent(parent, false);
-            var img = go.AddComponent<Image>();
+            
+            var slotBg = go.AddComponent<Image>();
+            slotBg.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/StyleMatch/frame_slot.png");
+            slotBg.color = Color.white;
+            slotBg.type = Image.Type.Simple;
+
+            var iconGo = new GameObject("Icon");
+            iconGo.transform.SetParent(go.transform, false);
+            var img = iconGo.AddComponent<Image>();
             img.sprite = GetCommandIcon(name);
             img.color = Color.white;
             img.preserveAspect = true;
+            var irt = img.rectTransform;
+            irt.anchorMin = new Vector2(0.15f, 0.15f); irt.anchorMax = new Vector2(0.85f, 0.85f);
+            irt.offsetMin = irt.offsetMax = Vector2.zero;
             
             var btn = go.AddComponent<Button>();
             var colors = btn.colors;
@@ -1159,5 +1124,5 @@ namespace InsectWars.RTS
                 _ => t.ToString()
             };
         }
-        }
-        }
+    }
+}

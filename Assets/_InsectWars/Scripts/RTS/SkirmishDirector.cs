@@ -854,8 +854,6 @@ AddTerrainFeature(world.transform, tf);
             var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
             const float fruitHeight = 1.8f;
-            // Center Y = h + (Height/6) to bury the bottom 1/3
-            float posY = h + (fruitHeight / 6f);
 
             if (lib != null && lib.rottingApplePrefab != null)
             {
@@ -864,8 +862,9 @@ AddTerrainFeature(world.transform, tf);
                 fruit.tag = "Fruit";
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) fruit.layer = layer;
-                fruit.transform.position = new Vector3(pos.x, posY, pos.z);
+                fruit.transform.position = new Vector3(pos.x, h, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
+                SitOnGround(fruit);
             }
             else
             {
@@ -875,9 +874,10 @@ AddTerrainFeature(world.transform, tf);
                 int layer = LayerMask.NameToLayer("Resources");
                 if (layer >= 0) fruit.layer = layer;
                 fruit.transform.SetParent(parent);
-                fruit.transform.position = new Vector3(pos.x, posY, pos.z);
+                fruit.transform.position = new Vector3(pos.x, h, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
                 ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
+                SitOnGround(fruit);
             }
 
             SetIgnoreNavMeshRecursive(fruit);

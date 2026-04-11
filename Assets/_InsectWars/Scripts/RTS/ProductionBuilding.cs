@@ -337,6 +337,7 @@ namespace InsectWars.RTS
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(type, team);
 
+            SitOnGround(go);
             return building;
         }
 
@@ -402,7 +403,21 @@ namespace InsectWars.RTS
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team);
+
+            SitOnGround(go);
             return building;
+        }
+
+        static void SitOnGround(GameObject go)
+        {
+            var renderer = go.GetComponentInChildren<Renderer>();
+            if (renderer == null) return;
+            float bottomY = renderer.bounds.min.y;
+            var terrain = Terrain.activeTerrain;
+            float groundY = terrain != null ? terrain.SampleHeight(go.transform.position) : 0f;
+            float offset = groundY - bottomY;
+            if (offset > 0.01f || offset < -0.01f)
+                go.transform.position += new Vector3(0f, offset, 0f);
         }
 
         static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team)
@@ -455,6 +470,8 @@ namespace InsectWars.RTS
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(type, team);
+
+            SitOnGround(go);
             return building;
         }
 
