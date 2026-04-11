@@ -16,6 +16,7 @@ namespace InsectWars.RTS
             if (Keyboard.current == null) return;
             if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
             if (MatchDirector.MatchEnded) return;
+            if (BottomBar.WouldConsumeEscape) return;
 
             IsPaused = !IsPaused;
             Time.timeScale = IsPaused ? 0f : 1f;

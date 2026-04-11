@@ -791,6 +791,12 @@
       "conversation_id": "f21e4473-2cd2-44c0-9036-3f3ad6cc8e46",
       "content": "in the game ui, make the frame bigger and the action icons smaller, also make all the action icons bright so it will be readable",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "87a60593-63bb-4b50-bfce-a4e1b8299c2c",
+      "conversation_id": "f21e4473-2cd2-44c0-9036-3f3ad6cc8e46",
+      "content": "I have updated the game UI to match your requirements. \n\n**Changes made to `BottomBar.cs`:**\n- **Increased the frame size**: The command panel width was increased from `380` to `440`, and the overall bottom bar height was increased from `280` to `320`.\n- **Made icons smaller**: \n    - Reduced the slot size in the grid from `90x90` to `86x86`.\n    - Reduced the icon's anchor area inside the slot from `70%` to `52%` (anchors changed from `0.15-0.85` to `0.24-0.76`), making the individual action icons visibly smaller relative to their frames.\n- **Improved readability**: Increased the default brightness of non-active icons significantly (from a dark brown `0.12` to a bright gold/cream `0.72` tint). This ensures that icons like \"Attack\" and \"Build\" are clearly visible and readable even when not currently active.\n\nThe UI will now feel more spacious with smaller, clearer action buttons.",
+      "snapshot_message_type": 1
     }
   ]
 }

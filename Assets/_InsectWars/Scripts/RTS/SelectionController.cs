@@ -151,7 +151,7 @@ namespace InsectWars.RTS
         void ClickSelect(Vector2 screen)
         {
             var ray = _cam.ScreenPointToRay(screen);
-            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return;
+            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
 
             var u = hit.collider.GetComponentInParent<InsectUnit>();
             if (u != null && u.Team == Team.Player && u.IsAlive)

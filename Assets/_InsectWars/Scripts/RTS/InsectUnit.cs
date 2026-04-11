@@ -663,6 +663,7 @@ namespace InsectWars.RTS
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
+            if (_holdPosition) return;
             if (!AgentActiveOnNavMesh) return;
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;

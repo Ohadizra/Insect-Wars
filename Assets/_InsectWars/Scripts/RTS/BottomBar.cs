@@ -29,9 +29,9 @@ namespace InsectWars.RTS
         public static PendingCommand Pending { get; private set; }
         public static BuildingType PendingBuildingType { get; private set; }
 
-        [SerializeField] float barHeight = 280f;
+        [SerializeField] float barHeight = 320f;
         [SerializeField] float minimapSlot = 360f;
-        [SerializeField] float commandPanelWidth = 380f;
+        [SerializeField] float commandPanelWidth = 440f;
 
         [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barBackground;
@@ -261,6 +261,26 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
         public static bool SuppressSelectionDrag =>
             Pending != PendingCommand.None || PatrolCoordinator.WaitingForSecondPoint;
 
+        /// <summary>
+        /// True when pressing Escape should be handled by the HUD (cancel command / close menu /
+        /// cancel production) rather than by PauseController.
+        /// </summary>
+        public static bool WouldConsumeEscape
+        {
+            get
+            {
+                if (Instance == null) return false;
+                if (Instance._buildMenuActive) return true;
+                if (Pending != PendingCommand.None) return true;
+                if (SelectionController.Instance == null) return false;
+                var bld = SelectionController.Instance.SelectedBuilding;
+                if (bld != null && bld.IsProducing) return true;
+                var hive = SelectionController.Instance.SelectedHive;
+                if (hive != null && hive.IsProducing) return true;
+                return false;
+            }
+        }
+
         void UpdateBarMode()
         {
             var sc = SelectionController.Instance;
@@ -450,8 +470,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             grt.offsetMax = new Vector2(-20f, -20f);
             
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(90f, 90f);
-            gl.spacing = new Vector2(8f, 8f);
+            gl.cellSize = new Vector2(86f, 86f);
+            gl.spacing = new Vector2(12f, 12f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 3;
             gl.childAlignment = TextAnchor.MiddleCenter;
@@ -635,7 +655,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             img.color = Color.white;
             img.preserveAspect = true;
             var irt = img.rectTransform;
-            irt.anchorMin = new Vector2(0.15f, 0.15f); irt.anchorMax = new Vector2(0.85f, 0.85f);
+            irt.anchorMin = new Vector2(0.24f, 0.24f); irt.anchorMax = new Vector2(0.76f, 0.76f);
             irt.offsetMin = irt.offsetMax = Vector2.zero;
             
             var btn = go.AddComponent<Button>();
@@ -833,7 +853,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             }
         }
 
-        static readonly Color CmdDefault = new(0.12f, 0.10f, 0.08f, 1f);
+        static readonly Color CmdDefault = new(0.72f, 0.68f, 0.58f, 1f);
         static readonly Color CmdActive = new(0.96f, 0.90f, 0.78f, 1f);
 
         void RefreshCommandHighlights()
