@@ -12,7 +12,9 @@ namespace InsectWars.RTS
         Attack,
         Gather,
         ReturnDeposit,
-        Patrol
+        Patrol,
+        Build,
+        AttackBuilding
     }
 
     public enum CargoType
@@ -31,9 +33,12 @@ namespace InsectWars.RTS
         float _attackCooldown;
         UnitOrder _order;
         Transform _attackTarget;
+        ProductionBuilding _buildingAttackTarget;
+        ProductionBuilding _buildTarget;
         RottingFruitNode _gatherTarget;
         RottingFruitNode _lastGatherTarget;
         float _gatherTimer;
+        float _buildTimer;
         float _idleScanTimer;
         bool _holdPosition;
         bool _patrolActive;
@@ -296,6 +301,12 @@ namespace InsectWars.RTS
                 case UnitOrder.Attack:
                     TickAttack();
                     break;
+                case UnitOrder.AttackBuilding:
+                    TickAttackBuilding();
+                    break;
+                case UnitOrder.Build:
+                    TickBuild();
+                    break;
                 case UnitOrder.Move:
                     TickMove();
                     break;
@@ -423,12 +434,47 @@ namespace InsectWars.RTS
             SafeSetDestination(dest.Value);
         }
 
+        public void OrderBuild(ProductionBuilding building)
+        {
+            if (!IsAlive || building == null) return;
+            if (building.State != BuildingState.UnderConstruction) return;
+            if (definition == null || !definition.canGather) return; // only workers can build
+            ClearTargets();
+            _wantsAttackMove = false;
+            _holdPosition = false;
+            _patrolActive = false;
+            _buildTarget = building;
+            _buildTarget.AssignBuilder();
+            _order = UnitOrder.Build;
+            SafeSetDestination(building.transform.position);
+        }
+
+        public void OrderAttackBuilding(ProductionBuilding building)
+        {
+            if (!IsAlive || building == null || !building.IsAlive) return;
+            if (building.Team == team) return;
+            ClearTargets();
+            _wantsAttackMove = false;
+            _holdPosition = false;
+            _patrolActive = false;
+            _buildingAttackTarget = building;
+            _order = UnitOrder.AttackBuilding;
+            SafeSetDestination(building.transform.position);
+        }
+
         void ClearTargets()
         {
+            if (_buildTarget != null)
+            {
+                _buildTarget.UnassignBuilder();
+                _buildTarget = null;
+            }
+            _buildingAttackTarget = null;
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
+            _buildTimer = 0f;
             UnlockMelee();
         }
 
