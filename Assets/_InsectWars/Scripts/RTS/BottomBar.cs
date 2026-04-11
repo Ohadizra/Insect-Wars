@@ -382,17 +382,24 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
                     var bld = SelectionController.Instance?.SelectedBuilding;
                     if (bld != null)
                     {
-                        string[] hotkeys = { "Q", "W", "E", "R" };
-                        var units = bld.ProducibleUnits;
-                        for (int i = 0; i < units.Length; i++)
+                        if (bld.State == BuildingState.UnderConstruction)
                         {
-                            var arch = units[i];
-                            string hk = i < hotkeys.Length ? hotkeys[i] : "";
-                            AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromBuilding(bld, arch));
+                            // No production buttons while under construction — workers must build first
                         }
-                        if (bld.IsProducing)
-                            AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => bld.CancelLast());
-                        AddCmdButton(_cmdGridParent, "Clear Rally", "R", () => ClearBuildingRally(bld));
+                        else
+                        {
+                            string[] hotkeys = { "Q", "W", "E", "R" };
+                            var units = bld.ProducibleUnits;
+                            for (int i = 0; i < units.Length; i++)
+                            {
+                                var arch = units[i];
+                                string hk = i < hotkeys.Length ? hotkeys[i] : "";
+                                AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromBuilding(bld, arch));
+                            }
+                            if (bld.IsProducing)
+                                AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => bld.CancelLast());
+                            AddCmdButton(_cmdGridParent, "Clear Rally", "R", () => ClearBuildingRally(bld));
+                        }
                     }
                     break;
             }
@@ -413,7 +420,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0, 0, 0, 0.05f); // Very faint background
+            bg.color = Color.clear;
             bg.raycastTarget = false; // Allow clicking through to the world
 
             var miniContainer = new GameObject("MinimapContainer");
@@ -458,6 +465,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var cmdFrameImg = cmdPanel.AddComponent<Image>();
             cmdFrameImg.sprite = commandCardFrame;
             cmdFrameImg.type = Image.Type.Sliced;
+            cmdFrameImg.fillCenter = false;
             cmdFrameImg.color = Color.white;
             cmdFrameImg.raycastTarget = false; // Fix: allow interaction underneath if needed
 
@@ -488,6 +496,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var centerBg = center.AddComponent<Image>();
             centerBg.sprite = centerBlockFrame;
             centerBg.type = Image.Type.Sliced;
+            centerBg.fillCenter = false;
             centerBg.color = Color.white;
             centerBg.raycastTarget = true; // Correct: block clicks on selection block background
 
@@ -910,11 +919,19 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             float progress = 0f;
             string label = null;
             int queueCount = 0;
+            Color barColor = new Color(0.3f, 0.7f, 1f);
 
             if (SelectionController.Instance != null)
             {
                 var bld = SelectionController.Instance.SelectedBuilding;
-                if (bld != null && bld.IsProducing)
+                if (bld != null && bld.State == BuildingState.UnderConstruction)
+                {
+                    progress = bld.ConstructionProgress;
+                    int builders = bld.AssignedBuilders;
+                    label = builders > 0 ? $"Building... ({builders} worker{(builders > 1 ? "s" : "")})" : "Building... (no workers)";
+                    barColor = new Color(0.95f, 0.75f, 0.2f);
+                }
+                else if (bld != null && bld.IsProducing)
                 {
                     progress = bld.ProductionProgress;
                     var arch = bld.CurrentProducing;
@@ -940,6 +957,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             }
 
             _prodBarRoot.SetActive(true);
+            _prodBarFill.color = barColor;
             _prodBarFill.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
             string queueSuffix = queueCount > 1 ? $" [{queueCount}]" : "";
             _prodLabel.text = $"{label} {Mathf.RoundToInt(progress * 100f)}%{queueSuffix}";
@@ -998,10 +1016,11 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
 
             if (SelectionController.Instance.SelectedHive != null)
             {
+                var hive = SelectionController.Instance.SelectedHive;
                 _portraitLabel.text = "Ant Nest";
                 _attributeLabel.text = "Structure - Biological";
                 if (_portraitMain != null) { _portraitMain.sprite = portraitWorker; _portraitMain.color = Color.white; }
-                
+                ShowHpDisplay(hive.CurrentHealth, hive.MaxHealth);
                 var cell0 = _selectionCells[0];
                 cell0.color = Color.white;
                 cell0.sprite = portraitWorker;
@@ -1012,8 +1031,10 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             {
                 var bld = SelectionController.Instance.SelectedBuilding;
                 _portraitLabel.text = bld.DisplayName;
-                _attributeLabel.text = "Structure - Biological";
-                
+                _attributeLabel.text = bld.State == BuildingState.UnderConstruction
+                    ? $"Under Construction — {Mathf.RoundToInt(bld.ConstructionProgress * 100f)}%"
+                    : "Structure - Biological";
+                ShowHpDisplay(bld.CurrentHealth, bld.MaxHealth);
                 var cell0 = _selectionCells[0];
                 cell0.color = Color.white;
                 return;

@@ -180,7 +180,7 @@ namespace InsectWars.RTS
             if (hive == null) return;
             if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 8f),
-                BuildingType.Underground, Team.Enemy);
+                BuildingType.Underground, Team.Enemy, startActive: true);
         }
 
         bool TryPlaceExpansionNest()
@@ -200,7 +200,7 @@ namespace InsectWars.RTS
             if (bestNode == null) return false;
             if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.AntNest))) return false;
             ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
-                BuildingType.AntNest, Team.Enemy);
+                BuildingType.AntNest, Team.Enemy, startActive: true);
             return true;
         }
 
@@ -403,9 +403,36 @@ namespace InsectWars.RTS
                 }
             }
 
+            // Prefer workers, then any unit
             if (bestWorker != null) return bestWorker.transform.position;
             if (bestAny != null) return bestAny.transform.position;
-            return HiveDeposit.PlayerHive != null ? HiveDeposit.PlayerHive.transform.position : Vector3.zero;
+
+            // Fall back to player buildings (hive or production buildings)
+            if (HiveDeposit.PlayerHive != null && HiveDeposit.PlayerHive.IsAlive)
+                return HiveDeposit.PlayerHive.transform.position;
+
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                return b.transform.position;
+            }
+
+            return Vector3.zero;
+        }
+
+        /// <summary>
+        /// Orders all idle/moving enemy combat units to attack a specific player building.
+        /// Used when there are no player units but buildings remain.
+        /// </summary>
+        void SendArmyToAttackBuilding(Vector3 targetPos)
+        {
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
+                if (u.Archetype == UnitArchetype.Worker) continue;
+                if (u.CurrentOrder == UnitOrder.Idle || u.CurrentOrder == UnitOrder.Move)
+                    u.OrderAttackMove(targetPos);
+            }
         }
 
         bool HasActiveFruit()

@@ -93,6 +93,22 @@ namespace InsectWars.RTS
                 return;
             }
 
+            var enemyBuilding = hit.collider.GetComponentInParent<ProductionBuilding>();
+            if (enemyBuilding != null && enemyBuilding.Team == Team.Enemy && enemyBuilding.IsAlive)
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    u.OrderAttackBuilding(enemyBuilding);
+                return;
+            }
+
+            var enemyHive = hit.collider.GetComponentInParent<HiveDeposit>();
+            if (enemyHive != null && enemyHive.Team == Team.Enemy && enemyHive.IsAlive)
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    u.OrderAttackHive(enemyHive);
+                return;
+            }
+
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                 u.OrderMove(hit.point);
         }
@@ -206,10 +222,7 @@ namespace InsectWars.RTS
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
             {
                 if (u.Definition != null && u.Definition.canGather)
-                {
-                    u.OrderMove(building.transform.position);
-                    break;
-                }
+                    u.OrderBuild(building);
             }
 
             BottomBar.Instance.SetPending(PendingCommand.None);

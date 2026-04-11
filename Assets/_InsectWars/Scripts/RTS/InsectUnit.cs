@@ -14,10 +14,11 @@ namespace InsectWars.RTS
         ReturnDeposit,
         Patrol,
         Build,
-        AttackBuilding
-    }
+        AttackBuilding,
+        AttackHive
+        }
 
-    public enum CargoType
+        public enum CargoType
     {
         Calories
     }
@@ -34,6 +35,7 @@ namespace InsectWars.RTS
         UnitOrder _order;
         Transform _attackTarget;
         ProductionBuilding _buildingAttackTarget;
+        HiveDeposit _hiveAttackTarget;
         ProductionBuilding _buildTarget;
         RottingFruitNode _gatherTarget;
         RottingFruitNode _lastGatherTarget;
@@ -52,6 +54,7 @@ namespace InsectWars.RTS
 
         float _terrainSpeedTimer;
         float _terrainDmgAccum;
+        float _navBindRetryTimer;
 
         public Team Team => team;
         public UnitDefinition Definition => definition;
@@ -205,6 +208,11 @@ namespace InsectWars.RTS
             }
             if (GetComponent<UnitHealthBar>() == null)
                 gameObject.AddComponent<UnitHealthBar>();
+
+            // NavMeshAgent needs one frame after Awake to finish initializing before Warp works.
+            // Try to bind here (Start runs the frame after Awake/OnEnable) so that orders
+            // issued in MapDirector.Start() can be serviced immediately from this frame onward.
+            TryBindNavMesh();
         }
 
         public void Configure(Team t, UnitDefinition def, UnitArchetype archetype = UnitArchetype.Worker)
@@ -285,9 +293,27 @@ namespace InsectWars.RTS
             return surfaceRange + selfRadius + targetRadius;
         }
 
+        void TryBindNavMesh()
+        {
+            if (_agent == null || !_agent.enabled || _agent.isOnNavMesh) return;
+            if (NavMesh.SamplePosition(transform.position, out var hit, 10f, NavMesh.AllAreas))
+                _agent.Warp(hit.position);
+        }
+
         void Update()
         {
             if (!IsAlive) return;
+            // Retry NavMesh binding every 0.25 s until the agent settles on the mesh.
+            // This covers the case where the agent wasn't fully initialised when ordered.
+            if (_agent != null && _agent.enabled && !_agent.isOnNavMesh)
+            {
+                _navBindRetryTimer -= Time.unscaledDeltaTime;
+                if (_navBindRetryTimer <= 0f)
+                {
+                    _navBindRetryTimer = 0.25f;
+                    TryBindNavMesh();
+                }
+            }
             _attackCooldown -= Time.deltaTime;
             TickTerrainEffects();
             switch (_order)
@@ -303,6 +329,9 @@ namespace InsectWars.RTS
                     break;
                 case UnitOrder.AttackBuilding:
                     TickAttackBuilding();
+                    break;
+                case UnitOrder.AttackHive:
+                    TickAttackHive();
                     break;
                 case UnitOrder.Build:
                     TickBuild();
@@ -462,6 +491,19 @@ namespace InsectWars.RTS
             SafeSetDestination(building.transform.position);
         }
 
+        public void OrderAttackHive(HiveDeposit hive)
+        {
+            if (!IsAlive || hive == null || !hive.IsAlive) return;
+            if (hive.Team == team) return;
+            ClearTargets();
+            _wantsAttackMove = false;
+            _holdPosition = false;
+            _patrolActive = false;
+            _hiveAttackTarget = hive;
+            _order = UnitOrder.AttackBuilding;
+            SafeSetDestination(hive.transform.position);
+        }
+
         void ClearTargets()
         {
             if (_buildTarget != null)
@@ -470,6 +512,7 @@ namespace InsectWars.RTS
                 _buildTarget = null;
             }
             _buildingAttackTarget = null;
+            _hiveAttackTarget = null;
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
@@ -604,6 +647,111 @@ namespace InsectWars.RTS
             var returnDest = FindNearestTeamDepositPoint();
             if (returnDest.HasValue)
                 SafeSetDestination(returnDest.Value);
+        }
+
+        void TickBuild()
+        {
+            if (_buildTarget == null || _buildTarget.State == BuildingState.Destroyed)
+            {
+                ClearTargets();
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            if (_buildTarget.State == BuildingState.Active)
+            {
+                // Construction finished
+                ClearTargets();
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            if (!AgentActiveOnNavMesh) return;
+
+            var diff = transform.position - _buildTarget.transform.position;
+            diff.y = 0f;
+            if (diff.magnitude > _buildTarget.BuildRange)
+            {
+                SafeSetDestination(_buildTarget.transform.position);
+                return;
+            }
+
+            SafeStopAgent();
+            _buildTarget.ContributeConstruction(Time.deltaTime);
+        }
+
+        void TickAttackBuilding()
+        {
+            // Resolve the actual target transform and alive state
+            Transform targetTransform = null;
+            bool targetAlive = false;
+
+            if (_buildingAttackTarget != null)
+            {
+                targetAlive = _buildingAttackTarget.IsAlive;
+                targetTransform = _buildingAttackTarget.transform;
+            }
+            else if (_hiveAttackTarget != null)
+            {
+                targetAlive = _hiveAttackTarget.IsAlive;
+                targetTransform = _hiveAttackTarget.transform;
+            }
+
+            if (targetTransform == null || !targetAlive)
+            {
+                ResumeAfterAttack();
+                return;
+            }
+
+            if (!AgentActiveOnNavMesh) return;
+
+            var dist = Vector3.Distance(transform.position, targetTransform.position);
+            float range = definition != null ? definition.attackRange + 2f : 4f;
+
+            if (dist > range)
+            {
+                SafeSetDestination(targetTransform.position);
+                return;
+            }
+
+            // In range — stop and strike
+            if (AgentActiveOnNavMesh)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+                if (definition == null || definition.archetype != UnitArchetype.BasicRanged)
+                {
+                    _agent.updatePosition = false;
+                    _agent.updateRotation = false;
+                }
+            }
+
+            if (_attackCooldown > 0f) return;
+            _attackCooldown = definition != null ? definition.attackCooldown : 1f;
+
+            if (definition != null && definition.archetype == UnitArchetype.BasicRanged)
+            {
+                var animDriver = GetComponent<UnitAnimationDriver>();
+                var lookDir = targetTransform.position - transform.position;
+                lookDir.y = 0f;
+                var sprayOrigin = animDriver != null
+                    ? animDriver.GetSprayOrigin()
+                    : transform.position + Vector3.up * 0.45f;
+                SprayAttack.Fire(sprayOrigin, lookDir.normalized, definition.attackRange,
+                    team, definition.attackDamage, null);
+                animDriver?.NotifyAttack();
+            }
+            else
+            {
+                GetComponent<UnitAnimationDriver>()?.NotifyAttack();
+            }
+
+            float dmg = definition != null ? definition.attackDamage : 10f;
+            if (_buildingAttackTarget != null)
+                _buildingAttackTarget.ApplyDamage(dmg);
+            else if (_hiveAttackTarget != null)
+                _hiveAttackTarget.ApplyDamage(dmg);
         }
 
         void TickReturn()
@@ -811,9 +959,69 @@ namespace InsectWars.RTS
             _attackCooldown = definition.attackCooldown;
         }
 
+        
+        void TickAttackHive()
+        {
+            if (_hiveAttackTarget == null || !_hiveAttackTarget.IsAlive)
+            {
+                _hiveAttackTarget = null;
+                ResumeAfterAttack();
+                return;
+            }
+
+            if (!AgentActiveOnNavMesh) return;
+
+            var dist = Vector3.Distance(transform.position, _hiveAttackTarget.transform.position);
+            float range = definition != null ? definition.attackRange + 4f : 6f; // hives are larger
+
+            if (dist > range)
+            {
+                SafeSetDestination(_hiveAttackTarget.transform.position);
+                return;
+            }
+
+            // In range — stop and attack
+            if (AgentActiveOnNavMesh)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+                if (definition.archetype != UnitArchetype.BasicRanged)
+                {
+                    _agent.updatePosition = false;
+                    _agent.updateRotation = false;
+                }
+            }
+
+            if (_attackCooldown > 0f) return;
+            _attackCooldown = definition != null ? definition.attackCooldown : 1f;
+
+            if (definition != null && definition.archetype == UnitArchetype.BasicRanged)
+            {
+                var animDriver = GetComponent<UnitAnimationDriver>();
+                var lookDir = _hiveAttackTarget.transform.position - transform.position;
+                lookDir.y = 0f;
+                var sprayOrigin = animDriver != null
+                    ? animDriver.GetSprayOrigin()
+                    : transform.position + Vector3.up * 0.45f;
+                SprayAttack.Fire(sprayOrigin, lookDir.normalized, definition.attackRange,
+                    team, definition.attackDamage, null);
+                animDriver?.NotifyAttack();
+            }
+            else
+            {
+                GetComponent<UnitAnimationDriver>()?.NotifyAttack();
+            }
+
+            float dmg = definition != null ? definition.attackDamage : 10f;
+            _hiveAttackTarget.ApplyDamage(dmg);
+        }
+
         void ResumeAfterAttack()
         {
             _attackTarget = null;
+            _buildingAttackTarget = null;
+            _hiveAttackTarget = null;
             UnlockMelee();
             if (_wantsAttackMove)
             {

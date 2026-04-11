@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,10 +11,16 @@ namespace InsectWars.RTS
         public static HiveDeposit PlayerHive { get; private set; }
         public static HiveDeposit EnemyHive { get; private set; }
 
+        public static System.Action<HiveDeposit> OnDestroyed;
+
+        const float HiveMaxHealth = 600f;
+
         [SerializeField] Team team = Team.Player;
         Vector3? _rallyPoint;
         RottingFruitNode _rallyGatherTarget;
         GameObject _rallyFlag;
+
+        float _currentHealth = HiveMaxHealth;
 
         struct WorkerQueueEntry
         {
@@ -30,6 +37,9 @@ namespace InsectWars.RTS
         public bool IsProducing => _workerQueue.Count > 0;
         public int QueueCount => _workerQueue.Count;
         public float ProductionProgress => _workerQueue.Count > 0 ? Mathf.Clamp01(_workerQueue[0].elapsed / _workerQueue[0].buildTime) : 0f;
+        public float CurrentHealth => _currentHealth;
+        public float MaxHealth => HiveMaxHealth;
+        public bool IsAlive => _currentHealth > 0f;
 
         void Awake()
         {
@@ -118,11 +128,32 @@ namespace InsectWars.RTS
                 unit.OrderMove(_rallyPoint.Value);
         }
 
+        public void ApplyDamage(float dmg)
+        {
+            if (_currentHealth <= 0f) return;
+            _currentHealth -= dmg;
+            GameAudio.PlayCombatHit(transform.position);
+            if (_currentHealth <= 0f)
+            {
+                _currentHealth = 0f;
+                DestroyHive();
+            }
+        }
+
+        void DestroyHive()
+        {
+            if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
+            OnDestroyed?.Invoke(this);
+            Destroy(gameObject, 0.1f);
+        }
+
         public void Configure(Team t)
         {
             if (PlayerHive == this) PlayerHive = null;
             if (EnemyHive == this) EnemyHive = null;
             team = t;
+            _currentHealth = HiveMaxHealth;
             RegisterHive();
         }
 
