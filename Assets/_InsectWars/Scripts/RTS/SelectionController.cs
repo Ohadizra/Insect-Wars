@@ -46,30 +46,30 @@ namespace InsectWars.RTS
 
         void BuildMarqueeOverlay()
         {
-            var go = new GameObject("SelectionMarqueeCanvas");
+            // Named "MarqueeBox" deliberately — GameHUD.BuildHud() disables any canvas
+            // whose name contains "HUD", "Canvas", or "UI", which would kill the marquee.
+            var go = new GameObject("MarqueeBox");
             go.transform.SetParent(transform);
             _marqueeCanvas = go.AddComponent<Canvas>();
             _marqueeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _marqueeCanvas.sortingOrder = 40;
+            // Sort above the GameHUD canvas (sortingOrder 200) so it is always visible.
+            _marqueeCanvas.sortingOrder = 210;
             _marqueeCanvas.pixelPerfect = false;
+            // ConstantPixelSize: 1 canvas unit == 1 screen pixel — simplest coordinate math.
             var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
-            go.AddComponent<GraphicRaycaster>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            // No GraphicRaycaster — the marquee is purely visual and must NOT interfere
+            // with EventSystem.IsPointerOverGameObject() checks in SelectionController.
 
             _marqueeCanvasRt = go.GetComponent<RectTransform>();
-            _marqueeCanvasRt.anchorMin = Vector2.zero;
-            _marqueeCanvasRt.anchorMax = Vector2.one;
-            _marqueeCanvasRt.offsetMin = Vector2.zero;
-            _marqueeCanvasRt.offsetMax = Vector2.zero;
 
             var fillGo = new GameObject("MarqueeFill");
             fillGo.transform.SetParent(go.transform, false);
             _marqueeFill = fillGo.AddComponent<RectTransform>();
-            _marqueeFill.anchorMin = _marqueeFill.anchorMax = new Vector2(0.5f, 0.5f);
-            _marqueeFill.pivot = new Vector2(0.5f, 0.5f);
+            // Anchor bottom-left so anchoredPosition == screen pixel position directly.
+            _marqueeFill.anchorMin = Vector2.zero;
+            _marqueeFill.anchorMax = Vector2.zero;
+            _marqueeFill.pivot = Vector2.zero;
             var img = fillGo.AddComponent<Image>();
             img.color = new Color(0.25f, 0.85f, 0.35f, 0.22f);
             img.raycastTarget = false;

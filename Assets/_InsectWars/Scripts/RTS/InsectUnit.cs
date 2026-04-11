@@ -519,6 +519,9 @@ namespace InsectWars.RTS
             _lastGatherTarget = null;
             _gatherTimer = 0f;
             _buildTimer = 0f;
+            // Always restore agent motion — building/hive attacks set updatePosition=false
+            // without setting _meleeLockedPos, so UnlockMelee() alone would miss them.
+            if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
             UnlockMelee();
         }
 
@@ -636,7 +639,12 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
-                SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
+                // Only (re)request the path when not already computing or following one —
+                // calling SetDestination every frame keeps pathPending=true forever and
+                // prevents the PathInvalid check below from ever triggering.
+                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
+
                 // If the NavMesh cannot route to this resource, abandon it so
                 // TickIdleAutoGather can find an accessible alternative.
                 if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
@@ -685,7 +693,8 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _buildTarget.BuildRange)
             {
-                SafeSetDestination(_buildTarget.transform.position);
+                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    SafeSetDestination(_buildTarget.transform.position);
                 return;
             }
 
@@ -725,7 +734,8 @@ namespace InsectWars.RTS
             {
                 // Restore agent control while closing the distance.
                 if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
-                SafeSetDestination(targetTransform.position);
+                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    SafeSetDestination(targetTransform.position);
                 return;
             }
 
@@ -788,7 +798,10 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > arrivalDist)
             {
-                SafeSetDestination(depositDest.Value);
+                // Only (re)request path when not already computing or following one.
+                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    SafeSetDestination(depositDest.Value);
+
                 // If the hive is unreachable, drop cargo and try to re-gather so
                 // the worker doesn't loop forever.
                 if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
@@ -1000,7 +1013,8 @@ namespace InsectWars.RTS
             if (dist > range)
             {
                 if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
-                SafeSetDestination(_hiveAttackTarget.transform.position);
+                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                    SafeSetDestination(_hiveAttackTarget.transform.position);
                 return;
             }
 
