@@ -713,6 +713,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "I have implemented the requested fixes:\n\n1.  **Ant's Nest Size**: Doubled the scale of the Ant's Nest (Hive) in the `MapDirector` and adjusted its `BoxCollider` and `NavMeshObstacle` accordingly. I also doubled the `HiveRadius` in `BuildZoneRegistry` to 28 units so that the build zone area matches the larger structure.\n2.  **Unit Spawn Positions**: Fixed the issue where units would sometimes snap to the center of the map upon spawning. I updated the `SpawnUnit` method in `MapDirector.cs` to explicitly use `NavMeshAgent.Warp(pos)`. This ensures the units are correctly placed on the NavMesh at their intended spawn positions near the Ant's Nest before their AI or movement logic begins.\n\nYou can now test these changes in the `Gameplay` scene. The hives should be visibly larger, and your starting units should correctly appear in a ring around your base.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "70619824-610e-4fa9-b213-619b81704fc7",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "The Ant's Nest was \"invisible\" because its original prefab was scaled to 100 in the project, and my previous change was accidentally setting its scale to **2** (making it 50 times smaller than original, rather than 2 times larger).\n\nI have fixed this in `MapDirector.cs` by **multiplying** the existing scale by 2. The nest should now correctly appear twice its intended size in the game world.\n\n*   **Fixed**: Nest scale in `BuildHive`.\n*   **Maintained**: Unit spawn positions near the base.\n*   **Maintained**: Enlarged build zone radius for the bigger structure.\n\nPlease check the game again; the larger nest should now be visible!",
+      "snapshot_message_type": 1
     }
   ]
 }

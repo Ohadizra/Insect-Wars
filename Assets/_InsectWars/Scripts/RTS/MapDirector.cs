@@ -432,7 +432,7 @@ namespace InsectWars.RTS
             {
                 go = Instantiate(lib.hivePrefab);
                 go.name = name;
-                go.transform.localScale = Vector3.one * 2f; // Double the size as requested
+                go.transform.localScale *= 2f; // Correctly double the existing scale
 
                 var existingHive = go.GetComponent<HiveVisual>();
                 if (existingHive != null) Destroy(existingHive);
