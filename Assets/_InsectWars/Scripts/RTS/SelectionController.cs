@@ -86,7 +86,8 @@ namespace InsectWars.RTS
             if (Mouse.current == null) return;
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
-            {\n                _dragStart = Mouse.current.position.ReadValue();
+            {
+                _dragStart = Mouse.current.position.ReadValue();
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 if (BottomBar.SuppressSelectionDrag || overUi)
                     _boxActive = false;
@@ -138,7 +139,8 @@ namespace InsectWars.RTS
         }
 
         void ClearAll()
-        {\n            foreach (var s in _selected)
+        {
+            foreach (var s in _selected)
                 s.IsSelected = false;
             _selected.Clear();
             _selectedHive = null;
@@ -159,7 +161,8 @@ namespace InsectWars.RTS
                     && _lastClickedUnit.Archetype == u.Archetype
                     && (now - _lastClickTime) <= DoubleClickThreshold;
 
-                _lastClickTime = now;\n                _lastClickedUnit = u;
+                _lastClickTime = now;
+                _lastClickedUnit = u;
 
                 if (isDoubleClick)
                 {
@@ -167,7 +170,8 @@ namespace InsectWars.RTS
                     return;
                 }
 
-                var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;\n                if (!shift) ClearAll();
+                var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+                if (!shift) ClearAll();
                 if (!_selected.Contains(u))
                 {
                     _selected.Add(u);
@@ -199,7 +203,6 @@ namespace InsectWars.RTS
                 _selectedResource = fruit;
                 return;
             }
-
         }
 
         void BoxSelect(Vector2 a, Vector2 b)
@@ -265,8 +268,8 @@ namespace InsectWars.RTS
             {
                 if (u.Team != Team.Player || !u.IsAlive) continue;
                 if (u.Archetype != archetype) continue;
-                var vp = _cam.WorldToViewportPoint(u.transform.position);
-                if (vp.z <= 0 || vp.x < 0 || vp.x > 1 || vp.y < 0 || vp.y > 1) continue;
+                var VP = _cam.WorldToViewportPoint(u.transform.position);
+                if (VP.z <= 0 || VP.x < 0 || VP.x > 1 || VP.y < 0 || VP.y > 1) continue;
                 if (!_selected.Contains(u))
                 {
                     _selected.Add(u);
@@ -285,13 +288,15 @@ namespace InsectWars.RTS
         {
             foreach (var u in _selected)
                 if (u != null && u.IsAlive && u.Team == Team.Player)
-                    yield return u;\n        }
+                    yield return u;
+        }
 
         public bool HasWorkerSelected()
         {
             foreach (var u in _selected)
             {
-                if (u == null || !u.IsAlive) continue;\n                if (u.Definition != null && u.Definition.canGather) return true;
+                if (u == null || !u.IsAlive) continue;
+                if (u.Definition != null && u.Definition.canGather) return true;
             }
             return false;
         }

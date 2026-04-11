@@ -74,7 +74,8 @@ namespace InsectWars.RTS
 
             var fruit = hit.collider.GetComponentInParent<RottingFruitNode>();
             if (fruit != null && !fruit.Depleted && SelectionController.Instance.HasWorkerSelected())
-            {\n                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                 {
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
@@ -140,7 +141,8 @@ namespace InsectWars.RTS
 
             if (pending == PendingCommand.Patrol || PatrolCoordinator.WaitingForSecondPoint)
             {
-                if (PatrolCoordinator.TryHandlePatrolClick(hit.point, out var a, out var b))\n                    return;
+                if (PatrolCoordinator.TryHandlePatrolClick(hit.point, out var a, out var b))
+                    return;
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderPatrol(a, b);
                 BottomBar.Instance.SetPending(PendingCommand.None);
@@ -192,7 +194,9 @@ namespace InsectWars.RTS
             var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
 
             if (!BuildZoneRegistry.IsInBuildZone(worldPos))
-                return;\n\n            var buildType = BottomBar.PendingBuildingType;
+                return;
+
+            var buildType = BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
 
             if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(cost))

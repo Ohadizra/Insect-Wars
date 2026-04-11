@@ -1,0 +1,36 @@
+{
+    "asset": "6c556226336ca45d797d42943a37f6fc",
+    "fileName": "019d7cce-3966-7ebe-8350-b0474e093e56.jpg",
+    "prompt": "RTS gather icon, insect themed, mandibles carrying a leaf or crystal, consistent with reference style, white background for extraction",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "9670a0e83199e5def09e4da6313c4ecf",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "523d6d9010dfc4ed9b5c5e312e25769b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

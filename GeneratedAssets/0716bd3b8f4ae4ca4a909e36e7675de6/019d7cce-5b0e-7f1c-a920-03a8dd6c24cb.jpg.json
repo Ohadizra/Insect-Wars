@@ -1,0 +1,36 @@
+{
+    "asset": "0716bd3b8f4ae4ca4a909e36e7675de6",
+    "fileName": "019d7cce-5b0e-7f1c-a920-03a8dd6c24cb.jpg",
+    "prompt": "RTS attack icon, insect themed, sharp mandible strike, consistent with reference style, white background for extraction",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "00dbbddc9d698149749fd7fd2fe80488",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "523d6d9010dfc4ed9b5c5e312e25769b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

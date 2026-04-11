@@ -1,0 +1,36 @@
+{
+    "asset": "036412b015aef4ce3b4a955a1ea21b30",
+    "fileName": "019d7ccd-eb21-7a38-8ba1-97b4d60b37f1.jpg",
+    "prompt": "RTS stop icon, insect themed, crossed chitinous mandibles, halt symbol, consistent with reference style, white background for extraction",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "ab79db89f07255325a9ea125e2a7c0f3",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "523d6d9010dfc4ed9b5c5e312e25769b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

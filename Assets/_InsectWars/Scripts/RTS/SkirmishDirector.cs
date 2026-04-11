@@ -7,9 +7,6 @@ using UnityEngine.AI;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Builds Demo 0 skirmish: ground, NavMesh, clay, fruits, hive, both teams + systems.
-    /// </summary>
     [DefaultExecutionOrder(-50)]
     public class SkirmishDirector : MonoBehaviour
     {
@@ -348,7 +345,6 @@ namespace InsectWars.RTS
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(f.position.x, f.position.z), 8f));
             foreach (var c in _clayLayout)
             {
-                var rect = new Rect(c.position.x - c.scale.x * 0.5f, c.position.z - c.scale.z * 0.5f, c.scale.x, c.scale.z);
                 z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), Mathf.Max(c.scale.x, c.scale.z) + 4f));
             }
             return z;
@@ -388,9 +384,9 @@ namespace InsectWars.RTS
             go.transform.SetParent(parent, false);
             go.transform.position = pos;
             var hive = go.AddComponent<HiveDeposit>();
-            hive.Init(team);
+            hive.Configure(team);
             var prod = go.AddComponent<ProductionBuilding>();
-            prod.Init(team, BuildingType.AntNest);
+            prod.Initialize(BuildingType.AntNest, team);
         }
 
         void AddRottingApple(Transform parent, Vector3 pos)
@@ -399,7 +395,7 @@ namespace InsectWars.RTS
             go.transform.SetParent(parent, false);
             go.transform.position = pos;
             var node = go.AddComponent<RottingFruitNode>();
-            node.Init(1000);
+            node.Configure(1000, 10, 5f);
         }
 
         void AddFruit(Transform parent, FruitPlaced f)
@@ -408,18 +404,37 @@ namespace InsectWars.RTS
             go.transform.SetParent(parent, false);
             go.transform.position = f.position;
             var node = go.AddComponent<RottingFruitNode>();
-            node.Init(500);
+            node.Configure(500, 10, 5f);
         }
 
         void AddTerrainFeature(Transform parent, TerrainFeaturePlaced tf) { }
 
-        InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
+        public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
-            var go = new GameObject(arch.ToString());
-            go.transform.position = pos;
-            var unit = go.AddComponent<InsectUnit>();
-            unit.Init(team, arch);
-            if (team == Team.Enemy) go.AddComponent<SimpleEnemyAi>();
+            GameObject prefab = null;
+            if (ActiveVisualLibrary != null)
+                prefab = ActiveVisualLibrary.GetUnitPrefab(arch);
+
+            GameObject go;
+            InsectUnit unit;
+
+            if (prefab != null)
+            {
+                go = Instantiate(prefab);
+                go.transform.position = pos;
+                unit = go.GetComponent<InsectUnit>();
+                if (unit == null) unit = go.AddComponent<InsectUnit>();
+            }
+            else
+            {
+                go = new GameObject(arch.ToString());
+                go.transform.position = pos;
+                unit = go.AddComponent<InsectUnit>();
+            }
+            
+            unit.Configure(team, null);
+            if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
+                go.AddComponent<SimpleEnemyAi>();
             return unit;
         }
 

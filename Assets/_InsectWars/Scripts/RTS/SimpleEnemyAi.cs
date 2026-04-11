@@ -4,13 +4,6 @@ using UnityEngine;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Per-unit AI for enemy team.
-    /// Workers: round-trip gathering via <see cref="EnemyCommander.FindBestFruit"/>,
-    ///          saturation tracking, flee toward nearby allies.
-    /// Combat:  leash radius, assist nearby allies, focus-fire injured targets,
-    ///          ranged kiting, low-HP retreat, re-aggro on damage.
-    /// </summary>
     public class SimpleEnemyAi : MonoBehaviour, IAiController
     {
         [SerializeField] float thinkInterval = 1.2f;
@@ -53,7 +46,8 @@ namespace InsectWars.RTS
             if (!_aggro && _self.Archetype != UnitArchetype.Worker)
             {
                 if (_self.CurrentHealth < _lastKnownHp - 0.01f)
-                {\n                    _aggro = true;
+                {
+                    _aggro = true;
                     _engagementOrigin = transform.position;
                     _hasEngagementOrigin = true;
                 }
@@ -74,7 +68,8 @@ namespace InsectWars.RTS
         }
 
         void TickWorker()
-        {\n            float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
+        {
+            float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
 
             InsectUnit threat = null;
             float threatDist = vision;
@@ -85,7 +80,8 @@ namespace InsectWars.RTS
                 float d = Vector3.Distance(transform.position, u.transform.position);
                 if (d >= threatDist) continue;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
-                if (concealment > 0f && d > concealment) continue;\n                threatDist = d; threat = u;
+                if (concealment > 0f && d > concealment) continue;
+                threatDist = d; threat = u;
             }
 
             if (threat != null)
@@ -99,7 +95,8 @@ namespace InsectWars.RTS
                 return;
 
             if (_self.CurrentOrder == UnitOrder.Idle)
-            {\n                ClearFruitAssignment();
+            {
+                ClearFruitAssignment();
                 var fruit = EnemyCommander.FindBestFruit(transform.position);
                 if (fruit != null)
                 {
@@ -142,7 +139,8 @@ namespace InsectWars.RTS
         }
 
         void TickCombat()
-        {\n            float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
+        {
+            float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
             float hpFrac = _self.MaxHealth > 0.01f ? _self.CurrentHealth / _self.MaxHealth : 1f;
             bool isRanged = _self.Archetype == UnitArchetype.BasicRanged;
 
@@ -158,7 +156,8 @@ namespace InsectWars.RTS
             if (_hasEngagementOrigin && _aggro)
             {
                 if (Vector3.Distance(transform.position, _engagementOrigin) > LeashRadius)
-                {\n                    _aggro = false;
+                {
+                    _aggro = false;
                     _hasEngagementOrigin = false;
                     _self.OrderMove(_engagementOrigin);
                     return;
@@ -173,7 +172,8 @@ namespace InsectWars.RTS
                     float d = Vector3.Distance(transform.position, u.transform.position);
                     if (d > vision) continue;
                     float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
-                    if (concealment > 0f && d > concealment) continue;\n                    _aggro = true;
+                    if (concealment > 0f && d > concealment) continue;
+                    _aggro = true;
                     _engagementOrigin = transform.position;
                     _hasEngagementOrigin = true;
                     break;
@@ -250,7 +250,8 @@ namespace InsectWars.RTS
                     float d = Vector3.Distance(ally.transform.position, u.transform.position);
                     if (d < bestDist) { bestDist = d; attacker = u; }
                 }
-                if (attacker != null) return attacker;\n            }
+                if (attacker != null) return attacker;
+            }
             return null;
         }
     }

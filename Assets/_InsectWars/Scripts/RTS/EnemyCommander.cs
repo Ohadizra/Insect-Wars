@@ -6,13 +6,6 @@ using UnityEngine.AI;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Strategic AI for the enemy team.
-    /// Economy: round-trip resource scoring, worker saturation tracking.
-    /// Construction: expansion nests, multiple Undergrounds with NavMesh-validated placement.
-    /// Production: dynamic worker caps, mixed army composition from all buildings.
-    /// Combat: army-threshold attacks, worker harass, defensive recall, all-in detection.
-    /// </summary>
     public class EnemyCommander : MonoBehaviour
     {
         static readonly Dictionary<int, int> s_workersByNode = new();
@@ -79,7 +72,8 @@ namespace InsectWars.RTS
                 if (bld == null || bld.Team != Team.Enemy) continue;
                 if (bld.Type != BuildingType.AntNest && bld.Type != BuildingType.RootCellar) continue;
                 float d = Vector3.Distance(pos, bld.transform.position);
-                if (d < best) best = d;\n            }
+                if (d < best) best = d;
+            }
             return best;
         }
 
@@ -131,7 +125,8 @@ namespace InsectWars.RTS
         }
 
         void AssignIdleWorkers()
-        {\n            if (_matchTime < _nextWorkerAssignTime) return;
+        {
+            if (_matchTime < _nextWorkerAssignTime) return;
             _nextWorkerAssignTime = _matchTime + 2.5f;
 
             foreach (var u in RtsSimRegistry.Units)
@@ -160,7 +155,8 @@ namespace InsectWars.RTS
             }
 
             if (undergrounds == 0 && _matchTime > 25f)
-            {\n                TryPlaceUnderground();
+            {
+                TryPlaceUnderground();
                 return;
             }
 
@@ -202,7 +198,8 @@ namespace InsectWars.RTS
             }
 
             if (bestNode == null) return false;
-            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.AntNest))) return false;\n            ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.AntNest))) return false;
+            ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
                 BuildingType.AntNest, Team.Enemy);
             return true;
         }
@@ -397,10 +394,12 @@ namespace InsectWars.RTS
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 float d = Vector3.Distance(from, u.transform.position);
                 if (u.Archetype == UnitArchetype.Worker)
-                {\n                    if (d < bestWorkerDist) { bestWorkerDist = d; bestWorker = u; }
+                {
+                    if (d < bestWorkerDist) { bestWorkerDist = d; bestWorker = u; }
                 }
                 else
-                {\n                    if (d < bestAnyDist) { bestAnyDist = d; bestAny = u; }
+                {
+                    if (d < bestAnyDist) { bestAnyDist = d; bestAny = u; }
                 }
             }
 

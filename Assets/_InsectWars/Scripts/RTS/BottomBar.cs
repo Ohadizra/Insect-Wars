@@ -21,10 +21,6 @@ namespace InsectWars.RTS
         PlaceBuilding
     }
 
-    /// <summary>
-    /// Bottom bar: minimap host (left), selection grid (center), command card (right).
-    /// Command card rebuilds dynamically based on what is selected (units / hive / resource).
-    /// </summary>
     public class BottomBar : MonoBehaviour
     {
         public static BottomBar Instance { get; private set; }
@@ -67,9 +63,8 @@ namespace InsectWars.RTS
         [SerializeField] Sprite portraitFighter;
         [SerializeField] Sprite portraitRanged;
 
-        // ── Organic Palette ──
-        static readonly Color ColTitle = new(0.96f, 0.90f, 0.78f); // Parchment
-        static readonly Color ColSub   = new(0.83f, 0.69f, 0.44f); // Copper
+        static readonly Color ColTitle = new(0.96f, 0.90f, 0.78f);
+        static readonly Color ColSub   = new(0.83f, 0.69f, 0.44f);
         static readonly Color ColOutline = new(0.1f, 0.08f, 0.06f, 0.8f);
 
         Image[] _selectionCells;
@@ -396,7 +391,6 @@ namespace InsectWars.RTS
             bg.color = new Color(0.06f, 0.05f, 0.04f, 0.98f); 
             bg.raycastTarget = true;
 
-            // Minimap Slot
             var miniSlot = new GameObject("MinimapHost");
             miniSlot.transform.SetParent(bar.transform, false);
             var ms = miniSlot.AddComponent<RectTransform>();
@@ -421,7 +415,6 @@ namespace InsectWars.RTS
             mi.offsetMax = new Vector2(-24f, -24f);
             MinimapHost = mi;
 
-            // Command Panel
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);
             var cp = cmdPanel.AddComponent<RectTransform>();
@@ -454,7 +447,6 @@ namespace InsectWars.RTS
             
             _cmdGridParent = grid.transform;
 
-            // Center / Selection Block
             var center = new GameObject("SelectionBlock");
             center.transform.SetParent(bar.transform, false);
             var cr = center.AddComponent<RectTransform>();
@@ -468,7 +460,6 @@ namespace InsectWars.RTS
             centerBg.color = Color.white;
             centerBg.raycastTarget = false;
 
-            // Portrait
             var portrait = new GameObject("PortraitBlock");
             portrait.transform.SetParent(center.transform, false);
             var pr = portrait.AddComponent<RectTransform>();
@@ -492,7 +483,6 @@ namespace InsectWars.RTS
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
-            // Central Info Block
             var infoBlock = new GameObject("InfoBlock");
             infoBlock.transform.SetParent(center.transform, false);
             var ibr = infoBlock.AddComponent<RectTransform>();
@@ -536,7 +526,6 @@ namespace InsectWars.RTS
             hfr.anchorMax = Vector2.one;
             hfr.offsetMin = hfr.offsetMax = Vector2.zero;
 
-            // Selection Grid
             var gridRoot = new GameObject("SelectionGrid");
             gridRoot.transform.SetParent(center.transform, false);
             var gr = gridRoot.AddComponent<RectTransform>();
@@ -575,7 +564,6 @@ namespace InsectWars.RTS
             ph.anchoredPosition = Vector2.zero;
             ph.sizeDelta = new Vector2(800f, 32f);
 
-            // Production progress bar
             _prodBarRoot = new GameObject("ProdBar");
             _prodBarRoot.transform.SetParent(infoBlock.transform, false);
             var pbr = _prodBarRoot.AddComponent<RectTransform>();
@@ -1078,7 +1066,8 @@ namespace InsectWars.RTS
             _hpLabel.text = $"HP: {Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
             if (_hpBarBg != null) _hpBarBg.gameObject.SetActive(true);
             if (_hpBarFill != null)
-            {\n                float frac = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+            {
+                float frac = max > 0f ? Mathf.Clamp01(current / max) : 0f;
                 _hpBarFill.rectTransform.anchorMax = new Vector2(frac, 1f);
                 _hpBarFill.color = HpBarColor(frac);
             }
@@ -1099,16 +1088,6 @@ namespace InsectWars.RTS
             }
             float t2 = frac * 2f;
             return Color.Lerp(new Color(0.95f, 0.15f, 0.1f), new Color(0.95f, 0.75f, 0.35f), t2);
-        }
-
-        static string Abbrev(UnitArchetype a)
-        {
-            return a switch
-            {\n                UnitArchetype.Worker => "W",
-                UnitArchetype.BasicFighter => "F",
-                UnitArchetype.BasicRanged => "R",
-                _ => "?"
-            };
         }
 
         static string BuildingName(BuildingType t)

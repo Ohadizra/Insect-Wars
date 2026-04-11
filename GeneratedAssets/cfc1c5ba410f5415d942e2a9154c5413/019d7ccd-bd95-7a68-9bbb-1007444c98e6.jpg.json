@@ -1,0 +1,36 @@
+{
+    "asset": "cfc1c5ba410f5415d942e2a9154c5413",
+    "fileName": "019d7ccd-bd95-7a68-9bbb-1007444c98e6.jpg",
+    "prompt": "RTS hold position icon, insect themed, grounded anchor-like insect limb, consistent with reference style, white background for extraction",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "94b4e1c2cc894ea6a91d6eba6991a1b2",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "523d6d9010dfc4ed9b5c5e312e25769b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

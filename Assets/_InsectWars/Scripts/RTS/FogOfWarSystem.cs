@@ -4,10 +4,6 @@ using UnityEngine.Rendering;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Fog map: R = ever explored, G = current vision (this frame). Rebuilt before the main camera renders.
-    /// Enemies are hidden unless their cell has current vision (RTS-style).
-    /// </summary>
     public class FogOfWarSystem : MonoBehaviour
     {
         public static FogOfWarSystem Instance { get; private set; }
@@ -18,7 +14,9 @@ namespace InsectWars.RTS
         static readonly int FogActiveId = Shader.PropertyToID("_IW_FogActive");
 
         [SerializeField] float hiveVisionRadius = 16f;
-        [SerializeField] float visionFalloffWorld = 2.2f;\n\n        Texture2D _tex;
+        [SerializeField] float visionFalloffWorld = 2.2f;
+
+        Texture2D _tex;
         Color32[] _pix;
         Color32 _black;
         readonly Dictionary<InsectUnit, Renderer[]> _enemyRenderers = new();
@@ -102,7 +100,8 @@ namespace InsectWars.RTS
             {
                 var u = kv.Key;
                 if (u == null || !u.IsAlive)
-                {\n                    toRemove ??= new List<InsectUnit>();
+                {
+                    toRemove ??= new List<InsectUnit>();
                     toRemove.Add(u);
                 }
             }
@@ -124,7 +123,8 @@ namespace InsectWars.RTS
                 bool show;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
                 if (concealment > 0f)
-                {\n                    show = false;
+                {
+                    show = false;
                     foreach (var pu in RtsSimRegistry.Units)
                     {
                         if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
@@ -133,7 +133,8 @@ namespace InsectWars.RTS
                     }
                 }
                 else
-                {\n                    show = IsInCurrentVision(u.transform.position);
+                {
+                    show = IsInCurrentVision(u.transform.position);
                 }
 
                 foreach (var r in renderers)
@@ -199,7 +200,8 @@ namespace InsectWars.RTS
             float invTexToWorld = (2f * h) / TexRes;
 
             for (var zz = minZ; zz <= maxZ; zz++)
-            {\n                for (var xx = minX; xx <= maxX; xx++)
+            {
+                for (var xx = minX; xx <= maxX; xx++)
                 {
                     var dx = xx - cx;
                     var dz = zz - cz;
