@@ -83,7 +83,7 @@ namespace InsectWars.RTS
 
             // Move commands should always have small stopping distance to feel responsive
             if (_order == UnitOrder.Move || _order == UnitOrder.Idle)
-                _agent.stoppingDistance = 0.25f;
+                _agent.stoppingDistance = 0.5f; // Increased slightly for stability
             else if (_order == UnitOrder.Attack && definition != null)
                 _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
 
@@ -716,11 +716,6 @@ namespace InsectWars.RTS
                         _agent.updateRotation = false;
                     }
 
-                    var dir = _attackTarget.position - transform.position;
-                    dir.y = 0f;
-                    if (dir.sqrMagnitude > 0.001f)
-                        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
-
                     if (_attackCooldown <= 0f)
                     {
                         if (targetUnit != null)
@@ -755,16 +750,10 @@ namespace InsectWars.RTS
 
             var animDriver = GetComponent<UnitAnimationDriver>();
 
-            var lookDir = _attackTarget.position - transform.position;
-            lookDir.y = 0f;
-            if (lookDir.sqrMagnitude > 0.001f)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(lookDir.normalized), Time.deltaTime * 12f);
-            }
-
             if (_attackCooldown > 0) return;
 
+            var lookDir = _attackTarget.position - transform.position;
+            lookDir.y = 0f;
             var sprayOrigin = animDriver != null
                 ? animDriver.GetSprayOrigin()
                 : transform.position + Vector3.up * 0.45f;

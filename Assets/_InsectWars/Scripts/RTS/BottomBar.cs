@@ -423,7 +423,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             mfrt.offsetMax = Vector2.zero;
             var frameImg = miniFrameGo.AddComponent<Image>();
             frameImg.sprite = minimapFrame;
-            frameImg.raycastTarget = true; // Correct: block clicks on minimap frame
+            frameImg.raycastTarget = false; // Fix: don't block minimap clicks
             frameImg.type = Image.Type.Simple;
 
             var cmdPanel = new GameObject("CommandPanel");
@@ -439,7 +439,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             cmdFrameImg.sprite = commandCardFrame;
             cmdFrameImg.type = Image.Type.Sliced;
             cmdFrameImg.color = Color.white;
-            cmdFrameImg.raycastTarget = true; // Correct: block clicks on command panel background
+            cmdFrameImg.raycastTarget = false; // Fix: allow interaction underneath if needed
 
             var grid = new GameObject("CmdGrid");
             grid.transform.SetParent(cmdPanel.transform, false);
