@@ -94,7 +94,7 @@ namespace InsectWars.RTS
             }
 
             var border = panel.AddComponent<Image>();
-            border.color = new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            border.color = new Color(0.1f, 0.08f, 0.06f, 0.95f); // Natural Charcoal
             border.raycastTarget = false;
 
             var rawGo = new GameObject("MinimapRT");

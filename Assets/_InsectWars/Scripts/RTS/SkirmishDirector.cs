@@ -574,7 +574,7 @@ AddTerrainFeature(world.transform, tf);
             float h = GetHeight(worldPos);
             var placedPos = new Vector3(worldPos.x, h + worldPos.y, worldPos.z);
 
-            const float hiveScale = 1.75f;
+            const float hiveScale = 3.5f;
 
             GameObject hive;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)

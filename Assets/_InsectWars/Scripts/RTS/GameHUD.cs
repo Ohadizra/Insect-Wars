@@ -13,7 +13,7 @@ namespace InsectWars.RTS
         public static RectTransform SelectionPanel { get; private set; }
         public static RectTransform ActionPanel { get; private set; }
 
-        [Header("Steampunk Style Assets")]
+        [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barMechanicalSprite;
         [SerializeField] Sprite frameSquareSprite;
         [SerializeField] Sprite portraitFrameSprite;
@@ -22,8 +22,9 @@ namespace InsectWars.RTS
         [SerializeField] Sprite eggIcon;
         [SerializeField] Sprite crystalIcon;
 
-        // ── Sketch Palette ──
-        static readonly Color ColAmber     = new(0.95f, 0.70f, 0.20f);
+        // ── Organic Palette ──
+        static readonly Color ColAmber     = new(0.96f, 0.90f, 0.78f); // Parchment/Amber
+        static readonly Color ColSub       = new(0.83f, 0.69f, 0.44f); // Copper
         static readonly Color ColWhite     = Color.white;
 
         Text _calorieLabel;
@@ -60,16 +61,16 @@ namespace InsectWars.RTS
                 }
             }
 
-#if UNITY_EDITOR
-            string p = "Assets/_InsectWars/Sprites/UI/StyleMatch/";
-            if (barMechanicalSprite == null) barMechanicalSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "bar_mechanical.png");
-            if (frameSquareSprite == null) frameSquareSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square.png");
+        #if UNITY_EDITOR
+            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (barMechanicalSprite == null) barMechanicalSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "top_bar_frame.png");
+            if (frameSquareSprite == null) frameSquareSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (portraitFrameSprite == null) portraitFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
-            if (buttonRoundSprite == null) buttonRoundSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_round.png");
+            if (buttonRoundSprite == null) buttonRoundSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
             if (larvaIcon == null) larvaIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
             if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
             if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
-#endif
+        #endif
 
             var canvasGo = new GameObject("DemoHUD");
             canvasGo.transform.SetParent(transform);
@@ -124,6 +125,7 @@ namespace InsectWars.RTS
             img.rectTransform.anchorMin = new Vector2(0, 0.5f); img.rectTransform.anchorMax = new Vector2(0, 0.5f);
             img.rectTransform.pivot = new Vector2(0, 0.5f); img.rectTransform.anchoredPosition = Vector2.zero;
             img.rectTransform.sizeDelta = new Vector2(40, 40);
+            img.preserveAspect = true;
             
             var val = CreateText("Val", rt, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(50, 0), Vector2.zero, initialVal, 20, ColAmber);
             val.alignment = TextAnchor.MiddleLeft;
@@ -143,6 +145,7 @@ namespace InsectWars.RTS
             var img = go.AddComponent<Image>();
             img.sprite = sprite;
             img.color = ColWhite;
+            img.type = Image.Type.Sliced;
             return rt;
         }
 
@@ -164,8 +167,8 @@ namespace InsectWars.RTS
             rt.offsetMax = offsetMax;
             
             var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(0, 0, 0, 0.6f);
-            outline.effectDistance = new Vector2(1, -1);
+            outline.effectColor = new Color(0.1f, 0.08f, 0.05f, 0.8f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
             return t;
         }
 

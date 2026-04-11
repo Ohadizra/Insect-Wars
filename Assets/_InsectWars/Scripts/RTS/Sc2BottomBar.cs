@@ -37,7 +37,7 @@ namespace InsectWars.RTS
         [SerializeField] float minimapSlot = 240f;
         [SerializeField] float commandPanelWidth = 380f;
 
-        [Header("Biological UI Art")]
+        [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barBackground;
         [SerializeField] Sprite minimapFrame;
         [SerializeField] Sprite commandCardFrame;
@@ -66,6 +66,11 @@ namespace InsectWars.RTS
         [SerializeField] Sprite portraitWorker;
         [SerializeField] Sprite portraitFighter;
         [SerializeField] Sprite portraitRanged;
+
+        // ── Organic Palette ──
+        static readonly Color ColTitle = new(0.96f, 0.90f, 0.78f); // Parchment
+        static readonly Color ColSub   = new(0.83f, 0.69f, 0.44f); // Copper
+        static readonly Color ColOutline = new(0.1f, 0.08f, 0.06f, 0.8f);
 
         Image[] _selectionCells;
         Image _portraitMain;
@@ -97,33 +102,22 @@ namespace InsectWars.RTS
             _font = UiFontHelper.GetFont();
 
         #if UNITY_EDITOR
-            // Auto-wire the generated art if null
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Square 3.png");
-            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Vines 3.png");
-            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Square 1.png");
-            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Vines_Wide 3.png");
+            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
+            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid.png");
+            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
+            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
 
-            if (iconMove == null) iconMove = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Move.png");
-            if (iconStop == null) iconStop = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Stop.png");
-            if (iconHold == null) iconHold = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Hold.png");
-            if (iconPatrol == null) iconPatrol = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Patrol.png");
-            if (iconAttack == null) iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Attack.png");
-            if (iconGather == null) iconGather = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Gather.png");
-            if (iconBuild == null) iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Build.png");
-            if (iconCancel == null) iconCancel = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Cancel.png");
-            if (iconWorker == null) iconWorker = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Worker.png");
-            if (iconFighter == null) iconFighter = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Fighter.png");
-            if (iconRanged == null) iconRanged = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Ranged.png");
-            if (iconUnderground == null) iconUnderground = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Underground.png");
-            if (iconSkyTower == null) iconSkyTower = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_SkyTower.png");
-            if (iconAntNest == null) iconAntNest = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_AntNest.png");
-            if (iconEvolve == null) iconEvolve = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_Evolve.png");
-            if (iconClearRally == null) iconClearRally = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Icon_ClearRally.png");
+            if (iconMove == null) iconMove = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_running_person.png");
+            if (iconAttack == null) iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_beetle_action.png");
+            if (iconBuild == null) iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_hammer_wrench.png");
+            if (iconWorker == null) iconWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
+            if (iconFighter == null) iconFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_view.png");
+            if (iconRanged == null) iconRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_view.png");
 
-            if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_AntWorker.png");
-
-            if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_MantisFighter.png");
-            if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/Portrait_BombardierBeetle.png");
+            if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "portrait_stag_beetle.png");
+            if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_alt.png");
+            if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_alt.png");
         #endif
         }
 
@@ -389,7 +383,7 @@ namespace InsectWars.RTS
 
                             AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearRally);
                             break;
-case BarMode.Building:
+        case BarMode.Building:
                 {
                     var bld = SelectionController.Instance?.SelectedBuilding;
                     if (bld != null)
@@ -433,7 +427,7 @@ case BarMode.Building:
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = new Color(0.05f, 0.03f, 0.1f, 0.96f);
+            bg.color = new Color(0.06f, 0.05f, 0.04f, 0.98f); // Organic Dark
             bg.raycastTarget = true;
 
             if (barBackground != null)
@@ -463,8 +457,8 @@ case BarMode.Building:
 
             var miniFrameImg = miniSlot.AddComponent<Image>();
             miniFrameImg.sprite = minimapFrame;
-            miniFrameImg.type = Image.Type.Simple;
-            miniFrameImg.color = minimapFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            miniFrameImg.type = Image.Type.Sliced;
+            miniFrameImg.color = Color.white;
             miniFrameImg.raycastTarget = false;
 
             var miniInner = new GameObject("MinimapInner");
@@ -472,8 +466,8 @@ case BarMode.Building:
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(20f, 20f);
-            mi.offsetMax = new Vector2(-20f, -20f);
+            mi.offsetMin = new Vector2(24f, 24f);
+            mi.offsetMax = new Vector2(-24f, -24f);
             MinimapHost = mi;
 
             // Command Panel
@@ -488,8 +482,8 @@ case BarMode.Building:
 
             var cmdFrameImg = cmdPanel.AddComponent<Image>();
             cmdFrameImg.sprite = commandCardFrame;
-            cmdFrameImg.type = Image.Type.Simple;
-            cmdFrameImg.color = commandCardFrame != null ? Color.white : new Color(0.08f, 0.1f, 0.06f, 0.92f);
+            cmdFrameImg.type = Image.Type.Sliced;
+            cmdFrameImg.color = Color.white;
             cmdFrameImg.raycastTarget = false;
 
             var grid = new GameObject("CmdGrid");
@@ -497,11 +491,11 @@ case BarMode.Building:
             var grt = grid.AddComponent<RectTransform>();
             grt.anchorMin = Vector2.zero;
             grt.anchorMax = Vector2.one;
-            grt.offsetMin = new Vector2(20f, 24f);
-            grt.offsetMax = new Vector2(-20f, -24f);
+            grt.offsetMin = new Vector2(32f, 32f);
+            grt.offsetMax = new Vector2(-32f, -32f);
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(80f, 52f);
-            gl.spacing = new Vector2(6f, 6f);
+            gl.cellSize = new Vector2(74f, 48f);
+            gl.spacing = new Vector2(8f, 8f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 4;
             gl.childAlignment = TextAnchor.MiddleCenter;
@@ -517,8 +511,8 @@ case BarMode.Building:
             cr.offsetMax = new Vector2(-commandPanelWidth, 0f);
             var centerBg = center.AddComponent<Image>();
             centerBg.sprite = centerBlockFrame;
-            centerBg.type = Image.Type.Simple;
-            centerBg.color = centerBlockFrame != null ? Color.white : new Color(0.06f, 0.07f, 0.04f, 0.85f);
+            centerBg.type = Image.Type.Sliced;
+            centerBg.color = Color.white;
             centerBg.raycastTarget = false;
 
             // Portrait
@@ -528,20 +522,20 @@ case BarMode.Building:
             pr.anchorMin = new Vector2(0f, 0.5f);
             pr.anchorMax = new Vector2(0f, 0.5f);
             pr.pivot = new Vector2(0f, 0.5f);
-            pr.anchoredPosition = new Vector2(16f, 0f);
-            pr.sizeDelta = new Vector2(130f, 130f);
+            pr.anchoredPosition = new Vector2(24f, 0f);
+            pr.sizeDelta = new Vector2(140f, 140f);
             var pImg = portrait.AddComponent<Image>();
             pImg.sprite = portraitFrame;
-            pImg.type = Image.Type.Simple;
-            pImg.color = portraitFrame != null ? Color.white : new Color(0.1f, 0.08f, 0.12f, 0.8f);
+            pImg.type = Image.Type.Sliced;
+            pImg.color = Color.white;
 
             var portraitSub = new GameObject("PortraitInner");
             portraitSub.transform.SetParent(portrait.transform, false);
             var psr = portraitSub.AddComponent<RectTransform>();
             psr.anchorMin = Vector2.zero;
             psr.anchorMax = Vector2.one;
-            psr.offsetMin = new Vector2(16f, 16f);
-            psr.offsetMax = new Vector2(-16f, -16f);
+            psr.offsetMin = new Vector2(20f, 20f);
+            psr.offsetMax = new Vector2(-20f, -20f);
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
@@ -552,37 +546,22 @@ case BarMode.Building:
             ibr.anchorMin = new Vector2(0f, 0f);
             ibr.anchorMax = new Vector2(1f, 1f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.offsetMin = new Vector2(155f, 16f);
-            ibr.offsetMax = new Vector2(-16f, -16f);
+            ibr.offsetMin = new Vector2(180f, 24f);
+            ibr.offsetMax = new Vector2(-24f, -24f);
 
-            _portraitLabel = new GameObject("NameText").AddComponent<Text>();
-            _portraitLabel.transform.SetParent(infoBlock.transform, false);
-            _portraitLabel.font = _font;
-            _portraitLabel.fontSize = 20;
-            _portraitLabel.color = new Color(0.5f, 1f, 0.5f);
-            _portraitLabel.alignment = TextAnchor.MiddleCenter;
+            _portraitLabel = CreateText("NameText", infoBlock.transform, 22, ColTitle, TextAnchor.MiddleCenter);
             var pl = _portraitLabel.rectTransform;
             pl.anchorMin = new Vector2(0f, 0.75f);
             pl.anchorMax = Vector2.one;
             pl.offsetMin = pl.offsetMax = Vector2.zero;
 
-            _attributeLabel = new GameObject("AttributeText").AddComponent<Text>();
-            _attributeLabel.transform.SetParent(infoBlock.transform, false);
-            _attributeLabel.font = _font;
-            _attributeLabel.fontSize = 12;
-            _attributeLabel.color = new Color(0.7f, 0.8f, 0.7f);
-            _attributeLabel.alignment = TextAnchor.MiddleCenter;
+            _attributeLabel = CreateText("AttributeText", infoBlock.transform, 14, ColSub, TextAnchor.MiddleCenter);
             var al = _attributeLabel.rectTransform;
             al.anchorMin = new Vector2(0f, 0f);
             al.anchorMax = new Vector2(1f, 0.25f);
             al.offsetMin = al.offsetMax = Vector2.zero;
 
-            _hpLabel = new GameObject("HpText").AddComponent<Text>();
-            _hpLabel.transform.SetParent(infoBlock.transform, false);
-            _hpLabel.font = _font;
-            _hpLabel.fontSize = 14;
-            _hpLabel.color = Color.white;
-            _hpLabel.alignment = TextAnchor.MiddleCenter;
+            _hpLabel = CreateText("HpText", infoBlock.transform, 16, Color.white, TextAnchor.MiddleCenter);
             var hpRt = _hpLabel.rectTransform;
             hpRt.anchorMin = new Vector2(0f, 0.4f);
             hpRt.anchorMax = new Vector2(1f, 0.6f);
@@ -590,15 +569,15 @@ case BarMode.Building:
 
             _hpBarBg = new GameObject("HpBarBg").AddComponent<Image>();
             _hpBarBg.transform.SetParent(infoBlock.transform, false);
-            _hpBarBg.color = new Color(0.15f, 0.05f, 0.05f, 1f);
+            _hpBarBg.color = new Color(0.12f, 0.08f, 0.06f, 0.9f);
             var hbr = _hpBarBg.rectTransform;
-            hbr.anchorMin = new Vector2(0.1f, 0.3f);
-            hbr.anchorMax = new Vector2(0.9f, 0.38f);
+            hbr.anchorMin = new Vector2(0.1f, 0.32f);
+            hbr.anchorMax = new Vector2(0.9f, 0.40f);
             hbr.offsetMin = hbr.offsetMax = Vector2.zero;
 
             _hpBarFill = new GameObject("HpBarFill").AddComponent<Image>();
             _hpBarFill.transform.SetParent(_hpBarBg.transform, false);
-            _hpBarFill.color = new Color(0.2f, 0.8f, 0.2f, 1f);
+            _hpBarFill.color = new Color(0.25f, 0.85f, 0.35f, 0.95f);
             var hfr = _hpBarFill.rectTransform;
             hfr.anchorMin = Vector2.zero;
             hfr.anchorMax = Vector2.one;
@@ -608,15 +587,15 @@ case BarMode.Building:
             var gridRoot = new GameObject("SelectionGrid");
             gridRoot.transform.SetParent(center.transform, false);
             var gr = gridRoot.AddComponent<RectTransform>();
-            gr.anchorMin = new Vector2(0.35f, 1f);
+            gr.anchorMin = new Vector2(0.40f, 1f);
             gr.anchorMax = new Vector2(1f, 1f);
             gr.pivot = new Vector2(0f, 1f);
             gr.anchoredPosition = new Vector2(0f, 0f);
-            gr.sizeDelta = new Vector2(0f, 44f);
+            gr.sizeDelta = new Vector2(0f, 48f);
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
-            gridLayout.cellSize = new Vector2(38f, 38f);
-            gridLayout.spacing = new Vector2(2f, 2f);
+            gridLayout.cellSize = new Vector2(42f, 42f);
+            gridLayout.spacing = new Vector2(4f, 4f);
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
             gridLayout.constraintCount = 1;
 
@@ -627,62 +606,63 @@ case BarMode.Building:
                 cell.transform.SetParent(gridRoot.transform, false);
                 var img = cell.AddComponent<Image>();
                 img.color = new Color(1f, 1f, 1f, 0f);
-                var tx = new GameObject("t").AddComponent<Text>();
-                tx.transform.SetParent(cell.transform, false);
-                tx.font = _font;
-                tx.fontSize = 12;
-                tx.color = Color.white;
-                tx.alignment = TextAnchor.LowerRight;
+                var tx = CreateText("t", cell.transform, 13, Color.white, TextAnchor.LowerRight);
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
                 trt.anchorMax = Vector2.one;
-                trt.offsetMin = trt.offsetMax = new Vector2(2f, 2f);
+                trt.offsetMin = trt.offsetMax = new Vector2(4f, 4f);
                 _selectionCells[i] = img;
             }
 
-            _pendingHint = new GameObject("PendingHint").AddComponent<Text>();
-            _pendingHint.transform.SetParent(hud, false);
-            _pendingHint.font = _font;
-            _pendingHint.fontSize = 16;
-            _pendingHint.color = new Color(1f, 0.9f, 0.2f);
-            _pendingHint.alignment = TextAnchor.MiddleCenter;
+            _pendingHint = CreateText("PendingHint", hud, 18, ColTitle, TextAnchor.MiddleCenter);
             var ph = _pendingHint.rectTransform;
-            ph.anchorMin = new Vector2(0.5f, 0.25f);
-            ph.anchorMax = new Vector2(0.5f, 0.25f);
+            ph.anchorMin = new Vector2(0.5f, 0.28f);
+            ph.anchorMax = new Vector2(0.5f, 0.28f);
             ph.anchoredPosition = Vector2.zero;
-            ph.sizeDelta = new Vector2(800f, 30f);
+            ph.sizeDelta = new Vector2(800f, 32f);
 
             // Production progress bar (shown inside info block when building/hive is selected)
             _prodBarRoot = new GameObject("ProdBar");
             _prodBarRoot.transform.SetParent(infoBlock.transform, false);
             var pbr = _prodBarRoot.AddComponent<RectTransform>();
-            pbr.anchorMin = new Vector2(0.05f, 0.62f);
-            pbr.anchorMax = new Vector2(0.95f, 0.72f);
+            pbr.anchorMin = new Vector2(0.05f, 0.65f);
+            pbr.anchorMax = new Vector2(0.95f, 0.75f);
             pbr.offsetMin = pbr.offsetMax = Vector2.zero;
             var pbBg = _prodBarRoot.AddComponent<Image>();
-            pbBg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+            pbBg.color = new Color(0.12f, 0.10f, 0.08f, 0.95f);
 
             var fillGo = new GameObject("ProdFill");
             fillGo.transform.SetParent(_prodBarRoot.transform, false);
             _prodBarFill = fillGo.AddComponent<Image>();
-            _prodBarFill.color = new Color(0.3f, 0.7f, 1f, 1f);
+            _prodBarFill.color = new Color(0.95f, 0.75f, 0.35f, 1f);
             var pfr = _prodBarFill.rectTransform;
             pfr.anchorMin = Vector2.zero;
             pfr.anchorMax = new Vector2(0f, 1f);
             pfr.offsetMin = pfr.offsetMax = Vector2.zero;
 
-            _prodLabel = new GameObject("ProdText").AddComponent<Text>();
-            _prodLabel.transform.SetParent(_prodBarRoot.transform, false);
-            _prodLabel.font = _font;
-            _prodLabel.fontSize = 11;
-            _prodLabel.color = Color.white;
-            _prodLabel.alignment = TextAnchor.MiddleCenter;
+            _prodLabel = CreateText("ProdText", _prodBarRoot.transform, 12, Color.white, TextAnchor.MiddleCenter);
             var plr = _prodLabel.rectTransform;
             plr.anchorMin = Vector2.zero;
             plr.anchorMax = Vector2.one;
             plr.offsetMin = plr.offsetMax = Vector2.zero;
 
             _prodBarRoot.SetActive(false);
+        }
+
+        Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<Text>();
+            t.font = _font; t.fontSize = size; t.color = color; t.alignment = anchor;
+            t.raycastTarget = false;
+            var rt = t.rectTransform;
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = ColOutline;
+            outline.effectDistance = new Vector2(1.2f, -1.2f);
+            return t;
         }
 
         void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick)
@@ -692,49 +672,38 @@ case BarMode.Building:
             var img = go.AddComponent<Image>();
             img.sprite = GetCommandIcon(name);
             img.color = Color.white;
+            img.preserveAspect = true;
             
             var btn = go.AddComponent<Button>();
             var colors = btn.colors;
-            colors.highlightedColor = new Color(0.85f, 1f, 0.85f);
-            colors.pressedColor = new Color(0.6f, 0.8f, 0.6f);
+            colors.highlightedColor = new Color(1f, 0.95f, 0.85f);
+            colors.pressedColor = new Color(0.85f, 0.75f, 0.65f);
             btn.colors = colors;
             btn.onClick.AddListener(onClick);
 
-            var keyLabel = new GameObject("Key").AddComponent<Text>();
-            keyLabel.transform.SetParent(go.transform, false);
-            keyLabel.font = _font;
-            keyLabel.fontSize = 12;
-            keyLabel.color = new Color(0.9f, 1f, 0.2f);
-            keyLabel.alignment = TextAnchor.UpperRight;
+            var keyLabel = CreateText("Key", go.transform, 13, ColTitle, TextAnchor.UpperRight);
             keyLabel.text = key;
             var krt = keyLabel.rectTransform;
-            krt.anchorMin = Vector2.zero;
-            krt.anchorMax = Vector2.one;
-            krt.offsetMin = new Vector2(2f, 2f);
-            krt.offsetMax = new Vector2(-4f, -2f);
+            krt.offsetMin = new Vector2(4f, 4f);
+            krt.offsetMax = new Vector2(-6f, -4f);
 
             var labelBg = new GameObject("LabelBg").AddComponent<Image>();
             labelBg.transform.SetParent(go.transform, false);
-            labelBg.color = new Color(0f, 0f, 0f, 0.65f);
+            labelBg.color = new Color(0.1f, 0.08f, 0.06f, 0.75f);
             labelBg.raycastTarget = false;
             var lbr = labelBg.rectTransform;
             lbr.anchorMin = new Vector2(0f, 0f);
-            lbr.anchorMax = new Vector2(1f, 0.48f);
+            lbr.anchorMax = new Vector2(1f, 0.45f);
             lbr.offsetMin = lbr.offsetMax = Vector2.zero;
 
-            var label = new GameObject("Label").AddComponent<Text>();
-            label.transform.SetParent(go.transform, false);
-            label.font = _font;
-            label.fontSize = 10;
+            var label = CreateText("Label", go.transform, 11, ColTitle, TextAnchor.LowerCenter);
             label.supportRichText = true;
-            label.color = new Color(0.95f, 0.95f, 0.85f);
-            label.alignment = TextAnchor.LowerCenter;
             label.text = name;
             var lrt = label.rectTransform;
             lrt.anchorMin = new Vector2(0f, 0f);
-            lrt.anchorMax = new Vector2(1f, 0.48f);
-            lrt.offsetMin = new Vector2(1f, 1f);
-            lrt.offsetMax = new Vector2(-1f, -1f);
+            lrt.anchorMax = new Vector2(1f, 0.45f);
+            lrt.offsetMin = new Vector2(2f, 2f);
+            lrt.offsetMax = new Vector2(-2f, -2f);
 
             _cmdButtonImages[name] = img;
         }
@@ -909,8 +878,8 @@ case BarMode.Building:
             }
         }
 
-        static readonly Color CmdDefault = new(0.12f, 0.18f, 0.12f, 1f);
-        static readonly Color CmdActive = new(0.22f, 0.5f, 0.28f, 1f);
+        static readonly Color CmdDefault = new(0.12f, 0.10f, 0.08f, 1f);
+        static readonly Color CmdActive = new(0.96f, 0.90f, 0.78f, 1f);
 
         void RefreshCommandHighlights()
         {
@@ -1162,10 +1131,10 @@ case BarMode.Building:
             if (frac > 0.5f)
             {
                 float t = (frac - 0.5f) * 2f;
-                return Color.Lerp(new Color(1f, 0.85f, 0.1f), new Color(0.2f, 0.85f, 0.3f), t);
+                return Color.Lerp(new Color(0.95f, 0.75f, 0.35f), new Color(0.25f, 0.85f, 0.35f), t);
             }
             float t2 = frac * 2f;
-            return Color.Lerp(new Color(0.9f, 0.15f, 0.1f), new Color(1f, 0.85f, 0.1f), t2);
+            return Color.Lerp(new Color(0.95f, 0.15f, 0.1f), new Color(0.95f, 0.75f, 0.35f), t2);
         }
 
         static string Abbrev(UnitArchetype a)
@@ -1190,5 +1159,5 @@ case BarMode.Building:
                 _ => t.ToString()
             };
         }
-    }
-}
+        }
+        }
