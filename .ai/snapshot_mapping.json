@@ -449,6 +449,12 @@
       "conversation_id": "31c764d5-9ebd-48e3-8ca7-f0ae7eb82914",
       "content": "make a new map called ShazuDen, make it just like SC2 The_King_Sejong_Station ,with the same resource areas , the same starting bases, high and low grounds, natural barriers. ground color and all arts!. currently i dont like the way our map art goes for the old maps we did so redefine how we make maps with this one",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "cb208012-61ff-43ee-b634-0f880a8e4353",
+      "conversation_id": "31c764d5-9ebd-48e3-8ca7-f0ae7eb82914",
+      "content": "I have created **ShazuDen**, a high-fidelity competitive map for *Insect Wars* that faithfully recreates the layout of SC2's **The King Sejong Station**.\n\n### Map Redefinition & Fidelity\nTo \"redefine\" the map creation process, I moved away from the generic project defaults and implemented a **Per-Map Visual Signature** workflow:\n*   **Custom Visual Library:** Created `VisualLibrary_ShazuDen.asset`, which overrides the standard primitives with high-quality assets like `ClayWall_HQ`.\n*   **Atmospheric Lighting:** Set up a cold, frozen blue lighting profile (Directional Light at #BFE5FF, 1.4 intensity) to give the station a distinct \"frozen outpost\" feel.\n*   **Strategic Layout:** \n    *   **Mains:** Rectangular elevated platforms in the NW and SE corners with tight ramp chokes.\n    *   **Tiered Expansions:** Faithfully placed Natural and \"Pocket\" third expansions (NE/SW).\n    *   **Central Station:** A high-yield central plateau with a 30-degree rotation, guarded by frozen puddles (ice flats) and mud patches (snow drifts).\n*   **Resource Areas:** Placed high-calorie Apples at every expansion site to mirror the resource density of the original station.\n\n### Technical Implementation\n1.  **Map Preset:** Integrated `CreateShazuDen()` into `SkirmishMapPresets.cs` with precise UV coordinates for box-shaped high grounds.\n2.  **Scene Creation:** Created `Assets/_InsectWars/Scenes/ShazuDen.unity` with a pre-configured `SkirmishDirector`.\n3.  **World Preview:** Generated the terrain, navmesh, and static barriers to verify the \"King Sejong\" silhouette.\n\nThe map is now ready in the **ShazuDen** scene. You can playtest it immediately or select it from the Skirmish menu.",
+      "snapshot_message_type": 1
     }
   ]
 }

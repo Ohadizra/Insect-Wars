@@ -15,7 +15,7 @@ namespace InsectWars.Data
         public static SkirmishMapDefinition[] GetAll()
         {
             if (s_maps != null) return s_maps;
-            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell() };
+            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell(), CreateShazuDen() };
             return s_maps;
         }
 
@@ -642,12 +642,130 @@ namespace InsectWars.Data
         }
 
         /// <summary>
+        /// A high-fidelity competitive map called Shazu Den, 
+        /// faithfully recreating the layout of SC2's The King Sejong Station.
+        /// Redefined with high-quality visual overrides and tight strategic features.
+        /// </summary>
+        static SkirmishMapDefinition CreateShazuDen()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "ShazuDen";
+            map.displayName = "Shazu Den";
+            map.description =
+                "A premium frozen research outpost redefined for competitive swarm warfare.\n" +
+                "Features the classic Sejong layout with icy cliffside mains and high-yield central calorie deposits.";
+
+            map.mapHalfExtent = 120f;
+
+            // Hives (NW and SE corners)
+            map.playerHivePosition    = new Vector3(-92f, 1f,  88f);
+            map.enemyHivePosition     = new Vector3( 92f, 1f, -88f);
+            
+            // Starting Apples (Large calorie nodes)
+            map.bigApplePosition      = new Vector3(-80f, 1.5f, 75f);
+            map.enemyBigApplePosition = new Vector3( 80f, 1.5f, -75f);
+
+            map.passiveScatterSeed = 8822;
+
+            // ────────────────────── Elevation (High Fidelity) ──────────────────────
+            map.highGrounds = new[]
+            {
+                // Main Bases (Large Rectangular Station Decks)
+                new HighGroundPlaced { uv = new Vector2(0.12f, 0.88f), boxSize = new Vector2(0.19f, 0.19f), rotation = 45f, rampWidth = 0.02f, heightFraction = 0.18f },
+                new HighGroundPlaced { uv = new Vector2(0.88f, 0.12f), boxSize = new Vector2(0.19f, 0.19f), rotation = 45f, rampWidth = 0.02f, heightFraction = 0.18f },
+
+                // Natural Expansion Platforms (Large for easier building)
+                new HighGroundPlaced { uv = new Vector2(0.24f, 0.68f), radius = 0.07f, rampWidth = 0.04f, heightFraction = 0.08f },
+                new HighGroundPlaced { uv = new Vector2(0.76f, 0.32f), radius = 0.07f, rampWidth = 0.04f, heightFraction = 0.08f },
+
+                // Third-base "Pocket" expansions (NE and SW corners)
+                new HighGroundPlaced { uv = new Vector2(0.92f, 0.92f), radius = 0.08f, rampWidth = 0.05f, heightFraction = 0.10f },
+                new HighGroundPlaced { uv = new Vector2(0.08f, 0.08f), radius = 0.08f, rampWidth = 0.05f, heightFraction = 0.10f },
+
+                // Forward Expansions (closer to mid)
+                new HighGroundPlaced { uv = new Vector2(0.42f, 0.82f), radius = 0.05f, rampWidth = 0.04f, heightFraction = 0.06f },
+                new HighGroundPlaced { uv = new Vector2(0.58f, 0.18f), radius = 0.05f, rampWidth = 0.04f, heightFraction = 0.06f },
+
+                // Central high-yield plateau
+                new HighGroundPlaced { uv = new Vector2(0.50f, 0.50f), boxSize = new Vector2(0.08f, 0.16f), rotation = 30f, rampWidth = 0.035f, heightFraction = 0.12f },
+            };
+
+            // ────────────────────── Resources ──────────────────────
+            map.fruits = new[]
+            {
+                // Natural Expansions
+                new FruitPlaced { position = new Vector3(-62f, 1.5f, 45f), calories = 4800, gatherPerTick = 3, gatherSeconds = 0.75f },
+                new FruitPlaced { position = new Vector3( 62f, 1.5f, -45f), calories = 4800, gatherPerTick = 3, gatherSeconds = 0.75f },
+
+                // Pocket Thirds
+                new FruitPlaced { position = new Vector3( 102f, 1.5f, 102f), calories = 6000, gatherPerTick = 2, gatherSeconds = 0.9f },
+                new FruitPlaced { position = new Vector3(-102f, 1.5f, -102f), calories = 6000, gatherPerTick = 2, gatherSeconds = 0.9f },
+
+                // Mid-edge Fourths
+                new FruitPlaced { position = new Vector3(-108f, 1.5f, 0f), calories = 4500, gatherPerTick = 3, gatherSeconds = 0.7f },
+                new FruitPlaced { position = new Vector3( 108f, 1.5f, 0f), calories = 4500, gatherPerTick = 3, gatherSeconds = 0.7f },
+
+                // Central High-Yield
+                new FruitPlaced { position = new Vector3(8f, 3f, 8f), calories = 7500, gatherPerTick = 6, gatherSeconds = 0.5f },
+                new FruitPlaced { position = new Vector3(-8f, 3f, -8f), calories = 7500, gatherPerTick = 6, gatherSeconds = 0.5f },
+            };
+
+            // ────────────────────── Objects (High-Quality Barriers) ──────────────────────
+            map.clay = new[]
+            {
+                // Fortified Main Walls
+                new ClayPlaced { position = new Vector3(-102f, 0f, 62f), scale = new Vector3(4f, 8f, 15f) },
+                new ClayPlaced { position = new Vector3(-62f, 0f, 102f), scale = new Vector3(15f, 8f, 4f) },
+                new ClayPlaced { position = new Vector3( 102f, 0f, -62f), scale = new Vector3(4f, 8f, 15f) },
+                new ClayPlaced { position = new Vector3( 62f, 0f, -102f), scale = new Vector3(15f, 8f, 4f) },
+
+                // Destructible "Rocks" (Sejong mid/backdoor blocks)
+                new ClayPlaced { position = new Vector3( 75f, 0f, 65f), scale = new Vector3(6f, 4f, 6f) },
+                new ClayPlaced { position = new Vector3(-75f, 0f, -65f), scale = new Vector3(6f, 4f, 6f) },
+                
+                // Central plateau lane blockers
+                new ClayPlaced { position = new Vector3(-28f, 0f, 12f), scale = new Vector3(8f, 5f, 8f) },
+                new ClayPlaced { position = new Vector3( 28f, 0f, -12f), scale = new Vector3(8f, 5f, 8f) },
+            };
+
+            map.terrainFeatures = new[]
+            {
+                // Concealment along critical attack lanes
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-35, 0, 75), radius = 12f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 35, 0, -75), radius = 12f },
+                
+                // Rocky Ridges forming the "Station" cliff edges (Redefinition)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-105, 0, 45), boxHalfExtents = new Vector2(18, 4), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 105, 0, -45), boxHalfExtents = new Vector2(18, 4), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-45, 0, 105), boxHalfExtents = new Vector2(18, 4), rotation = 0f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 45, 0, -105), boxHalfExtents = new Vector2(18, 4), rotation = 0f },
+
+                // Frozen Puddles in the center (Ice flats)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 15f },
+                
+                // Mud patches at lane intersections (Snow drifts)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-55, 0, 0), radius = 14f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 55, 0, 0), radius = 14f },
+            };
+
+        #if UNITY_EDITOR
+            // High-quality wall override for ShazuDen
+            var hqWall = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_InsectWars/Models/ClayWall_HQ.prefab");
+            if (hqWall != null)
+                map.clayWallPrefabOverride = hqWall;
+        #endif
+
+            return map;
+        }
+
+        /// <summary>
         /// A 1v1 competitive map inspired by SC2's King Sejong Station. 
         /// Features 180-degree rotational symmetry, rectangular elevated mains,
         /// and tiered expansions. High-yield resource Apples are placed at every base.
         /// </summary>
         static SkirmishMapDefinition CreateShazuBell()
-        {
+{
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
             map.name = "ShazuBell";
             map.displayName = "Shazu Bell";
