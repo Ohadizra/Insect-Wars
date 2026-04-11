@@ -629,6 +629,12 @@
       "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
       "content": "I've implemented the table-grid layout for the action bar and refined the overall in-game UI to match the \"Natural Ornate Beetle\" style.\n\n### Key Fixes:\n*   **Action Bar Grid**: Replaced the previous ring layout with a structured **3-column table grid**.\n*   **Cell Implementation**: Added the `frame_slot.png` asset as a background for every action button, creating the \"table\" look you requested where each action sits in its own organic cell.\n*   **Visual Cleanup**:\n    *   Removed white background artifacts from all UI sprites (frames, buttons, and portraits).\n    *   Switched to **`Image.Type.Sliced`** for panels to ensure the ornate beetle-shell borders remain detailed and proportional.\n*   **Readability & Fit**:\n    *   Adjusted the width of unit and building labels to prevent text clipping.\n    *   Improved the contrast of text outlines against the dark metallic backgrounds.\n    *   Moved the selection unit grid slightly to avoid overlap with the ornate frames.\n\n**Please restart Play Mode now.** The actions for your units and buildings should now appear in a clean, organic grid that fits perfectly into the beetle-themed UI.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "9b735a29-d90c-4825-be87-7e59a82bb1f4",
+      "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
+      "content": "there is no fit between the spirtes and buttom bar. make new icons , make them sprites and make them fit togther. also remove \"sc2\" from the name.",
+      "snapshot_message_type": 0
     }
   ]
 }
