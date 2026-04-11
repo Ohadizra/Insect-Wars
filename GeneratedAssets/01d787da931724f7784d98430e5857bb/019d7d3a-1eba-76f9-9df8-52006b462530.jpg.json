@@ -1,0 +1,27 @@
+{
+    "asset": "01d787da931724f7784d98430e5857bb",
+    "fileName": "019d7d3a-1eba-76f9-9df8-52006b462530.jpg",
+    "prompt": "A single red apple icon, no frame, no border, no background paper, no square box, Victorian naturalist illustration style, copper outlines, isolated on white background. Clean and minimal.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "d16be2359e918b911fc5200d12e020c3",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

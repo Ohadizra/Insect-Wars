@@ -363,6 +363,14 @@ namespace InsectWars.RTS
             if (layer >= 0) go.layer = layer;
         }
 
+        static void SafeSetLayerRecursive(GameObject go, string layerName)
+        {
+            int layer = LayerMask.NameToLayer(layerName);
+            if (layer < 0) return;
+            foreach (var t in go.GetComponentsInChildren<Transform>(true))
+                t.gameObject.layer = layer;
+        }
+
         void BuildTerrain(Transform parent, float halfExtent)
         {
             float terrainSize = halfExtent * 2f;
@@ -503,6 +511,9 @@ namespace InsectWars.RTS
             float appleY = GetHeight(pos);
             go.transform.position = new Vector3(pos.x, appleY, pos.z);
             SitOnGround(go);
+            if (go.GetComponentInChildren<Collider>() == null)
+                go.AddComponent<SphereCollider>();
+            SafeSetLayerRecursive(go, "Resources");
             var node = go.GetComponent<RottingFruitNode>();
             if (node == null) node = go.AddComponent<RottingFruitNode>();
             node.Configure(1000, 10, 5f);
@@ -527,6 +538,9 @@ namespace InsectWars.RTS
 
             go.transform.SetParent(parent, false);
             go.transform.position = f.position;
+            if (go.GetComponentInChildren<Collider>() == null)
+                go.AddComponent<SphereCollider>();
+            SafeSetLayerRecursive(go, "Resources");
             var node = go.GetComponent<RottingFruitNode>();
             if (node == null) node = go.AddComponent<RottingFruitNode>();
             node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);

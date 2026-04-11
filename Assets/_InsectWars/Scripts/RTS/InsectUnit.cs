@@ -646,7 +646,7 @@ namespace InsectWars.RTS
             float bestFruitDist = float.MaxValue;
             foreach (var c in cols)
             {
-                var node = c.GetComponent<RottingFruitNode>();
+                var node = c.GetComponentInParent<RottingFruitNode>();
                 if (node != null && !node.Depleted)
                 {
                     var d = Vector3.Distance(transform.position, node.transform.position);

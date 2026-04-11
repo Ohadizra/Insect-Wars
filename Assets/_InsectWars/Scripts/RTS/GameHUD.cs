@@ -90,8 +90,8 @@ namespace InsectWars.RTS
             if (larvaIcon == null) larvaIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
             if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
             if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
-            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple.png");
-        #endif
+            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple_clean.png");
+            #endif
 
             var canvasGo = new GameObject("DemoHUD");
             canvasGo.transform.SetParent(transform);
@@ -106,17 +106,18 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-            // --- Top Center: Small Resource Bar ---
-            var topBar = CreatePanel("TopBar", HudCanvasRect, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -20), new Vector2(220, 60), barMechanicalSprite);
+            // --- Top Center: Resource Display (No Background) ---
+            var topBar = new GameObject("TopBar").AddComponent<RectTransform>();
+            topBar.SetParent(HudCanvasRect, false);
+            topBar.anchorMin = topBar.anchorMax = topBar.pivot = new Vector2(0.5f, 1);
+            topBar.anchoredPosition = new Vector2(0, -40);
+            topBar.sizeDelta = new Vector2(200, 60);
             
-            var resIcons = new GameObject("Icons").AddComponent<RectTransform>();
-            resIcons.SetParent(topBar, false);
-            resIcons.anchorMin = Vector2.zero; resIcons.anchorMax = Vector2.one; 
-            resIcons.offsetMin = new Vector2(20, 5); resIcons.offsetMax = new Vector2(-20, -5);
-            var hl = resIcons.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hl.childAlignment = TextAnchor.MiddleCenter; hl.spacing = 15; hl.childControlWidth = false;
+            var hl = topBar.gameObject.AddComponent<HorizontalLayoutGroup>();
+            hl.childAlignment = TextAnchor.MiddleCenter; hl.spacing = 10; hl.childControlWidth = false;
+            hl.childForceExpandWidth = hl.childForceExpandHeight = false;
 
-            _calorieLabel = CreateResourceItem(resIcons, appleIcon != null ? appleIcon : larvaIcon, "0");
+            _calorieLabel = CreateResourceItem(topBar, appleIcon != null ? appleIcon : larvaIcon, "0");
 
 
             // --- Top Right: Menu Button ---
