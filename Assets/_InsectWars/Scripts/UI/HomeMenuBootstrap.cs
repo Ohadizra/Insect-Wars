@@ -62,12 +62,29 @@ namespace InsectWars.UI
             var existing = FindFirstObjectByType<EventSystem>();
             if (existing != null)
             {
-                if (existing.GetComponent<InputSystemUIInputModule>() != null) return;
+                var mod = existing.GetComponent<InputSystemUIInputModule>();
+                if (mod != null)
+                {
+                    TryAssignInputActions(mod);
+                    return;
+                }
                 DestroyImmediate(existing.gameObject);
             }
             var es = new GameObject("EventSystem");
             es.AddComponent<EventSystem>();
-            es.AddComponent<InputSystemUIInputModule>();
+            var newMod = es.AddComponent<InputSystemUIInputModule>();
+            TryAssignInputActions(newMod);
+        }
+
+        void TryAssignInputActions(InputSystemUIInputModule mod)
+        {
+        #if UNITY_EDITOR
+            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+            if (asset != null)
+            {
+                mod.actionsAsset = asset;
+            }
+        #endif
         }
 
         void BuildCanvas()
@@ -78,6 +95,7 @@ namespace InsectWars.UI
             var go = new GameObject("MainMenuCanvas");
             _canvas = go.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 0; // Ensure it's behind anything else if needed, but Overlay is on top anyway
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
@@ -90,6 +108,7 @@ namespace InsectWars.UI
         {
             var bg = new GameObject("VideoBackground");
             bg.transform.SetParent(_canvas.transform, false);
+            bg.transform.SetAsFirstSibling(); // Ensure it's behind all other UI
             Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
@@ -97,6 +116,7 @@ namespace InsectWars.UI
             raw.raycastTarget = false;
 
             var vrt = new RenderTexture(1920, 1080, 0);
+            vrt.depth = 0;
             vrt.Create();
             raw.texture = vrt;
 
@@ -107,14 +127,21 @@ namespace InsectWars.UI
             vp.isLooping = true;
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.targetTexture = vrt;
+            vp.aspectRatio = VideoAspectRatio.FitInside;
+            vp.source = VideoSource.Url;
 
             var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
             if (System.IO.File.Exists(path))
             {
                 vp.url = path;
-                vp.Play();
+                vp.Prepare();
+                vp.prepareCompleted += (p) => p.Play();
             }
-            else vp.enabled = false;
+            else
+            {
+                Debug.LogWarning($"HomeMenu: Video file not found at {path}");
+                vp.enabled = false;
+            }
 
             var dim = new GameObject("Dim");
             dim.transform.SetParent(bg.transform, false);

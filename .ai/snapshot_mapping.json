@@ -689,6 +689,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "home scean ui is not responding and also video in the background is not active",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "04830087-20f2-4c8b-917b-79ec5c735d75",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "I have investigated the `Home` scene and identified potential causes for the issues you reported:\n\n1.  **UI Not Responding**: The project uses the **New Input System**, but the `HomeMenuBootstrap` script was creating an `EventSystem` at runtime without assigning an **Input Action Asset** to the `InputSystemUIInputModule`. This often prevents the UI from registering mouse clicks or navigation. I have updated the script to automatically find and assign the `InputSystem_Actions.inputactions` asset in the Editor.\n2.  **Video Background Not Active**: The `VideoPlayer` was being initialized but might have failed to start or render correctly because it was not given time to prepare or its draw order was not explicitly set. I have updated the `VideoBackground` setup to:\n    *   Explicitly set the `VideoBackground` as the first child of the Canvas to ensure it stays behind the buttons.\n    *   Use `vp.Prepare()` and wait for the `prepareCompleted` event before calling `vp.Play()`.\n    *   Set the `VideoSource` explicitly to `Url`.\n    *   Added a warning log to help identify if the video file path is incorrect.\n\n### Changes made to `Assets/_InsectWars/Scripts/UI/HomeMenuBootstrap.cs`:\n*   Updated `SetupEventSystem` to assign the action asset to the `InputSystemUIInputModule`.\n*   Improved `BuildVideoBackground` with preparation logic and sibling ordering.\n*   Added explicit `RenderTexture` depth setting and `VideoAspectRatio`.\n\nPlease try entering **Play Mode** again. If the video is still not showing, check the **Console** for any `HomeMenu: Video file not found` warnings. For the UI, ensure that your `InputSystem_Actions` asset has the **UI** action map correctly configured.",
+      "snapshot_message_type": 1
     }
   ]
 }
