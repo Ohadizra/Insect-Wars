@@ -58,64 +58,75 @@ namespace InsectWars.RTS
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
-            main.duration = 0.45f;
+            main.duration = 0.5f;
             main.playOnAwake = false;
             main.loop = false;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(ParticleLifetime * 0.8f, ParticleLifetime * 1.2f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(ParticleSpeed * 0.9f, ParticleSpeed * 1.3f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.35f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(ParticleLifetime * 0.9f, ParticleLifetime * 1.4f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(ParticleSpeed * 0.9f, ParticleSpeed * 1.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.55f); // Increased size
             main.startColor = new ParticleSystem.MinMaxGradient(
-                new Color(1f, 1f, 1f, 0.95f),
-                new Color(1f, 0.98f, 0.85f, 0.85f));
-            main.gravityModifier = -0.1f;
+                new Color(1f, 1f, 1f, 1.0f),
+                new Color(0.98f, 0.95f, 0.8f, 1.0f)); // Higher initial alpha
+            main.gravityModifier = -0.05f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = ParticleBurst + 50;
+            main.maxParticles = ParticleBurst + 60;
             main.stopAction = ParticleSystemStopAction.Destroy;
 
             var emission = ps.emission;
             emission.rateOverTime = 0f;
-            // Pulsed spray (accurate biological mechanism): 6 rapid bursts over 0.3s
+            // High-frequency pulsed spray (more staccato)
             emission.SetBursts(new[] { 
                 new ParticleSystem.Burst(0.00f, ParticleBurst / 5),
-                new ParticleSystem.Burst(0.06f, ParticleBurst / 5),
-                new ParticleSystem.Burst(0.12f, ParticleBurst / 5),
-                new ParticleSystem.Burst(0.18f, ParticleBurst / 5),
-                new ParticleSystem.Burst(0.24f, ParticleBurst / 5),
-                new ParticleSystem.Burst(0.30f, ParticleBurst / 5)
+                new ParticleSystem.Burst(0.05f, ParticleBurst / 5),
+                new ParticleSystem.Burst(0.10f, ParticleBurst / 5),
+                new ParticleSystem.Burst(0.15f, ParticleBurst / 5),
+                new ParticleSystem.Burst(0.20f, ParticleBurst / 5)
             });
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = ConeHalfAngle * 0.8f; // tighter initial cone
+            shape.angle = ConeHalfAngle * 0.75f; 
             shape.radius = 0.05f;
             shape.radiusThickness = 1f;
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
             sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.Linear(0f, 0.3f, 1f, 1.2f));
+                AnimationCurve.Linear(0f, 0.4f, 1f, 1.6f)); // Larger dissipation
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;
             var grad = new Gradient();
+            // Higher opacity and more toxic yellowish-brown tones
             grad.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.95f, 0.94f, 0.84f), 0.7f), new GradientColorKey(new Color(0.85f, 0.82f, 0.75f), 1f) },
-                new[] { new GradientAlphaKey(0.0f, 0f), new GradientAlphaKey(0.95f, 0.1f), new GradientAlphaKey(0.7f, 0.6f), new GradientAlphaKey(0f, 1f) });
+                new[] { 
+                    new GradientColorKey(Color.white, 0f), 
+                    new GradientColorKey(new Color(1f, 0.95f, 0.6f), 0.3f), // Caustic yellow
+                    new GradientColorKey(new Color(0.8f, 0.75f, 0.5f), 1f)  // Dissipating brown
+                },
+                new[] { 
+                    new GradientAlphaKey(0.0f, 0f), 
+                    new GradientAlphaKey(1.0f, 0.1f), // Fast build up
+                    new GradientAlphaKey(0.8f, 0.5f), // High mid-life opacity
+                    new GradientAlphaKey(0.0f, 1f) 
+                });
             colorOverLifetime.color = grad;
 
             var noise = ps.noise;
             noise.enabled = true;
-            noise.strength = 1.2f;
+            noise.strength = 1.8f; // More violent jitter
             noise.frequency = 4f;
-            noise.scrollSpeed = 2f;
+            noise.scrollSpeed = 2.5f;
             noise.quality = ParticleSystemNoiseQuality.Medium;
 
             var trail = ps.trails;
             trail.enabled = true;
-            trail.ratio = 0.35f;
-            trail.lifetime = 0.12f;
-            trail.widthOverTrail = new ParticleSystem.MinMaxCurve(0.4f, 0.1f);
-            trail.colorOverLifetime = new ParticleSystem.MinMaxGradient(new Color(1f, 0.95f, 0.8f, 0.4f), new Color(1f, 1f, 1f, 0f));
+            trail.ratio = 0.45f;
+            trail.lifetime = 0.15f;
+            trail.widthOverTrail = new ParticleSystem.MinMaxCurve(0.5f, 0.1f);
+            trail.colorOverLifetime = new ParticleSystem.MinMaxGradient(
+                new Color(1f, 0.95f, 0.7f, 0.6f), 
+                new Color(1f, 1f, 1f, 0f));
 
             var renderer = go.GetComponent<ParticleSystemRenderer>();
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
@@ -126,8 +137,43 @@ namespace InsectWars.RTS
             Object.Destroy(go, VfxAutoDestroy);
         }
 
-        static Texture2D GetSoftCircleTexture()
+        static Material GetSprayMaterial()
         {
+            if (s_sprayMat != null) return s_sprayMat;
+
+            var sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (sh == null) sh = Shader.Find("Particles/Standard Unlit");
+            if (sh == null) sh = Shader.Find("Sprites/Default");
+
+            s_sprayMat = new Material(sh) { name = "IW_SprayMat" };
+
+            // Load the generated high-quality spray puff
+        #if UNITY_EDITOR
+            var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png");
+            if (tex != null) s_sprayMat.mainTexture = tex;
+            else s_sprayMat.mainTexture = GetSoftCircleTexture();
+        #else
+            s_sprayMat.mainTexture = GetSoftCircleTexture();
+        #endif
+
+            if (s_sprayMat.HasProperty("_Surface"))
+                s_sprayMat.SetFloat("_Surface", 1f);  // Transparent
+            
+            // Standard Alpha Blending for better visibility on all backgrounds
+            if (s_sprayMat.HasProperty("_Blend"))
+                s_sprayMat.SetFloat("_Blend", 0f);    // 0 = Alpha, 1 = Additive
+            
+            s_sprayMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            s_sprayMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            s_sprayMat.SetInt("_ZWrite", 0);
+            
+            s_sprayMat.color = new Color(1f, 1f, 1f, 1f);
+            s_sprayMat.renderQueue = 3100;
+            return s_sprayMat;
+            }
+
+            static Texture2D GetSoftCircleTexture()
+            {
             if (s_softCircle != null) return s_softCircle;
             const int res = 64;
             s_softCircle = new Texture2D(res, res, TextureFormat.RGBA32, false)
@@ -150,36 +196,6 @@ namespace InsectWars.RTS
             s_softCircle.SetPixels(pixels);
             s_softCircle.Apply(false, true);
             return s_softCircle;
-        }
-
-        static Material GetSprayMaterial()
-        {
-            if (s_sprayMat != null) return s_sprayMat;
-
-            var sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-            if (sh == null) sh = Shader.Find("Particles/Standard Unlit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
-
-            s_sprayMat = new Material(sh) { name = "IW_SprayMat" };
-            s_sprayMat.mainTexture = GetSoftCircleTexture();
-
-            if (s_sprayMat.HasProperty("_Surface"))
-                s_sprayMat.SetFloat("_Surface", 1f);  // transparent
-            if (s_sprayMat.HasProperty("_Blend"))
-                s_sprayMat.SetFloat("_Blend", 1f);    // additive
-            if (s_sprayMat.HasProperty("_ColorMode"))
-                s_sprayMat.SetFloat("_ColorMode", 1f);
-
-            s_sprayMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            s_sprayMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
-            s_sprayMat.SetInt("_ZWrite", 0);
-            s_sprayMat.DisableKeyword("_ALPHATEST_ON");
-            s_sprayMat.EnableKeyword("_ALPHABLEND_ON");
-            s_sprayMat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-
-            s_sprayMat.color = new Color(1f, 0.95f, 0.75f, 0.7f);
-            s_sprayMat.renderQueue = 3100;
-            return s_sprayMat;
-        }
-    }
-}
+            }
+            }
+            }

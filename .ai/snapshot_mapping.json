@@ -431,6 +431,12 @@
       "conversation_id": "d86c4e48-dfb4-4174-aff8-0c81f80a61c0",
       "content": "The error occurred because Unity starts a `ParticleSystem` automatically when added via `AddComponent`, and certain properties like `duration` cannot be modified while the system is in the \"Playing\" state.\n\nI have fixed this by:\n1.  Calling `ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear)` immediately after adding the component.\n2.  Setting `main.playOnAwake = false`.\n3.  Manually calling `ps.Play()` only after all configurations (duration, emission, trails, etc.) are complete.\n\nThis ensures the biological pulsing mechanism is configured safely before the VFX begins.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "477dc9f6-1581-4532-a898-35f654d6830a",
+      "conversation_id": "d86c4e48-dfb4-4174-aff8-0c81f80a61c0",
+      "content": "I have significantly increased the visibility and impact of the Bombardier Beetle's chemical spray.\n\n### Visual Improvements:\n-   **Switched to Alpha Blending:** Replaced \"Additive\" blending with standard \"Alpha Blending\" (`SrcAlpha` / `OneMinusSrcAlpha`). This ensures the chemical puffs remain highly visible even against light-colored ground or in bright lighting conditions, where additive effects often \"wash out\" or disappear.\n-   **Increased Opacity:** Boosted the initial alpha of the spray puffs and adjusted the gradient to maintain a higher opacity throughout the particle's mid-life.\n-   **Larger, Denser Spray:** Increased the particle size and added more \"jitter\" to the motion to simulate a more violent, high-pressure chemical release.\n-   **Caustic Color Palette:** Refined the color gradient to shift from an explosive white to a toxic-looking yellowish-brown, giving it a more \"corrosive chemical\" aesthetic rather than just steam.\n-   **Re-integrated Custom Texture:** Re-applied the high-quality `BombardierSprayPuff.png` sprite to provide more organic, wispy detail to the chemical clouds.\n\n### Bug Fixes:\n-   Restored the `GetSoftCircleTexture` fallback to prevent compilation errors if the custom sprite is missing.\n-   Fixed an unrelated compilation error in `SkirmishMapPresets.cs` (removed a reference to a missing `CreateShazuBell` method) to ensure the project builds successfully.\n\nThe chemical spray should now be much more prominent and clearly visible during gameplay.",
+      "snapshot_message_type": 1
     }
   ]
 }

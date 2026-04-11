@@ -640,6 +640,338 @@ namespace InsectWars.Data
 
             return map;
         }
+
+        /// <summary>
+        /// Large 1v1 map inspired by SC2's King Sejong Station. Diagonal spawns
+        /// (4 o'clock SE vs 10 o'clock NW) with large elevated mains, vulnerable
+        /// natural expansions, two third-base options per player, a contested
+        /// central plateau with resources, and multiple attack lanes.
+        /// </summary>
+        static SkirmishMapDefinition CreateShazuBell()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "ShazuBell";
+            map.displayName = "Shazu Bell";
+            map.description =
+                "A frozen research outpost reclaimed by the swarm.\n" +
+                "Large mains with narrow ramps, exposed naturals, two third-base options,\n" +
+                "and a contested central plateau. Control the lanes or perish.";
+
+            map.mapHalfExtent = 110f;
+
+            map.playerHivePosition    = new Vector3( 78f, 1f, -74f);
+            map.enemyHivePosition     = new Vector3(-78f, 1f,  74f);
+            map.bigApplePosition      = new Vector3( 68f, 1.5f, -62f);
+            map.enemyBigApplePosition = new Vector3(-68f, 1.5f,  62f);
+
+            map.passiveScatterSeed = 60491;
+
+            // ────────────────────── Elevation ──────────────────────
+            // UV = (pos + 110) / 220.  mapHalfExtent = 110.
+            map.highGrounds = new[]
+            {
+                // ── Main bases — large elevated plateaus with tight single-ramp exits ──
+
+                // Player main (4 o'clock / SE)
+                new HighGroundPlaced { uv = new Vector2(0.855f, 0.164f), radius = 0.11f, rampWidth = 0.018f, heightFraction = 0.14f },
+                // Enemy main (10 o'clock / NW)
+                new HighGroundPlaced { uv = new Vector2(0.145f, 0.836f), radius = 0.11f, rampWidth = 0.018f, heightFraction = 0.14f },
+
+                // ── Natural expansions — small ridge just outside the main ramp ──
+
+                // Player natural (forward-left of player main)
+                new HighGroundPlaced { uv = new Vector2(0.736f, 0.309f), radius = 0.05f, rampWidth = 0.032f, heightFraction = 0.065f },
+                // Enemy natural (mirror)
+                new HighGroundPlaced { uv = new Vector2(0.264f, 0.691f), radius = 0.05f, rampWidth = 0.032f, heightFraction = 0.065f },
+
+                // ── Third-base option A — side pocket (east edge for player) ──
+
+                // Player third-A (right side of map)
+                new HighGroundPlaced { uv = new Vector2(0.900f, 0.432f), radius = 0.055f, rampWidth = 0.030f, heightFraction = 0.06f },
+                // Enemy third-A (mirror, left side)
+                new HighGroundPlaced { uv = new Vector2(0.100f, 0.568f), radius = 0.055f, rampWidth = 0.030f, heightFraction = 0.06f },
+
+                // ── Third-base option B — forward pocket (toward bottom for player) ──
+
+                // Player third-B
+                new HighGroundPlaced { uv = new Vector2(0.636f, 0.145f), radius = 0.05f, rampWidth = 0.030f, heightFraction = 0.055f },
+                // Enemy third-B (mirror)
+                new HighGroundPlaced { uv = new Vector2(0.364f, 0.855f), radius = 0.05f, rampWidth = 0.030f, heightFraction = 0.055f },
+
+                // ── Central plateau — key contested high ground ──
+                new HighGroundPlaced { uv = new Vector2(0.50f, 0.50f), radius = 0.065f, rampWidth = 0.028f, heightFraction = 0.10f },
+
+                // ── Watchtower bumps — scouting vantage points between naturals and center ──
+
+                new HighGroundPlaced { uv = new Vector2(0.627f, 0.373f), radius = 0.03f, rampWidth = 0.035f, heightFraction = 0.035f },
+                new HighGroundPlaced { uv = new Vector2(0.373f, 0.627f), radius = 0.03f, rampWidth = 0.035f, heightFraction = 0.035f },
+            };
+
+            // ────────────────────── Clay walls ──────────────────────
+            map.clay = new[]
+            {
+                // ── Player main base closure — walls sealing the SE plateau ──
+
+                // Northern cliff wall along top edge of player plateau
+                new ClayPlaced { position = new Vector3( 72f, 0f, -46f), scale = new Vector3(8f, 4f, 3f) },
+                // Western cliff wall along inland edge
+                new ClayPlaced { position = new Vector3( 50f, 0f, -68f), scale = new Vector3(3f, 4f, 8f) },
+                // Ramp choke narrowing — two walls flanking the single exit
+                new ClayPlaced { position = new Vector3( 56f, 0f, -50f), scale = new Vector3(3f, 3.5f, 3f) },
+                new ClayPlaced { position = new Vector3( 64f, 0f, -44f), scale = new Vector3(3f, 3.5f, 3f) },
+
+                // ── Enemy main base closure (180-degree mirror) ──
+
+                new ClayPlaced { position = new Vector3(-72f, 0f,  46f), scale = new Vector3(8f, 4f, 3f) },
+                new ClayPlaced { position = new Vector3(-50f, 0f,  68f), scale = new Vector3(3f, 4f, 8f) },
+                new ClayPlaced { position = new Vector3(-56f, 0f,  50f), scale = new Vector3(3f, 3.5f, 3f) },
+                new ClayPlaced { position = new Vector3(-64f, 0f,  44f), scale = new Vector3(3f, 3.5f, 3f) },
+
+                // ── Natural expansion choke walls ──
+
+                new ClayPlaced { position = new Vector3( 42f, 0f, -32f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3( 52f, 0f, -26f), scale = new Vector3(3f, 3f, 4f) },
+                // Mirror
+                new ClayPlaced { position = new Vector3(-42f, 0f,  32f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3(-52f, 0f,  26f), scale = new Vector3(3f, 3f, 4f) },
+
+                // ── Third-A pocket entrance walls (side pockets) ──
+
+                new ClayPlaced { position = new Vector3( 84f, 0f, -6f), scale = new Vector3(3f, 3f, 4.5f) },
+                new ClayPlaced { position = new Vector3( 78f, 0f, -14f), scale = new Vector3(4f, 3f, 3f) },
+                // Mirror
+                new ClayPlaced { position = new Vector3(-84f, 0f,  6f), scale = new Vector3(3f, 3f, 4.5f) },
+                new ClayPlaced { position = new Vector3(-78f, 0f,  14f), scale = new Vector3(4f, 3f, 3f) },
+
+                // ── Third-B pocket entrance walls (forward pockets) ──
+
+                new ClayPlaced { position = new Vector3( 22f, 0f, -68f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3( 36f, 0f, -74f), scale = new Vector3(3f, 3f, 4f) },
+                // Mirror
+                new ClayPlaced { position = new Vector3(-22f, 0f,  68f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3(-36f, 0f,  74f), scale = new Vector3(3f, 3f, 4f) },
+
+                // ── Central corridor walls — channel traffic through the mid plateau ──
+
+                new ClayPlaced { position = new Vector3( 16f, 0f, -18f), scale = new Vector3(3.5f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3(-16f, 0f,  18f), scale = new Vector3(3.5f, 3f, 5f) },
+
+                // ── Map-edge dead-end walls — close off corners ──
+
+                new ClayPlaced { position = new Vector3(-48f, 0f, -94f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3( 48f, 0f,  94f), scale = new Vector3(4f, 3f, 3f) },
+            };
+
+            // ────────────────────── Resources (mineral patch equivalents) ──────────────────────
+            map.fruits = new[]
+            {
+                // Player natural expansion minerals
+                new FruitPlaced { position = new Vector3( 52f, 1.5f, -42f), calories = 3000, gatherPerTick = 5, gatherSeconds = 1.2f },
+                // Enemy natural expansion minerals (mirror)
+                new FruitPlaced { position = new Vector3(-52f, 1.5f,  42f), calories = 3000, gatherPerTick = 5, gatherSeconds = 1.2f },
+
+                // Player third-A (side pocket) minerals
+                new FruitPlaced { position = new Vector3( 88f, 1.5f, -15f), calories = 2000, gatherPerTick = 4, gatherSeconds = 1.4f },
+                // Enemy third-A (mirror)
+                new FruitPlaced { position = new Vector3(-88f, 1.5f,  15f), calories = 2000, gatherPerTick = 4, gatherSeconds = 1.4f },
+
+                // Player third-B (forward pocket) minerals
+                new FruitPlaced { position = new Vector3( 30f, 1.5f, -78f), calories = 2000, gatherPerTick = 4, gatherSeconds = 1.4f },
+                // Enemy third-B (mirror)
+                new FruitPlaced { position = new Vector3(-30f, 1.5f,  78f), calories = 2000, gatherPerTick = 4, gatherSeconds = 1.4f },
+
+                // Central contested resource — high risk, high reward
+                new FruitPlaced { position = new Vector3( 0f, 1.5f,  0f), calories = 1500, gatherPerTick = 6, gatherSeconds = 1.0f },
+            };
+
+            // ────────────────────── Terrain features ──────────────────────
+            map.terrainFeatures = new[]
+            {
+                // ═══════════ TALL GRASS — vision blockers / watchtower positions ═══════════
+
+                // Main ramp approach concealment — hide army composition from scouts
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 54f, 0f, -38f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-54f, 0f,  38f), radius = 5f },
+
+                // Watchtower scouting bushes — ambush at vantage points
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 28f, 0f, -28f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-28f, 0f,  28f), radius = 6f },
+
+                // Central plateau approach concealment
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-8f, 0f, -12f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 8f, 0f,  12f), radius = 5f },
+
+                // Third-A scouting grass (side pockets)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 92f, 0f,  8f), radius = 4.5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-92f, 0f, -8f), radius = 4.5f },
+
+                // Third-B scouting grass (forward pockets)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 18f, 0f, -86f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-18f, 0f,  86f), radius = 4f },
+
+                // ═══════════ ROCKY RIDGES — cliff walls blocking pathing + vision ═══════════
+
+                // Player main plateau cliff edges
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 84f, 0f, -52f),
+                    rotation = 50f,
+                    boxHalfExtents = new Vector2(7f, 2.5f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 54f, 0f, -82f),
+                    rotation = 50f,
+                    boxHalfExtents = new Vector2(7f, 2.5f)
+                },
+                // Enemy main cliff edges (mirror)
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-84f, 0f,  52f),
+                    rotation = 50f,
+                    boxHalfExtents = new Vector2(7f, 2.5f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-54f, 0f,  82f),
+                    rotation = 50f,
+                    boxHalfExtents = new Vector2(7f, 2.5f)
+                },
+
+                // Natural expansion reinforcement cliffs
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 38f, 0f, -20f),
+                    rotation = 30f,
+                    boxHalfExtents = new Vector2(5f, 1.8f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-38f, 0f,  20f),
+                    rotation = 30f,
+                    boxHalfExtents = new Vector2(5f, 1.8f)
+                },
+
+                // Central plateau cliff faces — block shortcuts under the plateau
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-12f, 0f, -6f),
+                    rotation = 45f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 12f, 0f,  6f),
+                    rotation = 45f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+
+                // Third-A pocket rear walls — block backdoor through map edge
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 96f, 0f,  22f),
+                    rotation = 80f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-96f, 0f, -22f),
+                    rotation = 80f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+
+                // Third-B pocket rear walls
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 16f, 0f, -96f),
+                    rotation = 10f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-16f, 0f,  96f),
+                    rotation = 10f,
+                    boxHalfExtents = new Vector2(5f, 2f)
+                },
+
+                // Side lane boundary ridges — define flanking corridors
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3( 76f, 0f,  18f),
+                    rotation = 75f,
+                    boxHalfExtents = new Vector2(6f, 2f)
+                },
+                new TerrainFeaturePlaced
+                {
+                    type = TerrainFeatureType.RockyRidge,
+                    position = new Vector3(-76f, 0f, -18f),
+                    rotation = 75f,
+                    boxHalfExtents = new Vector2(6f, 2f)
+                },
+
+                // ═══════════ WATER PUDDLES — lowland swamps that slow movement ═══════════
+
+                // Central lowland beneath the plateau
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(  0f, 0f,   0f), radius = 5f },
+                // West edge swamp
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-92f, 0f,   0f), radius = 9f },
+                // East edge swamp (mirror)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 92f, 0f,   0f), radius = 9f },
+                // South edge swamp
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 0f, 0f, -92f), radius = 8f },
+                // North edge swamp (mirror)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 0f, 0f,  92f), radius = 8f },
+                // Swamp near player natural approach
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 34f, 0f, -48f), radius = 5f },
+                // Mirror
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-34f, 0f,  48f), radius = 5f },
+
+                // ═══════════ MUD PATCHES — slow zones at key chokes ═══════════
+
+                // Natural ramp approach mud
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 46f, 0f, -14f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-46f, 0f,  14f), radius = 5f },
+                // Central plateau ramp approach
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(  8f, 0f, -18f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( -8f, 0f,  18f), radius = 4f },
+                // Third-A pocket entrance mud
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 80f, 0f,  4f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-80f, 0f, -4f), radius = 4f },
+                // Third-B pocket entrance mud
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 26f, 0f, -62f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-26f, 0f,  62f), radius = 4f },
+
+                // ═══════════ THORN PATCHES — damage zones guarding backdoor paths ═══════════
+
+                // Main base backdoor thorns — punish map-edge flanks
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 94f, 0f, -42f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-94f, 0f,  42f), radius = 4f },
+                // Third-A backdoor thorns
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 100f, 0f,  30f), radius = 3.5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-100f, 0f, -30f), radius = 3.5f },
+                // Third-B backdoor thorns
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 40f, 0f, -90f), radius = 3.5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-40f, 0f,  90f), radius = 3.5f },
+                // Map corner thorns — deny corner camping
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-88f, 0f, -86f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 88f, 0f,  86f), radius = 4f },
+            };
+
+            return map;
+        }
     }
 }
 
