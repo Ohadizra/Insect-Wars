@@ -394,7 +394,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
 
             var bg = bar.AddComponent<Image>();
             bg.color = new Color(0, 0, 0, 0); // Transparent background
-            bg.raycastTarget = true;
+            bg.raycastTarget = false; // Allow clicking through to the world
 
             var miniContainer = new GameObject("MinimapContainer");
             miniContainer.transform.SetParent(bar.transform, false);
@@ -423,7 +423,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             mfrt.offsetMax = Vector2.zero;
             var frameImg = miniFrameGo.AddComponent<Image>();
             frameImg.sprite = minimapFrame;
-            frameImg.raycastTarget = false;
+            frameImg.raycastTarget = true; // Correct: block clicks on minimap frame
             frameImg.type = Image.Type.Simple;
 
             var cmdPanel = new GameObject("CommandPanel");
@@ -439,7 +439,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             cmdFrameImg.sprite = commandCardFrame;
             cmdFrameImg.type = Image.Type.Sliced;
             cmdFrameImg.color = Color.white;
-            cmdFrameImg.raycastTarget = false;
+            cmdFrameImg.raycastTarget = true; // Correct: block clicks on command panel background
 
             var grid = new GameObject("CmdGrid");
             grid.transform.SetParent(cmdPanel.transform, false);
@@ -469,7 +469,7 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             centerBg.sprite = centerBlockFrame;
             centerBg.type = Image.Type.Sliced;
             centerBg.color = Color.white;
-            centerBg.raycastTarget = false;
+            centerBg.raycastTarget = true; // Correct: block clicks on selection block background
 
             var portrait = new GameObject("PortraitBlock");
             portrait.transform.SetParent(center.transform, false);

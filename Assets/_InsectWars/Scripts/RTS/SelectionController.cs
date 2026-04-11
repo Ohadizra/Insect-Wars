@@ -110,7 +110,7 @@ namespace InsectWars.RTS
                 _marqueeFill.gameObject.SetActive(false);
                 var end = Mouse.current.position.ReadValue();
                 var dist = Vector2.Distance(_dragStart, end);
-                if (dist < 6f)
+                if (dist < 12f) // Increased threshold to 12 pixels to avoid accidental drags
                     ClickSelect(_dragStart);
                 else
                     BoxSelect(_dragStart, end);

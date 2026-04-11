@@ -46,8 +46,8 @@ namespace InsectWars.RTS
             Vector2 pan = Vector2.zero;
             if (mp.x <= edgePx) pan.x -= 1f;
             else if (mp.x >= Screen.width - edgePx) pan.x += 1f;
-            if (mp.y <= edgePx) pan.y += 1f;
-            else if (mp.y >= Screen.height - edgePx) pan.y -= 1f;
+            if (mp.y <= edgePx) pan.y -= 1f; // Fixed: move back when mouse is at bottom
+            else if (mp.y >= Screen.height - edgePx) pan.y += 1f; // Fixed: move forward when mouse is at top
 
             if (pan.sqrMagnitude > 0.01f)
             {

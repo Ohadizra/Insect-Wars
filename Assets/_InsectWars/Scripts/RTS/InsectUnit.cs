@@ -81,6 +81,12 @@ namespace InsectWars.RTS
 
             if (!_agent.enabled) _agent.enabled = true;
 
+            // Move commands should always have small stopping distance to feel responsive
+            if (_order == UnitOrder.Move || _order == UnitOrder.Idle)
+                _agent.stoppingDistance = 0.25f;
+            else if (_order == UnitOrder.Attack && definition != null)
+                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
+
             if (!_agent.isOnNavMesh)
             {
                 if (NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
@@ -116,6 +122,7 @@ namespace InsectWars.RTS
         void OnDisable()
         {
             RtsSimRegistry.Unregister(this);
+            UnlockMelee();
         }
 
         void LateUpdate()
@@ -336,7 +343,7 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _attackTarget = target.transform;
             _order = UnitOrder.Attack;
-            if (AgentActiveOnNavMesh) _agent.isStopped = false;
+            SafeSetDestination(target.transform.position);
         }
 
         public void OrderStop()
@@ -432,7 +439,7 @@ namespace InsectWars.RTS
             if (_agent != null)
             {
                 _agent.updatePosition = true;
-                _agent.Warp(transform.position);
+                _agent.updateRotation = true;
             }
         }
 
@@ -697,17 +704,22 @@ namespace InsectWars.RTS
 
             if (isMelee)
             {
-                float leashRange = range * 1.25f;
-                bool locked = _meleeLockedPos.HasValue;
-
-                if (locked && dist <= leashRange)
+                if (dist <= range)
                 {
-                    transform.position = _meleeLockedPos.Value;
+                    _meleeLockedPos = transform.position;
+                    if (AgentActiveOnNavMesh)
+                    {
+                        _agent.isStopped = true;
+                        _agent.ResetPath();
+                        _agent.velocity = Vector3.zero;
+                        _agent.updatePosition = false;
+                        _agent.updateRotation = false;
+                    }
 
                     var dir = _attackTarget.position - transform.position;
                     dir.y = 0f;
                     if (dir.sqrMagnitude > 0.001f)
-                        transform.rotation = Quaternion.LookRotation(dir);
+                        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
 
                     if (_attackCooldown <= 0f)
                     {
@@ -718,51 +730,37 @@ namespace InsectWars.RTS
                         GetComponent<UnitAnimationDriver>()?.NotifyAttack();
                         _attackCooldown = definition.attackCooldown;
                     }
-return;
-                }
-
-                if (locked)
-                    UnlockMelee();
-
-                if (dist <= range)
-                {
-                    _meleeLockedPos = transform.position;
-                    if (AgentActiveOnNavMesh)
-                    {
-                        _agent.isStopped = true;
-                        _agent.ResetPath();
-                        _agent.velocity = Vector3.zero;
-                        _agent.updatePosition = false;
-                    }
                     return;
                 }
 
+                if (_meleeLockedPos.HasValue)
+                    UnlockMelee();
+
                 SafeSetDestination(_attackTarget.position);
                 return;
-                }
+            }
 
-                if (dist > range)
-                {
+            if (dist > range)
+            {
                 SafeSetDestination(_attackTarget.position);
                 return;
-                }
+            }
 
-                if (AgentActiveOnNavMesh)
-                {
+            if (AgentActiveOnNavMesh)
+            {
                 _agent.isStopped = true;
                 _agent.ResetPath();
                 _agent.velocity = Vector3.zero;
-                }
+            }
 
             var animDriver = GetComponent<UnitAnimationDriver>();
 
-            var rangedDir = _attackTarget.position - transform.position;
-            rangedDir.y = 0f;
-            if (rangedDir.sqrMagnitude > 0.001f)
+            var lookDir = _attackTarget.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
             {
-                var rearDir = -rangedDir.normalized;
                 transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(rearDir), Time.deltaTime * 12f);
+                    Quaternion.LookRotation(lookDir.normalized), Time.deltaTime * 12f);
             }
 
             if (_attackCooldown > 0) return;
@@ -770,7 +768,7 @@ return;
             var sprayOrigin = animDriver != null
                 ? animDriver.GetSprayOrigin()
                 : transform.position + Vector3.up * 0.45f;
-            var sprayDir = rangedDir.normalized;
+            var sprayDir = lookDir.normalized;
             SprayAttack.Fire(sprayOrigin, sprayDir, definition.attackRange,
                 team, definition.attackDamage, this);
             animDriver?.NotifyAttack();
@@ -812,10 +810,10 @@ return;
                 return;
             }
 
-            // Auto-retaliate: non-worker units fight back when hit while not already in combat
+            // Auto-retaliate: non-worker units fight back when hit while idle or patrolling
             if (attacker != null && attacker.IsAlive
                 && Archetype != UnitArchetype.Worker
-                && _order != UnitOrder.Attack
+                && (_order == UnitOrder.Idle || _order == UnitOrder.Patrol)
                 && !_wantsAttackMove)
             {
                 OrderAttack(attacker);
