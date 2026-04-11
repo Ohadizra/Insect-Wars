@@ -90,7 +90,7 @@ namespace InsectWars.RTS
             if (larvaIcon == null) larvaIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
             if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
             if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
-            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple_clean.png");
+            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple.png");
             #endif
 
             var canvasGo = new GameObject("DemoHUD");
@@ -106,18 +106,14 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-            // --- Top Center: Resource Display (No Background) ---
-            var topBar = new GameObject("TopBar").AddComponent<RectTransform>();
-            topBar.SetParent(HudCanvasRect, false);
-            topBar.anchorMin = topBar.anchorMax = topBar.pivot = new Vector2(0.5f, 1);
-            topBar.anchoredPosition = new Vector2(0, -40);
-            topBar.sizeDelta = new Vector2(200, 60);
+            // --- Top Center: Resource Display (Icon + Text Only) ---
+            var container = new GameObject("CalorieDisplay").AddComponent<RectTransform>();
+            container.SetParent(HudCanvasRect, false);
+            container.anchorMin = container.anchorMax = container.pivot = new Vector2(0.5f, 1);
+            container.anchoredPosition = new Vector2(0, -30);
+            container.sizeDelta = new Vector2(200, 50);
             
-            var hl = topBar.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hl.childAlignment = TextAnchor.MiddleCenter; hl.spacing = 10; hl.childControlWidth = false;
-            hl.childForceExpandWidth = hl.childForceExpandHeight = false;
-
-            _calorieLabel = CreateResourceItem(topBar, appleIcon != null ? appleIcon : larvaIcon, "0");
+            _calorieLabel = CreateResourceItem(container, appleIcon != null ? appleIcon : larvaIcon, "0");
 
 
             // --- Top Right: Menu Button ---
