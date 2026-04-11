@@ -356,6 +356,12 @@ namespace InsectWars.RTS
             return 0f;
         }
 
+        static void SafeSetLayer(GameObject go, string layerName)
+        {
+            int layer = LayerMask.NameToLayer(layerName);
+            if (layer >= 0) go.layer = layer;
+        }
+
         void BuildTerrain(Transform parent, float halfExtent)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -363,7 +369,11 @@ namespace InsectWars.RTS
             go.transform.SetParent(parent, false);
             go.transform.localScale = new Vector3(halfExtent * 0.2f, 1f, halfExtent * 0.2f);
             go.transform.position = Vector3.zero;
-            go.layer = LayerMask.NameToLayer("Ground");
+            SafeSetLayer(go, "Ground");
+
+            var mat = new Material(s_lit);
+            mat.SetColor("_BaseColor", new Color(0.35f, 0.28f, 0.18f));
+            go.GetComponent<Renderer>().sharedMaterial = mat;
         }
 
         void AddMapBounds(Transform parent, float halfExtent, float thickness) { }
@@ -375,7 +385,7 @@ namespace InsectWars.RTS
             go.transform.SetParent(parent, false);
             go.transform.position = pos;
             go.transform.localScale = scale;
-            go.layer = LayerMask.NameToLayer("Environment");
+            SafeSetLayer(go, "Environment");
         }
 
         void BuildHive(Transform parent, Vector3 pos, Team team, string name)
@@ -432,7 +442,7 @@ namespace InsectWars.RTS
                 unit = go.AddComponent<InsectUnit>();
             }
             
-            unit.Configure(team, null);
+            unit.Configure(team, null, arch);
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
             return unit;

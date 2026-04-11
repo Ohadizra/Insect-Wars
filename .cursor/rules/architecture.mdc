@@ -50,7 +50,7 @@ SkirmishDirector (bootstrap)
 │   └── PauseController
 └── Cross-Scene
     ├── GameSession (static — difficulty, selected map, PlayerPrefs keys)
-    └── SceneLoader (Home → Game; SkirmishDemo is dev-only)
+    └── SceneLoader (Home → per-map scene via SkirmishMapDefinition.sceneName; SkirmishDemo is dev-only)
 ```
 
 ## Unit Archetypes

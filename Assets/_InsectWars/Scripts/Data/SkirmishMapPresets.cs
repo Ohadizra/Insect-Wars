@@ -25,6 +25,7 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ThornBasin";
             map.displayName = "Thorn Basin";
+            map.sceneName = "ThornBasin";
             map.description = "A small clearing between twisted roots.\nEach side controls one calorie deposit. Fight for the contested center.";
             map.mapHalfExtent = 55f;
             map.playerHivePosition = new Vector3(-38f, 1f, -38f);
@@ -66,6 +67,7 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "Lalush";
             map.displayName = "Lalush Depths";
+            map.sceneName = "Lalush";
             map.description = "Swamp lowlands split by a diagonal ridge bridge.\nCorner bases, tight ramp chokes, and contested third-base pockets on each flank.";
             map.mapHalfExtent = 78f;
             map.playerHivePosition       = new Vector3(-60f, 1f, -54f);
@@ -144,6 +146,7 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "BraveNewWorld";
             map.displayName = "Brave New World";
+            map.sceneName = "BraveNewWorld";
             map.description = "A vast battlefield with fortified corner bases and narrow ramp chokes.\nSeize the central plateau, contest multiple expansions, and use vision blockers to ambush.";
             map.mapHalfExtent = 110f;
             map.playerHivePosition    = new Vector3( 82f, 1f, -80f);
@@ -205,6 +208,7 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ShazuBell";
             map.displayName = "Shazu Bell";
+            map.sceneName = "ShazuBell";
             map.description = "A strategic frozen outpost with fortified corner mains and tiered lanes.\nCapture the high-calorie Apples at the expansions to fuel your swarm.";
             map.mapHalfExtent = 120f;
             map.playerHivePosition    = new Vector3(-92f, 1f,  88f);
@@ -268,6 +272,7 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ShazuDen";
             map.displayName = "Shazu Den";
+            map.sceneName = "ShazuDen";
             map.description = "Frozen earth outpost inspired by ancient battlefields.\nElevated mains with narrow ramps, choked natural expansions, safe pocket thirds behind, and two high-yield gold deposits on exposed low ground at 3 and 9 o'clock. Control the center watchtower to dominate.";
             map.mapHalfExtent = 120f;
 

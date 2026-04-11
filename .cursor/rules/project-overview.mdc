@@ -9,7 +9,7 @@ alwaysApply: true
 
 Insect Wars is a **real-time strategy (RTS) game** built in **Unity 6** (6000.x) using **URP** (Universal Render Pipeline). The game is set at **insect scale** — a patch of garden soil where pebbles are mountains, grass blades are trees, and dewdrops are lakes. Players command insect colonies (workers, fighters, ranged bombardiers) to gather resources, build structures, and destroy the enemy hive.
 
-**Current state:** Single-player skirmish demo with AI opponent. No multiplayer/networking. Three scenes: `Home` (menu), `Game` (production gameplay — loads any map via `SkirmishMapDefinition` data), and `SkirmishDemo` (dev-only test scene, will be removed).
+**Current state:** Single-player skirmish demo with AI opponent. No multiplayer/networking. Each map has its own scene (e.g. `ThornBasin.unity`, `Lalush.unity`). `Home` is the menu scene. `SkirmishDemo` is a dev-only test scene that will be removed.
 
 ## Folder Structure
 
@@ -23,7 +23,7 @@ Assets/
                           selection, commands, camera, fog, minimap, economy, combat, HUD
       RTS/Editor/       ← Custom inspectors
       UI/               ← Menu bootstrap
-    Scenes/             ← Home.unity, Game.unity, SkirmishDemo.unity (dev-only)
+    Scenes/             ← Home.unity, per-map scenes (ThornBasin, Lalush, etc.), SkirmishDemo.unity (dev-only)
     Models/             ← GLB-backed prefabs
     Materials/
     Sprites/            ← UI and VFX sprites

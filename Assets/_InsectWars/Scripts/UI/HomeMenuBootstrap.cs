@@ -184,8 +184,7 @@ namespace InsectWars.UI
             {
                 var mapName = m.displayName;
                 DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
-                    GameSession.SetSelectedMap(m);
-                    SceneLoader.LoadGame();
+                    SceneLoader.LoadMap(m);
                 });
             }
 DarkButton(box.transform, "BACK", ref y, () => ShowPlay());

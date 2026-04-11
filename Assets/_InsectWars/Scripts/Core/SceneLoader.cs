@@ -1,3 +1,4 @@
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,7 +7,6 @@ namespace InsectWars.Core
     public static class SceneLoader
     {
         public const string HomeScene = "Home";
-        public const string GameScene = "Game";
 
         /// <summary>Dev-only skirmish scene; will be removed after development.</summary>
         public const string SkirmishScene = "SkirmishDemo";
@@ -16,9 +16,16 @@ namespace InsectWars.Core
             SceneManager.LoadScene(HomeScene);
         }
 
-        public static void LoadGame()
+        /// <summary>Loads the scene associated with the given map definition.</summary>
+        public static void LoadMap(SkirmishMapDefinition map)
         {
-            SceneManager.LoadScene(GameScene);
+            if (map == null || string.IsNullOrEmpty(map.sceneName))
+            {
+                Debug.LogError("[SceneLoader] Cannot load map — no sceneName set.");
+                return;
+            }
+            GameSession.SetSelectedMap(map);
+            SceneManager.LoadScene(map.sceneName);
         }
 
         /// <summary>Dev shortcut — loads the SkirmishDemo scene directly.</summary>

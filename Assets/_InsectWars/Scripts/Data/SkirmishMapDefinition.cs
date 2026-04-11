@@ -45,6 +45,9 @@ namespace InsectWars.Data
         public string displayName = "Unnamed Map";
         public string description = "";
 
+        /// <summary>Unity scene name to load for this map (must be in Build Settings).</summary>
+        public string sceneName = "";
+
         public float mapHalfExtent = 88f;
         public Vector3 playerHivePosition = new Vector3(-62f, 1f, -52f);
         public Vector3 enemyHivePosition = new Vector3(62f, 1f, 52f);

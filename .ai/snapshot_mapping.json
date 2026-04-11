@@ -677,6 +677,12 @@
       "conversation_id": "a0ecd7ca-f673-4a7f-9476-b93a20b5c991",
       "content": "recreate the buttons bottom bar in game scean , so it will fit the camera, units actions as uch. . remove white and black backgrounds",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "f055ba5b-9168-4639-b75e-e12cce7bc11d",
+      "content": "this UI element is a bad fit for the action icons, we need an empty frame UI element for this area. please fix",
+      "snapshot_message_type": 0
     }
   ]
 }

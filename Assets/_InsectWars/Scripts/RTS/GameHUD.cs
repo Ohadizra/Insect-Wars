@@ -101,16 +101,18 @@ namespace InsectWars.RTS
             menuBtnGo.gameObject.AddComponent<Button>().onClick.AddListener(() => SceneLoader.LoadHome());
 
             // --- Bottom Left: Map ---
-            MapPanel = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(30, 30), new Vector2(300, 300), frameSquareSprite);
+            // Removed MapFrame, SelectionPanel, ActionPanel as they are handled by BottomBar
+
+            // MapPanel = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(30, 30), new Vector2(300, 300), frameSquareSprite);
 
             // --- Bottom Center: Selection ---
-            SelectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(600, 200), frameSquareSprite);
-            _selectionLabel = CreateText("Hint", SelectionPanel, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(40, 40), new Vector2(-40, -40), SelectionHint, 18, ColAmber);
-            _selectionLabel.alignment = TextAnchor.MiddleCenter;
+            // SelectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(600, 200), frameSquareSprite);
+            // _selectionLabel = CreateText("Hint", SelectionPanel, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(40, 40), new Vector2(-40, -40), SelectionHint, 18, ColAmber);
+            // _selectionLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Right: Actions ---
-            ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 300), frameSquareSprite);
-        }
+            // ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 300), frameSquareSprite);
+            }
 
         Text CreateResourceItem(Transform parent, Sprite icon, string initialVal)
         {

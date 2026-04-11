@@ -166,9 +166,7 @@ namespace InsectWars.RTS
 
         void Start()
         {
-            if (definition == null)
-                definition = UnitDefinition.CreateRuntimeDefault(UnitArchetype.Worker,
-                    TeamPalette.UnitBody(team, UnitArchetype.Worker));
+            EnsureDefinition(Archetype);
             ApplyDefinition();
             _health = definition.maxHealth;
             if (team == Team.Enemy)
@@ -177,16 +175,24 @@ namespace InsectWars.RTS
                 gameObject.AddComponent<UnitHealthBar>();
         }
 
-        public void Configure(Team t, UnitDefinition def)
+        public void Configure(Team t, UnitDefinition def, UnitArchetype archetype = UnitArchetype.Worker)
         {
             team = t;
-            definition = def;
+            if (def != null) definition = def;
+            EnsureDefinition(archetype);
             ApplyDefinition();
             _health = definition.maxHealth;
             if (team == Team.Enemy)
                 _health *= GameSession.DifficultyEnemyHpMultiplier;
             if (GetComponent<UnitHealthBar>() == null)
                 gameObject.AddComponent<UnitHealthBar>();
+        }
+
+        void EnsureDefinition(UnitArchetype archetype)
+        {
+            if (definition != null) return;
+            definition = UnitDefinition.CreateRuntimeDefault(archetype,
+                TeamPalette.UnitBody(team, archetype));
         }
 
         void ApplyDefinition()
