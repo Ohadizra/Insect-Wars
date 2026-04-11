@@ -21,13 +21,13 @@ namespace InsectWars.UI
         [SerializeField] Sprite separatorSprite;
 
         // ── Sketch Palette ──
-        static readonly Color ColTitle     = new(0.95f, 0.85f, 0.60f); // Warm Amber/Gold
-        static readonly Color ColSub       = new(0.75f, 0.65f, 0.45f); // Copper
-        static readonly Color ColDim       = new(0f, 0f, 0f, 0.60f);
+        static readonly Color ColTitle     = new(0.96f, 0.90f, 0.78f); // Light Amber/Parchment
+        static readonly Color ColSub       = new(0.83f, 0.69f, 0.44f); // Warm Copper/Gold
+        static readonly Color ColDim       = new(0f, 0f, 0f, 0.70f); // Dark Charcoal Dimmer
         static readonly Color ColWhite     = Color.white;
 
         const float PanelW = 600f, PanelH = 800f;
-        const float BtnW = 420f, BtnH = 70f, BtnGap = 85f;
+        const float BtnW = 450f, BtnH = 80f, BtnGap = 95f;
         const int TitleSize = 52, SubSize = 16, BtnFontSize = 24;
 
         Canvas _canvas;
@@ -42,12 +42,12 @@ namespace InsectWars.UI
             Screen.fullScreen = GameSession.GetSavedFullscreen();
             _font = UiFontHelper.GetFont();
 
-#if UNITY_EDITOR
-            string p = "Assets/_InsectWars/Sprites/UI/StyleMatch/";
-            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square.png");
-            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_round.png");
-            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "separator_gear.png");
-#endif
+        #if UNITY_EDITOR
+            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
+            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
+            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "top_bar_frame.png");
+        #endif
 
             SetupEventSystem();
             BuildCanvas();
@@ -271,10 +271,10 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             t.text = text; t.supportRichText = true;
             
             var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(0, 0, 0, 0.5f);
-            outline.effectDistance = new Vector2(1, -1);
+            outline.effectColor = new Color(0.1f, 0.08f, 0.06f, 0.8f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
             return t;
-        }
+            }
 
         static void Stretch(RectTransform rt) { rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; }
         static void AnchorTopCenter(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
