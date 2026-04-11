@@ -671,6 +671,12 @@
       "conversation_id": "6c242886-b89b-4f27-bef3-c37af6aad8ca",
       "content": "some how all sceans are no longer working and the ui is not fixed  , game went completly broken",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "a0ecd7ca-f673-4a7f-9476-b93a20b5c991",
+      "content": "recreate the buttons bottom bar in game scean , so it will fit the camera, units actions as uch. . remove white and black backgrounds",
+      "snapshot_message_type": 0
     }
   ]
 }
