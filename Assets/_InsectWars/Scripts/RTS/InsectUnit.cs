@@ -76,7 +76,18 @@ namespace InsectWars.RTS
 
         void SafeSetDestination(Vector3 dest)
         {
-            if (AgentActiveOnNavMesh)
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (_agent == null) return;
+
+            if (!_agent.enabled) _agent.enabled = true;
+
+            if (!_agent.isOnNavMesh)
+            {
+                if (NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
+                    _agent.Warp(hit.position);
+            }
+
+            if (_agent.isOnNavMesh)
             {
                 _agent.isStopped = false;
                 _agent.SetDestination(dest);
@@ -85,6 +96,11 @@ namespace InsectWars.RTS
 
         void SafeStopAgent()
         {
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (_agent == null) return;
+
+            if (!_agent.enabled) _agent.enabled = true;
+
             if (AgentActiveOnNavMesh)
             {
                 _agent.isStopped = true;

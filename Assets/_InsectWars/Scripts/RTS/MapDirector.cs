@@ -573,12 +573,19 @@ namespace InsectWars.RTS
             }
             
             unit.Configure(team, null, arch);
+            unit.enabled = true; // Ensure script is enabled
             
             // Fix units spawning in the middle of the map by explicitly warping the NavMeshAgent
             var agent = go.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                agent.Warp(pos);
+                agent.enabled = true; // Ensure agent is enabled
+                // Try a small vertical offset if Warp fails at exact pos
+                if (!agent.Warp(pos))
+                {
+                    if (NavMesh.SamplePosition(pos, out var hit, 10f, NavMesh.AllAreas))
+                        agent.Warp(hit.position);
+                }
             }
 
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)

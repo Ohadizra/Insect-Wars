@@ -50,10 +50,13 @@ namespace InsectWars.UI
         #endif
 
             // Stop NavMesh errors in Home scene
-            foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
-                agent.enabled = false;
-            foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
-                unit.enabled = false;
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == SceneLoader.HomeScene)
+            {
+                foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
+                    agent.enabled = false;
+                foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+                    unit.enabled = false;
+            }
 
             SetupEventSystem();
             BuildCanvas();

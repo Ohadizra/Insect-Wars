@@ -18,7 +18,7 @@ namespace InsectWars.RTS
         Text _overlayText;
 
         float _matchTimer;
-        const float MatchStartupGrace = 1.5f;
+        const float MatchStartupGrace = 4.0f;
 
         void Update()
         {
@@ -29,9 +29,15 @@ namespace InsectWars.RTS
             if (_matchTimer < MatchStartupGrace) return;
 
             if (RtsSimRegistry.CountAlive(Team.Enemy) == 0)
+            {
+                Debug.Log("[MatchDirector] Victory: No Enemy combatants found.");
                 EndMatch(MatchState.Won);
+            }
             else if (RtsSimRegistry.CountAlive(Team.Player) == 0)
+            {
+                Debug.Log("[MatchDirector] Defeat: No Player combatants found.");
                 EndMatch(MatchState.Lost);
+            }
         }
 
         void EndMatch(MatchState end)
