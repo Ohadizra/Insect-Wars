@@ -1,0 +1,12 @@
+{
+    "asset": "a0b2f28f8a5a74c6f9e87c4143b4dbb9",
+    "fileName": "019d7c00-8bc5-77f9-9afc-3be74b99a5d1.glb",
+    "prompt": "massive frozen insect horn pillar, organic curved structure covered in frost and blue ice, stylized hand painted texture, low poly stylized, no metal or tech components",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "5b1a0e97658b1449e03a6706ffbef408",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
