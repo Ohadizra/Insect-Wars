@@ -206,7 +206,7 @@ namespace InsectWars.RTS
             }
             else if (_unit.Archetype != UnitArchetype.BasicFighter)
             {
-                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
+                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }
