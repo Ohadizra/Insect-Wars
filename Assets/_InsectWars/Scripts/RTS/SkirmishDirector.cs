@@ -677,10 +677,29 @@ AddTerrainFeature(world.transform, tf);
                     float maxH = 0f;
                     foreach (var hg in hgList)
                     {
-                        float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                        float dist;
+                        float baseRad;
+                        if (hg.radius > 0.001f)
+                        {
+                            dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                            baseRad = hg.radius;
+                        }
+                        else
+                        {
+                            // Rotated box SDF
+                            Vector2 uvRel = new Vector2(u, v) - hg.uv;
+                            float rad = hg.rotation * Mathf.Deg2Rad;
+                            float cos = Mathf.Cos(rad);
+                            float sin = Mathf.Sin(rad);
+                            Vector2 local = new Vector2(uvRel.x * cos + uvRel.y * sin, -uvRel.x * sin + uvRel.y * cos);
+                            Vector2 d = new Vector2(Mathf.Abs(local.x) - hg.boxSize.x * 0.5f, Mathf.Abs(local.y) - hg.boxSize.y * 0.5f);
+                            dist = Mathf.Min(Mathf.Max(d.x, d.y), 0f) + Vector2.Max(d, Vector2.zero).magnitude;
+                            baseRad = 0f; // Inside box dist <= 0
+                        }
+
                         float rw = Mathf.Max(hg.rampWidth, 0.01f);
-                        if (dist < hg.radius) maxH = Mathf.Max(maxH, hg.heightFraction);
-                        else if (dist < hg.radius + rw) maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, (dist - hg.radius) / rw));
+                        if (dist <= baseRad) maxH = Mathf.Max(maxH, hg.heightFraction);
+                        else if (dist < baseRad + rw) maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, (dist - baseRad) / rw));
                     }
                     heights[y, x] = maxH;
                 }
@@ -698,10 +717,28 @@ AddTerrainFeature(world.transform, tf);
                     float h = 0f;
                     foreach (var hg in hgList)
                     {
-                        float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                        float dist;
+                        float baseRad;
+                        if (hg.radius > 0.001f)
+                        {
+                            dist = Vector2.Distance(new Vector2(u, v), hg.uv);
+                            baseRad = hg.radius;
+                        }
+                        else
+                        {
+                            Vector2 uvRel = new Vector2(u, v) - hg.uv;
+                            float rad = hg.rotation * Mathf.Deg2Rad;
+                            float cos = Mathf.Cos(rad);
+                            float sin = Mathf.Sin(rad);
+                            Vector2 local = new Vector2(uvRel.x * cos + uvRel.y * sin, -uvRel.x * sin + uvRel.y * cos);
+                            Vector2 d = new Vector2(Mathf.Abs(local.x) - hg.boxSize.x * 0.5f, Mathf.Abs(local.y) - hg.boxSize.y * 0.5f);
+                            dist = Mathf.Min(Mathf.Max(d.x, d.y), 0f) + Vector2.Max(d, Vector2.zero).magnitude;
+                            baseRad = 0f;
+                        }
+
                         float rw = Mathf.Max(hg.rampWidth, 0.01f);
-                        if (dist < hg.radius) h = 1f;
-                        else if (dist < hg.radius + rw) h = Mathf.Max(h, Mathf.InverseLerp(hg.radius + rw, hg.radius, dist));
+                        if (dist <= baseRad) h = 1f;
+                        else if (dist < baseRad + rw) h = Mathf.Max(h, Mathf.InverseLerp(baseRad + rw, baseRad, dist));
                     }
 
                     float noise = Mathf.PerlinNoise(x * 0.1f, y * 0.1f);

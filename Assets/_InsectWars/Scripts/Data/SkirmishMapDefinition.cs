@@ -24,8 +24,12 @@ namespace InsectWars.Data
     {
         /// <summary>UV coordinates (0-1) on the terrain, where (0,0) is terrain origin corner.</summary>
         public Vector2 uv;
-        /// <summary>Radius in UV space (0.13 ≈ 14% of map width).</summary>
+        /// <summary>Radius for circular plateaus. Set to 0 to use boxSize instead.</summary>
         public float radius;
+        /// <summary>Width/Height in UV space for rectangular plateaus.</summary>
+        public Vector2 boxSize;
+        /// <summary>Rotation in degrees for rectangular plateaus.</summary>
+        public float rotation;
         /// <summary>Ramp width in UV space — wider = gentler slope NavMesh can walk.</summary>
         public float rampWidth;
         /// <summary>Height as fraction of terrain max height (e.g. 0.08 = 8% of 20m = 1.6m).</summary>
