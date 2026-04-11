@@ -588,8 +588,34 @@ AddTerrainFeature(world.transform, tf);
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
                 if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
-                
-                // Apply skin color using MaterialPropertyBlock to avoid unique materials
+
+                if (hive.GetComponent<Collider>() == null)
+                {
+                    var col = hive.AddComponent<BoxCollider>();
+                    col.isTrigger = true;
+                    col.center = new Vector3(0f, 1.5f, 0f);
+                    col.size = new Vector3(5f, 3f, 5f);
+                }
+
+                // Assign hiveMaterial to renderers that have no material (FBX with no embedded materials)
+                if (visualLibrary.hiveMaterial != null)
+                {
+                    foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
+                    {
+                        var mats = renderer.sharedMaterials;
+                        bool changed = false;
+                        for (int i = 0; i < mats.Length; i++)
+                        {
+                            if (mats[i] == null) { mats[i] = visualLibrary.hiveMaterial; changed = true; }
+                        }
+                        if (mats.Length == 0)
+                        {
+                            renderer.sharedMaterial = visualLibrary.hiveMaterial;
+                        }
+                        else if (changed) renderer.sharedMaterials = mats;
+                    }
+                }
+
                 var skinColor = TeamPalette.GetShellColor(team);
                 var block = new MaterialPropertyBlock();
                 foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
