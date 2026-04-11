@@ -419,6 +419,12 @@
       "conversation_id": "d86c4e48-dfb4-4174-aff8-0c81f80a61c0",
       "content": "i made a mechnism for the attack of the bombardment beatle, i need you to refine the art animation of the attack and the art of the spray based on acurate real world bombardment beatle attack",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "f16eee21-2ab4-4690-8367-56804d578330",
+      "conversation_id": "d86c4e48-dfb4-4174-aff8-0c81f80a61c0",
+      "content": "I have refined the Bombardier Beetle's attack art and animation to better reflect the explosive, pulsed chemical mechanism of the real-world insect.\n\n### Summary of Refinements:\n\n1.  **Art/VFX (Chemical Spray):**\n    *   **New Sprite:** Generated a custom \"chemical spray puff\" texture (`BombardierSprayPuff.png`) that looks like high-energy, wispy steam with yellowish caustic tints.\n    *   **Pulsed Emission:** Updated `SprayAttack.cs` to replace the single burst with **6 rapid-fire bursts** over the spray duration (0.3s). This accurately mimics the biological rapid-pulse mechanism (which can reach hundreds of pulses per second in real life).\n    *   **Dynamic Particles:** Added high initial velocity with rapid dissipation, randomized rotation for the puffs, and **particle trails** to simulate high-velocity fluid/gas streaking.\n    *   **Improved Shading:** Enhanced the color gradient to shift from a hot white to a noxious, translucent yellowish-beige.\n\n2.  **Animation Refinement:**\n    *   **Abdomen Jitter:** Updated `UnitAnimationDriver.cs` to add a rapid high-frequency \"jitter\" to the tail (abdomen) during the spray. This represents the internal explosive reaction's impact on the beetle's body.\n    *   **Staccato Recoil:** Modified the body recoil to be \"shuddery\" or \"staccato\" rather than a smooth slide, syncing with the pulsed spray bursts.\n    *   **Aggressive Articulation:** Increased the abdomen lift and chest tilt during the firing sequence to make the attack feel more violent and impactful.\n\n### Files Modified/Created:\n-   **VFX Sprite:** `Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png`\n-   **VFX Logic:** `Assets/_InsectWars/Scripts/RTS/SprayAttack.cs`\n-   **Animation Logic:** `Assets/_InsectWars/Scripts/RTS/UnitAnimationDriver.cs`\n\nThese changes ensure that the Bombardier Beetle's defense mechanism feels like a series of rapid, hot, chemical explosions rather than a simple generic stream.",
+      "snapshot_message_type": 1
     }
   ]
 }

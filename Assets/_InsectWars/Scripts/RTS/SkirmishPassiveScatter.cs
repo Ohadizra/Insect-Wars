@@ -1,10 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Decorative props (no colliders) to fill open ground.
+    /// Decorative props (no colliders) to fill open ground with real-world
+    /// objects at insect scale: pebbles, dried leaves, grass blades, twigs.
     /// </summary>
     public static class SkirmishPassiveScatter
     {
@@ -29,6 +33,9 @@ namespace InsectWars.RTS
 
         static Material s_lit;
         static readonly Dictionary<uint, Material> s_matCache = new();
+        static GameObject s_leafPrefab;
+        static GameObject s_pebblePrefab;
+        static bool s_prefabsLoaded;
 
         static void EnsureLit()
         {
@@ -41,10 +48,10 @@ namespace InsectWars.RTS
         static Material Mat(Color c)
         {
             EnsureLit();
-            uint key = (uint)(Mathf.RoundToInt(c.r * 255f) << 16) | 
-                       (uint)(Mathf.RoundToInt(c.g * 255f) << 8) | 
+            uint key = (uint)(Mathf.RoundToInt(c.r * 255f) << 16) |
+                       (uint)(Mathf.RoundToInt(c.g * 255f) << 8) |
                        (uint)Mathf.RoundToInt(c.b * 255f);
-            
+
             if (s_matCache.TryGetValue(key, out var existing))
                 return existing;
 
@@ -64,8 +71,21 @@ namespace InsectWars.RTS
             return false;
         }
 
+        static void LoadPrefabs()
+        {
+            if (s_prefabsLoaded) return;
+            s_prefabsLoaded = true;
+#if UNITY_EDITOR
+            s_leafPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_InsectWars/Models/Scatter_FallenLeaf.glb");
+            s_pebblePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_InsectWars/Models/Scatter_Pebble.glb");
+#endif
+        }
+
         public static void Scatter(Transform parent, float halfExtent, int seed, IReadOnlyList<ExclusionZone> exclusions)
         {
+            LoadPrefabs();
             var rng = new System.Random(seed);
             var root = new GameObject("PassiveFill");
             root.transform.SetParent(parent, false);
@@ -83,79 +103,137 @@ namespace InsectWars.RTS
                 if (Excluded(x, z, exclusions)) continue;
 
                 var roll = rng.Next(100);
-                if (roll < 38)
-                    SpawnGrassTuft(root.transform, x, z, rng);
-                else if (roll < 68)
-                    SpawnRock(root.transform, x, z, rng);
-                else if (roll < 88)
-                    SpawnMushroom(root.transform, x, z, rng);
+                if (roll < 30)
+                    SpawnGrassBlade(root.transform, x, z, rng);
+                else if (roll < 55)
+                    SpawnPebble(root.transform, x, z, rng);
+                else if (roll < 80)
+                    SpawnFallenLeaf(root.transform, x, z, rng);
                 else
                     SpawnTwig(root.transform, x, z, rng);
                 spawned++;
             }
         }
 
-        static void SpawnGrassTuft(Transform parent, float x, float z, System.Random rng)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            go.name = "GrassTuft";
-            go.transform.SetParent(parent, false);
-            Object.Destroy(go.GetComponent<Collider>());
-            var g = 0.28f + (float)rng.NextDouble() * 0.35f;
-            go.transform.position = new Vector3(x, g * 0.5f, z);
-            go.transform.localScale = new Vector3(0.35f + (float)rng.NextDouble() * 0.5f, g, 0.35f + (float)rng.NextDouble() * 0.5f);
-            go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f);
-            var c = Color.Lerp(new Color(0.18f, 0.42f, 0.14f), new Color(0.28f, 0.52f, 0.2f), (float)rng.NextDouble());
-            go.GetComponent<Renderer>().sharedMaterial = Mat(c);
-        }
-
-        static void SpawnRock(Transform parent, float x, float z, System.Random rng)
+        /// <summary>Single tall grass blade — realistic proportions for insect scale.</summary>
+        static void SpawnGrassBlade(Transform parent, float x, float z, System.Random rng)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = "Rock";
+            go.name = "GrassBlade";
             go.transform.SetParent(parent, false);
             Object.Destroy(go.GetComponent<Collider>());
-            var s = 0.3f + (float)rng.NextDouble() * 0.7f;
-            go.transform.position = new Vector3(x, s * 0.4f, z);
-            go.transform.localScale = new Vector3(s, s * (0.4f + (float)rng.NextDouble() * 0.6f), s * (0.7f + (float)rng.NextDouble() * 0.5f));
-            go.transform.rotation = Quaternion.Euler(
-                (float)rng.NextDouble() * 360f,
-                (float)rng.NextDouble() * 360f,
-                (float)rng.NextDouble() * 360f);
-            var c = Color.Lerp(new Color(0.35f, 0.33f, 0.3f), new Color(0.45f, 0.43f, 0.4f), (float)rng.NextDouble());
+
+            float height = 1.2f + (float)rng.NextDouble() * 2.0f;
+            float width = 0.08f + (float)rng.NextDouble() * 0.12f;
+            go.transform.position = new Vector3(x, height * 0.5f, z);
+            go.transform.localScale = new Vector3(width, height, 0.02f);
+
+            float lean = (float)rng.NextDouble() * 18f - 9f;
+            go.transform.rotation = Quaternion.Euler(lean, (float)rng.NextDouble() * 360f, lean * 0.5f);
+
+            var c = Color.Lerp(
+                new Color(0.22f, 0.38f, 0.12f),
+                new Color(0.45f, 0.55f, 0.18f),
+                (float)rng.NextDouble());
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
 
-        static void SpawnMushroom(Transform parent, float x, float z, System.Random rng)
+        /// <summary>Small pebble — uses Meshy-generated model when available, falls back to stretched sphere.</summary>
+        static void SpawnPebble(Transform parent, float x, float z, System.Random rng)
         {
-            var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            stem.name = "ShroomStem";
-            stem.transform.SetParent(parent, false);
-            Object.Destroy(stem.GetComponent<Collider>());
-            stem.transform.position = new Vector3(x, 0.22f, z);
-            stem.transform.localScale = new Vector3(0.12f, 0.22f, 0.12f);
-            stem.GetComponent<Renderer>().sharedMaterial = Mat(new Color(0.9f, 0.88f, 0.82f));
+            GameObject go;
+            float size = 0.3f + (float)rng.NextDouble() * 0.8f;
 
-            var cap = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            cap.name = "ShroomCap";
-            cap.transform.SetParent(parent, false);
-            Object.Destroy(cap.GetComponent<Collider>());
-            cap.transform.position = new Vector3(x, 0.42f, z);
-            cap.transform.localScale = new Vector3(0.38f, 0.22f, 0.38f);
-            var capC = Color.Lerp(new Color(0.75f, 0.2f, 0.22f), new Color(0.55f, 0.15f, 0.45f), (float)rng.NextDouble());
-            cap.GetComponent<Renderer>().sharedMaterial = Mat(capC);
+            if (s_pebblePrefab != null)
+            {
+                go = Object.Instantiate(s_pebblePrefab, parent);
+                go.name = "Pebble";
+                Object.Destroy(go.GetComponent<Collider>());
+                go.transform.position = new Vector3(x, size * 0.3f, z);
+                go.transform.localScale = Vector3.one * size;
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "Pebble";
+                go.transform.SetParent(parent, false);
+                Object.Destroy(go.GetComponent<Collider>());
+                go.transform.position = new Vector3(x, size * 0.3f, z);
+                float flatness = 0.4f + (float)rng.NextDouble() * 0.5f;
+                float stretch = 0.8f + (float)rng.NextDouble() * 0.4f;
+                go.transform.localScale = new Vector3(size * stretch, size * flatness, size);
+                var c = Color.Lerp(
+                    new Color(0.40f, 0.38f, 0.34f),
+                    new Color(0.55f, 0.50f, 0.45f),
+                    (float)rng.NextDouble());
+                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+            }
+
+            go.transform.rotation = Quaternion.Euler(
+                (float)rng.NextDouble() * 10f,
+                (float)rng.NextDouble() * 360f,
+                (float)rng.NextDouble() * 10f);
         }
 
+        /// <summary>Fallen leaf — uses Meshy-generated model when available, falls back to flat disc.</summary>
+        static void SpawnFallenLeaf(Transform parent, float x, float z, System.Random rng)
+        {
+            GameObject go;
+            float size = 1.5f + (float)rng.NextDouble() * 2.5f;
+
+            if (s_leafPrefab != null)
+            {
+                go = Object.Instantiate(s_leafPrefab, parent);
+                go.name = "FallenLeaf";
+                Object.Destroy(go.GetComponent<Collider>());
+                go.transform.position = new Vector3(x, 0.02f, z);
+                go.transform.localScale = Vector3.one * size * 0.5f;
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                go.name = "FallenLeaf";
+                go.transform.SetParent(parent, false);
+                Object.Destroy(go.GetComponent<Collider>());
+                go.transform.position = new Vector3(x, 0.02f, z);
+                float elongation = 1.2f + (float)rng.NextDouble() * 0.6f;
+                go.transform.localScale = new Vector3(size * elongation, 0.015f, size);
+                var c = Color.Lerp(
+                    new Color(0.50f, 0.35f, 0.12f),
+                    new Color(0.60f, 0.48f, 0.15f),
+                    (float)rng.NextDouble());
+                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+            }
+
+            go.transform.rotation = Quaternion.Euler(
+                (float)rng.NextDouble() * 6f - 3f,
+                (float)rng.NextDouble() * 360f,
+                (float)rng.NextDouble() * 6f - 3f);
+        }
+
+        /// <summary>Small twig fragment — realistic stick proportions for insect scale.</summary>
         static void SpawnTwig(Transform parent, float x, float z, System.Random rng)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = "Twig";
             go.transform.SetParent(parent, false);
             Object.Destroy(go.GetComponent<Collider>());
-            go.transform.position = new Vector3(x, 0.04f, z);
-            go.transform.localScale = new Vector3(0.65f + (float)rng.NextDouble(), 0.06f, 0.08f);
-            go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, (float)rng.NextDouble() * 16f - 8f);
-            go.GetComponent<Renderer>().sharedMaterial = Mat(new Color(0.38f, 0.28f, 0.18f));
+
+            float length = 1.5f + (float)rng.NextDouble() * 3.0f;
+            float thickness = 0.04f + (float)rng.NextDouble() * 0.06f;
+            go.transform.position = new Vector3(x, thickness, z);
+            go.transform.localScale = new Vector3(thickness, length * 0.5f, thickness);
+
+            go.transform.rotation = Quaternion.Euler(
+                88f + (float)rng.NextDouble() * 4f,
+                (float)rng.NextDouble() * 360f,
+                0f);
+
+            var c = Color.Lerp(
+                new Color(0.35f, 0.24f, 0.14f),
+                new Color(0.48f, 0.35f, 0.20f),
+                (float)rng.NextDouble());
+            go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
     }
 }

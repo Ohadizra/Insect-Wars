@@ -168,19 +168,30 @@ namespace InsectWars.RTS
 
                 if (_unit.Archetype == UnitArchetype.BasicRanged)
                 {
-                    float tailLift = Mathf.Sin(p * Mathf.PI) * 55f;
+                    // Real bombardier beetles pulse their spray rapidly. 
+                    // This "jitter" and "staccato" movement reflects the explosive biological mechanism.
+                    float sprayActive = (p > 0.05f && p < 0.65f) ? 1f : 0f;
+                    float jitter = sprayActive * Mathf.Sin(p * 180f) * 6f;
+                    
+                    float tailLift = Mathf.Sin(p * Mathf.PI) * 60f;
                     if (_tail != null)
-                        _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift, 0f, 0f);
+                        _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
 
-                    float brace = Mathf.Sin(p * Mathf.PI) * 0.06f;
+                    float brace = Mathf.Sin(p * Mathf.PI) * 0.08f;
                     modelRoot.localScale = Vector3.Scale(_baseScale,
                         new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
 
-                    float recoil = Mathf.Sin(p * Mathf.PI) * 0.12f;
+                    // Pulsing staccato recoil
+                    float recoilBase = Mathf.Sin(p * Mathf.PI) * 0.16f;
+                    float recoilPulse = sprayActive * Mathf.Sin(p * 90f) * 0.035f;
+                    float recoil = recoilBase + recoilPulse;
+                    
+                    // Rear-facing: forward is the direction the beetle is technically "facing" (the front)
+                    // Recoil from the rear should push it forward.
                     modelRoot.localPosition += modelRoot.forward * recoil;
 
                     if (_chest != null)
-                        _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -15f, 0f, 0f);
+                        _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
                 }
                 else
                 {
@@ -254,9 +265,12 @@ namespace InsectWars.RTS
             if (tail && _tail != null) _tail.localRotation = Quaternion.Lerp(_tail.localRotation, _tailBase, speed);
         }
 
+        public bool HasAnimatorAttack =>
+            animator != null && animator.runtimeAnimatorController != null;
+
         public void NotifyAttack()
         {
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (HasAnimatorAttack)
                 animator.SetTrigger(Attack);
             bool isSpray = _unit != null && _unit.Archetype == UnitArchetype.BasicRanged;
             _attackAnimDuration = isSpray ? 0.5f : 0.35f;
