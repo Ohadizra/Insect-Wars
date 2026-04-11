@@ -378,22 +378,11 @@ namespace InsectWars.RTS
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
             
-            // Assign hiveMaterial to renderers missing materials (FBX with no embedded materials)
             var lib = SkirmishDirector.ActiveVisualLibrary;
             if (lib != null && lib.hiveMaterial != null)
             {
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
-                {
-                    var mats = renderer.sharedMaterials;
-                    bool changed = false;
-                    for (int i = 0; i < mats.Length; i++)
-                    {
-                        if (mats[i] == null) { mats[i] = lib.hiveMaterial; changed = true; }
-                    }
-                    if (mats.Length == 0)
-                        renderer.sharedMaterial = lib.hiveMaterial;
-                    else if (changed) renderer.sharedMaterials = mats;
-                }
+                    renderer.sharedMaterial = lib.hiveMaterial;
             }
 
             var skinColor = TeamPalette.GetShellColor(team);

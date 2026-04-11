@@ -26,6 +26,12 @@ namespace InsectWars.Data
             if (clayWallPrefab == null)
                 clayWallPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Models/ClayWall.prefab");
+            if (hiveMaterial == null)
+                hiveMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Buildings/AntNest/AntNestStage2Mat.mat");
+            if (rootCellarPrefab == null)
+                rootCellarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Prefabs/RootCellar.prefab");
             }
             #endif
 

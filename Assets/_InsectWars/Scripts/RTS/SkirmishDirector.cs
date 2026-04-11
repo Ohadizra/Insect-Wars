@@ -597,23 +597,10 @@ AddTerrainFeature(world.transform, tf);
                     col.size = new Vector3(5f, 3f, 5f);
                 }
 
-                // Assign hiveMaterial to renderers that have no material (FBX with no embedded materials)
                 if (visualLibrary.hiveMaterial != null)
                 {
                     foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
-                    {
-                        var mats = renderer.sharedMaterials;
-                        bool changed = false;
-                        for (int i = 0; i < mats.Length; i++)
-                        {
-                            if (mats[i] == null) { mats[i] = visualLibrary.hiveMaterial; changed = true; }
-                        }
-                        if (mats.Length == 0)
-                        {
-                            renderer.sharedMaterial = visualLibrary.hiveMaterial;
-                        }
-                        else if (changed) renderer.sharedMaterials = mats;
-                    }
+                        renderer.sharedMaterial = visualLibrary.hiveMaterial;
                 }
 
                 var skinColor = TeamPalette.GetShellColor(team);

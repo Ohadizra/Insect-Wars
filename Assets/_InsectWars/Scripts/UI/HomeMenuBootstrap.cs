@@ -26,9 +26,9 @@ namespace InsectWars.UI
         static readonly Color ColDim       = new(0f, 0f, 0f, 0.70f); // Dark Charcoal Dimmer
         static readonly Color ColWhite     = Color.white;
 
-        const float PanelW = 600f, PanelH = 800f;
-        const float BtnW = 450f, BtnH = 80f, BtnGap = 95f;
-        const int TitleSize = 52, SubSize = 16, BtnFontSize = 24;
+        const float PanelW = 750f, PanelH = 850f;
+        const float BtnW = 550f, BtnH = 100f, BtnGap = 120f;
+        const int TitleSize = 56, SubSize = 18, BtnFontSize = 26;
 
         Canvas _canvas;
         Font _font;
@@ -88,7 +88,11 @@ namespace InsectWars.UI
             Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
-            raw.color = new Color(0.1f, 0.08f, 0.05f); // Dark tint
+            raw.color = Color.white; 
+
+            var vrt = new RenderTexture(1920, 1080, 0);
+            vrt.Create();
+            raw.texture = vrt;
 
             var vgo = new GameObject("VideoPlayer");
             vgo.transform.SetParent(bg.transform, false);
@@ -96,16 +100,12 @@ namespace InsectWars.UI
             vp.playOnAwake = true;
             vp.isLooping = true;
             vp.renderMode = VideoRenderMode.RenderTexture;
-            var vrt = new RenderTexture(1920, 1080, 0);
             vp.targetTexture = vrt;
-            raw.texture = vrt;
 
             var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
             if (System.IO.File.Exists(path))
             {
-                vp.url = Application.platform == RuntimePlatform.OSXPlayer ||
-                         Application.platform == RuntimePlatform.OSXEditor
-                    ? "file://" + path : path;
+                vp.url = path;
                 vp.Play();
             }
             else vp.enabled = false;
@@ -123,21 +123,21 @@ namespace InsectWars.UI
 
             var title = Txt(box.transform, "STAGBEETLE ODYSSEY", TitleSize, ColTitle, TextAnchor.MiddleCenter);
             title.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(title.rectTransform, new Vector2(0, -80f), new Vector2(500, 100));
+            AnchorTopCenter(title.rectTransform, new Vector2(0, -100f), new Vector2(700, 120));
 
             var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
             sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -145f), new Vector2(460, 30));
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -170f), new Vector2(600, 40));
 
-            MakeSeparator(box.transform, -185f, 320f);
+            MakeSeparator(box.transform, -210f, 400f);
 
-            float y = -240f;
+            float y = -280f;
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
-            MakeSeparator(box.transform, y + 20f, 320f);
+            MakeSeparator(box.transform, y + 20f, 400f);
             y -= 20f;
             DarkButton(box.transform, "ABANDON", ref y, () => Application.Quit());
         }
