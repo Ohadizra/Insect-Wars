@@ -48,7 +48,8 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance == null) return;
             var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return;
+            // Use Collide so units/buildings with trigger colliders are still targetable.
+            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
 
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)

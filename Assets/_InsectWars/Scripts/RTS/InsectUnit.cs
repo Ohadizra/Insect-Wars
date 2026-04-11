@@ -254,6 +254,7 @@ namespace InsectWars.RTS
                 // Melee units should try to get close enough for their radius. 
                 _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
             }
+            TeamPalette.ApplyToGameObject(team, gameObject, _selectionRing);
         }
 
         float GetEffectiveAttackRange()
@@ -500,7 +501,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _hiveAttackTarget = hive;
-            _order = UnitOrder.AttackBuilding;
+            _order = UnitOrder.AttackHive;
             SafeSetDestination(hive.transform.position);
         }
 
@@ -593,6 +594,10 @@ namespace InsectWars.RTS
             if (!AgentActiveOnNavMesh || _agent.pathPending) return;
             if (!_wantsAttackMove && _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
                 _order = UnitOrder.Idle;
+            // If the destination is unreachable, stop trying so the unit doesn't
+            // remain in Move state indefinitely.
+            if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                _order = UnitOrder.Idle;
         }
 
         void TickAttackMoveScan()
@@ -632,6 +637,14 @@ namespace InsectWars.RTS
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
                 SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
+                // If the NavMesh cannot route to this resource, abandon it so
+                // TickIdleAutoGather can find an accessible alternative.
+                if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                {
+                    _gatherTarget = null;
+                    _lastGatherTarget = null;
+                    _order = UnitOrder.Idle;
+                }
                 return;
             }
             SafeStopAgent();
@@ -710,6 +723,8 @@ namespace InsectWars.RTS
 
             if (dist > range)
             {
+                // Restore agent control while closing the distance.
+                if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
                 SafeSetDestination(targetTransform.position);
                 return;
             }
@@ -774,6 +789,14 @@ namespace InsectWars.RTS
             if (diff.magnitude > arrivalDist)
             {
                 SafeSetDestination(depositDest.Value);
+                // If the hive is unreachable, drop cargo and try to re-gather so
+                // the worker doesn't loop forever.
+                if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                {
+                    if (inv != null) inv.Carrying = 0;
+                    _lastGatherTarget = null;
+                    _order = UnitOrder.Idle;
+                }
                 return;
             }
             SafeStopAgent();
@@ -976,6 +999,7 @@ namespace InsectWars.RTS
 
             if (dist > range)
             {
+                if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
                 SafeSetDestination(_hiveAttackTarget.transform.position);
                 return;
             }
@@ -986,7 +1010,7 @@ namespace InsectWars.RTS
                 _agent.isStopped = true;
                 _agent.ResetPath();
                 _agent.velocity = Vector3.zero;
-                if (definition.archetype != UnitArchetype.BasicRanged)
+                if (definition == null || definition.archetype != UnitArchetype.BasicRanged)
                 {
                     _agent.updatePosition = false;
                     _agent.updateRotation = false;
@@ -1022,6 +1046,9 @@ namespace InsectWars.RTS
             _attackTarget = null;
             _buildingAttackTarget = null;
             _hiveAttackTarget = null;
+            // Always restore NavMeshAgent motion control in case a building/hive attack
+            // locked it without setting _meleeLockedPos.
+            if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
             UnlockMelee();
             if (_wantsAttackMove)
             {

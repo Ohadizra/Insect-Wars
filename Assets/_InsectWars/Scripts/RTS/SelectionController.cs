@@ -203,6 +203,9 @@ namespace InsectWars.RTS
                 _selectedResource = fruit;
                 return;
             }
+
+            // Nothing selectable hit — clear selection so clicking empty ground deselects.
+            ClearAll();
         }
 
         void BoxSelect(Vector2 a, Vector2 b)

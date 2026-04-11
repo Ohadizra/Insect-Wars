@@ -155,6 +155,7 @@ namespace InsectWars.RTS
             team = t;
             _currentHealth = HiveMaxHealth;
             RegisterHive();
+            ApplyTeamColor();
         }
 
         void RegisterHive()
@@ -164,6 +165,8 @@ namespace InsectWars.RTS
             else if (team == Team.Enemy)
                 EnemyHive = this;
         }
+
+        void ApplyTeamColor() => TeamPalette.ApplyToGameObject(team, gameObject);
 
         /// <summary>
         /// Ant Nest uses the hive prefab but strips <see cref="HiveDeposit"/>. Instantiate still runs Awake on the

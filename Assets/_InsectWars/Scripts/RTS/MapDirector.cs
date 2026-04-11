@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using InsectWars.Core;
 using InsectWars.Data;
@@ -108,8 +109,11 @@ namespace InsectWars.RTS
                 Debug.LogWarning($"[MapDirector] {label} nest-to-apple distance ({dist:F0}) is very short. Units may clip into structures.");
         }
 
-        void Start()
+        IEnumerator Start()
         {
+            // Guarantee the game isn't accidentally paused from a previous session.
+            Time.timeScale = 1f;
+
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
@@ -118,13 +122,15 @@ namespace InsectWars.RTS
             var playerApple = FindNearestFruit(allFruit, _applePos);
             var enemyApple  = FindNearestFruit(allFruit, _enemyApplePos);
 
+            // Spawn all units first — but DO NOT issue orders yet.
+            // NavMeshAgent components need one full frame to bind to the baked NavMesh.
+            var playerWorkers = new System.Collections.Generic.List<InsectUnit>();
             for (int i = 0; i < 5; i++)
             {
                 float angle = i * (360f / 5f);
                 var pos = SpawnPositionAroundBuilding(_playerHive, WorkerSpawnRadius, angle);
                 var worker = SpawnUnit(pos, Team.Player, UnitArchetype.Worker);
-                if (worker != null && playerApple != null && !playerApple.Depleted)
-                    worker.OrderGather(playerApple);
+                if (worker != null) playerWorkers.Add(worker);
             }
 
             var playerCombatArchs = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BasicRanged };
@@ -134,14 +140,14 @@ namespace InsectWars.RTS
                 SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, angle), Team.Player, playerCombatArchs[i]);
             }
 
+            var enemyWorkers = new System.Collections.Generic.List<InsectUnit>();
             var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
             for (int i = 0; i < nWorkers; i++)
             {
                 float angle = i * (360f / Mathf.Max(nWorkers, 1));
                 var pos = SpawnPositionAroundBuilding(_enemyHive, WorkerSpawnRadius, angle);
                 var worker = SpawnUnit(pos, Team.Enemy, UnitArchetype.Worker);
-                if (worker != null && enemyApple != null && !enemyApple.Depleted)
-                    worker.OrderGather(enemyApple);
+                if (worker != null) enemyWorkers.Add(worker);
             }
 
             var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
@@ -159,6 +165,20 @@ namespace InsectWars.RTS
             var camCtrl = FindFirstObjectByType<RTSCameraController>();
             if (camCtrl != null)
                 camCtrl.FocusWorldPosition(new Vector3(_playerHive.x, 0f, _playerHive.z));
+
+            // Wait two frames: frame 1 lets every unit's Start() run and bind to the NavMesh;
+            // frame 2 gives the NavMesh path-request queue a chance to settle.
+            yield return null;
+            yield return null;
+
+            // Now issue initial gather orders — agents are on the NavMesh.
+            foreach (var w in playerWorkers)
+                if (w != null && playerApple != null && !playerApple.Depleted)
+                    w.OrderGather(playerApple);
+
+            foreach (var w in enemyWorkers)
+                if (w != null && enemyApple != null && !enemyApple.Depleted)
+                    w.OrderGather(enemyApple);
         }
 
         void RegisterBuildZones()
@@ -275,7 +295,7 @@ namespace InsectWars.RTS
             var surface = world.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
             surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            surface.ignoreNavMeshObstacle = false;
+            surface.ignoreNavMeshObstacle = true;
 
             BuildTerrain(world.transform, _mapHalfExtent);
             AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
@@ -286,6 +306,8 @@ namespace InsectWars.RTS
             var exclusions = BuildExclusionZones();
             PassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
 
+            // Force physics to register the terrain collider before baking.
+            Physics.SyncTransforms();
             surface.BuildNavMesh();
 
             // Placed after NavMesh bake — these use NavMeshObstacle for dynamic carving
@@ -596,6 +618,9 @@ namespace InsectWars.RTS
                     }
                 }
             }
+
+            // Put unit on "Units" layer so OverlapSphere combat scans can find it.
+            SafeSetLayerRecursive(go, "Units");
 
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
