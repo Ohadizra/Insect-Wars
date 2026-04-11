@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 9ce1940fcacef460797fe3a669a90cf4
+labels:
+- UnityAI
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

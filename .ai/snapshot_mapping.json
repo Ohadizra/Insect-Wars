@@ -617,6 +617,12 @@
       "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
       "content": "I've successfully reskinned the in-game UI to match the **\"Natural Ornate Beetle\"** art style.\n\n### Key Fixes:\n1.  **Replaced Purple/Green Frames**: Removed the outdated \"Vine\" style and replaced it with your high-fidelity ornate shell assets:\n    *   **Mini-map Frame**: Now uses `frame_ornate.png`.\n    *   **Command Card**: Now uses `frame_action_grid.png`.\n    *   **Unit Portraits**: Now uses `frame_portrait.png`.\n    *   **Selection Bar**: Now uses `frame_square_panel.png`.\n2.  **Eliminated White Rectangles**: Corrected the missing sprite references in the `GameHUD` and `Sc2BottomBar` scripts. These panels now correctly render the beetle-themed frames instead of solid white blocks.\n3.  **High-Fidelity Rendering**: Switched all UI panels to **`Image.Type.Sliced`**. This ensures the detailed ornate edges of the beetle shells remain crisp and don't stretch when the panels change size.\n4.  **Cohesive Palette**: Updated the in-game text and icon colors to match the Home page (Parchment, Copper, and Dark Charcoal) for a consistent look throughout the game.\n5.  **Icon Refresh**: Updated common action icons (Move, Attack, Build, Worker) to use the new \"Natural\" sprite set.\n\n**Please RESTART Play Mode now.** You should see the in-game UI perfectly integrated with the organic, insectoid art style of your units and base.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "7f65631f-69dd-4e50-9bd6-4a830f4e3d56",
+      "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
+      "content": "",
+      "snapshot_message_type": 1
     }
   ]
 }
