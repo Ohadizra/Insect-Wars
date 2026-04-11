@@ -20,15 +20,15 @@ namespace InsectWars.UI
         [SerializeField] Sprite separatorLineSprite;
 
         // ── Sketch Palette ──
-        static readonly Color ColGold      = new(0.91f, 0.85f, 0.63f); // Sand/Gold from sketch
-        static readonly Color ColWhite     = Color.white;
-        static readonly Color ColDim       = new(0f, 0f, 0f, 0.40f);
-        static readonly Color ColBtnHover  = new(0, 0, 0, 0.05f);
-        static readonly Color ColBtnPress  = new(0, 0, 0, 0.10f);
+        static readonly Color ColGold      = new(0.65f, 0.45f, 0.10f); // Darker, more saturated gold for readability
+        static readonly Color ColWhite     = new(1f, 1f, 1f, 0.92f);   // Slight transparency to panel
+        static readonly Color ColDim       = new(0f, 0f, 0f, 0.50f);
+        static readonly Color ColBtnHover  = new(0, 0, 0, 0.08f);
+        static readonly Color ColBtnPress  = new(0, 0, 0, 0.15f);
 
-        const float PanelW = 640f, PanelH = 820f;
-        const float BtnW = 400f, BtnH = 50f, BtnGap = 65f;
-        const int TitleSize = 64, SubSize = 14, BtnFontSize = 18;
+        const float PanelW = 700f, PanelH = 820f;
+const float BtnW = 400f, BtnH = 60f, BtnGap = 75f;
+        const int TitleSize = 72, SubSize = 20, BtnFontSize = 26;
 
         Canvas _canvas;
         Font _font;
@@ -266,7 +266,7 @@ _canvas = go.AddComponent<Canvas>();
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(width, 4f);
+            rt.sizeDelta = new Vector2(width, 10f);
             var img = go.AddComponent<Image>();
             img.sprite = separatorLineSprite;
             img.color = ColGold;
@@ -279,6 +279,11 @@ _canvas = go.AddComponent<Canvas>();
             var t = go.AddComponent<Text>();
             t.font = _font; t.fontSize = size; t.color = color; t.alignment = anchor;
             t.text = text; t.supportRichText = true;
+            
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0, 0, 0, 0.2f);
+            outline.effectDistance = new Vector2(1, -1);
+            
             return t;
         }
 

@@ -36,6 +36,7 @@ namespace InsectWars.Data
 
             [Header("Buildings")]
             public GameObject hivePrefab;
+            public Material hiveMaterial;
             public GameObject undergroundPrefab;
             public GameObject skyTowerPrefab;
             public GameObject rootCellarPrefab;
