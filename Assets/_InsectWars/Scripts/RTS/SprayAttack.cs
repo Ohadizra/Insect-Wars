@@ -54,8 +54,12 @@ namespace InsectWars.RTS
             go.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
 
             var ps = go.AddComponent<ParticleSystem>();
+            // Ensure the system is stopped before we configure duration and other locked properties
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             var main = ps.main;
             main.duration = 0.45f;
+            main.playOnAwake = false;
             main.loop = false;
             main.startLifetime = new ParticleSystem.MinMaxCurve(ParticleLifetime * 0.8f, ParticleLifetime * 1.2f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(ParticleSpeed * 0.9f, ParticleSpeed * 1.3f);
@@ -118,6 +122,7 @@ namespace InsectWars.RTS
             renderer.material = GetSprayMaterial();
             renderer.trailMaterial = GetSprayMaterial();
 
+            ps.Play();
             Object.Destroy(go, VfxAutoDestroy);
         }
 
