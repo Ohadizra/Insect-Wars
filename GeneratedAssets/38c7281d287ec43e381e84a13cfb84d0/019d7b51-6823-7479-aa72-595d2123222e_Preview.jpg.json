@@ -1,0 +1,12 @@
+{
+    "asset": "38c7281d287ec43e381e84a13cfb84d0",
+    "fileName": "019d7b51-6823-7479-aa72-595d2123222e_Preview.jpg",
+    "prompt": "hand painted stylized frozen snow texture, white and light blue, icy patches, tileable, top down view, high quality, clean",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 1391016585,
+    "w3CTraceId": "3fe3b8f88b6cc51ff822e394d16dc9e6",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

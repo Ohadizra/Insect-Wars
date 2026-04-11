@@ -1,0 +1,12 @@
+{
+    "asset": "e9d91044349ad4a59b1072fbdabbf3a3",
+    "fileName": "019d7b53-2971-76c1-b410-ee4c7ce65e11.glb",
+    "prompt": "stylized frozen metal industrial pillar, sci-fi station deck support, ice covered metal, sci-fi prop, low poly stylized art style",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "0de1845ae4dcee5cc7a073fdaf5523ae",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
