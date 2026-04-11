@@ -21,6 +21,7 @@ namespace InsectWars.RTS
         [SerializeField] Sprite larvaIcon;
         [SerializeField] Sprite eggIcon;
         [SerializeField] Sprite crystalIcon;
+        [SerializeField] Sprite appleIcon;
 
         // ── Organic Palette ──
         static readonly Color ColAmber     = new(0.96f, 0.90f, 0.78f); // Parchment/Amber
@@ -42,7 +43,26 @@ namespace InsectWars.RTS
             {
                 var es = new GameObject("EventSystem");
                 es.AddComponent<EventSystem>();
-                es.AddComponent<InputSystemUIInputModule>();
+                var mod = es.AddComponent<InputSystemUIInputModule>();
+                
+                // Manual Link Actions for responsiveness
+                var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+                if (asset != null)
+                {
+                    mod.actionsAsset = asset;
+                    var uiMap = asset.FindActionMap("UI");
+                    if (uiMap != null)
+                    {
+                        mod.point = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Point"));
+                        mod.leftClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Click"));
+                        mod.rightClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("RightClick"));
+                        mod.middleClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("MiddleClick"));
+                        mod.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("ScrollWheel"));
+                        mod.move = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Navigate"));
+                        mod.submit = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Submit"));
+                        mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
+                    }
+                }
             }
         }
 
@@ -70,6 +90,7 @@ namespace InsectWars.RTS
             if (larvaIcon == null) larvaIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
             if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
             if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
+            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple.png");
         #endif
 
             var canvasGo = new GameObject("DemoHUD");
@@ -85,16 +106,18 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-            // --- Top Center: Resource Bar ---
-            var topBar = CreatePanel("TopBar", HudCanvasRect, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -30), new Vector2(700, 100), barMechanicalSprite);
+            // --- Top Center: Small Resource Bar ---
+            var topBar = CreatePanel("TopBar", HudCanvasRect, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -20), new Vector2(220, 60), barMechanicalSprite);
             
             var resIcons = new GameObject("Icons").AddComponent<RectTransform>();
             resIcons.SetParent(topBar, false);
-            resIcons.anchorMin = Vector2.zero; resIcons.anchorMax = Vector2.one; resIcons.offsetMin = new Vector2(100, 10); resIcons.offsetMax = new Vector2(-100, -10);
+            resIcons.anchorMin = Vector2.zero; resIcons.anchorMax = Vector2.one; 
+            resIcons.offsetMin = new Vector2(20, 5); resIcons.offsetMax = new Vector2(-20, -5);
             var hl = resIcons.gameObject.AddComponent<HorizontalLayoutGroup>();
-            hl.childAlignment = TextAnchor.MiddleCenter; hl.spacing = 40; hl.childControlWidth = false;
+            hl.childAlignment = TextAnchor.MiddleCenter; hl.spacing = 15; hl.childControlWidth = false;
 
-            _calorieLabel = CreateResourceItem(resIcons, larvaIcon, "0");
+            _calorieLabel = CreateResourceItem(resIcons, appleIcon != null ? appleIcon : larvaIcon, "0");
+
 
             // --- Top Right: Menu Button ---
             var menuBtnGo = CreatePanel("MenuBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -30), new Vector2(80, 80), buttonRoundSprite);

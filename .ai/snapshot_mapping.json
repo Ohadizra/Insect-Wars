@@ -719,6 +719,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "The Ant's Nest was \"invisible\" because its original prefab was scaled to 100 in the project, and my previous change was accidentally setting its scale to **2** (making it 50 times smaller than original, rather than 2 times larger).\n\nI have fixed this in `MapDirector.cs` by **multiplying** the existing scale by 2. The nest should now correctly appear twice its intended size in the game world.\n\n*   **Fixed**: Nest scale in `BuildHive`.\n*   **Maintained**: Unit spawn positions near the base.\n*   **Maintained**: Enlarged build zone radius for the bigger structure.\n\nPlease check the game again; the larger nest should now be visible!",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "e3dcc649-09aa-43ad-afc9-8aa4a0f1c333",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "I have remade the calorie UI to be smaller and updated it with a new apple icon as requested.\n\n### Changes implemented:\n1.  **Generated New Icon**: Created a stylized red apple icon (`icon_apple.png`) that matches the project's Victorian naturalist/steampunk aesthetic and removed its background.\n2.  **Redesigned UI Bar**:\n    *   Reduced the top bar dimensions from a wide **700x100** to a compact **220x60**.\n    *   Moved the bar closer to the top edge (anchored position adjusted from -30 to -20).\n    *   Updated the resource display to use the new **Apple Icon** instead of the previous larva icon.\n3.  **Code Optimization**:\n    *   Updated `GameHUD.cs` to automatically load and assign the new icon in the Editor.\n    *   Adjusted the `HorizontalLayoutGroup` spacing and padding to fit the smaller footprint.\n    *   Ensured the `InputSystemUIInputModule` remains correctly wired for responsiveness.\n\nThe calorie count is now displayed in a small, clean frame at the top center of the screen, clearly marked with the new apple icon.",
+      "snapshot_message_type": 1
     }
   ]
 }
