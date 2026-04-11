@@ -15,25 +15,30 @@ namespace InsectWars.UI
         [SerializeField] string streamingVideoName = "MenuLoop.mp4";
         [SerializeField] UnitVisualLibrary visualLibrary;
 
-        // ── Earthy / organic palette ──
-        static readonly Color ColTitle        = new(0.95f, 0.88f, 0.65f);       // warm honey
-        static readonly Color ColSubtitle     = new(0.72f, 0.68f, 0.55f);       // dry straw
-        static readonly Color ColBodyText     = new(0.88f, 0.85f, 0.78f);       // parchment
-        static readonly Color ColLabel        = new(0.70f, 0.66f, 0.55f);       // weathered bark
-        static readonly Color ColPanelBg      = new(0.08f, 0.07f, 0.05f, 0.88f);// deep soil
-        static readonly Color ColBtnNormal    = new(0.28f, 0.22f, 0.14f, 0.92f);// warm earth
-        static readonly Color ColBtnHighlight = new(0.40f, 0.32f, 0.18f, 0.95f);// sunlit soil
-        static readonly Color ColBtnPressed   = new(0.48f, 0.38f, 0.20f, 1f);   // clay press
-        static readonly Color ColBtnText      = new(0.92f, 0.88f, 0.72f);       // cream
-        static readonly Color ColDim          = new(0f, 0f, 0f, 0.50f);
-        static readonly Color ColAccent       = new(0.55f, 0.72f, 0.35f);       // moss green
-        static readonly Color ColAccentDim    = new(0.35f, 0.48f, 0.22f);       // darker moss
-        static readonly Color ColSeparator    = new(0.40f, 0.35f, 0.25f, 0.50f);// thin line
-        static readonly Color ColCardBg       = new(0.14f, 0.12f, 0.08f, 0.90f);// dark bark
-        static readonly Color ColCardHover    = new(0.22f, 0.18f, 0.12f, 0.95f);
+        [Header("New Style Sprites")]
+        [SerializeField] Sprite menuFrameSprite;
+        [SerializeField] Sprite buttonSprite;
+        [SerializeField] Sprite separatorSprite;
 
-        const float BtnW = 380f, BtnH = 56f, BtnGap = 66f;
-        const int BtnFontSize = 24;
+        // ── Steampunk / Bronze palette ──
+        static readonly Color ColTitle        = new(0.95f, 0.85f, 0.60f);       // warm bronze
+        static readonly Color ColSubtitle     = new(0.75f, 0.65f, 0.45f);       // muted copper
+        static readonly Color ColBodyText     = new(0.90f, 0.85f, 0.75f);       // parchment
+        static readonly Color ColLabel        = new(0.70f, 0.60f, 0.40f);       // aged brass
+        static readonly Color ColPanelBg      = new(1f, 1f, 1f, 1f);            // White (sprite will handle colors)
+        static readonly Color ColBtnNormal    = new(1f, 1f, 1f, 1f);
+        static readonly Color ColBtnHighlight = new(0.95f, 0.90f, 0.80f, 1f);
+        static readonly Color ColBtnPressed   = new(0.85f, 0.80f, 0.70f, 1f);
+        static readonly Color ColBtnText      = new(0.95f, 0.90f, 0.75f);
+        static readonly Color ColDim          = new(0f, 0f, 0f, 0.60f);
+        static readonly Color ColAccent       = new(0.95f, 0.65f, 0.20f);       // glowing amber
+        static readonly Color ColAccentDim    = new(0.65f, 0.45f, 0.15f);
+        static readonly Color ColSeparator    = new(0.60f, 0.50f, 0.35f, 0.80f);
+        static readonly Color ColCardBg       = new(0.18f, 0.15f, 0.10f, 0.95f);
+        static readonly Color ColCardHover    = new(0.25f, 0.22f, 0.15f, 1f);
+
+        const float BtnW = 380f, BtnH = 64f, BtnGap = 74f;
+        const int BtnFontSize = 22;
 
         Canvas _canvas;
         Font _font;
@@ -47,6 +52,13 @@ namespace InsectWars.UI
             AudioListener.volume = GameSession.GetSavedMasterVolume();
             Screen.fullScreen = GameSession.GetSavedFullscreen();
             _font = UiFontHelper.GetFont();
+
+    #if UNITY_EDITOR
+            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (menuFrameSprite == null) menuFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
+            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
+            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "bar_hp_xp.png");
+    #endif
 
             SetupEventSystem();
             BuildCanvas();
@@ -110,7 +122,7 @@ namespace InsectWars.UI
             }
             else
             {
-                raw.color = new Color(0.06f, 0.06f, 0.04f);
+                raw.color = new Color(0.12f, 0.08f, 0.05f);
                 vp.enabled = false;
                 BuildFallbackGradient(bg.transform);
             }
@@ -125,14 +137,8 @@ namespace InsectWars.UI
         void BuildFallbackGradient(Transform parent)
         {
             var tex = new Texture2D(1, 8, TextureFormat.RGBA32, false);
-            tex.SetPixel(0, 0, new Color(0.02f, 0.02f, 0.01f));
-            tex.SetPixel(0, 1, new Color(0.04f, 0.04f, 0.02f));
-            tex.SetPixel(0, 2, new Color(0.07f, 0.06f, 0.03f));
-            tex.SetPixel(0, 3, new Color(0.10f, 0.09f, 0.05f));
-            tex.SetPixel(0, 4, new Color(0.12f, 0.11f, 0.06f));
-            tex.SetPixel(0, 5, new Color(0.10f, 0.09f, 0.05f));
-            tex.SetPixel(0, 6, new Color(0.06f, 0.06f, 0.03f));
-            tex.SetPixel(0, 7, new Color(0.03f, 0.03f, 0.02f));
+            tex.SetPixel(0, 0, new Color(0.05f, 0.04f, 0.02f));
+            tex.SetPixel(0, 7, new Color(0.15f, 0.12f, 0.08f));
             tex.Apply();
             tex.wrapMode = TextureWrapMode.Clamp;
             tex.filterMode = FilterMode.Bilinear;
@@ -151,7 +157,7 @@ namespace InsectWars.UI
         {
             _panelMain = MakePanel("MainPanel");
 
-            // frosted panel behind menu content
+            // ornate panel behind menu content
             var panel = new GameObject("MenuBg");
             panel.transform.SetParent(_panelMain.transform, false);
             var prt = panel.AddComponent<RectTransform>();
@@ -159,44 +165,47 @@ namespace InsectWars.UI
             prt.anchorMax = new Vector2(0.5f, 0.5f);
             prt.pivot = new Vector2(0.5f, 0.5f);
             prt.anchoredPosition = Vector2.zero;
-            prt.sizeDelta = new Vector2(520, 680);
-            panel.AddComponent<Image>().color = ColPanelBg;
+            prt.sizeDelta = new Vector2(580, 820);
+            var img = panel.AddComponent<Image>();
+            img.sprite = menuFrameSprite;
+            img.color = Color.white;
+            img.type = Image.Type.Simple;
 
             // title
-            var title = Txt(panel.transform, "INSECT WARS", 62, ColTitle, TextAnchor.MiddleCenter);
+            var title = Txt(panel.transform, "STAGBEETLE ODYSSEY", 52, ColTitle, TextAnchor.MiddleCenter);
             title.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(title.rectTransform, new Vector2(0, -40f), new Vector2(480, 80));
+            AnchorTopCenter(title.rectTransform, new Vector2(0, -60f), new Vector2(520, 100));
 
             // subtitle
-            var sub = Txt(panel.transform, "Command your colony. Conquer the garden.",
-                18, ColSubtitle, TextAnchor.MiddleCenter);
-            sub.fontStyle = FontStyle.Italic;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -120f), new Vector2(420, 30));
+            var sub = Txt(panel.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.",
+                16, ColSubtitle, TextAnchor.MiddleCenter);
+            sub.fontStyle = FontStyle.Bold;
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -145f), new Vector2(460, 30));
 
             // thin separator line
-            MakeSeparator(panel.transform, -160f, 300f);
+            MakeSeparator(panel.transform, -185f, 320f);
 
             // buttons
-            float y = -185f;
-            EarthButton(panel.transform, "Play Demo", ref y, () => ShowPlay());
-            EarthButton(panel.transform, "How To Play", ref y, () => ShowHow());
-            EarthButton(panel.transform, "Settings", ref y, () => ShowSettings());
-            EarthButton(panel.transform, "About", ref y, () => ShowAbout());
+            float y = -220f;
+            EarthButton(panel.transform, "START MISSION", ref y, () => ShowPlay());
+            EarthButton(panel.transform, "CODEX", ref y, () => ShowHow());
+            EarthButton(panel.transform, "CONFIGURATION", ref y, () => ShowSettings());
+            EarthButton(panel.transform, "LOGS", ref y, () => ShowAbout());
 
-            MakeSeparator(panel.transform, y + 20f, 300f);
+            MakeSeparator(panel.transform, y + 20f, 320f);
 
             y -= 10f;
-            EarthButton(panel.transform, "Quit", ref y, () => Application.Quit());
+            EarthButton(panel.transform, "ABANDON", ref y, () => Application.Quit());
 
             // version watermark
-            var ver = Txt(_panelMain.transform, "Insect Wars — Demo", 13,
-                new Color(0.50f, 0.46f, 0.38f, 0.5f), TextAnchor.LowerRight);
+            var ver = Txt(_panelMain.transform, "STAGBEETLE ODYSSEY — EARLY BUILD", 12,
+                new Color(0.70f, 0.60f, 0.40f, 0.6f), TextAnchor.LowerRight);
             var vrt = ver.rectTransform;
             vrt.anchorMin = new Vector2(1f, 0f);
             vrt.anchorMax = new Vector2(1f, 0f);
             vrt.pivot = new Vector2(1f, 0f);
-            vrt.anchoredPosition = new Vector2(-16f, 10f);
-            vrt.sizeDelta = new Vector2(280, 24);
+            vrt.anchoredPosition = new Vector2(-24f, 15f);
+            vrt.sizeDelta = new Vector2(300, 24);
         }
 
         // ═══════════════════════════════════════════════════════════════
@@ -887,13 +896,15 @@ namespace InsectWars.UI
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = Vector2.zero;
             rt.sizeDelta = new Vector2(w, h);
-            go.AddComponent<Image>().color = ColPanelBg;
+            var img = go.AddComponent<Image>();
+            img.sprite = menuFrameSprite;
+            img.color = Color.white;
             return go;
         }
 
         void PanelHeader(Transform parent, string text, float yPos)
         {
-            var t = Txt(parent, text, 38, ColTitle, TextAnchor.MiddleCenter);
+            var t = Txt(parent, text, 32, ColTitle, TextAnchor.MiddleCenter);
             t.fontStyle = FontStyle.Bold;
             AnchorTopCenter(t.rectTransform, new Vector2(0, yPos), new Vector2(600, 50));
         }
@@ -911,7 +922,9 @@ namespace InsectWars.UI
             rt.sizeDelta = new Vector2(BtnW, BtnH);
             y -= BtnGap;
 
-            b.AddComponent<Image>().color = ColBtnNormal;
+            var img = b.AddComponent<Image>();
+            img.sprite = buttonSprite;
+            img.color = Color.white;
 
             var btn = b.AddComponent<Button>();
             var cols = btn.colors;
@@ -929,7 +942,7 @@ namespace InsectWars.UI
 
         void SettingsLabel(Transform parent, string text, float y)
         {
-            var t = Txt(parent, text, 19, ColLabel, TextAnchor.MiddleCenter);
+            var t = Txt(parent, text, 18, ColLabel, TextAnchor.MiddleCenter);
             AnchorTopCenter(t.rectTransform, new Vector2(0, y), new Vector2(400, 30));
         }
 
@@ -942,8 +955,10 @@ namespace InsectWars.UI
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = new Vector2(0, y);
-            rt.sizeDelta = new Vector2(width, 1.5f);
-            go.AddComponent<Image>().color = ColSeparator;
+            rt.sizeDelta = new Vector2(width, 10f);
+            var img = go.AddComponent<Image>();
+            img.sprite = separatorSprite;
+            img.color = ColSeparator;
         }
 
         Button BuildCodexTab(Transform parent, string label, UnityEngine.Events.UnityAction onClick)

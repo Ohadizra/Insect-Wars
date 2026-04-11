@@ -539,6 +539,12 @@
       "conversation_id": "199ebf28-e060-41ff-a858-f87fdbfc70b0",
       "content": "attach sketch is for how i imagen the UI, fix the UI of both the home page and the game to make it fit",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "32fa6065-e88c-489e-bef4-f8be01d3b291",
+      "conversation_id": "199ebf28-e060-41ff-a858-f87fdbfc70b0",
+      "content": "I have redesigned and updated the UI for both the **Home Page** and the **In-Game HUD** to match the \"Stagbeetle Odyssey\" steampunk-insectoid style from your sketch.\n\n### Key Changes Made:\n\n1.  **Asset Generation & Extraction**:\n    *   Generated a custom 5x5 sprite sheet matching the bronze metallic, ornate, and mechanical style of the sketch.\n    *   Extracted 25 individual assets including the top bar frame, portrait frames, resource icons (larva, egg, crystal), menu buttons, and action icons (branching arrows, hammer/wrench, etc.).\n    *   Assets are saved in `Assets/_InsectWars/Sprites/UI/Extracted/`.\n\n2.  **Game UI Redesign (`GameHUD.cs`)**:\n    *   **Top Resource Bar**: Now centered at the top with a metallic frame containing Larva, Egg, and Crystal resources with their respective icons.\n    *   **Portrait Panel**: Added a unit portrait panel on the mid-left with a stag beetle image, ornate glowing frame, and HP/XP bars.\n    *   **Bottom Panels**: Aligned the Minimap, Unit Selection, and Action panels with the sketch's layout using the new ornate bronze frames.\n    *   **Action Grid**: Implemented a 2x2 grid in the bottom-right for unit actions, featuring the specific icons from your sketch.\n\n3.  **Home Page Redesign (`HomeMenuBootstrap.cs`)**:\n    *   Updated the visual theme to use the bronze/copper palette.\n    *   Replaced the basic earthy panels with the new ornate metallic frames.\n    *   Updated the buttons and separators to match the new steampunk style.\n    *   Renamed menu options to fit the theme (e.g., \"START MISSION\", \"CODEX\", \"CONFIGURATION\").\n\n### Verification:\n*   The scripts have been updated and successfully compiled.\n*   The UI elements are programmatically wired to the new sprites in the Unity Editor using auto-wiring defaults.\n*   The layout now follows the sketch's top-bar-center, portrait-left, and bottom-grid configuration.\n\nYou can now open the **Home** or **Game** scenes to see the updated visual style in the Game View.",
+      "snapshot_message_type": 1
     }
   ]
 }

@@ -1,0 +1,27 @@
+{
+    "asset": "d8309b223e803460fb8ae9cd7d9eb1c9",
+    "fileName": "019d7c54-a8cf-72e3-ad0f-827740c90dd2.png",
+    "prompt": "A Unity game asset sprite sheet. White background. STRICT 5x5 grid (5 columns, 5 rows = 25 equal cells). The grid should fill the entire image with size 1024x1024 with no extra border or padding outside the cells. Contains the following individual game assets, one per cell left-to-right top-to-bottom, styled to exactly match a steampunk insectoid fantasy art style: Ornate metallic top bar frame with mechanical arms, Resource slot container with copper border, Larva resource icon, Amber egg resource icon, Blue crystal resource icon, Ornate brown menu button with hamburger icon, Ornate brown secondary button with beetle icon, Ornate glowing portrait frame with orange light at corners, Ornate minimap frame with bronze carvings, Ornate unit selection frame, Ornate action buttons frame, Branching arrows action icon, Beetle silhouette action icon, Hammer and wrench action icon, Running person action icon, Stag beetle portrait, Unit slot frame, Empty skill icon slot, Beetle icon facing up, Beetle icon facing right, Beetle icon facing left, Horizontal HP bar background, Horizontal XP bar background, Small circular glowing status indicator. Rules: ONE asset per grid cell, centered with ample padding. Assets must be scaled to fit within their cell. Grid lines: clean, solid black, clearly visible. White background inside every cell. NO text or labels. Negative prompt: text, labels, blurry, distorted, overlapping assets, cropped assets, crossing lines, uneven grid lines.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "d2f8e5ff263a23562fece5884b7e2981",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
