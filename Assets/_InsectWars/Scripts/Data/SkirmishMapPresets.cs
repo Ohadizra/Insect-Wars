@@ -65,75 +65,103 @@ namespace InsectWars.Data
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "Lalush";
-            map.displayName = "Lalush Depths";
-            map.description = "Swamp lowlands split by a diagonal ridge bridge.\nCorner bases, tight ramp chokes, and contested third-base pockets on each flank.";
-            map.mapHalfExtent = 78f;
-            map.playerHivePosition       = new Vector3(-60f, 1f, -54f);
-            map.enemyHivePosition        = new Vector3( 60f, 1f,  54f);
-            map.bigApplePosition         = new Vector3(-52f, 1.5f, -40f);
-            map.enemyBigApplePosition    = new Vector3( 52f, 1.5f,  40f);
+            map.displayName = "Lalush: King Sejong Station";
+            map.description = "A massive 1v1 adaptation of the classic SC2 map. Fortified corner mains with tiered paths, secondary high-ground bases, and a central resource-rich low-ground pit.";
+            map.mapHalfExtent = 135f;
+
+            // Mains: NW and SE
+            map.playerHivePosition    = new Vector3(-110f, 1f, 110f); 
+            map.enemyHivePosition     = new Vector3( 110f, 1f, -110f);
+            
+            // Primary Base Apples (Start)
+            map.bigApplePosition      = new Vector3(-95f, 1.5f, 95f);
+            map.enemyBigApplePosition = new Vector3( 95f, 1.5f, -95f);
+            
             map.passiveScatterSeed = 73519;
+            
+            // High Grounds (Mirror Balanced)
+            // UV range [0,1] for halfExtent 135 (Total 270)
             map.highGrounds = new[]
             {
-                new HighGroundPlaced { uv = new Vector2(0.14f, 0.17f), radius = 0.10f, rampWidth = 0.025f, heightFraction = 0.12f },
-                new HighGroundPlaced { uv = new Vector2(0.86f, 0.83f), radius = 0.10f, rampWidth = 0.025f, heightFraction = 0.12f },
-                new HighGroundPlaced { uv = new Vector2(0.27f, 0.36f), radius = 0.05f, rampWidth = 0.035f, heightFraction = 0.07f },
-                new HighGroundPlaced { uv = new Vector2(0.73f, 0.64f), radius = 0.05f, rampWidth = 0.035f, heightFraction = 0.07f },
-                new HighGroundPlaced { uv = new Vector2(0.40f, 0.42f), radius = 0.065f, rampWidth = 0.03f, heightFraction = 0.09f },
-                new HighGroundPlaced { uv = new Vector2(0.50f, 0.50f), radius = 0.055f, rampWidth = 0.03f, heightFraction = 0.09f },
-                new HighGroundPlaced { uv = new Vector2(0.60f, 0.58f), radius = 0.065f, rampWidth = 0.03f, heightFraction = 0.09f },
-                new HighGroundPlaced { uv = new Vector2(0.16f, 0.76f), radius = 0.08f, rampWidth = 0.035f, heightFraction = 0.08f },
-                new HighGroundPlaced { uv = new Vector2(0.84f, 0.24f), radius = 0.08f, rampWidth = 0.035f, heightFraction = 0.08f },
-                new HighGroundPlaced { uv = new Vector2(0.38f, 0.68f), radius = 0.035f, rampWidth = 0.03f, heightFraction = 0.04f },
-                new HighGroundPlaced { uv = new Vector2(0.62f, 0.32f), radius = 0.035f, rampWidth = 0.03f, heightFraction = 0.04f },
+                // Main Bases (Large corner plateaus)
+                new HighGroundPlaced { uv = new Vector2(0.09f, 0.91f), radius = 0.16f, rampWidth = 0.05f, heightFraction = 0.14f },
+                new HighGroundPlaced { uv = new Vector2(0.91f, 0.09f), radius = 0.16f, rampWidth = 0.05f, heightFraction = 0.14f },
+                
+                // Natural Expansions (Outside main ramp)
+                new HighGroundPlaced { uv = new Vector2(0.24f, 0.76f), radius = 0.11f, rampWidth = 0.04f, heightFraction = 0.08f },
+                new HighGroundPlaced { uv = new Vector2(0.76f, 0.24f), radius = 0.11f, rampWidth = 0.04f, heightFraction = 0.08f },
+                
+                // Third Base "Islands" (NE and SW flanking ledges)
+                new HighGroundPlaced { uv = new Vector2(0.90f, 0.90f), radius = 0.09f, rampWidth = 0.04f, heightFraction = 0.10f },
+                new HighGroundPlaced { uv = new Vector2(0.10f, 0.10f), radius = 0.09f, rampWidth = 0.04f, heightFraction = 0.10f },
+                
+                // Side Expansions (Center edge platforms)
+                new HighGroundPlaced { uv = new Vector2(0.10f, 0.50f), radius = 0.08f, rampWidth = 0.04f, heightFraction = 0.06f },
+                new HighGroundPlaced { uv = new Vector2(0.90f, 0.50f), radius = 0.08f, rampWidth = 0.04f, heightFraction = 0.06f },
             };
+            
+            map.fruits = new[]
+            {
+                // Natural Expansion Apples (Secondary bases)
+                new FruitPlaced { position = new Vector3(-70f, 1.5f, 75f), calories = 7000, gatherPerTick = 3, gatherSeconds = 0.7f },
+                new FruitPlaced { position = new Vector3( 70f, 1.5f, -75f), calories = 7000, gatherPerTick = 3, gatherSeconds = 0.7f },
+                
+                // Third Base High Ground Apples
+                new FruitPlaced { position = new Vector3( 120f, 1.5f, 120f), calories = 6000, gatherPerTick = 4, gatherSeconds = 0.6f },
+                new FruitPlaced { position = new Vector3(-120f, 1.5f, -120f), calories = 6000, gatherPerTick = 4, gatherSeconds = 0.6f },
+                
+                // Side Expansion Apples
+                new FruitPlaced { position = new Vector3(-115f, 1.5f, 0f), calories = 8000, gatherPerTick = 2, gatherSeconds = 0.8f },
+                new FruitPlaced { position = new Vector3( 115f, 1.5f, 0f), calories = 8000, gatherPerTick = 2, gatherSeconds = 0.8f },
+
+                // Center Low-Ground Pit (High-Yield Apples)
+                new FruitPlaced { position = new Vector3( 20f, 1.5f,  20f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
+                new FruitPlaced { position = new Vector3(-20f, 1.5f, -20f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
+                
+                // Corner Base expansion (Opposite corner from start)
+                new FruitPlaced { position = new Vector3(-115f, 1.5f, -115f), calories = 9000, gatherPerTick = 3, gatherSeconds = 0.8f },
+                new FruitPlaced { position = new Vector3( 115f, 1.5f,  115f), calories = 9000, gatherPerTick = 3, gatherSeconds = 0.8f },
+            };
+            
             map.clay = new[]
             {
-                new ClayPlaced { position = new Vector3(-40f, 0f, -32f), scale = new Vector3(4f, 3f, 2.5f) },
-                new ClayPlaced { position = new Vector3(-36f, 0f, -38f), scale = new Vector3(2.5f, 3f, 4f) },
-                new ClayPlaced { position = new Vector3( 40f, 0f,  32f), scale = new Vector3(4f, 3f, 2.5f) },
-                new ClayPlaced { position = new Vector3( 36f, 0f,  38f), scale = new Vector3(2.5f, 3f, 4f) },
-                new ClayPlaced { position = new Vector3(-22f, 0f, -20f), scale = new Vector3(3f, 2.8f, 5f) },
-                new ClayPlaced { position = new Vector3( 22f, 0f,  20f), scale = new Vector3(3f, 2.8f, 5f) },
-                new ClayPlaced { position = new Vector3(-14f, 0f,  10f), scale = new Vector3(3.5f, 2.8f, 4f) },
-                new ClayPlaced { position = new Vector3( 14f, 0f, -10f), scale = new Vector3(3.5f, 2.8f, 4f) },
-                new ClayPlaced { position = new Vector3(-30f, 0f,  28f), scale = new Vector3(4.5f, 2.5f, 2.5f) },
-                new ClayPlaced { position = new Vector3(-24f, 0f,  34f), scale = new Vector3(2.5f, 2.5f, 4f) },
-                new ClayPlaced { position = new Vector3( 30f, 0f, -28f), scale = new Vector3(4.5f, 2.5f, 2.5f) },
-                new ClayPlaced { position = new Vector3( 24f, 0f, -34f), scale = new Vector3(2.5f, 2.5f, 4f) },
-                new ClayPlaced { position = new Vector3(-56f, 0f,  16f), scale = new Vector3(3f, 2.5f, 5f) },
-                new ClayPlaced { position = new Vector3( 56f, 0f, -16f), scale = new Vector3(3f, 2.5f, 5f) },
-                new ClayPlaced { position = new Vector3( 12f, 0f, -40f), scale = new Vector3(4f, 2.2f, 3f) },
-                new ClayPlaced { position = new Vector3(-12f, 0f,  40f), scale = new Vector3(4f, 2.2f, 3f) },
+                // "Crystals" as tall glass-like shards (Ant's eye: huge minerals)
+                // NW Main Ledge
+                new ClayPlaced { position = new Vector3(-132f, 0f, 132f), scale = new Vector3(3f, 18f, 3f) },
+                new ClayPlaced { position = new Vector3(-130f, 0f, 126f), scale = new Vector3(2f, 12f, 2f) },
+                new ClayPlaced { position = new Vector3(-126f, 0f, 130f), scale = new Vector3(2f, 14f, 2f) },
+                
+                // SE Main Ledge
+                new ClayPlaced { position = new Vector3( 132f, 0f, -132f), scale = new Vector3(3f, 18f, 3f) },
+                new ClayPlaced { position = new Vector3( 130f, 0f, -126f), scale = new Vector3(2f, 12f, 2f) },
+                new ClayPlaced { position = new Vector3( 126f, 0f, -130f), scale = new Vector3(2f, 14f, 2f) },
+
+                // Barrier cliffs blocking certain paths
+                new ClayPlaced { position = new Vector3(-55f, 0f, 95f), scale = new Vector3(12f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3( 55f, 0f, -95f), scale = new Vector3(12f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3(-95f, 0f, 55f), scale = new Vector3(3f, 6f, 12f) },
+                new ClayPlaced { position = new Vector3( 95f, 0f, -55f), scale = new Vector3(3f, 6f, 12f) },
+                
+                // Side path shards
+                new ClayPlaced { position = new Vector3(-130f, 0f, 0f), scale = new Vector3(4f, 15f, 4f) },
+                new ClayPlaced { position = new Vector3( 130f, 0f, 0f), scale = new Vector3(4f, 15f, 4f) },
             };
-            map.fruits = System.Array.Empty<FruitPlaced>();
+            
             map.terrainFeatures = new[]
             {
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-68f, 0f, -8f), radius = 9f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 68f, 0f,  8f), radius = 9f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 18f, 0f, -64f), radius = 8f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-18f, 0f,  64f), radius = 8f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(  0f, 0f,   0f), radius = 4f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-54f, 0f, -28f), radius = 6f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 54f, 0f,  28f), radius = 6f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-16f, 0f,  30f), radius = 5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 16f, 0f, -30f), radius = 5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-48f, 0f,   6f), radius = 4f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 48f, 0f,  -6f), radius = 4f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-50f, 0f, -4f), rotation = 70f, boxHalfExtents = new Vector2(6f, 2f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 50f, 0f,  4f), rotation = 70f, boxHalfExtents = new Vector2(6f, 2f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-8f, 0f, -16f), rotation = 40f, boxHalfExtents = new Vector2(5f, 1.8f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 8f, 0f,  16f), rotation = 40f, boxHalfExtents = new Vector2(5f, 1.8f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-36f, 0f,  52f), rotation = 10f, boxHalfExtents = new Vector2(5f, 2f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 36f, 0f, -52f), rotation = 10f, boxHalfExtents = new Vector2(5f, 2f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-20f, 0f, -12f), radius = 5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 20f, 0f,  12f), radius = 5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-28f, 0f,  20f), radius = 3.5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 28f, 0f, -20f), radius = 3.5f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-62f, 0f,   8f), radius = 4f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 62f, 0f,  -8f), radius = 4f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 46f, 0f, -48f), radius = 3f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-46f, 0f,  48f), radius = 3f },
+                // The Great Pit: Large central low-ground depression (using Mud/Water)
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(0, 0, 0), radius = 70f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 30f },
+                
+                // Tall Grass for ambushes near expansions
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-45f, 0, 45f), radius = 15f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 45f, 0, -45f), radius = 15f },
+                
+                // Rocky Ridge "Cliffs"
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-90f, 0, 0f), boxHalfExtents = new Vector2(40f, 5f), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 90f, 0, 0f), boxHalfExtents = new Vector2(40f, 5f), rotation = 90f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 0f, 0, 90f), boxHalfExtents = new Vector2(5f, 40f), rotation = 0f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 0f, 0, -90f), boxHalfExtents = new Vector2(5f, 40f), rotation = 0f },
             };
             return map;
         }
