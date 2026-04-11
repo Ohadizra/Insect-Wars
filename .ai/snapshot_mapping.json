@@ -491,6 +491,12 @@
       "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
       "content": "when loading shazu den, the map that is being loaded is skirmish. fix it",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
+      "content": "retry",
+      "snapshot_message_type": 0
     }
   ]
 }
