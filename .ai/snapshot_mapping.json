@@ -581,6 +581,12 @@
       "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
       "content": "i want to change the home page UI to fit this art style. how can we do it? we might need new sprites",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "277e57df-405b-48d2-954f-d0d1e402443c",
+      "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
+      "content": "The implementation plan for reskinning the home page UI to the **\"Natural Ornate Beetle\"** style (matching your concept image) has been approved and is available at `Assets/Plans/home-ui-organic-beetle.md`.\n\n### Summary of the Plan:\n1.  **Style Extraction**: We'll move away from any placeholder \"purple/green\" aesthetics to the **earthy, amber, and dark metal** palette from your reference image.\n2.  **Asset Mapping**: We'll use the high-quality assets already in your `Assets/_InsectWars/Sprites/UI/Extracted/` folder (such as `frame_ornate.png` and `btn_menu.png`) which match the \"Stagbeetle Odyssey\" look perfectly.\n3.  **Code Updates**: I will modify `HomeMenuBootstrap.cs` to update the color constants (`ColTitle`, `ColSub`, etc.) and point the sprite fields to these new \"natural\" assets.\n4.  **Layout Refinement**: I'll adjust the button and panel dimensions in the script to ensure the new ornate frames and beveled buttons fit perfectly.\n\nWould you like me to execute this entire plan now?",
+      "snapshot_message_type": 1
     }
   ]
 }
