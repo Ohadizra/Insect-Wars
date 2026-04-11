@@ -485,6 +485,12 @@
       "conversation_id": "31c764d5-9ebd-48e3-8ca7-f0ae7eb82914",
       "content": "fix but where shanzu then camera view is borken, and that the nest is not apearing (not that the design file of the nest art ware changed)",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
+      "content": "when loading shazu den, the map that is being loaded is skirmish. fix it",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -539,13 +539,7 @@ namespace InsectWars.UI
             btn.onClick.AddListener(() =>
             {
                 GameSession.SetSelectedMap(map);
-                // #region agent log
-                { var _lp = System.IO.Path.Combine(Application.dataPath, "../.cursor/debug-a7153f.log"); var _msg = "{\"sid\":\"a7153f\",\"h\":\"H1\",\"loc\":\"HomeMenu\",\"map\":\"" + map.name + "\",\"scene\":\"" + (map.name == "ShazuDen" ? "ShazuDen" : "SkirmishDemo") + "\"}\n"; try { System.IO.File.AppendAllText(_lp, _msg); } catch {} Debug.Log("[DBG-a7153f] map=" + map.name + " scene=" + (map.name == "ShazuDen" ? "ShazuDen" : "SkirmishDemo")); }
-                // #endregion
-                if (map.name == "ShazuDen")
-                    SceneLoader.LoadSkirmishDemo("ShazuDen");
-                else
-                    SceneLoader.LoadSkirmishDemo();
+                SceneLoader.LoadSkirmishDemo();
             });
 
             var nameGo = Txt(card.transform, map.displayName, 22, ColTitle, TextAnchor.UpperLeft);

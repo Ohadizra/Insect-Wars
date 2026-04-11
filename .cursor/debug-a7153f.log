@@ -1,5 +1,0 @@
-{"sid":"a7153f","h":"H1","loc":"HomeMenu","map":"ShazuDen","scene":"ShazuDen"}
-{"sid":"a7153f","h":"H1","loc":"SceneLoader","sceneName":"ShazuDen"}
-{"sid":"a7153f","h":"H1","loc":"Director.Start","scene":"ShazuDen","serializedMap":"ShazuDen","sessionMap":"ShazuDen","hasVL":true}
-{"sid":"a7153f","h":"H2","loc":"ApplyMapLayout","resolved":"ShazuDen","extent":120,"fruits":6,"hg":6,"clay":6}
-{"sid":"a7153f","h":"H3","loc":"BuildWorldPreview.end","extent":120,"pH":"(-80.00, 1.00, 80.00)","eH":"(80.00, 1.00, -80.00)","fruitLen":6}

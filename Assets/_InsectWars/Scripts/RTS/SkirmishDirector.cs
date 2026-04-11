@@ -71,9 +71,6 @@ namespace InsectWars.RTS
         void ApplyMapLayout()
         {
             var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
-            // #region agent log
-            { var _lp = System.IO.Path.Combine(Application.dataPath, "../.cursor/debug-a7153f.log"); var _msg = "{\"sid\":\"a7153f\",\"h\":\"H2\",\"loc\":\"ApplyMapLayout\",\"resolved\":\"" + (m != null ? m.name : "null") + "\",\"extent\":" + (m != null ? m.mapHalfExtent : 0) + ",\"fruits\":" + (m != null && m.fruits != null ? m.fruits.Length : 0) + ",\"hg\":" + (m != null && m.highGrounds != null ? m.highGrounds.Length : 0) + ",\"clay\":" + (m != null && m.clay != null ? m.clay.Length : 0) + "}\n"; try { System.IO.File.AppendAllText(_lp, _msg); } catch {} Debug.Log("[DBG-a7153f] ApplyMapLayout resolved=" + (m != null ? m.name : "null") + " extent=" + (m != null ? m.mapHalfExtent : 0) + " fruits=" + (m != null && m.fruits != null ? m.fruits.Length : 0)); }
-            // #endregion
             _mapHalfExtent = m != null ? m.mapHalfExtent : 88f;
             _playerHive = m != null ? m.playerHivePosition : new Vector3(-62f, 1f, -52f);
             _enemyHive = m != null ? m.enemyHivePosition : new Vector3(62f, 1f, 52f);
@@ -122,9 +119,6 @@ namespace InsectWars.RTS
 
         void Start()
         {
-            // #region agent log
-            { var _lp = System.IO.Path.Combine(Application.dataPath, "../.cursor/debug-a7153f.log"); var _msg = "{\"sid\":\"a7153f\",\"h\":\"H1\",\"loc\":\"Director.Start\",\"scene\":\"" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + "\",\"serializedMap\":\"" + (mapDefinition != null ? mapDefinition.name : "null") + "\",\"sessionMap\":\"" + (GameSession.SelectedMap != null ? GameSession.SelectedMap.name : "null") + "\",\"hasVL\":" + (visualLibrary != null ? "true" : "false") + "}\n"; try { System.IO.File.AppendAllText(_lp, _msg); } catch {} Debug.Log("[DBG-a7153f] Director.Start scene=" + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name + " serializedMap=" + (mapDefinition != null ? mapDefinition.name : "null") + " sessionMap=" + (GameSession.SelectedMap != null ? GameSession.SelectedMap.name : "null") + " hasVL=" + (visualLibrary != null)); }
-            // #endregion
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
@@ -307,6 +301,9 @@ namespace InsectWars.RTS
             AddRottingApple(world.transform, _applePos);
             AddRottingApple(world.transform, _enemyApplePos);
 
+            foreach (var f in _fruitLayout)
+                AddFruit(world.transform, f);
+
             foreach (var tf in _terrainFeatureLayout)
 AddTerrainFeature(world.transform, tf);
 
@@ -344,9 +341,6 @@ AddTerrainFeature(world.transform, tf);
             systems.AddComponent<EnemyCommander>();
             systems.AddComponent<PauseController>();
             systems.AddComponent<GameAudio>();
-            // #region agent log
-            { var _lp = System.IO.Path.Combine(Application.dataPath, "../.cursor/debug-a7153f.log"); var _msg = "{\"sid\":\"a7153f\",\"h\":\"H3\",\"loc\":\"BuildWorldPreview.end\",\"extent\":" + _mapHalfExtent + ",\"pH\":\"" + _playerHive + "\",\"eH\":\"" + _enemyHive + "\",\"fruitLen\":" + (_fruitLayout != null ? _fruitLayout.Length : 0) + "}\n"; try { System.IO.File.AppendAllText(_lp, _msg); } catch {} Debug.Log("[DBG-a7153f] BuildWorldPreview DONE extent=" + _mapHalfExtent + " fruitLen=" + (_fruitLayout != null ? _fruitLayout.Length : 0)); }
-            // #endregion
         }
 
 
