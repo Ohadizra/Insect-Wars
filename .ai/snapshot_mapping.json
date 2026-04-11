@@ -635,6 +635,12 @@
       "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
       "content": "there is no fit between the spirtes and buttom bar. make new icons , make them sprites and make them fit togther. also remove \"sc2\" from the name.",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "994ec660-5023-4e83-82f5-4bd48e80260d",
+      "conversation_id": "ca86a3fb-644c-447a-aa54-8c93e53767bb",
+      "content": "",
+      "snapshot_message_type": 1
     }
   ]
 }
