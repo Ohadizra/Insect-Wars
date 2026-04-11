@@ -163,7 +163,8 @@ namespace InsectWars.RTS
         void SpawnFinishedUnit(UnitArchetype archetype)
         {
             var center = transform.position;
-            var extent = transform.localScale.x * 0.5f + 1.5f;
+            // Increased extent to ensure we are well outside the NavMeshObstacle carving area
+            var extent = transform.localScale.x * 0.5f + 3.0f; 
 
             Vector3 spawnDir;
             if (_rallyPoint.HasValue)

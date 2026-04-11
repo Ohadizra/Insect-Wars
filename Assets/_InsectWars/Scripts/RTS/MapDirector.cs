@@ -59,8 +59,8 @@ namespace InsectWars.RTS
                 DestroyImmediate(go);
         }
 
-        const float WorkerSpawnRadius = 5f;
-        const float CombatSpawnRadius = 10f;
+        const float WorkerSpawnRadius = 9f;
+        const float CombatSpawnRadius = 15f;
         const float RecommendedMaxNestToAppleDistance = 25f;
         const float MinNestToAppleDistance = 5f;
 
@@ -560,8 +560,9 @@ namespace InsectWars.RTS
 
             if (prefab != null)
             {
-                go = Instantiate(prefab);
-                go.transform.position = pos;
+                // Instantiate at pos to ensure NavMeshAgent wakes up near a valid NavMesh.
+                // We use Quaternion.identity to avoid any rotation issues.
+                go = Instantiate(prefab, pos, Quaternion.identity);
                 unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
             }
@@ -573,18 +574,26 @@ namespace InsectWars.RTS
             }
             
             unit.Configure(team, null, arch);
-            unit.enabled = true; // Ensure script is enabled
+            unit.enabled = true; 
             
-            // Fix units spawning in the middle of the map by explicitly warping the NavMeshAgent
             var agent = go.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                agent.enabled = true; // Ensure agent is enabled
-                // Try a small vertical offset if Warp fails at exact pos
-                if (!agent.Warp(pos))
+                // Ensure agent radius is compatible with default NavMesh baking settings (0.5 radius)
+                if (agent.radius > 0.45f) agent.radius = 0.45f;
+                
+                agent.enabled = true;
+                if (!agent.isOnNavMesh)
                 {
-                    if (NavMesh.SamplePosition(pos, out var hit, 10f, NavMesh.AllAreas))
-                        agent.Warp(hit.position);
+                    // Warp is critical for NavMeshAgent to bind to the baked data.
+                    if (!agent.Warp(pos))
+                    {
+                        // Fallback: search a wider area for a valid binding point.
+                        if (NavMesh.SamplePosition(pos, out var hit, 20f, NavMesh.AllAreas))
+                        {
+                            agent.Warp(hit.position);
+                        }
+                    }
                 }
             }
 

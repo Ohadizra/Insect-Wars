@@ -184,9 +184,13 @@ namespace InsectWars.RTS
         {
             EnsureDefinition(Archetype);
             ApplyDefinition();
-            _health = definition.maxHealth;
-            if (team == Team.Enemy)
-                _health *= GameSession.DifficultyEnemyHpMultiplier;
+            // Health is already set in Configure() at spawn time, but let's ensure it's set if not already
+            if (_health <= 0.001f)
+            {
+                _health = definition.maxHealth;
+                if (team == Team.Enemy)
+                    _health *= GameSession.DifficultyEnemyHpMultiplier;
+            }
             if (GetComponent<UnitHealthBar>() == null)
                 gameObject.AddComponent<UnitHealthBar>();
         }
@@ -199,10 +203,14 @@ namespace InsectWars.RTS
             else
                 definition = UnitDefinition.CreateRuntimeDefault(archetype,
                     TeamPalette.UnitBody(team, archetype));
+            
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
             ApplyDefinition();
+            
             _health = definition.maxHealth;
             if (team == Team.Enemy)
                 _health *= GameSession.DifficultyEnemyHpMultiplier;
+            
             if (GetComponent<UnitHealthBar>() == null)
                 gameObject.AddComponent<UnitHealthBar>();
         }
@@ -221,8 +229,9 @@ namespace InsectWars.RTS
             if (_agent != null)
             {
                 _agent.speed = definition.moveSpeed;
+                // Units with radius > 0.45 fail to bind to default NavMesh (baked for 0.5 radius agents)
+                if (_agent.radius > 0.45f) _agent.radius = 0.45f;
                 // Melee units should try to get close enough for their radius. 
-                // Large units like Mantis (radius 1.05) need a stopping distance that doesn't prevent them from reaching range.
                 _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
             }
         }
