@@ -106,11 +106,11 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-            // --- Top Center: Resource Display (Icon + Text Only) ---
+            // --- Top Left: Resource Display (Icon + Text Only) ---
             var container = new GameObject("CalorieDisplay").AddComponent<RectTransform>();
             container.SetParent(HudCanvasRect, false);
-            container.anchorMin = container.anchorMax = container.pivot = new Vector2(0.5f, 1);
-            container.anchoredPosition = new Vector2(0, -30);
+            container.anchorMin = container.anchorMax = container.pivot = new Vector2(0, 1);
+            container.anchoredPosition = new Vector2(30, -30);
             container.sizeDelta = new Vector2(200, 50);
             
             _calorieLabel = CreateResourceItem(container, appleIcon != null ? appleIcon : larvaIcon, "0");
@@ -139,17 +139,19 @@ namespace InsectWars.RTS
             var go = new GameObject("ResItem");
             go.transform.SetParent(parent, false);
             var rt = go.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(140, 50);
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
             
             var img = new GameObject("Icon").AddComponent<Image>();
             img.transform.SetParent(rt, false);
             img.sprite = icon;
             img.rectTransform.anchorMin = new Vector2(0, 0.5f); img.rectTransform.anchorMax = new Vector2(0, 0.5f);
             img.rectTransform.pivot = new Vector2(0, 0.5f); img.rectTransform.anchoredPosition = Vector2.zero;
-            img.rectTransform.sizeDelta = new Vector2(40, 40);
+            img.rectTransform.sizeDelta = new Vector2(44, 44);
             img.preserveAspect = true;
             
-            var val = CreateText("Val", rt, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0.5f, 0.5f), new Vector2(50, 0), Vector2.zero, initialVal, 20, ColAmber);
+            var val = CreateText("Val", rt, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(55, 0), Vector2.zero, initialVal, 22, ColAmber);
             val.alignment = TextAnchor.MiddleLeft;
             return val;
         }

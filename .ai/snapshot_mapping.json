@@ -731,6 +731,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "I've updated the UI as requested. I've removed the background element and kept only the original apple icon and the calorie count.\n\n### Changes:\n- **Simplified UI**: Removed the `TopBar` background and any extra layout elements.\n- **Resource Display**: The calorie count and apple icon are now directly in a simple container, positioned at the top center.\n- **Icon Update**: Reverted back to the original `icon_apple.png` as requested and removed the intermediate `icon_apple_clean.png`.\n\nThe UI now displays only the apple icon and the numbers for your calories.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "b8c7e6cc-fb13-4c1a-a2c1-25bf22f88294",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "I've moved the calorie display (the apple icon and the count) to the top-left corner of the screen. \n\nI've also refined the layout so it sits precisely at the top-left with a 30-pixel offset, and ensures the icon and text are correctly aligned and visible without any background elements. \n\nThe resource bar is now compact and tucked into the upper-left corner!",
+      "snapshot_message_type": 1
     }
   ]
 }
