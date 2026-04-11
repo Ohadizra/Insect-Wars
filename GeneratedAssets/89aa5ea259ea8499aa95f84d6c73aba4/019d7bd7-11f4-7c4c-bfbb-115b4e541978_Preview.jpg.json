@@ -1,0 +1,12 @@
+{
+    "asset": "89aa5ea259ea8499aa95f84d6c73aba4",
+    "fileName": "019d7bd7-11f4-7c4c-bfbb-115b4e541978_Preview.jpg",
+    "prompt": "hand painted stylized frozen ground texture, organic leaf litter and twigs covered in frost and blue ice, cold winter forest floor, tileable, high quality, stylized art style, no sci-fi elements",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 634479434,
+    "w3CTraceId": "cbeffb15caa4c5a8c4a399a7dbb44e54",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

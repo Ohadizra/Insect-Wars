@@ -1,0 +1,12 @@
+{
+    "asset": "16723b71dbfb8465397065a286e29f3d",
+    "fileName": "019d7bf5-0ae1-773c-90f0-70539e16dcb6_Preview.jpg",
+    "prompt": "hand painted stylized thick blue ice, translucent glacial depth, organic frost patterns, high quality, tileable, top down, cold atmosphere, stylized art style, no futuristic tech",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 591870401,
+    "w3CTraceId": "7aece5e77de2c0d0c357d6895a9c34e0",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

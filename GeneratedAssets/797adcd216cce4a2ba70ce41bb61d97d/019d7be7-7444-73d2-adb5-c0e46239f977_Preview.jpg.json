@@ -1,0 +1,12 @@
+{
+    "asset": "797adcd216cce4a2ba70ce41bb61d97d",
+    "fileName": "019d7be7-7444-73d2-adb5-c0e46239f977_Preview.jpg",
+    "prompt": "hand painted stylized snow covered organic ground, soft white snow, patches of frozen dark soil, scattered frozen leaves, tileable, high quality, stylized art, no repeating patterns, top down view, cold winter biome, organic insect theme",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 890108507,
+    "w3CTraceId": "20c8f413e675b5cd0a99c6db945dc149",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

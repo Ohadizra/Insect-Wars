@@ -1,0 +1,12 @@
+{
+    "asset": "ea15160eb26ac425ca828c07ce8d14da",
+    "fileName": "019d7bed-3b01-7158-852f-0c018db8e7cf.glb",
+    "prompt": "stylized frozen insect hive spire, massive organic curved horn structure made of dark chitin covered in blue ice crystals, jagged and imposing, cold environment prop, low poly stylized art, no futuristic or industrial parts",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "73b259b1decdc94c91fd96067a80171b",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

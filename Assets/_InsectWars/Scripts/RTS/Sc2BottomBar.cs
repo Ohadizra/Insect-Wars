@@ -343,11 +343,14 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Build", "B", EnterBuildMenu);
                     break;
                 case BarMode.BuildMenu:
-                    AddCmdButton(_cmdGridParent, "Underground\n<size=11>200 cal</size>", "Q",
+                    AddCmdButton(_cmdGridParent,
+                        $"Underground\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.Underground)} cal</size>", "Q",
                         () => StartPlaceBuilding(BuildingType.Underground));
-                    AddCmdButton(_cmdGridParent, "Sky Tower\n<size=11>300 cal</size>", "W",
+                    AddCmdButton(_cmdGridParent,
+                        $"Sky Tower\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.SkyTower)} cal</size>", "W",
                         () => StartPlaceBuilding(BuildingType.SkyTower));
-                    AddCmdButton(_cmdGridParent, "Ant's Nest\n<size=11>400 cal</size>", "E",
+                    AddCmdButton(_cmdGridParent,
+                        $"Ant's Nest\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.AntNest)} cal</size>", "E",
                         () => StartPlaceBuilding(BuildingType.AntNest));
                     AddCmdButton(_cmdGridParent, "Cancel", "Esc", () =>
                     {
@@ -356,7 +359,9 @@ namespace InsectWars.RTS
                     });
                     break;
                 case BarMode.Hive:
-                            AddCmdButton(_cmdGridParent, "Worker\n<size=11>50 cal  10s</size>", "W", BuildWorker);
+                            AddCmdButton(_cmdGridParent,
+                                $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal  {Mathf.RoundToInt(ProductionBuilding.GetBuildTime(UnitArchetype.Worker))}s</size>",
+                                "W", BuildWorker);
                     
                             var hive = SelectionController.Instance?.SelectedHive;
                             if (hive != null && hive.Team == Team.Player)
@@ -702,6 +707,29 @@ case BarMode.Building:
             krt.anchorMax = Vector2.one;
             krt.offsetMin = new Vector2(2f, 2f);
             krt.offsetMax = new Vector2(-4f, -2f);
+
+            var labelBg = new GameObject("LabelBg").AddComponent<Image>();
+            labelBg.transform.SetParent(go.transform, false);
+            labelBg.color = new Color(0f, 0f, 0f, 0.65f);
+            labelBg.raycastTarget = false;
+            var lbr = labelBg.rectTransform;
+            lbr.anchorMin = new Vector2(0f, 0f);
+            lbr.anchorMax = new Vector2(1f, 0.48f);
+            lbr.offsetMin = lbr.offsetMax = Vector2.zero;
+
+            var label = new GameObject("Label").AddComponent<Text>();
+            label.transform.SetParent(go.transform, false);
+            label.font = _font;
+            label.fontSize = 10;
+            label.supportRichText = true;
+            label.color = new Color(0.95f, 0.95f, 0.85f);
+            label.alignment = TextAnchor.LowerCenter;
+            label.text = name;
+            var lrt = label.rectTransform;
+            lrt.anchorMin = new Vector2(0f, 0f);
+            lrt.anchorMax = new Vector2(1f, 0.48f);
+            lrt.offsetMin = new Vector2(1f, 1f);
+            lrt.offsetMax = new Vector2(-1f, -1f);
 
             _cmdButtonImages[name] = img;
         }

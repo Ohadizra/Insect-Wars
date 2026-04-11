@@ -1,0 +1,12 @@
+{
+    "asset": "983a93eb1ff9f487cb3199f660817b77",
+    "fileName": "019d7beb-6739-7bcc-b934-1e350eb13f2c_Preview.jpg",
+    "prompt": "hand painted stylized dark chitinous ice texture, deep indigo and black, frozen insect exoskeleton shell, glowing blue frozen veins, tileable, high quality, stylized art, cold biome floor",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 604814805,
+    "w3CTraceId": "9ec5b9f83a6b43c42abd2445b9da0a88",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

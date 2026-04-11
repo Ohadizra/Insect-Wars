@@ -1,0 +1,198 @@
+---
+description: Insect Wars art style — visual identity, color palette, unit and building design language
+alwaysApply: true
+---
+
+# Art Style Guide
+
+## Visual Identity
+
+Insect Wars is set at **insect scale** on natural ground. Everything is organic — no metal, plastic, or man-made materials. A 3 cm pebble is a 3-story boulder. A grass blade is a 20 m tree. Water droplets are lakes.
+
+- **Style:** Semi-stylized / toon — soft gradients, muted earth tones, readable silhouettes
+- **Camera:** Top-down RTS, 30–60 m altitude — all art must read from above
+- **No glowing/emissive** — use material smoothness and color for distinction
+- **Organic only** — no metal, plastic, man-made geometry; all shapes reference real nature
+
+## Scale Reference
+
+| Element | Unity Size | Real-World Equivalent |
+|---------|-----------|----------------------|
+| Worker ant | ~0.5–0.7 m tall | Small garden ant |
+| Mantis fighter | ~0.5 m tall, wider | Praying mantis |
+| Bombardier beetle | ~1.0 m tall | Bombardier beetle |
+| Hive (nest) | ~7 m (4×2×4 scaled 1.75×) | Ant mound entrance |
+| Rotting apple | ~4 m wide, 3 m tall | Fallen garden apple |
+| Pebble (scatter) | 0.3–1.1 m | Garden gravel stone |
+| Grass blade (scatter) | 1.2–3.2 m tall | Single grass blade |
+
+## Color Palette
+
+### Team Colors (`TeamPalette`)
+
+| Role | Player | Enemy |
+|------|--------|-------|
+| **Shell / skin** | Light blue `(0.3, 0.65, 1.0)` | Warm orange-red `(1.0, 0.35, 0.2)` |
+| **Accent / straps** | Vibrant blue `(0.0, 0.45, 1.0)` | Vibrant red `(1.0, 0.05, 0.0)` |
+| **Weapon accent** | Blue `(0.2, 0.5, 1.0)` | Red `(1.0, 0.2, 0.2)` |
+
+Team colors are applied as a **two-tone system**: the **shell color** (lighter, skin-like) covers the main body, and the **accent color** (vibrant, saturated) marks **straps, rings, and shoulder pads** that act as team identifiers — like military insignia on insects.
+
+### Environment Colors
+
+| Element | Color | Notes |
+|---------|-------|-------|
+| **Clay walls** | Brown `(0.45, 0.32, 0.22)` | Dried earth chunks |
+| **Map boundary** | Dark brown `(0.35, 0.28, 0.18)` | Thin border edge |
+| **Rotting apple** | Golden `(0.85, 0.68, 0.15)` | Resource node highlight |
+| **Small fruit** | Purple-pink `(0.65, 0.2, 0.55)` | Secondary fruit nodes |
+| **Build zone rings** | Soft green `(0.3, 0.85, 0.4, 0.22)` | Semi-transparent overlay |
+
+### Scatter Decoration Ranges
+
+| Element | Color Range |
+|---------|------------|
+| **Grass blades** | Dark olive `(0.22, 0.38, 0.12)` to yellow-green `(0.45, 0.55, 0.18)` |
+| **Pebbles** | Grey-brown `(0.40, 0.38, 0.34)` to warm grey `(0.55, 0.50, 0.45)` |
+| **Fallen leaves** | Autumn brown `(0.50, 0.35, 0.12)` to golden `(0.60, 0.48, 0.15)` |
+| **Twigs** | Dark bark `(0.35, 0.24, 0.14)` to mid bark `(0.48, 0.35, 0.20)` |
+
+### HUD Colors
+
+| Element | Color | Hex Approx |
+|---------|-------|-----------|
+| **Bar background** | Near-black purple `(0.05, 0.03, 0.1, 0.96)` | `#0D0819` |
+| **Panel frames** | Dark forest `(0.08, 0.1, 0.06, 0.92)` | `#141A0F` |
+| **Portrait label** | Soft green `(0.5, 1.0, 0.5)` | `#80FF80` |
+| **Attribute text** | Muted green `(0.7, 0.8, 0.7)` | `#B3CCB3` |
+| **Hotkey labels** | Yellow `(0.9, 1.0, 0.2)` | `#E5FF33` |
+| **Pending hint** | Warm yellow `(1.0, 0.9, 0.2)` | `#FFE533` |
+| **Production bar** | Sky blue `(0.3, 0.7, 1.0)` | `#4DB3FF` |
+| **Button highlight** | Pale green `(0.85, 1.0, 0.85)` | `#D9FFD9` |
+
+## Unit Design Language
+
+### Shared Anatomy
+
+All units use the same **two-tone shell + strap** design:
+1. **Shell color** — covers the main body mass (team-tinted lighter tone)
+2. **Accent straps** — thin geometric bands/rings in vibrant team color, acting as faction markings
+
+### Worker (Ant)
+
+- **Silhouette:** Short, cylindrical — "pill shape" with round head
+- **Body:** Squat cylinder (0.52 wide, 0.48 tall) as thorax
+- **Head:** Sphere on top (0.3 diameter), slightly lighter than shell
+- **Strap:** Thin cylinder ring around the waist (0.55 wide, 0.05 tall) in accent color
+- **Collider:** Center (0, 0.45, 0), radius 0.32, height 0.95
+- **Feel:** Small, busy, industrious — clearly "the gatherer"
+- **Carries cargo:** `WorkerInventory` visual when loaded
+
+### Mantis Fighter (BasicFighter)
+
+- **Silhouette:** Low, wide, aggressive — forward-leaning predator
+- **Body:** Tilted capsule (45° forward lean, 0.45 wide) as thorax
+- **Head:** Sphere (0.35) positioned high and forward
+- **Eyes:** Two small accent-colored spheres on the head (compound eye feel)
+- **Arms:** Two articulated "scythe arms" (capsules, bone-driven: `LeftArm`/`RightArm` with `Forearm` children)
+- **Shoulder straps:** Small accent cubes angled on each shoulder (20° tilt)
+- **Collider:** Center (0, 0.22, 0), radius 0.38, height 0.55 — low and wide
+- **Idle animation:** 30-second loop — head look, scythe maintenance (left/right), head dip, tail sway
+- **Attack animation:** Forward lunge + arm swing (0.35s), squash-and-stretch
+- **Feel:** Dangerous, mantis-like predator
+
+### Bombardier Beetle (BasicRanged)
+
+- **Silhouette:** Tall, upright, "turret" body
+- **Body:** Upright capsule (0.42 wide, 1.0 tall) — beetle carapace
+- **Head:** Sphere on top (0.3), slightly lighter
+- **Gun nozzle:** Accent-colored cube protruding forward from the right side (0.1×0.08×0.48) — represents the spray apparatus
+- **Strap:** Horizontal cylinder ring on the upper body (0.45 wide, 0.04 tall) in accent color
+- **FirePoint:** Empty transform at (0, 0.55, 0.55) — spray origin
+- **Collider:** Center (0, 0.55, 0), radius 0.28, height 1.1 — tall and narrow
+- **Attack animation:** Abdomen lifts (tail bone), body braces wider, staccato recoil pulses (0.5s)
+- **Spray VFX:** Cone particle system — white to caustic yellow to dissipating brown, 35° half-angle, pulsed bursts, noise-driven turbulence, soft-circle billboard texture
+- **Feel:** Biological artillery — sprays hot chemical clouds from its rear
+
+## Building Design Language
+
+### Ant's Nest (Hive / AntNest)
+
+- **Shape:** Cube-based mound (4×2×4 base, scaled 1.75×), or prefab from `hivePrefab`
+- **Procedural straps:** Horizontal accent ring on top + two vertical accent strips on front/back
+- **Function:** Main base, deposit point, produces Workers
+- **Color:** Blue-tinted `(0.32, 0.52, 0.88)` for procedural fallback
+- **Can evolve:** `NestEvolution` swaps visual to stage-2 prefab
+
+### Underground (Combat Production)
+
+- **Shape:** Low, flat structure (4×1.5×4) — bunker-like
+- **Color:** Muted purple `(0.35, 0.25, 0.45)` — earthy, subterranean feel
+- **Straps:** Top accent band + side accent strip
+- **Function:** Produces Mantis fighters and Bombardier beetles
+- **Prefab path:** `Assets/_InsectWars/Prefabs/UndergroundBuilding.prefab`
+
+### Sky Tower (Utility)
+
+- **Shape:** Tall, narrow column (2.5×5×2.5) — watchtower
+- **Color:** Cool teal `(0.3, 0.5, 0.6)` — atmospheric, elevated
+- **Straps:** Same accent pattern
+- **Function:** Currently no production; utility/vision building
+- **Prefab path:** FBX model `Meshy_AI_Citadel_of_the_Hexed`
+
+### Rally Flag
+
+- **Pole:** Thin cream cylinder (0.08 wide, 1.2 tall)
+- **Banner:** Small accent-colored cube (0.35×0.22×0.05) offset to one side at the top
+
+## Terrain and World
+
+### Ground
+
+- Unity `Terrain` with **two terrain layers** (`baseSoilLayer`, `drySoilLayer`)
+- Elevated plateaus via `HighGroundPlaced` — heightmap blobs with ramp edges
+- Splat blending uses Perlin noise for organic transitions
+- Shader: `Universal Render Pipeline/Terrain/Lit`
+
+### Passive Scatter (Decoration)
+
+280–950 decorative props fill the ground (count scales with map size). No colliders. Four types:
+- **Grass blades (30%):** Flat cubes standing upright, 1.2–3.2 m tall, 0.08–0.2 m wide, slight lean
+- **Pebbles (25%):** Flattened spheres, 0.3–1.1 m, random orientation (or Meshy GLB model)
+- **Fallen leaves (25%):** Flat cylinders ground-level, 1.5–4.0 m across (or Meshy GLB model)
+- **Twigs (20%):** Thin cylinders lying nearly flat (~88° tilt), 1.5–4.5 m long
+
+### Resource Nodes
+
+- **Big apple:** Sphere scaled (4, 3, 4), bottom 1/3 buried, golden color with `BigRootedApple.mat`
+- **Small fruit:** Sphere scaled uniformly 1.8, purple-pink `(0.65, 0.2, 0.55)` fallback
+- **Calorie chunks:** Carried by workers, GLB prefab `CalorieChunk 4.prefab`
+
+### Clay Walls (Obstacles)
+
+- Cubes or prefabs, brown `(0.45, 0.32, 0.22)`, various scales
+- Multiple prefab iterations exist (ClayWall 1–12, HQ, v2, BNW)
+- `NavMeshObstacle` with carving enabled
+
+## Existing Art Assets
+
+### Unit Prefabs (`Assets/_InsectWars/Prefabs/`)
+- `AntWorker.prefab` + `AntWorkerMat.mat`
+- `MantisFighter.prefab` + `MantisFighterMat.mat`
+- `BombardierBeetle.prefab` + `BombardierBeetleMat.mat`
+- `KnightFighter.prefab`
+
+### Building Prefabs
+- `AntNest.prefab` + `AntNestMat.mat`
+- `UndergroundBuilding.prefab`
+- `MantisNest.prefab` (+ 10 iterations)
+
+### UI Sprites (`Assets/_InsectWars/Sprites/UI/`)
+- **Portraits:** `Portrait_AntWorker.png`, `Portrait_MantisFighter.png`, `Portrait_BombardierBeetle.png`
+- **Command icons:** Move, Stop, Hold, Patrol, Attack, Gather, Build, Cancel, Evolve, ClearRally, Repair
+- **Unit/building icons:** Worker, Fighter, Ranged, Underground, AntNest, SkyTower
+- **UI frames:** Multiple iterations — Insect, Insect_v2, Slim_Insect, Elegant_Insect, Chitin, Vines (each with Frame_Square, Button, Bar, ActionPanel variants)
+- **Ability sheets:** `AbilityIcons_Sheet.png` (+ iterations 1–3)
+
+### VFX
+- `BombardierSprayPuff.png` — soft cloud texture for spray particles

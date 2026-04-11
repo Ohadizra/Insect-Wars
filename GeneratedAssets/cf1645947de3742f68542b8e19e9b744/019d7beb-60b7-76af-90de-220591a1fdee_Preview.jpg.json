@@ -1,0 +1,12 @@
+{
+    "asset": "cf1645947de3742f68542b8e19e9b744",
+    "fileName": "019d7beb-60b7-76af-90de-220591a1fdee_Preview.jpg",
+    "prompt": "hand painted stylized atmospheric snow texture, deep cold blue shadows, subtle organic vein patterns underneath the ice, white frost, tileable, high quality, stylized art style, frozen insect hive theme, no leaves, clean and cold",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 219741276,
+    "w3CTraceId": "4f48d8616a30cbf77e5ea99c35926f4f",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

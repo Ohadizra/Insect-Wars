@@ -1,0 +1,12 @@
+{
+    "asset": "bf70513db449b4bd6a50274e6fad5a2d",
+    "fileName": "019d7be7-7626-7dc1-a9f2-68dba70ee683_Preview.jpg",
+    "prompt": "hand painted stylized blue glacial ice texture, organic crystalline patterns, translucent depth, tileable, high quality, stylized art, no repeating patterns, top down view, frozen hive theme",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 10062745,
+    "w3CTraceId": "05efed4d2a8d971df2b1b37c3d24da7b",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

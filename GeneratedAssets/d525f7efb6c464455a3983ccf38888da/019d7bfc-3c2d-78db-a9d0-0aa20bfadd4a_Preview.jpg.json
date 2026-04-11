@@ -1,0 +1,12 @@
+{
+    "asset": "d525f7efb6c464455a3983ccf38888da",
+    "fileName": "019d7bfc-3c2d-78db-a9d0-0aa20bfadd4a_Preview.jpg",
+    "prompt": "hand painted stylized frozen ground texture, dark organic earth covered in patches of bright white snow and translucent blue ice, subtle frozen roots and insect chitin shards, cold atmosphere, tileable, high quality, stylized art style, no giant insects, clean and detailed",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 1545788997,
+    "w3CTraceId": "0005750ae22eac567f3134c5ec0b624d",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

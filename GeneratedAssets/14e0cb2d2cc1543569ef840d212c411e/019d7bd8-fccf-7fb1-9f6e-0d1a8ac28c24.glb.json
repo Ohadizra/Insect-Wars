@@ -1,0 +1,12 @@
+{
+    "asset": "14e0cb2d2cc1543569ef840d212c411e",
+    "fileName": "019d7bd8-fccf-7fb1-9f6e-0d1a8ac28c24.glb",
+    "prompt": "massive frozen thorny root spire, organic insect-like exoskeleton structure covered in frost, stylized hand-painted texture, high quality, cold environment prop, no futuristic or industrial elements",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "41d9a241b241fdde00a5551dd246c34e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

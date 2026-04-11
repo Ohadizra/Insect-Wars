@@ -311,17 +311,6 @@ namespace InsectWars.RTS
             }
         }
 
-        static Vector3 SpawnPosNear(Transform building)
-        {
-            var center = new Vector3(building.position.x, 0f, building.position.z);
-            float extent = building.localScale.x * 0.5f + 1.5f;
-            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            var pos = center + new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
-            if (NavMesh.SamplePosition(pos, out var hit, 4f, NavMesh.AllAreas))
-                pos = hit.position;
-            return pos;
-        }
-
         void SetNestRallyToFruit(ProductionBuilding nest)
         {
             if (nest.RallyGatherTarget != null && !nest.RallyGatherTarget.Depleted) return;

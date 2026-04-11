@@ -1,0 +1,12 @@
+{
+    "asset": "c4baa100badf84168a9dbd33fc69dc97",
+    "fileName": "019d7bfd-98a5-7787-9406-1699f8271cf6.glb",
+    "prompt": "massive frozen insect horn pillar, organic curved structure made of dark chitin covered in blue ice crystals, jagged and imposing, cold environment prop, low poly stylized art style, no tech parts",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "1da2dc603b536eca3aedf5d9e4be7247",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

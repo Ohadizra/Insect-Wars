@@ -160,7 +160,22 @@ namespace InsectWars.RTS
         {
             var center = transform.position;
             var extent = transform.localScale.x * 0.5f + 1.5f;
-            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+
+            Vector3 spawnDir;
+            if (_rallyPoint.HasValue)
+            {
+                spawnDir = _rallyPoint.Value - center;
+                spawnDir.y = 0f;
+            }
+            else
+            {
+                spawnDir = transform.forward;
+                spawnDir.y = 0f;
+            }
+            if (spawnDir.sqrMagnitude < 0.01f) spawnDir = Vector3.forward;
+
+            float baseAngle = Mathf.Atan2(spawnDir.z, spawnDir.x);
+            var angle = baseAngle + Random.Range(-25f, 25f) * Mathf.Deg2Rad;
             var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
             var spawnPos = center + offset;
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))

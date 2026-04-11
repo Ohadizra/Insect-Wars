@@ -1,0 +1,12 @@
+{
+    "asset": "49179fd2f7f184963b0bd5990da468a7",
+    "fileName": "019d7bfa-7b2a-750d-903b-bb73c395abe1.glb",
+    "prompt": "massive jagged frozen insect claw structure, curved organic horn made of dark chitin covered in thick blue ice, sharp and imposing, cold environment prop, stylized hand painted texture, low poly stylized, no futuristic parts",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "fb77cface5662bbb4cffec9b446de45a",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

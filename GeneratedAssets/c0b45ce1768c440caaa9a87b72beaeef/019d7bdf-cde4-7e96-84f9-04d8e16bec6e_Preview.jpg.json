@@ -1,0 +1,12 @@
+{
+    "asset": "c0b45ce1768c440caaa9a87b72beaeef",
+    "fileName": "019d7bdf-cde4-7e96-84f9-04d8e16bec6e_Preview.jpg",
+    "prompt": "hand painted stylized snow texture, soft white with light blue shadows, subtle ice cracks, clean, tileable, top down view, no repeating patterns, stylized art style",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 1515844829,
+    "w3CTraceId": "39d535a2b1e112b4434dec29317e393c",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

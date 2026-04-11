@@ -1,50 +1,41 @@
 ---
-description: Art style, prefab conventions, and visual rules for Insect Wars
+description: Prefab conventions, performance budgets, and visual library pipeline
+globs: "**/*.cs"
 alwaysApply: false
 ---
 
-# Art and Prefab Conventions
+# Prefab and Asset Conventions
 
-## Visual Identity
+## Visual Library Pipeline
 
-Insect Wars is set at **insect scale** on natural ground. Everything is organic — no metal, plastic, or man-made materials. A 3 cm pebble is a 3-story boulder. A grass blade is a 20 m tree. Water droplets are lakes.
+All prefabs are assigned via `UnitVisualLibrary` (ScriptableObject, `Insect Wars/Unit Visual Library`). The runtime falls back to **procedural placeholder geometry** when no prefab is provided — this is by design.
 
-- **Art style:** Semi-stylized / toon with soft gradients and muted earth tones
-- **Camera:** Top-down RTS at 30–60 m altitude — all art must be readable from above
-- **Color pops:** Reserved for game-critical features (team colors, resource nodes, danger zones)
-- **No glowing/emissive effects** — use material properties (smoothness, color) for visual distinction
-
-## Scale Reference
-
-- An insect unit is roughly **0.5–1.1 m** tall in Unity units
-- Terrain features with `radius = 5` cover ~10 m diameter
+Prefab slots in `UnitVisualLibrary`:
+- **Units:** `workerPrefab`, `meleePrefab`, `rangedPrefab`
+- **Buildings:** `hivePrefab`, `undergroundPrefab`, `skyTowerPrefab`
+- **Environment:** `rottingApplePrefab`, `calorieChunkPrefab`, `clayWallPrefab`, `bigAppleMaterial`, `groundMaterial`, `baseSoilLayer`, `drySoilLayer`
+- **Terrain features:** `waterPuddlePrefab`, `tallGrassPrefab`, `mudPatchPrefab`, `thornPatchPrefab`, `rockyRidgePrefab`
+- **Combat:** `projectilePrefab`
 
 ## Prefab Rules
 
 - **Pivot** at ground level, center XZ
-- **No colliders** — added programmatically by the system
+- **No colliders** — added programmatically (`NavMeshObstacle`, `BoxCollider`, `CapsuleCollider`)
 - **No NavMeshObstacle/NavMeshModifier** — added by code
-- **No MonoBehaviour scripts** on prefabs
+- **No MonoBehaviour scripts** on art prefabs
 - **No lights or cameras**
-- **Y rotation** is set by the system from data — don't bake rotation
-- **Not scaled by the system** — model at 1:1 for radius = 1
+- **Y rotation** is set by the system — don't bake rotation into prefabs
+- Unit prefabs require `NavMeshAgent`, `CapsuleCollider`, `InsectUnit` on root (added if missing)
 
 ## Performance Budgets
 
-- Each terrain feature prefab: **under 1500 triangles**
+- Terrain feature prefabs: **under 1500 triangles**
 - **1–2 materials** per prefab (URP/Lit or URP/Simple Lit)
-- Avoid transparency where possible (use alpha-clip if needed)
+- Avoid transparency (use alpha-clip if needed for grass)
 - No real-time lights, reflections, or heavy transparency
 - Use LODs for complex meshes (rocky ridges)
+- Static shared meshes/materials for selection rings, health bars
 
-## Visual Library
+## Team Color Application
 
-All prefabs are assigned via `UnitVisualLibrary` (ScriptableObject). The runtime falls back to **procedural placeholder geometry** when no prefab is provided — this is intentional and expected during development.
-
-## Team Colors
-
-`TeamPalette` provides blue (Player) vs red (Enemy) shell/accent colors. Unit visuals use material tint caching (`Dictionary<Color, Material>`) to avoid runtime instantiation.
-
-## Minimap
-
-Uses an **orthographic RenderTexture camera**. Top-down footprint of all features must be visually distinct and color-coded. Optional `InsectWars/MinimapFog` material overlays fog of war.
+`TeamPalette` tinting is applied at spawn via `MaterialPropertyBlock` (prefabs) or material tint cache (procedural). Art prefabs should use a **neutral/white base color** so team tinting works correctly. The system sets `_BaseColor` or `_Color` on all renderers.

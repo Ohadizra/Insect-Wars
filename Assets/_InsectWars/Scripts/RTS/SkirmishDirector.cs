@@ -63,7 +63,8 @@ namespace InsectWars.RTS
                 DestroyImmediate(go);
         }
 
-        const float StartingSpawnRadius = 7f;
+        const float WorkerSpawnRadius = 5f;
+        const float CombatSpawnRadius = 10f;
         const float RecommendedMaxNestToAppleDistance = 25f;
         const float MinNestToAppleDistance = 5f;
 
@@ -126,43 +127,43 @@ namespace InsectWars.RTS
             var playerApple = FindNearestFruit(allFruit, _applePos);
             var enemyApple  = FindNearestFruit(allFruit, _enemyApplePos);
 
-            // ── Player starting units — tight ring around the hive ──
-            const int playerWorkers = 5;
-            const int playerCombat  = 4;
-            int playerTotal = playerWorkers + playerCombat;
-            for (int i = 0; i < playerWorkers; i++)
+            // ── Player starting workers — close ring around the hive ──
+            for (int i = 0; i < 5; i++)
             {
-                float angle = i * (360f / playerTotal);
-                var pos = SpawnPositionAroundBuilding(_playerHive, StartingSpawnRadius, angle);
+                float angle = i * (360f / 5f);
+                var pos = SpawnPositionAroundBuilding(_playerHive, WorkerSpawnRadius, angle);
                 var worker = SpawnUnit(pos, Team.Player, UnitArchetype.Worker);
                 if (worker != null && playerApple != null && !playerApple.Depleted)
                     worker.OrderGather(playerApple);
             }
+
+            // ── Player starting combat — outer ring, away from the nest ──
             var playerCombatArchs = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BasicRanged };
-            for (int i = 0; i < playerCombat; i++)
+            for (int i = 0; i < playerCombatArchs.Length; i++)
             {
-                float angle = (playerWorkers + i) * (360f / playerTotal);
-                SpawnUnit(SpawnPositionAroundBuilding(_playerHive, StartingSpawnRadius, angle), Team.Player, playerCombatArchs[i]);
+                float angle = i * (360f / playerCombatArchs.Length);
+                SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, angle), Team.Player, playerCombatArchs[i]);
             }
 
-            // ── Enemy starting units — tight ring around the enemy hive ──
+            // ── Enemy starting workers — close ring around the hive ──
             var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
-            var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
-            int enemyTotal = nWorkers + nCombat;
             for (int i = 0; i < nWorkers; i++)
             {
-                float angle = i * (360f / Mathf.Max(enemyTotal, 1));
-                var pos = SpawnPositionAroundBuilding(_enemyHive, StartingSpawnRadius, angle);
+                float angle = i * (360f / Mathf.Max(nWorkers, 1));
+                var pos = SpawnPositionAroundBuilding(_enemyHive, WorkerSpawnRadius, angle);
                 var worker = SpawnUnit(pos, Team.Enemy, UnitArchetype.Worker);
                 if (worker != null && enemyApple != null && !enemyApple.Depleted)
                     worker.OrderGather(enemyApple);
             }
+
+            // ── Enemy starting combat — outer ring, away from the nest ──
+            var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
             for (int i = 0; i < nCombat; i++)
             {
-                float angle = (nWorkers + i) * (360f / Mathf.Max(enemyTotal, 1));
+                float angle = i * (360f / nCombat);
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
-                SpawnUnit(SpawnPositionAroundBuilding(_enemyHive, StartingSpawnRadius, angle), Team.Enemy, arch);
+                SpawnUnit(SpawnPositionAroundBuilding(_enemyHive, CombatSpawnRadius, angle), Team.Enemy, arch);
             }
 
             SetStartingRallyPoints();
@@ -306,14 +307,13 @@ AddTerrainFeature(world.transform, tf);
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                const float r = StartingSpawnRadius;
                 var ph = new Vector3(_playerHive.x, 0f, _playerHive.z);
                 var eh = new Vector3(_enemyHive.x, 0f, _enemyHive.z);
-                SpawnUnit(ph + Vector3.forward * r, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
-                SpawnUnit(ph + Vector3.right * r,   Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-                SpawnUnit(ph + new Vector3(r * 0.7f, 0f, r * 0.7f), Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
-                SpawnUnit(eh + Vector3.back * r,    Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
-                SpawnUnit(eh + Vector3.left * r,    Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+                SpawnUnit(ph + Vector3.forward * WorkerSpawnRadius,  Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
+                SpawnUnit(ph + Vector3.right * CombatSpawnRadius,    Team.Player, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(ph + Vector3.left * CombatSpawnRadius,     Team.Player, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
+                SpawnUnit(eh + Vector3.back * CombatSpawnRadius,     Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
+                SpawnUnit(eh + Vector3.forward * WorkerSpawnRadius,  Team.Enemy, UnitArchetype.Worker).transform.SetParent(world.transform);
             }
 #endif
 

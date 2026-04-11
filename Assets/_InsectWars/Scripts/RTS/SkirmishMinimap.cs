@@ -165,6 +165,9 @@ namespace InsectWars.RTS
             camGo.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
             var fogShader = Shader.Find("InsectWars/MinimapFog");
+            // #region agent log
+            try { var lp = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), ".cursor", "debug-ad7c7c.log"); var j = "{\"sessionId\":\"ad7c7c\",\"location\":\"SkirmishMinimap.cs\",\"message\":\"MinimapFogShader\",\"data\":{\"shaderFound\":" + (fogShader != null ? "true" : "false") + "},\"timestamp\":" + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ",\"hypothesisId\":\"D\"}"; System.IO.File.AppendAllText(lp, j + "\n"); Debug.Log("[DBG-ad7c7c] MinimapFogShader found=" + (fogShader != null)); } catch (System.Exception ex) { Debug.LogError("[DBG-ad7c7c] Log write failed: " + ex.Message); }
+            // #endregion
             if (fogShader != null)
             {
                 _fogMat = new Material(fogShader);

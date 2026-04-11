@@ -1,0 +1,12 @@
+{
+    "asset": "1f8eacf1a8c674bcfa03142946263893",
+    "fileName": "019d7bf1-4cb9-7882-80ff-45bec3c84a3b_Preview.jpg",
+    "prompt": "hand painted stylized frozen ground, dark organic soil mixed with translucent blue ice, scattered frozen insect wings and chitin fragments, detailed mulch and frost, tileable, high quality, stylized art style, cold winter hive biome, no repeating geometric patterns",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 247084353,
+    "w3CTraceId": "cbf868a516e2744ebb38d5ef2138d257",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

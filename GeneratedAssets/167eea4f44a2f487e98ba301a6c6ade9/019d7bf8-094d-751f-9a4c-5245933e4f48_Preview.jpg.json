@@ -1,0 +1,12 @@
+{
+    "asset": "167eea4f44a2f487e98ba301a6c6ade9",
+    "fileName": "019d7bf8-094d-751f-9a4c-5245933e4f48_Preview.jpg",
+    "prompt": "hand painted stylized frozen organic ground, blue ice crystals growing over dark chitinous insect wings and organic mulch, cold atmosphere, tileable, high quality, stylized art, no futuristic tech",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 1895327535,
+    "w3CTraceId": "5d6dc6c6711fd73db9050594386800d2",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

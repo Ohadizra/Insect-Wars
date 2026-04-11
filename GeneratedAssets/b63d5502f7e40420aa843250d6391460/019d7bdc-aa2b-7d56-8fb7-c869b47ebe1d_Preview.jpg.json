@@ -1,0 +1,12 @@
+{
+    "asset": "b63d5502f7e40420aa843250d6391460",
+    "fileName": "019d7bdc-aa2b-7d56-8fb7-c869b47ebe1d_Preview.jpg",
+    "prompt": "hand painted stylized frozen mud and twigs texture, dark earth with icy frost covering, organic, tileable, high quality, stylized art style",
+    "negativePrompt": "",
+    "model": "dbb35e61-f5e2-4e71-a7af-b563ed9472ed",
+    "modelName": "Hand Painted Textures 2.0",
+    "customSeed": 174702669,
+    "w3CTraceId": "3f4889eeeddad06c5e8f537e8f9b3f86",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

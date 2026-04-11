@@ -25,10 +25,19 @@ namespace InsectWars.RTS
         Color32 _black;
         readonly Dictionary<InsectUnit, Renderer[]> _enemyRenderers = new();
 
+        // #region agent log
+        static readonly string _dbgLog = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), ".cursor", "debug-ad7c7c.log");
+        static int _dbgCount;
+        static void DbgLog(string msg, string data, string hyp) { try { var j = "{\"sessionId\":\"ad7c7c\",\"location\":\"FogOfWarSystem.cs\",\"message\":\"" + msg + "\",\"data\":" + data + ",\"timestamp\":" + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ",\"hypothesisId\":\"" + hyp + "\"}"; System.IO.File.AppendAllText(_dbgLog, j + "\n"); Debug.Log("[DBG-ad7c7c] " + msg + " " + data); } catch (System.Exception ex) { Debug.LogError("[DBG-ad7c7c] Log write failed: " + ex.Message); } }
+        // #endregion
+
         void OnEnable()
         {
             Instance = this;
             Shader.SetGlobalFloat(FogActiveId, 1f);
+            // #region agent log
+            DbgLog("FogOfWarSystem.OnEnable", "{\"fogActive\":1}", "E");
+            // #endregion
             _black = new Color32(0, 0, 0, 255);
             _pix = new Color32[TexRes * TexRes];
             for (var i = 0; i < _pix.Length; i++)
@@ -70,6 +79,9 @@ namespace InsectWars.RTS
                 RebuildVisionGrid();
                 _tex.SetPixels32(_pix);
                 _tex.Apply(false, false);
+                // #region agent log
+                if (_dbgCount < 3) { _dbgCount++; int mid = TexRes/2 * TexRes + TexRes/2; int corner = 0; var midP = _pix[mid]; var cornerP = _pix[corner]; DbgLog("RebuildVisionGrid", "{\"frame\":" + Time.frameCount + ",\"midR\":" + midP.r + ",\"midG\":" + midP.g + ",\"cornerR\":" + cornerP.r + ",\"cornerG\":" + cornerP.g + ",\"fogActive\":" + Shader.GetGlobalFloat(FogActiveId) + "}", "A,B,E"); }
+                // #endregion
             }
 
             UpdateEnemyVisibility();
@@ -100,6 +112,9 @@ namespace InsectWars.RTS
 
         void UpdateEnemyVisibility()
         {
+            // #region agent log
+            if (_dbgCount <= 3 && HiveDeposit.EnemyHive != null) { var hp = HiveDeposit.EnemyHive.transform.position; bool hiveVis = IsInCurrentVision(hp); bool hiveExpl = IsExplored(hp); var rends = HiveDeposit.EnemyHive.GetComponentsInChildren<Renderer>(); int enabledCount = 0; foreach(var rr in rends) if(rr != null && rr.enabled) enabledCount++; DbgLog("EnemyHiveVisibility", "{\"hivePos\":\"" + hp + "\",\"inVision\":" + (hiveVis?"true":"false") + ",\"explored\":" + (hiveExpl?"true":"false") + ",\"rendererCount\":" + rends.Length + ",\"enabledRenderers\":" + enabledCount + "}", "C"); }
+            // #endregion
             var toRemove = (List<InsectUnit>)null;
             foreach (var kv in _enemyRenderers)
             {
