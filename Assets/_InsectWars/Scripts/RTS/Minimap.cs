@@ -104,10 +104,10 @@ namespace InsectWars.RTS
                 rrt.anchorMin = Vector2.zero;
                 rrt.anchorMax = Vector2.one;
                 rrt.pivot = new Vector2(0.5f, 0.5f);
-                rrt.offsetMin = new Vector2(4f, 4f);
-                rrt.offsetMax = new Vector2(-4f, -4f);
+                rrt.offsetMin = Vector2.zero;
+                rrt.offsetMax = Vector2.zero;
             }
-            else
+else
             {
                 rrt.anchorMin = new Vector2(0.5f, 0.5f);
                 rrt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -128,9 +128,9 @@ namespace InsectWars.RTS
             lrt.anchorMin = new Vector2(0.5f, 1f);
             lrt.anchorMax = new Vector2(0.5f, 1f);
             lrt.pivot = new Vector2(0.5f, 1f);
-            lrt.anchoredPosition = new Vector2(0f, 4f);
+            lrt.anchoredPosition = new Vector2(0f, 12f);
             lrt.sizeDelta = new Vector2(120f, 22f);
-        }
+}
 
         void BuildMinimapCamera()
         {

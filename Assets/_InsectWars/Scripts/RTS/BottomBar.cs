@@ -29,8 +29,8 @@ namespace InsectWars.RTS
         public static PendingCommand Pending { get; private set; }
         public static BuildingType PendingBuildingType { get; private set; }
 
-        [SerializeField] float barHeight = 208f;
-        [SerializeField] float minimapSlot = 240f;
+        [SerializeField] float barHeight = 220f;
+        [SerializeField] float minimapSlot = 280f;
         [SerializeField] float commandPanelWidth = 380f;
 
         [Header("Natural Ornate Assets")]
@@ -400,8 +400,8 @@ namespace InsectWars.RTS
             ms.anchorMin = new Vector2(0f, 0f);
             ms.anchorMax = new Vector2(0f, 1f);
             ms.pivot = new Vector2(0f, 0.5f);
-            ms.anchoredPosition = new Vector2(20, 0);
-            ms.sizeDelta = new Vector2(minimapSlot - 40, -40);
+            ms.anchoredPosition = new Vector2(30, 0); // Moved slightly further right for a nicer look
+            ms.sizeDelta = new Vector2(minimapSlot - 40, -30);
 
             var miniFrameImg = miniSlot.AddComponent<Image>();
             miniFrameImg.sprite = minimapFrame;
@@ -414,8 +414,8 @@ namespace InsectWars.RTS
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(24f, 24f);
-            mi.offsetMax = new Vector2(-24f, -24f);
+            mi.offsetMin = new Vector2(14f, 14f); // Reduced offsets to fit the frame hole better
+            mi.offsetMax = new Vector2(-14f, -14f);
             MinimapHost = mi;
 
             var cmdPanel = new GameObject("CommandPanel");

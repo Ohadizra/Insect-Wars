@@ -737,6 +737,12 @@
       "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
       "content": "I've moved the calorie display (the apple icon and the count) to the top-left corner of the screen. \n\nI've also refined the layout so it sits precisely at the top-left with a 30-pixel offset, and ensures the icon and text are correctly aligned and visible without any background elements. \n\nThe resource bar is now compact and tucked into the upper-left corner!",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "70103eb5-611f-4641-84cb-e2a1ed3da5b4",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "I've updated the minimap and its frame to be larger and fit more naturally within the UI bar:\n\n### Changes implemented:\n1.  **Enlarged Frame and Slot**:\n    *   Increased the overall bottom bar height from **208 to 220** and the minimap slot width from **240 to 280** in `BottomBar.cs`.\n    *   Set the `MinimapHost` size to **240x190**, making it more substantial and filling the corner.\n2.  **Optimized Fit**:\n    *   Reduced the inner offsets of the minimap from **24 to 14 pixels**, allowing the map texture to fill the ornate frame more completely without large empty gaps.\n    *   Removed internal texture offsets in `Minimap.cs` so the render texture utilizes 100% of the available panel area.\n3.  **Refined Text Placement**:\n    *   Adjusted the \"MAP\" label position slightly upward so it remains legible above the now-larger frame.\n\nThe minimap should now be much clearer and better integrated with its steampunk border.",
+      "snapshot_message_type": 1
     }
   ]
 }
