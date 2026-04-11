@@ -49,6 +49,12 @@ namespace InsectWars.UI
             if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
         #endif
 
+            // Stop NavMesh errors in Home scene
+            foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
+                agent.enabled = false;
+            foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+                unit.enabled = false;
+
             SetupEventSystem();
             BuildCanvas();
             BuildVideoBackground();
@@ -59,7 +65,7 @@ namespace InsectWars.UI
 
         void SetupEventSystem()
         {
-            var existing = FindFirstObjectByType<EventSystem>();
+            var existing = Object.FindAnyObjectByType<EventSystem>();
             if (existing != null)
             {
                 var mod = existing.GetComponent<InputSystemUIInputModule>();
@@ -83,6 +89,19 @@ namespace InsectWars.UI
             if (asset != null)
             {
                 mod.actionsAsset = asset;
+                // Manually link the actions to ensure responsiveness if auto-link fails
+                var uiMap = asset.FindActionMap("UI");
+                if (uiMap != null)
+                {
+                    mod.point = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Point"));
+                    mod.leftClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Click"));
+                    mod.rightClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("RightClick"));
+                    mod.middleClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("MiddleClick"));
+                    mod.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("ScrollWheel"));
+                    mod.move = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Navigate"));
+                    mod.submit = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Submit"));
+                    mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
+                }
             }
         #endif
         }
@@ -115,8 +134,7 @@ namespace InsectWars.UI
             raw.color = Color.white;
             raw.raycastTarget = false;
 
-            var vrt = new RenderTexture(1920, 1080, 0);
-            vrt.depth = 0;
+            var vrt = new RenderTexture(1920, 1080, 24);
             vrt.Create();
             raw.texture = vrt;
 
@@ -133,9 +151,13 @@ namespace InsectWars.UI
             var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
             if (System.IO.File.Exists(path))
             {
-                vp.url = path;
+                // Use file:// prefix for absolute paths to ensure compatibility
+                vp.url = "file://" + path;
                 vp.Prepare();
-                vp.prepareCompleted += (p) => p.Play();
+                vp.prepareCompleted += (p) => {
+                    p.Play();
+                    Debug.Log("HomeMenu: Video started playing.");
+                };
             }
             else
             {
