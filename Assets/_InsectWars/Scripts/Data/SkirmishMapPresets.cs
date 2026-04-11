@@ -15,7 +15,7 @@ namespace InsectWars.Data
         public static SkirmishMapDefinition[] GetAll()
         {
             if (s_maps != null && s_maps.Length > 0 && s_maps[0] != null) return s_maps;
-            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell(), CreateShazuDen() };
+            s_maps = new[] { CreateThornBasin(), CreateLalush(), CreateBraveNewWorld(), CreateShazuBell() };
             return s_maps;
         }
 
@@ -310,79 +310,5 @@ namespace InsectWars.Data
             };
             return map;
         }
-
-        static SkirmishMapDefinition CreateShazuDen()
-        {
-            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
-            map.hideFlags = HideFlags.HideAndDontSave;
-            map.name = "ShazuDen";
-            map.displayName = "Shazu Den";
-            map.description = "A frozen organic hive station. Broad gentle ramps and massive chitinous barriers define this defensive outpost.";
-            map.mapHalfExtent = 120f;
-            
-            // Re-centered hives: NW at (-80, 80), SE at (80, -80). Large plateaus ensure clear spawning.
-            map.playerHivePosition    = new Vector3(-80f, 1f,  80f); 
-            map.enemyHivePosition     = new Vector3( 80f, 1f, -80f);
-            
-            // Apples shifted inward to be clearly on high ground and accessible
-            map.bigApplePosition      = new Vector3(-65f, 1.5f, 65f);
-            map.enemyBigApplePosition = new Vector3( 65f, 1.5f, -65f);
-            
-            map.passiveScatterSeed = 1122;
-            
-            map.highGrounds = new[]
-            {
-                // Main Bases: Massive circular plateaus with extra-wide gentle ramps (rampWidth 0.40 UV = 96m!)
-                new HighGroundPlaced { uv = new Vector2(0.166f, 0.833f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
-                new HighGroundPlaced { uv = new Vector2(0.833f, 0.166f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
-                
-                // Natural Expansion Platforms (Large and accessible)
-                new HighGroundPlaced { uv = new Vector2(0.35f, 0.65f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
-                new HighGroundPlaced { uv = new Vector2(0.65f, 0.35f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
-                
-                // Secondary Expansion Pockets (NE and SW Corners for future bases)
-                new HighGroundPlaced { uv = new Vector2(0.92f, 0.92f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
-                new HighGroundPlaced { uv = new Vector2(0.08f, 0.08f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
-            };
-            
-            map.fruits = new[]
-            {
-                // Natural Expansion Apples
-                new FruitPlaced { position = new Vector3(-45f, 1.5f, 35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                new FruitPlaced { position = new Vector3( 45f, 1.5f, -35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                // Corner Third Apples (Secondary bases)
-                new FruitPlaced { position = new Vector3( 105f, 1.5f, 105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
-                new FruitPlaced { position = new Vector3(-105f, 1.5f, -105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
-                // High-Yield Center
-                new FruitPlaced { position = new Vector3(15f, 3.5f, 15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
-                new FruitPlaced { position = new Vector3(-15f, 3.5f, -15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
-            };
-            
-            map.clay = new[]
-            {
-                // Organic "Rim" Barriers - Large Frozen Horns placed at the far edges
-                new ClayPlaced { position = new Vector3(-118f, 0f, 118f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3(-118f, 0f, 50f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3(-50f, 0f, 118f), scale = new Vector3(12f, 20f, 12f) },
-                
-                new ClayPlaced { position = new Vector3( 118f, 0f, -118f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3( 118f, 0f, -50f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3( 50f, 0f, -118f), scale = new Vector3(12f, 20f, 12f) },
-            };
-            
-            map.terrainFeatures = new[]
-            {
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-120, 0, 40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 120, 0, -40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 50f },
-            };
-
-        #if UNITY_EDITOR
-            var denVisuals = AssetDatabase.LoadAssetAtPath<UnitVisualLibrary>("Assets/_InsectWars/Data/VisualLibrary_ShazuDen.asset");
-            if (denVisuals != null && denVisuals.clayWallPrefab != null)
-                map.clayWallPrefabOverride = denVisuals.clayWallPrefab;
-        #endif
-            return map;
         }
-    }
-}
+        }
