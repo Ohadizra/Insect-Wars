@@ -57,7 +57,7 @@ namespace InsectWars.RTS
         void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
         {
             if (cam == null || !cam.CompareTag("MainCamera")) return;
-            if (!SkirmishPlayArea.HasBounds || _tex == null || _pix == null) return;
+            if (!PlayArea.HasBounds || _tex == null || _pix == null) return;
 
             PushBounds();
             if ((Time.frameCount & 1) == 0)
@@ -146,21 +146,21 @@ namespace InsectWars.RTS
 
         public bool IsInCurrentVision(Vector3 world)
         {
-            if (_pix == null || !SkirmishPlayArea.HasBounds) return true;
+            if (_pix == null || !PlayArea.HasBounds) return true;
             if (!TryTexel(world, out var x, out var z)) return false;
             return _pix[z * TexRes + x].g >= 96;
         }
 
         public bool IsExplored(Vector3 world)
         {
-            if (_pix == null || !SkirmishPlayArea.HasBounds) return true;
+            if (_pix == null || !PlayArea.HasBounds) return true;
             if (!TryTexel(world, out var x, out var z)) return false;
             return _pix[z * TexRes + x].r >= 96;
         }
 
         bool TryTexel(Vector3 world, out int x, out int z)
         {
-            var h = SkirmishPlayArea.HalfExtent;
+            var h = PlayArea.HalfExtent;
             x = 0;
             z = 0;
             if (h < 1f) return false;
@@ -173,7 +173,7 @@ namespace InsectWars.RTS
 
         void PushBounds()
         {
-            var h = SkirmishPlayArea.HalfExtent;
+            var h = PlayArea.HalfExtent;
             if (h < 1f) return;
             var inv = 1f / (2f * h);
             Shader.SetGlobalVector(FogBoundsId, new Vector4(-h, -h, inv, inv));
@@ -181,7 +181,7 @@ namespace InsectWars.RTS
 
         void StampVision(Vector3 world, float radiusWorld)
         {
-            var h = SkirmishPlayArea.HalfExtent;
+            var h = PlayArea.HalfExtent;
             var cx = (world.x + h) / (2f * h) * TexRes;
             var cz = (world.z + h) / (2f * h) * TexRes;
             var rTex = radiusWorld / (2f * h) * TexRes;

@@ -5,21 +5,32 @@ alwaysApply: true
 
 # Game Architecture
 
+## Scene Flow
+
+```
+Home.unity → SceneLoader.LoadMap(map) → Gameplay.unity
+                                         ↓
+                                    MapDirector reads GameSession.SelectedMap
+                                    and builds the world procedurally
+```
+
+All maps share one `Gameplay.unity` scene. Map data is defined in `MapDefinition` (ScriptableObject) and selected via `MapPresets.GetAll()` in the menu. `SkirmishDemo.unity` is a dev-only scene that will be removed.
+
 ## Composition Root
 
-`SkirmishDirector` (`[DefaultExecutionOrder(-50)]`) is the **composition root**. It runs first and:
-1. Reads `GameSession` for difficulty and selected map (`SkirmishMapDefinition`)
+`MapDirector` (`[DefaultExecutionOrder(-50)]`) is the **composition root**. It runs first and:
+1. Reads `GameSession` for difficulty and selected map (`MapDefinition`)
 2. Builds the world (terrain, clay, hives, fruit nodes, terrain features, passive scatter)
 3. Bakes the **NavMesh** at runtime
 4. Spawns starting units for both teams via `SpawnUnit()`
 5. Creates a `Systems` GameObject and adds all runtime services as components:
-   `PlayerResources`, `SelectionController`, `CommandController`, `GameHUD`, `Sc2BottomBar`,
-   `SkirmishMinimap`, `FogOfWarSystem`, `MatchDirector`, `EnemyCommander`, `PauseController`, `GameAudio`
+   `PlayerResources`, `SelectionController`, `CommandController`, `GameHUD`, `BottomBar`,
+   `Minimap`, `FogOfWarSystem`, `MatchDirector`, `EnemyCommander`, `PauseController`, `GameAudio`
 
 ## Core Systems Map
 
 ```
-SkirmishDirector (bootstrap)
+MapDirector (bootstrap)
 ├── Economy
 │   ├── PlayerResources (singleton, Calories, events)
 │   ├── EnemyResources (static mirror for AI)
@@ -37,7 +48,7 @@ SkirmishDirector (bootstrap)
 ├── Player Interaction
 │   ├── SelectionController (click, box-select, double-click same-type)
 │   ├── CommandController (right-click orders, building placement, pending commands)
-│   ├── Sc2BottomBar (StarCraft-style HUD: minimap, selection, command grid)
+│   ├── BottomBar (StarCraft-style HUD: minimap, selection, command grid)
 │   └── RTSCameraController (pan, zoom, minimap click)
 ├── AI
 │   ├── EnemyCommander (macro: build, produce, attack waves, defend)
@@ -50,7 +61,7 @@ SkirmishDirector (bootstrap)
 │   └── PauseController
 └── Cross-Scene
     ├── GameSession (static — difficulty, selected map, PlayerPrefs keys)
-    └── SceneLoader (Home → per-map scene via SkirmishMapDefinition.sceneName; SkirmishDemo is dev-only)
+    └── SceneLoader (Home → Gameplay scene; stores MapDefinition in GameSession)
 ```
 
 ## Unit Archetypes
@@ -68,7 +79,7 @@ No deep class hierarchy — all units are `InsectUnit` + `UnitDefinition`. Arche
 | `PlayerResources.Instance` | Singleton | Player economy + `OnCaloriesChanged` event |
 | `FogOfWarSystem.Instance` | Singleton | Fog queries and texture |
 | `GameAudio.Instance` | Singleton | Sound effects |
-| `Sc2BottomBar.Instance` | Singleton | Bottom bar UI |
+| `BottomBar.Instance` | Singleton | Bottom bar UI |
 | `HiveDeposit.PlayerHive/EnemyHive` | Static refs | Main nests |
 | `EnemyResources` | Static class | AI economy |
 | `RtsSimRegistry` | Static class | Unit and fruit node registry |

@@ -683,6 +683,12 @@
       "conversation_id": "f055ba5b-9168-4639-b75e-e12cce7bc11d",
       "content": "this UI element is a bad fit for the action icons, we need an empty frame UI element for this area. please fix",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "c1ec3896-6834-4d6e-a544-26dfae39d2b7",
+      "content": "home scean ui is not responding and also video in the background is not active",
+      "snapshot_message_type": 0
     }
   ]
 }

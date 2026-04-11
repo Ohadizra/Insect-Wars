@@ -37,16 +37,13 @@ namespace InsectWars.Data
     }
 
     /// <summary>
-    /// Serialized map layout for SkirmishDirector. Assign on the director or leave null for built-in Demo 0 defaults.
+    /// Serialized map layout for MapDirector. Assign on the director or leave null for built-in defaults.
     /// </summary>
-    [CreateAssetMenu(fileName = "SkirmishMap", menuName = "Insect Wars/Skirmish Map Definition")]
-    public class SkirmishMapDefinition : ScriptableObject
+    [CreateAssetMenu(fileName = "MapDefinition", menuName = "Insect Wars/Map Definition")]
+    public class MapDefinition : ScriptableObject
     {
         public string displayName = "Unnamed Map";
         public string description = "";
-
-        /// <summary>Unity scene name to load for this map (must be in Build Settings).</summary>
-        public string sceneName = "";
 
         public float mapHalfExtent = 88f;
         public Vector3 playerHivePosition = new Vector3(-62f, 1f, -52f);

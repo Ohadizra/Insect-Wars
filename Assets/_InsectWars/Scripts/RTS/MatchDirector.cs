@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Elimination skirmish: win when no enemy combatants remain, lose when none of yours do.
+    /// Elimination match: win when no enemy combatants remain, lose when none of yours do.
     /// </summary>
     public class MatchDirector : MonoBehaviour
     {

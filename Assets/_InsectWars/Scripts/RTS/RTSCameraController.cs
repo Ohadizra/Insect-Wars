@@ -82,8 +82,8 @@ namespace InsectWars.RTS
 
         void ClampPivotToPlayArea()
         {
-            if (!SkirmishPlayArea.HasBounds) return;
-            var h = SkirmishPlayArea.HalfExtent;
+            if (!PlayArea.HasBounds) return;
+            var h = PlayArea.HalfExtent;
             var m = Mathf.Max(boundsMargin, 6f);
             if (h <= m + 0.5f) return;
             var p = _pivot.position;

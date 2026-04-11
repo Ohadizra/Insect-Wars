@@ -22,10 +22,10 @@ namespace InsectWars.Core
 
         public static DemoDifficulty Difficulty { get; private set; } = DemoDifficulty.Normal;
 
-        /// <summary>Map selected from the skirmish lobby. Null falls back to SkirmishDirector's serialized field.</summary>
-        public static SkirmishMapDefinition SelectedMap { get; private set; }
+        /// <summary>Map selected from the menu. Null falls back to MapDirector's serialized field.</summary>
+        public static MapDefinition SelectedMap { get; private set; }
 
-        public static void SetSelectedMap(SkirmishMapDefinition map)
+        public static void SetSelectedMap(MapDefinition map)
         {
             SelectedMap = map;
         }
@@ -38,7 +38,7 @@ namespace InsectWars.Core
             _ => 1f
         };
 
-        /// <summary>Multiplier on enemy skirmish unit count at match start (&gt;= 1 rounds up).</summary>
+        /// <summary>Multiplier on enemy unit count at match start (&gt;= 1 rounds up).</summary>
         public static float DifficultyEnemySpawnMultiplier => Difficulty switch
         {
             DemoDifficulty.Easy => 0.85f,

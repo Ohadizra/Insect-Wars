@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace InsectWars.RTS
 {
     [DefaultExecutionOrder(50)]
-    public class SkirmishMinimap : MonoBehaviour
+    public class Minimap : MonoBehaviour
     {
         [SerializeField] float cameraHeight = 95f;
         [SerializeField] float orthographicSize = 42f;
@@ -60,7 +60,7 @@ namespace InsectWars.RTS
             var hudRt = GameHUD.HudCanvasRect;
             if (hudRt == null)
             {
-                Debug.LogWarning("SkirmishMinimap: GameHUD canvas missing; minimap UI skipped.");
+                Debug.LogWarning("Minimap: GameHUD canvas missing; minimap UI skipped.");
                 return;
             }
 
@@ -144,8 +144,8 @@ namespace InsectWars.RTS
             _miniCam = camGo.AddComponent<Camera>();
             _miniCam.orthographic = true;
 
-            float ortho = SkirmishPlayArea.HasBounds
-                ? SkirmishPlayArea.HalfExtent
+            float ortho = PlayArea.HasBounds
+                ? PlayArea.HalfExtent
                 : orthographicSize;
             _miniCam.orthographicSize = ortho;
 
@@ -246,9 +246,9 @@ namespace InsectWars.RTS
         {
             if (_viewBox == null) return;
             var mc = Camera.main;
-            if (mc == null || !SkirmishPlayArea.HasBounds) return;
+            if (mc == null || !PlayArea.HasBounds) return;
 
-            float h = SkirmishPlayArea.HalfExtent;
+            float h = PlayArea.HalfExtent;
             float inv = 1f / (2f * h);
 
             float minX = float.MaxValue, maxX = float.MinValue;
@@ -312,7 +312,7 @@ namespace InsectWars.RTS
 
         void HandlePointer(PointerEventData eventData)
         {
-            if (_mapRect == null || _onClick == null || !SkirmishPlayArea.HasBounds) return;
+            if (_mapRect == null || _onClick == null || !PlayArea.HasBounds) return;
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     _mapRect, eventData.position, eventData.pressEventCamera, out var local))
@@ -322,7 +322,7 @@ namespace InsectWars.RTS
             float u = (local.x - rect.x) / rect.width;
             float v = (local.y - rect.y) / rect.height;
 
-            float h = SkirmishPlayArea.HalfExtent;
+            float h = PlayArea.HalfExtent;
             float worldX = (u * 2f - 1f) * h;
             float worldZ = (v * 2f - 1f) * h;
 

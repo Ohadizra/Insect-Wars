@@ -6,8 +6,8 @@ using InsectWars.Core;
 
 namespace InsectWars.RTS
 {
-    [CustomEditor(typeof(SkirmishDirector))]
-    public class SkirmishDirectorEditor : UnityEditor.Editor
+    [CustomEditor(typeof(MapDirector))]
+    public class MapDirectorEditor : UnityEditor.Editor
     {
         int _presetIndex;
 
@@ -15,11 +15,11 @@ namespace InsectWars.RTS
         {
             DrawDefaultInspector();
 
-            SkirmishDirector sd = (SkirmishDirector)target;
+            MapDirector sd = (MapDirector)target;
 
             GUILayout.Space(10);
 
-            var presets = SkirmishMapPresets.GetAll();
+            var presets = MapPresets.GetAll();
             var names = new string[presets.Length + 1];
             names[0] = "(Director default)";
             for (int i = 0; i < presets.Length; i++)

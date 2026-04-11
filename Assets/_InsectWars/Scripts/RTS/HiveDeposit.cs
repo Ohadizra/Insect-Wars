@@ -109,7 +109,7 @@ namespace InsectWars.RTS
             var spawnPos = center + offset;
             if (NavMesh.SamplePosition(spawnPos, out var hit, 12f, NavMesh.AllAreas))
                 spawnPos = hit.position;
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
+            var unit = MapDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
             if (unit == null) return;
 
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted)

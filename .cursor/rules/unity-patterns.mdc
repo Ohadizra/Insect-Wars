@@ -52,7 +52,7 @@ Examples: `RtsSimRegistry` (units + fruit), `ProductionBuilding.All`, `TerrainFe
 
 ## NavMesh
 
-- `NavMeshSurface` on the world root, baked at runtime by `SkirmishDirector`
+- `NavMeshSurface` on the world root, baked at runtime by `MapDirector`
 - Units require `NavMeshAgent` (`[RequireComponent]` on `InsectUnit`)
 - Obstacles use `NavMeshObstacle` with carving (clay, fruit, hive, rocky ridges)
 - Use `NavMesh.SamplePosition` for spawn and building placement validation

@@ -8,9 +8,9 @@ using UnityEngine.AI;
 namespace InsectWars.RTS
 {
     [DefaultExecutionOrder(-50)]
-    public class SkirmishDirector : MonoBehaviour
+    public class MapDirector : MonoBehaviour
     {
-        [SerializeField] SkirmishMapDefinition mapDefinition;
+        [SerializeField] MapDefinition mapDefinition;
         [SerializeField] UnitVisualLibrary visualLibrary;
 
         float _mapHalfExtent;
@@ -47,7 +47,7 @@ namespace InsectWars.RTS
         {
             if (ActiveVisualLibrary == visualLibrary)
                 ActiveVisualLibrary = null;
-            SkirmishPlayArea.Clear();
+            PlayArea.Clear();
         }
 
         void DestroyObject(GameObject go)
@@ -103,9 +103,9 @@ namespace InsectWars.RTS
                 new Vector3(hivePos.x, 0f, hivePos.z),
                 new Vector3(applePos.x, 0f, applePos.z));
             if (dist > RecommendedMaxNestToAppleDistance)
-                Debug.LogWarning($"[SkirmishDirector] {label} nest-to-apple distance ({dist:F0}) exceeds recommended max ({RecommendedMaxNestToAppleDistance}). Workers may struggle to gather efficiently.");
+                Debug.LogWarning($"[MapDirector] {label} nest-to-apple distance ({dist:F0}) exceeds recommended max ({RecommendedMaxNestToAppleDistance}). Workers may struggle to gather efficiently.");
             if (dist < MinNestToAppleDistance)
-                Debug.LogWarning($"[SkirmishDirector] {label} nest-to-apple distance ({dist:F0}) is very short. Units may clip into structures.");
+                Debug.LogWarning($"[MapDirector] {label} nest-to-apple distance ({dist:F0}) is very short. Units may clip into structures.");
         }
 
         void Start()
@@ -263,7 +263,7 @@ namespace InsectWars.RTS
         public void BuildWorldPreview()
         {
             ApplyMapLayout();
-            SkirmishPlayArea.Configure(_mapHalfExtent, _mapHalfExtent);
+            PlayArea.Configure(_mapHalfExtent, _mapHalfExtent);
             ActiveVisualLibrary = visualLibrary;
 
             EnsureLitShader();
@@ -273,7 +273,7 @@ namespace InsectWars.RTS
             world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
-            surface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
+            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
             surface.ignoreNavMeshObstacle = false;
 
             BuildTerrain(world.transform, _mapHalfExtent);
@@ -282,6 +282,12 @@ namespace InsectWars.RTS
             foreach (var c in _clayLayout)
                 AddClay(world.transform, c.position, c.scale, _clayWallOverride);
 
+            var exclusions = BuildExclusionZones();
+            PassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
+
+            surface.BuildNavMesh();
+
+            // Placed after NavMesh bake — these use NavMeshObstacle for dynamic carving
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
             BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
 
@@ -293,6 +299,8 @@ namespace InsectWars.RTS
 
             foreach (var tf in _terrainFeatureLayout)
                 AddTerrainFeature(world.transform, tf);
+
+            PlaceStarterPlayerBuildings(world.transform);
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -307,13 +315,6 @@ namespace InsectWars.RTS
             }
 #endif
 
-            var exclusions = BuildExclusionZones();
-            SkirmishPassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
-
-            PlaceStarterPlayerBuildings(world.transform);
-
-            surface.BuildNavMesh();
-
             var systems = GameObject.Find("Systems");
             DestroyObject(systems);
             systems = new GameObject("Systems");
@@ -322,7 +323,7 @@ namespace InsectWars.RTS
             systems.AddComponent<CommandController>();
             systems.AddComponent<GameHUD>();
             systems.AddComponent<BottomBar>();
-            systems.AddComponent<SkirmishMinimap>();
+            systems.AddComponent<Minimap>();
             systems.AddComponent<FogOfWarSystem>();
             systems.AddComponent<MatchDirector>();
             systems.AddComponent<EnemyCommander>();
@@ -332,9 +333,9 @@ namespace InsectWars.RTS
 
         void PlaceStarterPlayerBuildings(Transform worldRoot) { }
 
-        List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
+        List<PassiveScatter.ExclusionZone> BuildExclusionZones()
         {
-            var z = new List<SkirmishPassiveScatter.ExclusionZone>
+            var z = new List<PassiveScatter.ExclusionZone>
             {
                 new(new Vector2(_playerHive.x, _playerHive.z), 28f),
                 new(new Vector2(_enemyHive.x, _enemyHive.z), 28f),
@@ -342,10 +343,10 @@ namespace InsectWars.RTS
                 new(new Vector2(_enemyApplePos.x, _enemyApplePos.z), 12f)
             };
             foreach (var f in _fruitLayout)
-                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(f.position.x, f.position.z), 8f));
+                z.Add(new PassiveScatter.ExclusionZone(new Vector2(f.position.x, f.position.z), 8f));
             foreach (var c in _clayLayout)
             {
-                z.Add(new SkirmishPassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), Mathf.Max(c.scale.x, c.scale.z) + 4f));
+                z.Add(new PassiveScatter.ExclusionZone(new Vector2(c.position.x, c.position.z), Mathf.Max(c.scale.x, c.scale.z) + 4f));
             }
             return z;
         }
@@ -364,23 +365,57 @@ namespace InsectWars.RTS
 
         void BuildTerrain(Transform parent, float halfExtent)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            go.name = "GroundPlane";
-            go.transform.SetParent(parent, false);
-            go.transform.localScale = new Vector3(halfExtent * 0.2f, 1f, halfExtent * 0.2f);
-            go.transform.position = Vector3.zero;
-            SafeSetLayer(go, "Ground");
+            float terrainSize = halfExtent * 2f;
+            var terrainData = new TerrainData
+            {
+                heightmapResolution = 257,
+                size = new Vector3(terrainSize, 20f, terrainSize)
+            };
 
-            var mat = new Material(s_lit);
-            mat.SetColor("_BaseColor", new Color(0.35f, 0.28f, 0.18f));
-            go.GetComponent<Renderer>().sharedMaterial = mat;
+            var lib = ActiveVisualLibrary;
+            if (lib != null && lib.baseSoilLayer != null)
+            {
+                var layers = lib.drySoilLayer != null
+                    ? new[] { lib.baseSoilLayer, lib.drySoilLayer }
+                    : new[] { lib.baseSoilLayer };
+                terrainData.terrainLayers = layers;
+
+                if (lib.drySoilLayer != null)
+                {
+                    int res = terrainData.alphamapResolution;
+                    float[,,] maps = new float[res, res, 2];
+                    for (int y = 0; y < res; y++)
+                    for (int x = 0; x < res; x++)
+                    {
+                        float nx = (float)x / res;
+                        float ny = (float)y / res;
+                        float noise = Mathf.PerlinNoise(nx * 4f + 0.5f, ny * 4f + 0.5f);
+                        float edge = Mathf.Min(nx, ny, 1f - nx, 1f - ny) * 4f;
+                        edge = Mathf.Clamp01(edge);
+                        float dryWeight = Mathf.Clamp01(noise * 0.4f + (1f - edge) * 0.3f);
+                        maps[y, x, 0] = 1f - dryWeight;
+                        maps[y, x, 1] = dryWeight;
+                    }
+                    terrainData.SetAlphamaps(0, 0, maps);
+                }
+            }
+
+            var terrainGo = Terrain.CreateTerrainGameObject(terrainData);
+            terrainGo.name = "Terrain";
+            terrainGo.transform.SetParent(parent, false);
+            terrainGo.transform.position = new Vector3(-halfExtent, 0f, -halfExtent);
+            SafeSetLayer(terrainGo, "Ground");
         }
 
         void AddMapBounds(Transform parent, float halfExtent, float thickness) { }
 
         void AddClay(Transform parent, Vector3 pos, Vector3 scale, GameObject overridePrefab)
         {
-            GameObject go = overridePrefab != null ? Instantiate(overridePrefab) : GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var clayPrefab = overridePrefab;
+            if (clayPrefab == null && ActiveVisualLibrary != null)
+                clayPrefab = ActiveVisualLibrary.clayWallPrefab;
+
+            GameObject go = clayPrefab != null ? Instantiate(clayPrefab) : GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "ClayWall";
             go.transform.SetParent(parent, false);
             go.transform.position = pos;
@@ -390,31 +425,110 @@ namespace InsectWars.RTS
 
         void BuildHive(Transform parent, Vector3 pos, Team team, string name)
         {
-            var go = new GameObject(name);
+            var lib = ActiveVisualLibrary;
+            GameObject go;
+
+            if (lib != null && lib.hivePrefab != null)
+            {
+                go = Instantiate(lib.hivePrefab);
+                go.name = name;
+
+                var existingHive = go.GetComponent<HiveVisual>();
+                if (existingHive != null) Destroy(existingHive);
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = name;
+                go.transform.localScale = new Vector3(3.5f, 2f, 3.5f);
+            }
+
             go.transform.SetParent(parent, false);
-            go.transform.position = pos;
+            float groundY = GetHeight(pos);
+            go.transform.position = new Vector3(pos.x, groundY, pos.z);
+
+            if (go.GetComponent<Collider>() == null)
+            {
+                var col = go.AddComponent<BoxCollider>();
+                col.center = new Vector3(0f, 1f, 0f);
+                col.size = new Vector3(3f, 2f, 3f);
+            }
+            if (go.GetComponent<NavMeshObstacle>() == null)
+            {
+                var obs = go.AddComponent<NavMeshObstacle>();
+                obs.carving = true;
+                obs.shape = NavMeshObstacleShape.Box;
+                obs.size = new Vector3(3f, 2f, 3f);
+                obs.center = new Vector3(0f, 1f, 0f);
+            }
+
+            SitOnGround(go);
+
             var hive = go.AddComponent<HiveDeposit>();
             hive.Configure(team);
             var prod = go.AddComponent<ProductionBuilding>();
             prod.Initialize(BuildingType.AntNest, team);
         }
 
+        static void SitOnGround(GameObject go)
+        {
+            var renderer = go.GetComponentInChildren<Renderer>();
+            if (renderer == null) return;
+            float bottomY = renderer.bounds.min.y;
+            float groundY = GetHeight(go.transform.position);
+            float offset = groundY - bottomY;
+            if (Mathf.Abs(offset) > 0.01f)
+                go.transform.position += new Vector3(0f, offset, 0f);
+        }
+
         void AddRottingApple(Transform parent, Vector3 pos)
         {
-            var go = new GameObject("RottingApple");
+            var lib = ActiveVisualLibrary;
+            GameObject go;
+
+            if (lib != null && lib.rottingApplePrefab != null)
+            {
+                go = Instantiate(lib.rottingApplePrefab);
+                go.name = "RottingApple";
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "RottingApple";
+                go.transform.localScale = new Vector3(2f, 2f, 2f);
+            }
+
             go.transform.SetParent(parent, false);
-            go.transform.position = pos;
-            var node = go.AddComponent<RottingFruitNode>();
+            float appleY = GetHeight(pos);
+            go.transform.position = new Vector3(pos.x, appleY, pos.z);
+            SitOnGround(go);
+            var node = go.GetComponent<RottingFruitNode>();
+            if (node == null) node = go.AddComponent<RottingFruitNode>();
             node.Configure(1000, 10, 5f);
         }
 
         void AddFruit(Transform parent, FruitPlaced f)
         {
-            var go = new GameObject("Fruit");
+            var lib = ActiveVisualLibrary;
+            GameObject go;
+
+            if (lib != null && lib.calorieChunkPrefab != null)
+            {
+                go = Instantiate(lib.calorieChunkPrefab);
+                go.name = "Fruit";
+            }
+            else
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "Fruit";
+                go.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+            }
+
             go.transform.SetParent(parent, false);
             go.transform.position = f.position;
-            var node = go.AddComponent<RottingFruitNode>();
-            node.Configure(500, 10, 5f);
+            var node = go.GetComponent<RottingFruitNode>();
+            if (node == null) node = go.AddComponent<RottingFruitNode>();
+            node.Configure(f.calories, f.gatherPerTick, f.gatherSeconds);
         }
 
         void AddTerrainFeature(Transform parent, TerrainFeaturePlaced tf) { }

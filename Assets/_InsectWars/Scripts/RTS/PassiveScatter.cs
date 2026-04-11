@@ -10,7 +10,7 @@ namespace InsectWars.RTS
     /// Decorative props (no colliders) to fill open ground with real-world
     /// objects at insect scale: pebbles, dried leaves, grass blades, twigs.
     /// </summary>
-    public static class SkirmishPassiveScatter
+    public static class PassiveScatter
     {
         public readonly struct ExclusionZone
         {

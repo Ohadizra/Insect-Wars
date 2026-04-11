@@ -1,70 +1,120 @@
-using System.Collections.Generic;
+using InsectWars.Data;
+using InsectWars.RTS;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace InsectWars.EditorTools
 {
-    public static class CreateMapScenes
+    [InitializeOnLoad]
+    public static class EditorAutoFix
     {
-        static readonly string[] MapSceneNames =
+        static EditorAutoFix()
         {
-            "ThornBasin",
-            "Lalush",
-            "BraveNewWorld",
-            "ShazuBell",
-            "ShazuDen",
-        };
-
-        const string SourceScene = "Assets/_InsectWars/Scenes/SkirmishDemo.unity";
-        const string ScenesFolder = "Assets/_InsectWars/Scenes/";
-
-        [MenuItem("Insect Wars/Create All Map Scenes")]
-        static void CreateAll()
-        {
-            if (!System.IO.File.Exists(SourceScene))
+            EditorApplication.delayCall += () =>
             {
-                Debug.LogError($"Source scene not found: {SourceScene}");
-                return;
-            }
-
-            var buildScenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
-            int created = 0;
-
-            foreach (var mapName in MapSceneNames)
-            {
-                string dst = ScenesFolder + mapName + ".unity";
-
-                if (System.IO.File.Exists(dst))
-                {
-                    Debug.Log($"[CreateMapScenes] {mapName}.unity already exists — skipping.");
-                    EnsureInBuildSettings(buildScenes, dst);
-                    continue;
-                }
-
-                if (AssetDatabase.CopyAsset(SourceScene, dst))
-                {
-                    Debug.Log($"[CreateMapScenes] Created {dst}");
-                    EnsureInBuildSettings(buildScenes, dst);
-                    created++;
-                }
-                else
-                {
-                    Debug.LogError($"[CreateMapScenes] Failed to copy scene to {dst}");
-                }
-            }
-
-            EditorBuildSettings.scenes = buildScenes.ToArray();
-            AssetDatabase.Refresh();
-            Debug.Log($"[CreateMapScenes] Done. Created {created} new scene(s). Build Settings updated.");
+                FixHivePrefabIfNeeded();
+                FixGameplaySceneIfNeeded();
+            };
         }
 
-        static void EnsureInBuildSettings(List<EditorBuildSettingsScene> scenes, string path)
+        static void FixHivePrefabIfNeeded()
         {
-            foreach (var s in scenes)
+            const string libPath = "Assets/_InsectWars/Data/DefaultVisualLibrary.asset";
+            const string prefabPath = "Assets/_InsectWars/Buildings/AntNest/AntNestStage2Visual.prefab";
+
+            var lib = AssetDatabase.LoadAssetAtPath<UnitVisualLibrary>(libPath);
+            if (lib == null) return;
+
+            var correctPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (correctPrefab == null) return;
+
+            if (lib.hivePrefab == correctPrefab) return;
+
+            lib.hivePrefab = correctPrefab;
+            EditorUtility.SetDirty(lib);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[EditorAutoFix] hivePrefab → {prefabPath}");
+        }
+
+        static void FixGameplaySceneIfNeeded()
+        {
+            const string scenePath = "Assets/_InsectWars/Scenes/Gameplay.unity";
+            if (!System.IO.File.Exists(scenePath)) return;
+
+            var currentScene = SceneManager.GetActiveScene();
+            bool wasGameplay = currentScene.path == scenePath;
+
+            if (!wasGameplay)
             {
-                if (s.path == path) return;
+                if (currentScene.isDirty)
+                    return;
             }
+        }
+
+        [MenuItem("Insect Wars/Rebuild Gameplay Scene")]
+        static void RebuildGameplayScene()
+        {
+            const string scenePath = "Assets/_InsectWars/Scenes/Gameplay.unity";
+            const string libPath = "Assets/_InsectWars/Data/DefaultVisualLibrary.asset";
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var directorGo = new GameObject("MapDirector");
+            var director = directorGo.AddComponent<MapDirector>();
+
+            var lib = AssetDatabase.LoadAssetAtPath<UnitVisualLibrary>(libPath);
+            if (lib != null)
+            {
+                var so = new SerializedObject(director);
+                var libProp = so.FindProperty("visualLibrary");
+                if (libProp != null)
+                {
+                    libProp.objectReferenceValue = lib;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+
+            var lightGo = new GameObject("Directional Light");
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.color = new Color(1f, 0.95f, 0.84f);
+            light.intensity = 1.2f;
+            lightGo.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.Skybox;
+            cam.nearClipPlane = 0.3f;
+            cam.farClipPlane = 300f;
+            camGo.AddComponent<AudioListener>();
+            camGo.AddComponent<RTSCameraController>();
+            camGo.transform.position = new Vector3(0f, 24f, -20f);
+            camGo.transform.rotation = Quaternion.Euler(55f, 0f, 0f);
+
+            EditorSceneManager.SaveScene(scene, scenePath);
+            AssetDatabase.Refresh();
+
+            EnsureInBuildSettings(scenePath);
+
+            Debug.Log("[EditorAutoFix] Gameplay.unity rebuilt with MapDirector, Camera, and Light.");
+        }
+
+        static void EnsureInBuildSettings(string path)
+        {
+            var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+            foreach (var s in scenes)
+                if (s.path == path) return;
             scenes.Add(new EditorBuildSettingsScene(path, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
+        }
+
+        [MenuItem("Insect Wars/Fix Visual Library — Set Hive Prefab")]
+        static void FixHivePrefab()
+        {
+            FixHivePrefabIfNeeded();
         }
     }
 }

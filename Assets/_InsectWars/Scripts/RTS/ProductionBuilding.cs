@@ -185,7 +185,7 @@ namespace InsectWars.RTS
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
 
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
+            var unit = MapDirector.SpawnUnit(spawnPos, _team, archetype);
             if (unit == null) return;
 
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
@@ -251,7 +251,7 @@ namespace InsectWars.RTS
 
         public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player)
         {
-            var lib = SkirmishDirector.ActiveVisualLibrary;
+            var lib = MapDirector.ActiveVisualLibrary;
 
             if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
                 return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
@@ -379,26 +379,24 @@ namespace InsectWars.RTS
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
             
-            var lib = SkirmishDirector.ActiveVisualLibrary;
-            if (lib != null && lib.hiveMaterial != null)
-            {
-                foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
-                    renderer.sharedMaterial = lib.hiveMaterial;
-            }
-
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
                 var mats = renderer.sharedMaterials;
+                bool changed = false;
                 for (int i = 0; i < mats.Length; i++)
                 {
                     if (mats[i] == null) continue;
                     var m = new Material(mats[i]);
-                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
-                    else if (m.HasProperty("_Color")) m.color = skinColor;
+                    if (m.HasProperty("_EmissionColor"))
+                    {
+                        m.SetColor("_EmissionColor", skinColor * 0.15f);
+                        m.EnableKeyword("_EMISSION");
+                        changed = true;
+                    }
                     mats[i] = m;
                 }
-                renderer.sharedMaterials = mats;
+                if (changed) renderer.sharedMaterials = mats;
             }
 
             var building = go.AddComponent<ProductionBuilding>();

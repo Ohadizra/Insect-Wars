@@ -848,7 +848,7 @@ return;
             {
                 if (_cargoVisual != null) Destroy(_cargoVisual);
 
-                var lib = SkirmishDirector.ActiveVisualLibrary;
+                var lib = MapDirector.ActiveVisualLibrary;
                 if (lib != null && lib.calorieChunkPrefab != null)
                 {
                     _cargoVisual = Instantiate(lib.calorieChunkPrefab, transform);

@@ -1,9 +1,9 @@
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Runtime bounds for the skirmish field (set by <see cref="SkirmishDirector"/>).
+    /// Runtime bounds for the play field (set by <see cref="MapDirector"/>).
     /// </summary>
-    public static class SkirmishPlayArea
+    public static class PlayArea
     {
         public static float HalfExtent { get; private set; }
         public static float MinimapOrthographicSize { get; private set; }

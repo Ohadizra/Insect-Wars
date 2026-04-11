@@ -7,31 +7,32 @@ namespace InsectWars.Core
     public static class SceneLoader
     {
         public const string HomeScene = "Home";
+        public const string GameplayScene = "Gameplay";
 
-        /// <summary>Dev-only skirmish scene; will be removed after development.</summary>
-        public const string SkirmishScene = "SkirmishDemo";
+        /// <summary>Dev-only test scene; will be removed after development.</summary>
+        public const string DevScene = "SkirmishDemo";
 
         public static void LoadHome()
         {
             SceneManager.LoadScene(HomeScene);
         }
 
-        /// <summary>Loads the scene associated with the given map definition.</summary>
-        public static void LoadMap(SkirmishMapDefinition map)
+        /// <summary>Stores the selected map and loads the shared Gameplay scene.</summary>
+        public static void LoadMap(MapDefinition map)
         {
-            if (map == null || string.IsNullOrEmpty(map.sceneName))
+            if (map == null)
             {
-                Debug.LogError("[SceneLoader] Cannot load map — no sceneName set.");
+                Debug.LogError("[SceneLoader] Cannot load map — MapDefinition is null.");
                 return;
             }
             GameSession.SetSelectedMap(map);
-            SceneManager.LoadScene(map.sceneName);
+            SceneManager.LoadScene(GameplayScene);
         }
 
         /// <summary>Dev shortcut — loads the SkirmishDemo scene directly.</summary>
-        public static void LoadSkirmishDemo()
+        public static void LoadDevScene()
         {
-            SceneManager.LoadScene(SkirmishScene);
+            SceneManager.LoadScene(DevScene);
         }
     }
 }

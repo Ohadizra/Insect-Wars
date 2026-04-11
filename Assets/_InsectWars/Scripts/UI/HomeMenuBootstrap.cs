@@ -59,7 +59,12 @@ namespace InsectWars.UI
 
         void SetupEventSystem()
         {
-            if (FindFirstObjectByType<EventSystem>() != null) return;
+            var existing = FindFirstObjectByType<EventSystem>();
+            if (existing != null)
+            {
+                if (existing.GetComponent<InputSystemUIInputModule>() != null) return;
+                DestroyImmediate(existing.gameObject);
+            }
             var es = new GameObject("EventSystem");
             es.AddComponent<EventSystem>();
             es.AddComponent<InputSystemUIInputModule>();
@@ -88,7 +93,8 @@ namespace InsectWars.UI
             Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
-            raw.color = Color.white; 
+            raw.color = Color.white;
+            raw.raycastTarget = false;
 
             var vrt = new RenderTexture(1920, 1080, 0);
             vrt.Create();
@@ -113,7 +119,9 @@ namespace InsectWars.UI
             var dim = new GameObject("Dim");
             dim.transform.SetParent(bg.transform, false);
             Stretch(dim.AddComponent<RectTransform>());
-            dim.AddComponent<Image>().color = ColDim;
+            var dimImg = dim.AddComponent<Image>();
+            dimImg.color = ColDim;
+            dimImg.raycastTarget = false;
         }
 
         void BuildMainMenu()
@@ -178,7 +186,7 @@ namespace InsectWars.UI
             var box = DarkBox(_panelMapSelect.transform, 750, 750);
             PanelHeader(box.transform, "SELECT MAP", -40f);
             
-            var maps = SkirmishMapPresets.GetAll();
+            var maps = MapPresets.GetAll();
             float y = -120f;
             foreach(var m in maps)
             {
