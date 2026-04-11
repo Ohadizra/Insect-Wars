@@ -527,6 +527,12 @@
       "conversation_id": "37ad24d5-12c7-4bb1-8137-472b7a75b39b",
       "content": "I have reverted the changes to the \"Lalush\" map, restoring it to its original swamp-themed layout (\"Lalush Depths\"). I have also restored the \"Shazu Den\" map definition in the code.\n\n**Note:** While the code for \"Shazu Den\" has been restored to `SkirmishMapPresets.cs`, the physical `.unity` scene file and associated textures that were deleted in the previous step remain gone as they cannot be recovered once deleted from disk. However, the game's logic and the \"Lalush\" map are now back to their previous stable state.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "199ebf28-e060-41ff-a858-f87fdbfc70b0",
+      "content": "attach sketch is for how i imagen the UI, fix the UI of both the home page and the game to make it fit",
+      "snapshot_message_type": 0
     }
   ]
 }

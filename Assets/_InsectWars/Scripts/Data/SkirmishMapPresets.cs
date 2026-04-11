@@ -268,64 +268,128 @@ namespace InsectWars.Data
             map.hideFlags = HideFlags.HideAndDontSave;
             map.name = "ShazuDen";
             map.displayName = "Shazu Den";
-            map.description = "A frozen organic hive station. Broad gentle ramps and massive chitinous barriers define this defensive outpost.";
+            map.description = "Frozen earth outpost inspired by ancient battlefields.\nElevated mains with narrow ramps, choked natural expansions, safe pocket thirds behind, and two high-yield gold deposits on exposed low ground at 3 and 9 o'clock. Control the center watchtower to dominate.";
             map.mapHalfExtent = 120f;
-            
-            // Re-centered hives: NW at (-80, 80), SE at (80, -80). Large plateaus ensure clear spawning.
-            map.playerHivePosition    = new Vector3(-80f, 1f,  80f); 
-            map.enemyHivePosition     = new Vector3( 80f, 1f, -80f);
-            
-            // Apples shifted inward to be clearly on high ground and accessible
-            map.bigApplePosition      = new Vector3(-65f, 1.5f, 65f);
-            map.enemyBigApplePosition = new Vector3( 65f, 1.5f, -65f);
-            
-            map.passiveScatterSeed = 1122;
-            
+
+            map.playerHivePosition    = new Vector3(-82f, 1f,  82f);
+            map.enemyHivePosition     = new Vector3( 82f, 1f, -82f);
+
+            map.bigApplePosition      = new Vector3(-70f, 1.5f, 72f);
+            map.enemyBigApplePosition = new Vector3( 70f, 1.5f, -72f);
+
+            map.passiveScatterSeed = 50917;
+
+            // --- Elevation: 7 plateaus with narrow, defensible ramps ---
             map.highGrounds = new[]
             {
-                // Main Bases: Massive circular plateaus with extra-wide gentle ramps (rampWidth 0.40 UV = 96m!)
-                new HighGroundPlaced { uv = new Vector2(0.166f, 0.833f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
-                new HighGroundPlaced { uv = new Vector2(0.833f, 0.166f), radius = 0.25f, rampWidth = 0.40f, heightFraction = 0.06f },
-                
-                // Natural Expansion Platforms (Large and accessible)
-                new HighGroundPlaced { uv = new Vector2(0.35f, 0.65f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
-                new HighGroundPlaced { uv = new Vector2(0.65f, 0.35f), radius = 0.15f, rampWidth = 0.25f, heightFraction = 0.03f },
-                
-                // Secondary Expansion Pockets (NE and SW Corners for future bases)
-                new HighGroundPlaced { uv = new Vector2(0.92f, 0.92f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
-                new HighGroundPlaced { uv = new Vector2(0.08f, 0.08f), radius = 0.15f, rampWidth = 0.20f, heightFraction = 0.05f },
+                // Main bases — high cliffs (2.8 m), tight 5.3 m ramps
+                new HighGroundPlaced { uv = new Vector2(0.158f, 0.842f), radius = 0.095f, rampWidth = 0.022f, heightFraction = 0.14f },
+                new HighGroundPlaced { uv = new Vector2(0.842f, 0.158f), radius = 0.095f, rampWidth = 0.022f, heightFraction = 0.14f },
+
+                // Natural expansions — medium elevation, adjacent to main
+                new HighGroundPlaced { uv = new Vector2(0.275f, 0.725f), radius = 0.065f, rampWidth = 0.028f, heightFraction = 0.07f },
+                new HighGroundPlaced { uv = new Vector2(0.725f, 0.275f), radius = 0.065f, rampWidth = 0.028f, heightFraction = 0.07f },
+
+                // Pocket thirds — behind main in extreme corners, safe but isolated
+                new HighGroundPlaced { uv = new Vector2(0.083f, 0.917f), radius = 0.055f, rampWidth = 0.025f, heightFraction = 0.08f },
+                new HighGroundPlaced { uv = new Vector2(0.917f, 0.083f), radius = 0.055f, rampWidth = 0.025f, heightFraction = 0.08f },
+
+                // Center watchtower — small contested high ground
+                new HighGroundPlaced { uv = new Vector2(0.50f, 0.50f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.09f },
             };
-            
+
+            // --- Resources: progression from safe to contested ---
             map.fruits = new[]
             {
-                // Natural Expansion Apples
-                new FruitPlaced { position = new Vector3(-45f, 1.5f, 35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                new FruitPlaced { position = new Vector3( 45f, 1.5f, -35f), calories = 6500, gatherPerTick = 3, gatherSeconds = 0.6f },
-                // Corner Third Apples (Secondary bases)
-                new FruitPlaced { position = new Vector3( 105f, 1.5f, 105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
-                new FruitPlaced { position = new Vector3(-105f, 1.5f, -105f), calories = 8500, gatherPerTick = 2, gatherSeconds = 0.7f },
-                // High-Yield Center
-                new FruitPlaced { position = new Vector3(15f, 3.5f, 15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
-                new FruitPlaced { position = new Vector3(-15f, 3.5f, -15f), calories = 15000, gatherPerTick = 6, gatherSeconds = 0.4f },
+                // Natural expansion apples (moderate, accessible)
+                new FruitPlaced { position = new Vector3(-50f, 1.5f, 50f),  calories = 5000, gatherPerTick = 3, gatherSeconds = 0.7f },
+                new FruitPlaced { position = new Vector3( 50f, 1.5f, -50f), calories = 5000, gatherPerTick = 3, gatherSeconds = 0.7f },
+
+                // Pocket third apples (slow but safe)
+                new FruitPlaced { position = new Vector3(-96f, 1.5f,  96f), calories = 4500, gatherPerTick = 2, gatherSeconds = 0.8f },
+                new FruitPlaced { position = new Vector3( 96f, 1.5f, -96f), calories = 4500, gatherPerTick = 2, gatherSeconds = 0.8f },
+
+                // Gold bases at 9 and 3 o'clock — high yield, low ground, exposed
+                new FruitPlaced { position = new Vector3(-78f, 1.5f,  0f), calories = 10000, gatherPerTick = 6, gatherSeconds = 0.4f },
+                new FruitPlaced { position = new Vector3( 78f, 1.5f,  0f), calories = 10000, gatherPerTick = 6, gatherSeconds = 0.4f },
+
+                // Center contested apples (moderate yield, highly fought over)
+                new FruitPlaced { position = new Vector3( 5f, 2.5f,  8f), calories = 6000, gatherPerTick = 4, gatherSeconds = 0.5f },
+                new FruitPlaced { position = new Vector3(-5f, 2.5f, -8f), calories = 6000, gatherPerTick = 4, gatherSeconds = 0.5f },
             };
-            
+
+            // --- Clay walls: 22 pieces forming strategic choke points ---
             map.clay = new[]
             {
-                // Organic "Rim" Barriers - Large Frozen Horns placed at the far edges
-                new ClayPlaced { position = new Vector3(-118f, 0f, 118f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3(-118f, 0f, 50f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3(-50f, 0f, 118f), scale = new Vector3(12f, 20f, 12f) },
-                
-                new ClayPlaced { position = new Vector3( 118f, 0f, -118f), scale = new Vector3(15f, 25f, 15f) },
-                new ClayPlaced { position = new Vector3( 118f, 0f, -50f), scale = new Vector3(12f, 20f, 12f) },
-                new ClayPlaced { position = new Vector3( 50f, 0f, -118f), scale = new Vector3(12f, 20f, 12f) },
+                // Player main ramp choke — flanking the descent from main plateau toward natural
+                new ClayPlaced { position = new Vector3(-72f, 0f, 65f), scale = new Vector3(3f, 4f, 5f) },
+                new ClayPlaced { position = new Vector3(-63f, 0f, 74f), scale = new Vector3(5f, 4f, 3f) },
+                // Enemy main ramp choke (mirror)
+                new ClayPlaced { position = new Vector3( 72f, 0f, -65f), scale = new Vector3(3f, 4f, 5f) },
+                new ClayPlaced { position = new Vector3( 63f, 0f, -74f), scale = new Vector3(5f, 4f, 3f) },
+
+                // Player natural choke — funneling movement between natural and the open map
+                new ClayPlaced { position = new Vector3(-40f, 0f, 44f), scale = new Vector3(3f, 3.5f, 5f) },
+                new ClayPlaced { position = new Vector3(-46f, 0f, 38f), scale = new Vector3(5f, 3.5f, 3f) },
+                // Enemy natural choke (mirror)
+                new ClayPlaced { position = new Vector3( 40f, 0f, -44f), scale = new Vector3(3f, 3.5f, 5f) },
+                new ClayPlaced { position = new Vector3( 46f, 0f, -38f), scale = new Vector3(5f, 3.5f, 3f) },
+
+                // Player pocket third access — narrow passage behind main
+                new ClayPlaced { position = new Vector3(-90f, 0f, 92f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3(-95f, 0f, 86f), scale = new Vector3(4f, 3f, 3f) },
+                // Enemy pocket access (mirror)
+                new ClayPlaced { position = new Vector3( 90f, 0f, -92f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3( 95f, 0f, -86f), scale = new Vector3(4f, 3f, 3f) },
+
+                // Championship choke — center-map corridor
+                new ClayPlaced { position = new Vector3(-15f, 0f,  18f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3( 15f, 0f, -18f), scale = new Vector3(4f, 3f, 3f) },
+                new ClayPlaced { position = new Vector3(-18f, 0f, -12f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3( 18f, 0f,  12f), scale = new Vector3(3f, 3f, 5f) },
+
+                // Gold base area walls — partial cover, attackable from multiple angles
+                new ClayPlaced { position = new Vector3(-90f, 0f,  10f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3(-90f, 0f, -10f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3( 90f, 0f,  10f), scale = new Vector3(3f, 3f, 5f) },
+                new ClayPlaced { position = new Vector3( 90f, 0f, -10f), scale = new Vector3(3f, 3f, 5f) },
+
+                // Map edge reinforcement near pocket thirds
+                new ClayPlaced { position = new Vector3(-115f, 0f,  55f), scale = new Vector3(3f, 4f, 7f) },
+                new ClayPlaced { position = new Vector3( 115f, 0f, -55f), scale = new Vector3(3f, 4f, 7f) },
             };
-            
+
+            // --- Terrain features: 19 zones for strategic variety ---
             map.terrainFeatures = new[]
             {
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-120, 0, 40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 120, 0, -40), boxHalfExtents = new Vector2(30, 10), rotation = 90f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0, 0, 0), radius = 50f },
+                // Water puddles — frozen dewdrops, slow movement + reduced vision
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(  0f, 0f,   0f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-72f, 0f,   8f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 72f, 0f,  -8f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-30f, 0f, -30f), radius = 3.5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 30f, 0f,  30f), radius = 3.5f },
+
+                // Tall grass — frost-covered concealment for ambushes
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-35f, 0f,  35f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 35f, 0f, -35f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-85f, 0f, -15f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 85f, 0f,  15f), radius = 5f },
+
+                // Rocky ridges — vision blockers forcing scouting
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-22f, 0f,   5f), boxHalfExtents = new Vector2(5f, 2f), rotation = 40f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 22f, 0f,  -5f), boxHalfExtents = new Vector2(5f, 2f), rotation = 40f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-108f, 0f, 72f), boxHalfExtents = new Vector2(4f, 2f), rotation = 0f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 108f, 0f, -72f), boxHalfExtents = new Vector2(4f, 2f), rotation = 0f },
+
+                // Mud patches — frozen mud, slowing terrain
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-20f, 0f,  15f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 20f, 0f, -15f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-75f, 0f, -10f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 75f, 0f,  10f), radius = 4f },
+
+                // Thorn patches — ice crystal patches dealing damage, flanking the center choke
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-10f, 0f, -25f), radius = 3.5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 10f, 0f,  25f), radius = 3.5f },
             };
 
 #if UNITY_EDITOR
