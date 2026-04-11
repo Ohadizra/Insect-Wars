@@ -17,10 +17,16 @@ namespace InsectWars.RTS
         GameObject _overlayRoot;
         Text _overlayText;
 
+        float _matchTimer;
+        const float MatchStartupGrace = 1.5f;
+
         void Update()
         {
             if (_state != MatchState.Playing) return;
             if (PauseController.IsPaused) return;
+
+            _matchTimer += Time.deltaTime;
+            if (_matchTimer < MatchStartupGrace) return;
 
             if (RtsSimRegistry.CountAlive(Team.Enemy) == 0)
                 EndMatch(MatchState.Won);

@@ -48,7 +48,7 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance == null) return;
             var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (!Physics.Raycast(ray, out var hit, 500f)) return;
+            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return;
 
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
@@ -79,6 +79,8 @@ namespace InsectWars.RTS
                 {
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
+                    else
+                        u.OrderMove(hit.point); // Non-gatherers should still move there
                 }
                 return;
             }
@@ -90,9 +92,6 @@ namespace InsectWars.RTS
                     u.OrderAttack(enemy);
                 return;
             }
-
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Resources"))
-                return;
 
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                 u.OrderMove(hit.point);

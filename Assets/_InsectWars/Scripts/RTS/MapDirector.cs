@@ -263,6 +263,7 @@ namespace InsectWars.RTS
         public void BuildWorldPreview()
         {
             ApplyMapLayout();
+            RtsSimRegistry.Clear();
             PlayArea.Configure(_mapHalfExtent, _mapHalfExtent);
             ActiveVisualLibrary = visualLibrary;
 
