@@ -432,6 +432,7 @@ namespace InsectWars.RTS
             {
                 go = Instantiate(lib.hivePrefab);
                 go.name = name;
+                go.transform.localScale = Vector3.one * 2f; // Double the size as requested
 
                 var existingHive = go.GetComponent<HiveVisual>();
                 if (existingHive != null) Destroy(existingHive);
@@ -440,7 +441,7 @@ namespace InsectWars.RTS
             {
                 go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = name;
-                go.transform.localScale = new Vector3(3.5f, 2f, 3.5f);
+                go.transform.localScale = new Vector3(7f, 4f, 7f); // Original was 3.5, 2, 3.5
             }
 
             go.transform.SetParent(parent, false);
@@ -450,16 +451,16 @@ namespace InsectWars.RTS
             if (go.GetComponent<Collider>() == null)
             {
                 var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 1f, 0f);
-                col.size = new Vector3(3f, 2f, 3f);
+                col.center = new Vector3(0f, 2f, 0f); // Adjust center for double height
+                col.size = new Vector3(6f, 4f, 6f); // Original was 3, 2, 3
             }
             if (go.GetComponent<NavMeshObstacle>() == null)
             {
                 var obs = go.AddComponent<NavMeshObstacle>();
                 obs.carving = true;
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(3f, 2f, 3f);
-                obs.center = new Vector3(0f, 1f, 0f);
+                obs.size = new Vector3(6f, 4f, 6f); // Original was 3, 2, 3
+                obs.center = new Vector3(0f, 2f, 0f);
             }
 
             SitOnGround(go);
@@ -557,6 +558,14 @@ namespace InsectWars.RTS
             }
             
             unit.Configure(team, null, arch);
+            
+            // Fix units spawning in the middle of the map by explicitly warping the NavMeshAgent
+            var agent = go.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.Warp(pos);
+            }
+
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
             return unit;

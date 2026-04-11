@@ -10,7 +10,7 @@ namespace InsectWars.RTS
     public static class BuildZoneRegistry
     {
         /// <summary>Build-zone radius around each hive (main base area).</summary>
-        public const float HiveRadius = 14f;
+        public const float HiveRadius = 28f; // Original was 14f
         /// <summary>Build-zone radius around each fruit / apple node (expansion area).</summary>
         public const float FruitRadius = 18f;
 
