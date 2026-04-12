@@ -437,6 +437,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "The dimensions of the menu buttons have been updated to be narrower and taller.\n\n### Updated Layout:\n*   **Button Width**: Reduced from `550f` to **`400f`** (sleeker, more vertical focus).\n*   **Button Height**: Increased from `85f` to **`120f`** (easier to interact with, more presence).\n*   **Button Spacing**: Increased the gap to **`140f`** to account for the additional height and maintain clear separation.\n\nThis change is applied globally to the **Main Menu**, **Difficulty Select**, and **Settings** panels.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "0d6ad33d-2db2-43a0-be27-ab8430e48826",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "The vertical gap between the menu buttons has been reduced.\n\n### Layout Adjustment:\n*   **Vertical Spacing (`BtnGap`)**: Reduced from `140f` to **`125f`**.\n*   **Net Space**: With a button height of `120f`, this leaves a tight **`5f`** unit visual gap between the edges of each button, pulling the list together for a more compact and grouped appearance.\n\nThis update applies to all menu screens including the main dashboard, difficulty selection, and settings.",
+      "snapshot_message_type": 1
     }
   ]
 }
