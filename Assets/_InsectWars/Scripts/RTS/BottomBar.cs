@@ -453,8 +453,9 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var mfrt = miniFrameGo.AddComponent<RectTransform>();
             mfrt.anchorMin = Vector2.zero;
             mfrt.anchorMax = Vector2.one;
-            mfrt.offsetMin = Vector2.zero;
-            mfrt.offsetMax = Vector2.zero;
+            // Expand the ornate frame significantly to cover the background slot
+            mfrt.offsetMin = new Vector2(-35, -35);
+            mfrt.offsetMax = new Vector2(35, 35);
             var frameImg = miniFrameGo.AddComponent<Image>();
             frameImg.sprite = minimapFrame;
             frameImg.raycastTarget = false; // Fix: don't block minimap clicks
@@ -465,8 +466,9 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(15, 15);
-            mi.offsetMax = new Vector2(-15, -15);
+            // Bring the map slightly inward so it fits nicely inside the frame
+            mi.offsetMin = new Vector2(10, 10);
+            mi.offsetMax = new Vector2(-10, -10);
             MinimapHost = mi;
 
             var cmdPanel = new GameObject("CommandPanel");

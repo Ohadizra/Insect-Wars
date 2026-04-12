@@ -857,6 +857,12 @@
       "conversation_id": "fa69bfe7-f5b4-4fd6-b785-f7ed51c488e2",
       "content": "I have refined the UI hierarchy to bring the minimap view to the front, as it was previously being covered by the ornate frame and the bar background.\n\n### Changes Made:\n\n#### 1. Swapped Hierarchy Order in `BottomBar`\nIn Unity's UI (uGUI) system, children are rendered from top to bottom in the hierarchy. Previously, the minimap content (`MinimapInner`) was created *before* the ornate frame (`MinimapFrame`), which caused the frame (if opaque) to cover the map.\n- **Minimap Content**: Now rendered **after** the frame, ensuring it is always on top.\n- **Minimap Host**: Moved to the last position in the container to guarantee it draws over any background panels or frames.\n\n#### 2. Refined `Minimap` UI Panel\n- **Transparent Background**: Changed the `MinimapPanel` background from an opaque dark brown (`0.98` alpha) to fully transparent. This ensures that the only thing visible is the map itself and any ornate frame around it, rather than a solid box that could block the view.\n- **Removed Padding**: Removed the hardcoded `2px` offset on the map's `RawImage`, allowing it to perfectly fill its container slot.\n- **Label Z-Order**: Ensured the \"MAP\" label remains at the very front so it is never obscured by the map texture or fog of war.\n\nThese adjustments should make the map view clearly visible within its frame without being hidden by other UI elements.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "08f7b046-e7d9-4573-930a-b567cdb5a066",
+      "conversation_id": "fa69bfe7-f5b4-4fd6-b785-f7ed51c488e2",
+      "content": "I have significantly expanded the ornate frame's offsets in the `BottomBar` script. This makes the frame larger than the map container slot, allowing it to overflow and cover the grey background area visible in your screenshot.\n\n### Changes Summary:\n- **Minimap Frame**: Increased the frame's offsets from `0` to `±35px`. This ensures the decorative golden frame spans a larger area, effectively masking the grey background rectangle.\n- **Minimap View**: Slightly adjusted the map's inner offsets to `10px` to ensure it sits cleanly \"inside\" the new, larger frame.\n- **Hierarchy Order**: Maintained the updated order where the map content is rendered in front of the frame for better visibility.",
+      "snapshot_message_type": 1
     }
   ]
 }
