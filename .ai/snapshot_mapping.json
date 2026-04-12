@@ -455,6 +455,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "I am capable of **generating a new, longer background video loop** for your menu. \n\nWhile I cannot directly \"edit\" the existing `MenuLoop.mp4` binary file to extend it, I can use AI models (like **Kling 2.5 Pro**) to generate a completely new, high-quality cinematic video that matches the dark fantasy style of your \"INSECT WAR\" logo. These generated clips can be up to **10 seconds long**, which is often enough for a high-quality menu loop.\n\nWould you like me to generate a new, epic background video featuring a battlefield or a cinematic view of the colony?",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "2f925c71-c75c-47b3-afbd-7dffa30ecb20",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "I will use the **Kling 2.5 Pro** model to generate a new 10-second cinematic video loop featuring an ant on the left side in a matching dark fantasy style and set it as your new menu background.\n\nWould you like me to continue with this generation?",
+      "snapshot_message_type": 1
     }
   ]
 }
