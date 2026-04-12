@@ -13,7 +13,7 @@ namespace InsectWars.RTS
 
         public static void Reset()
         {
-            var start = Mathf.RoundToInt(350 * GameSession.DifficultyStartingCaloriesMultiplier);
+            var start = Mathf.RoundToInt(600 * GameSession.DifficultyStartingCaloriesMultiplier);
             Calories = start;
         }
 

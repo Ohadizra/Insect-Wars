@@ -138,6 +138,7 @@ namespace InsectWars.RTS
             }
 
             var nWorkers = Mathf.RoundToInt(6f * GameSession.DifficultyEnemySpawnMultiplier);
+            Debug.Log($"[MapDirector] Spawning {nWorkers} enemy workers around hive at {_enemyHive}");
             for (int i = 0; i < nWorkers; i++)
             {
                 float angle = i * (360f / Mathf.Max(nWorkers, 1));
@@ -148,6 +149,7 @@ namespace InsectWars.RTS
             }
 
             var nCombat = Mathf.Clamp(Mathf.RoundToInt(6f * GameSession.DifficultyEnemySpawnMultiplier), 1, 12);
+            Debug.Log($"[MapDirector] Spawning {nCombat} enemy combat units around hive at {_enemyHive}");
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
             for (int i = 0; i < nCombat; i++)
             {
@@ -278,6 +280,8 @@ namespace InsectWars.RTS
             var surface = world.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
             surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            // Explicitly set layers to include to ensure Ground and Environment are baked
+            surface.layerMask = LayerMask.GetMask("Ground", "Environment", "Default");
             surface.ignoreNavMeshObstacle = false;
 
             BuildTerrain(world.transform, _mapHalfExtent);
@@ -618,16 +622,18 @@ namespace InsectWars.RTS
                 // Ensure the agent is off while we position it to avoid errors if the position is bad
                 agent.enabled = false;
                 
-                if (NavMesh.SamplePosition(pos, out var hit, 15f, NavMesh.AllAreas))
+                // Increased search radius significantly (15 -> 50) to ensure we find the NavMesh if it's there
+                if (NavMesh.SamplePosition(pos, out var hit, 50f, NavMesh.AllAreas))
                 {
                     go.transform.position = hit.position;
                     agent.enabled = true;
+                    Debug.Log($"[MapDirector] Spawned {go.name} at {hit.position}");
                 }
                 else
                 {
                     // Fallback if no NavMesh nearby, at least it stays disabled to avoid errors
                     go.transform.position = pos;
-                    Debug.LogWarning($"[MapDirector] Could not find valid NavMesh position for {go.name} at {pos}. Agent remains disabled.");
+                    Debug.LogWarning($"[MapDirector] FAILED to find NavMesh for {go.name} at {pos} within 50m! Agent DISABLED.");
                 }
             }
 
