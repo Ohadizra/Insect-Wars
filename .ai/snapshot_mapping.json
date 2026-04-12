@@ -419,6 +419,12 @@
       "conversation_id": "d86c4e48-dfb4-4174-aff8-0c81f80a61c0",
       "content": "i made a mechnism for the attack of the bombardment beatle, i need you to refine the art animation of the attack and the art of the spray based on acurate real world bombardment beatle attack",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "f20baf62-c7b8-4cba-8289-b9aee33fbde5",
+      "content": "fix",
+      "snapshot_message_type": 0
     }
   ]
 }
