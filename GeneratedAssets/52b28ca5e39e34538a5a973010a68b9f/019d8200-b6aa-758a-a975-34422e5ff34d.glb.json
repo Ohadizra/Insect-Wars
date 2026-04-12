@@ -1,0 +1,12 @@
+{
+    "asset": "52b28ca5e39e34538a5a973010a68b9f",
+    "fileName": "019d8200-b6aa-758a-a975-34422e5ff34d.glb",
+    "prompt": "Realistic frozen stone wall barrier at insect scale, frost-coated rough grey rock with ice crystals, organic irregular shape, game-ready low-poly model with PBR texture, top-down RTS view.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "2d112c3dfa55275fcff61b3783d3e086",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

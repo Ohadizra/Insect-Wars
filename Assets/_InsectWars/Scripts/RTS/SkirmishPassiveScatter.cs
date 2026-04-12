@@ -120,13 +120,20 @@ namespace InsectWars.RTS
                 (float)rng.NextDouble() * 360f,
                 (float)rng.NextDouble() * 20f - 10f);
 
-            Color c;
             if (theme == ScatterTheme.Frozen)
-                c = Color.Lerp(new Color(0.68f, 0.68f, 0.72f), new Color(0.85f, 0.85f, 0.9f), (float)rng.NextDouble());
+            {
+                var mat = Mat(new Color(0.68f, 0.68f, 0.72f));
+        #if UNITY_EDITOR
+                var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Textures/RealisticFrozenRock_Generated Maps/BaseMap.jpg");
+                if (tex != null) mat.SetTexture("_BaseMap", tex);
+        #endif
+                go.GetComponent<Renderer>().sharedMaterial = mat;
+            }
             else
-                c = Color.Lerp(new Color(0.32f, 0.3f, 0.26f), new Color(0.48f, 0.44f, 0.38f), (float)rng.NextDouble());
-
-            go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+            {
+                var c = Color.Lerp(new Color(0.32f, 0.3f, 0.26f), new Color(0.48f, 0.44f, 0.38f), (float)rng.NextDouble());
+                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+            }
         }
 
         static void SpawnMushroom(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
@@ -145,8 +152,16 @@ namespace InsectWars.RTS
                     (float)rng.NextDouble() * 15f,
                     (float)rng.NextDouble() * 360f,
                     (float)rng.NextDouble() * 15f);
-                var c = new Color(0.82f, 0.88f, 0.95f, 0.6f);
-                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+                
+                var mat = Mat(new Color(0.82f, 0.88f, 0.95f, 0.6f));
+                mat.SetFloat("_Surface", 1); // Transparent
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.9f);
+                
+                go.GetComponent<Renderer>().sharedMaterial = mat;
                 return;
             }
 

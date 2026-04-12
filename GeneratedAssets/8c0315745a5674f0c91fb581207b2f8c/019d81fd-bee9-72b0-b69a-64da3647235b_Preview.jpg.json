@@ -1,0 +1,12 @@
+{
+    "asset": "8c0315745a5674f0c91fb581207b2f8c",
+    "fileName": "019d81fd-bee9-72b0-b69a-64da3647235b_Preview.jpg",
+    "prompt": "Photorealistic top-down macro photograph of compacted snow over frozen ground, white with subtle grey-blue shadows, granular snow texture, seamless tileable, realistic, no illustrated objects, no blobby shapes.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1173474093,
+    "w3CTraceId": "0a84a1b6b004a21c17707e1e40008fd3",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

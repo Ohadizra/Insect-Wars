@@ -1,0 +1,12 @@
+{
+    "asset": "8aea6fb97ae874d7eb66e72e1a1722b2",
+    "fileName": "019d81fe-00a8-70e8-a5d0-fa4120577c6b_Preview.jpg",
+    "prompt": "Top-down macro photograph of frozen mud puddle, dark wet earth with ice crystal patches, realistic, seamless tileable.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 842762885,
+    "w3CTraceId": "8229758774f9c565e68df08863bd1341",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

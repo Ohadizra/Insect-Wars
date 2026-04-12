@@ -1,0 +1,27 @@
+{
+    "asset": "f81494b94762145c2b8a6e8cf5fc69ea",
+    "fileName": "019d81fd-f2c9-7171-a195-fcb2936f7f73.jpg",
+    "prompt": "Top-down macro photograph of dead winter grass blades poking through frost, brown-gold dry grass with ice crystals, alpha channel for cutout, isolated on white background.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "634c568bf53097d4d8d6bd2c18c8ac07",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

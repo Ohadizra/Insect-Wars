@@ -1,0 +1,12 @@
+{
+    "asset": "f55b4c0531c50486b8b41fcade667409",
+    "fileName": "019d81fd-c127-7486-87da-8c79e5620ad1_Preview.jpg",
+    "prompt": "Top-down macro photograph of a thin frozen puddle on dark soil, cracked ice with trapped air bubbles, realistic, seamless tileable.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1881788862,
+    "w3CTraceId": "a50a7f1371cc53e59f5782a3a697b5fa",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

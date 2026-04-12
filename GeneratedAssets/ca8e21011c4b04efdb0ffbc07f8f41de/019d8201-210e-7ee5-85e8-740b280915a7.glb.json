@@ -1,0 +1,12 @@
+{
+    "asset": "ca8e21011c4b04efdb0ffbc07f8f41de",
+    "fileName": "019d8201-210e-7ee5-85e8-740b280915a7.glb",
+    "prompt": "Realistic jagged rock formation with icicles, grey granite with frost and hanging ice, insect scale, game-ready low-poly model.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "54c378e4e1eadf65cfdb9425db613dd0",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

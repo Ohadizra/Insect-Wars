@@ -458,15 +458,33 @@ namespace InsectWars.RTS
 
         static void AddClay(Transform parent, Vector3 pos, Vector3 scale, Color clayColor)
         {
-            var clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            clay.name = "Clay";
-            clay.tag = "Clay";
-            clay.transform.SetParent(parent);
-            float h = GetHeight(pos);
-            clay.transform.position = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
-            clay.transform.localScale = scale;
-            ApplyMat(clay, clayColor);
-            var obs = clay.AddComponent<NavMeshObstacle>();
+            var lib = ActiveVisualLibrary;
+            GameObject clay;
+            if (lib != null && lib.clayWallPrefab != null)
+            {
+                clay = Instantiate(lib.clayWallPrefab, parent);
+                clay.name = "Clay";
+                clay.tag = "Clay";
+                float h = GetHeight(pos);
+                clay.transform.position = new Vector3(pos.x, h, pos.z);
+                clay.transform.localScale = scale;
+                // Optionally apply color to the prefab's renderers if desired, 
+                // but usually the prefab has its own realistic material.
+            }
+            else
+            {
+                clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                clay.name = "Clay";
+                clay.tag = "Clay";
+                clay.transform.SetParent(parent);
+                float h = GetHeight(pos);
+                clay.transform.position = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
+                clay.transform.localScale = scale;
+                ApplyMat(clay, clayColor);
+            }
+
+            var obs = clay.GetComponent<NavMeshObstacle>();
+            if (obs == null) obs = clay.AddComponent<NavMeshObstacle>();
             obs.carving = true;
             obs.shape = NavMeshObstacleShape.Box;
             obs.size = Vector3.one;

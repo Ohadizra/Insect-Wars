@@ -1,0 +1,12 @@
+{
+    "asset": "a4139311f4cb94eadb580f4116cfe481",
+    "fileName": "019d8200-9460-76b9-a161-a391b0881b34.glb",
+    "prompt": "Realistic frozen dead thorny branch at insect scale, dark bark with translucent ice coating, game-ready model, sharp angles.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "4692190e6f38f3c7307cb6ecab2baf54",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

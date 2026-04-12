@@ -1,0 +1,12 @@
+{
+    "asset": "f9777ca9928624220a393fe227830b75",
+    "fileName": "019d8203-d676-7fc4-a634-6edea6d90fa9_Preview.jpg",
+    "prompt": "Macro photograph of a frost-covered pebble surface, grey stone with white frost crystals, realistic, seamless tileable.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1255623546,
+    "w3CTraceId": "9512bd33c253670fee489d50fbb9066e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
