@@ -72,6 +72,14 @@ namespace InsectWars.RTS
             ? Mathf.Clamp01(_queue[0].elapsed / _queue[0].buildTime) : 0f;
         public UnitArchetype? CurrentProducing => _queue.Count > 0 ? _queue[0].archetype : null;
 
+        public int GetQueuedCCCost()
+        {
+            int cost = 0;
+            for (int i = 0; i < _queue.Count; i++)
+                cost += ColonyCapacity.GetUnitCCCost(_queue[i].archetype);
+            return cost;
+        }
+
         public string DisplayName => _type switch
         {
             BuildingType.Underground => "Underground",
@@ -138,6 +146,24 @@ namespace InsectWars.RTS
             _ => 20f
         };
 
+        public static string GetDisplayName(BuildingType type) => type switch
+        {
+            BuildingType.Underground => "Underground",
+            BuildingType.AntNest => "Ant's Nest",
+            BuildingType.SkyTower => "Sky Tower",
+            BuildingType.RootCellar => "Root Cellar",
+            _ => type.ToString()
+        };
+
+        public static string GetDescription(BuildingType type) => type switch
+        {
+            BuildingType.Underground => "Military barracks dug beneath the surface. Produces Mantis fighters and Beetle ranged units.",
+            BuildingType.AntNest => "Expands the colony. Produces Worker ants and provides supply capacity.",
+            BuildingType.SkyTower => "Tall observation structure. Provides extended vision range.",
+            BuildingType.RootCellar => "Storage burrow. Provides additional supply capacity for the colony.",
+            _ => ""
+        };
+
         public static float GetFootprintRadius(BuildingType type) => type switch
         {
             BuildingType.AntNest => 5f,
@@ -162,6 +188,7 @@ namespace InsectWars.RTS
                 PlayerResources.Instance.AddCalories(refund);
             _state = BuildingState.Destroyed;
             s_all.Remove(this);
+            ColonyCapacity.NotifyChanged();
             Destroy(gameObject, 0.1f);
         }
 
@@ -173,6 +200,7 @@ namespace InsectWars.RTS
             {
                 _state = BuildingState.Destroyed;
                 s_all.Remove(this);
+                ColonyCapacity.NotifyChanged();
                 Destroy(gameObject, 0.3f);
             }
         }
@@ -209,6 +237,8 @@ namespace InsectWars.RTS
 
             if (!s_all.Contains(this))
                 s_all.Add(this);
+
+            ColonyCapacity.NotifyChanged();
         }
 
         public void RegisterBuilder() => _assignedBuilders++;
@@ -242,6 +272,7 @@ namespace InsectWars.RTS
                         kvp.Key.material.SetFloat("_ConstructionProgress", 1f);
                 }
                 PlayCompletionEffect();
+                ColonyCapacity.NotifyChanged();
                 }
                 }
 
@@ -348,6 +379,8 @@ namespace InsectWars.RTS
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
         {
+            if (!ColonyCapacity.CanAfford(_team, archetype))
+                return null;
             int cost = GetUnitCost(archetype);
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
                 return null;
@@ -365,6 +398,8 @@ namespace InsectWars.RTS
         public bool QueueUnit(UnitArchetype archetype)
         {
             if (!IsOperational || _queue.Count >= MaxQueueSize) return false;
+            if (!ColonyCapacity.CanAfford(_team, archetype))
+                return false;
             int cost = GetUnitCost(archetype);
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
                 return false;

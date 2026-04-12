@@ -316,12 +316,11 @@ namespace InsectWars.RTS
                 if (col.GetComponentInParent<HiveDeposit>() != null) return false;
                 if (col.GetComponentInParent<RottingFruitNode>() != null) return false;
                 if (col.GetComponentInParent<InsectUnit>() != null) return false;
-                if (col.GetComponent<NavMeshObstacle>() != null) return false;
             }
 
             if (buildType == BuildingType.AntNest)
             {
-                const float minAppleDistance = 15f;
+                const float minAppleDistance = 8f;
                 foreach (var fruit in RtsSimRegistry.FruitNodes)
                 {
                     if (fruit == null) continue;

@@ -78,11 +78,13 @@ namespace InsectWars.RTS
         void OnEnable()
         {
             RtsSimRegistry.Register(this);
+            ColonyCapacity.NotifyChanged();
         }
 
         void OnDisable()
         {
             RtsSimRegistry.Unregister(this);
+            ColonyCapacity.NotifyChanged();
         }
 
         void LateUpdate()

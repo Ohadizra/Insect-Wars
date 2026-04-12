@@ -168,12 +168,24 @@ namespace InsectWars.RTS
             if (_matchTime < _nextBuildTime) return;
             _nextBuildTime = _matchTime + BuildCheckInterval;
 
-            int undergrounds = 0, antNests = 0;
+            int undergrounds = 0, antNests = 0, rootCellars = 0;
             foreach (var b in ProductionBuilding.All)
             {
                 if (b == null || b.Team != Team.Enemy) continue;
                 if (b.Type == BuildingType.Underground) undergrounds++;
                 if (b.Type == BuildingType.AntNest) antNests++;
+                if (b.Type == BuildingType.RootCellar) rootCellars++;
+            }
+
+            // Build Root Cellar when nearing CC cap
+            int ccUsed = ColonyCapacity.GetUsed(Team.Enemy) + ColonyCapacity.GetQueued(Team.Enemy);
+            int ccCap = ColonyCapacity.GetCap(Team.Enemy);
+            int ccRoom = ccCap - ccUsed;
+            int cellarCost = ProductionBuilding.GetBuildCost(BuildingType.RootCellar);
+            if (ccRoom <= 5 && ccCap < ColonyCapacity.MaxCap
+                && EnemyResources.Calories >= cellarCost + 50)
+            {
+                TryPlaceRootCellar();
             }
 
             if (undergrounds == 0 && _matchTime > 25f)
@@ -224,6 +236,15 @@ namespace InsectWars.RTS
             ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
                 BuildingType.AntNest, Team.Enemy, startBuilt: true);
             return true;
+        }
+
+        void TryPlaceRootCellar()
+        {
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.RootCellar))) return;
+            var hive = HiveDeposit.EnemyHive;
+            if (hive == null) return;
+            ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 6f),
+                BuildingType.RootCellar, Team.Enemy, startBuilt: true);
         }
 
         Vector3 FindBuildPosition(Vector3 near, float radius)
@@ -278,6 +299,7 @@ namespace InsectWars.RTS
                 foreach (var nest in nests)
                 {
                     if (workers >= DesiredWorkers) break;
+                    if (!ColonyCapacity.CanAfford(Team.Enemy, UnitArchetype.Worker)) break;
                     SetNestRallyToFruit(nest);
                     var unit = nest.ProduceUnit(UnitArchetype.Worker);
                     if (unit == null) continue;
@@ -298,6 +320,7 @@ namespace InsectWars.RTS
                     _rangedToggle++;
                     var arch = produceRanged ? UnitArchetype.BasicRanged : UnitArchetype.BasicFighter;
 
+                    if (!ColonyCapacity.CanAfford(Team.Enemy, arch)) break;
                     if (ug.ProduceUnit(arch) != null) combat++;
                 }
             }

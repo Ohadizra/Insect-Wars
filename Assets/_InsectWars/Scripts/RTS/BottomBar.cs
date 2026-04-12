@@ -3,6 +3,7 @@ using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -90,6 +91,11 @@ namespace InsectWars.RTS
         Camera _cam;
         int _lastQueueSnapshot = -1;
 
+        GameObject _tooltipRoot;
+        Text _tooltipTitle;
+        Text _tooltipBody;
+        CanvasGroup _tooltipCanvasGroup;
+
         enum BarMode { None, Units, WorkerUnits, Hive, Resource, BuildMenu, Building }
         BarMode _currentBarMode = (BarMode)(-1);
 
@@ -142,6 +148,7 @@ namespace InsectWars.RTS
         void Start()
         {
             BuildBar();
+            BuildTooltip();
         }
 
         void OnDestroy()
@@ -379,14 +386,14 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Build", "B", EnterBuildMenu);
                     break;
                 case BarMode.BuildMenu:
-                    AddCmdButton(_cmdGridParent, $"Underground\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.Underground)} cal</size>", "Q", () => StartPlaceBuilding(BuildingType.Underground));
-                    AddCmdButton(_cmdGridParent, $"Sky Tower\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.SkyTower)} cal</size>", "W", () => StartPlaceBuilding(BuildingType.SkyTower));
-                    AddCmdButton(_cmdGridParent, $"Ant's Nest\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.AntNest)} cal</size>", "E", () => StartPlaceBuilding(BuildingType.AntNest));
-                    AddCmdButton(_cmdGridParent, $"Root Cellar\n<size=11>{ProductionBuilding.GetBuildCost(BuildingType.RootCellar)} cal</size>", "R", () => StartPlaceBuilding(BuildingType.RootCellar));
-                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => { _buildMenuActive = false; ForceRebuild(); });
+                    AddBuildButton(_cmdGridParent, BuildingType.Underground, "Q");
+                    AddBuildButton(_cmdGridParent, BuildingType.SkyTower, "W");
+                    AddBuildButton(_cmdGridParent, BuildingType.AntNest, "E");
+                    AddBuildButton(_cmdGridParent, BuildingType.RootCellar, "R");
+                    AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => { _buildMenuActive = false; HideTooltip(); ForceRebuild(); });
                     break;
                 case BarMode.Hive:
-                    AddCmdButton(_cmdGridParent, $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal</size>", "W", BuildWorker);
+                    AddCmdButton(_cmdGridParent, $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal · {ColonyCapacity.GetUnitCCCost(UnitArchetype.Worker)} CC</size>", "W", BuildWorker);
                     var hive = SelectionController.Instance?.SelectedHive;
                     if (hive != null && hive.Team == Team.Player)
                     {
@@ -715,10 +722,137 @@ namespace InsectWars.RTS
             krt.offsetMin = new Vector2(2f, 2f);
             krt.offsetMax = new Vector2(-2f, -1f);
 
-            // Removed button labels to clean up the UI as requested.
-
             _cmdButtonImages[name] = img;
+        }
+
+        void AddBuildButton(Transform parent, BuildingType buildType, string key)
+        {
+            string displayName = ProductionBuilding.GetDisplayName(buildType);
+            AddCmdButton(parent, displayName, key, () => StartPlaceBuilding(buildType));
+
+            var btnGo = parent.GetChild(parent.childCount - 1).gameObject;
+            var trigger = btnGo.AddComponent<EventTrigger>();
+
+            var enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enterEntry.callback.AddListener(_ => ShowBuildingTooltip(buildType, btnGo.transform as RectTransform));
+            trigger.triggers.Add(enterEntry);
+
+            var exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exitEntry.callback.AddListener(_ => HideTooltip());
+            trigger.triggers.Add(exitEntry);
+        }
+
+        void BuildTooltip()
+        {
+            var hud = GameHUD.HudCanvasRect;
+            if (hud == null) return;
+
+            _tooltipRoot = new GameObject("BuildingTooltip");
+            _tooltipRoot.transform.SetParent(hud, false);
+            var rt = _tooltipRoot.AddComponent<RectTransform>();
+            rt.pivot = new Vector2(0.5f, 0f);
+            rt.sizeDelta = new Vector2(260f, 0f);
+
+            _tooltipCanvasGroup = _tooltipRoot.AddComponent<CanvasGroup>();
+            _tooltipCanvasGroup.alpha = 0f;
+            _tooltipCanvasGroup.blocksRaycasts = false;
+            _tooltipCanvasGroup.interactable = false;
+
+            var bg = _tooltipRoot.AddComponent<Image>();
+            bg.color = new Color(0.08f, 0.07f, 0.05f, 0.92f);
+
+            var vlg = _tooltipRoot.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(12, 12, 10, 10);
+            vlg.spacing = 4f;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = false;
+            vlg.childControlHeight = true;
+            vlg.childControlWidth = true;
+
+            var fitter = _tooltipRoot.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            _tooltipTitle = CreateText("TooltipTitle", _tooltipRoot.transform, 15, ColTitle, TextAnchor.MiddleLeft);
+            _tooltipTitle.fontStyle = FontStyle.Bold;
+
+            _tooltipBody = CreateText("TooltipBody", _tooltipRoot.transform, 12, ColSub, TextAnchor.UpperLeft);
+
+            _tooltipRoot.SetActive(false);
+        }
+
+        void ShowBuildingTooltip(BuildingType type, RectTransform anchor)
+        {
+            if (_tooltipRoot == null) return;
+
+            string title = ProductionBuilding.GetDisplayName(type);
+            int cost = ProductionBuilding.GetBuildCost(type);
+            float hp = ProductionBuilding.GetMaxHealth(type);
+            float buildTime = ProductionBuilding.GetConstructionTime(type);
+            string desc = ProductionBuilding.GetDescription(type);
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Cost: {cost} calories");
+            sb.AppendLine($"HP: {hp:0}  ·  Build time: {buildTime:0}s");
+
+            int cc = type switch
+            {
+                BuildingType.AntNest => ColonyCapacity.AntNestCCProvided,
+                BuildingType.RootCellar => ColonyCapacity.RootCellarCCProvided,
+                _ => 0
+            };
+            if (cc > 0)
+                sb.AppendLine($"Supply: +{cc} colony capacity");
+
+            var units = type switch
+            {
+                BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
+                BuildingType.AntNest => new[] { UnitArchetype.Worker },
+                _ => System.Array.Empty<UnitArchetype>()
+            };
+            if (units.Length > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("Produces:");
+                foreach (var u in units)
+                {
+                    string uName = ProductionBuilding.GetUnitName(u);
+                    int uCost = ProductionBuilding.GetUnitCost(u);
+                    int uCC = ColonyCapacity.GetUnitCCCost(u);
+                    sb.AppendLine($"  · {uName} — {uCost} cal, {uCC} CC");
+                }
             }
+
+            if (!string.IsNullOrEmpty(desc))
+            {
+                sb.AppendLine();
+                sb.Append(desc);
+            }
+
+            _tooltipTitle.text = title;
+            _tooltipBody.text = sb.ToString();
+
+            _tooltipRoot.SetActive(true);
+            _tooltipCanvasGroup.alpha = 1f;
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_tooltipRoot.GetComponent<RectTransform>());
+
+            if (anchor != null)
+            {
+                var tooltipRt = _tooltipRoot.GetComponent<RectTransform>();
+                Vector3 anchorWorld = anchor.position;
+                float tooltipHeight = tooltipRt.rect.height;
+                tooltipRt.position = new Vector3(anchorWorld.x, anchorWorld.y + anchor.rect.height * anchor.lossyScale.y + 8f, anchorWorld.z);
+            }
+        }
+
+        void HideTooltip()
+        {
+            if (_tooltipRoot == null) return;
+            _tooltipCanvasGroup.alpha = 0f;
+            _tooltipRoot.SetActive(false);
+        }
 
         Sprite GetCommandIcon(string cmdName)
         {
@@ -788,6 +922,7 @@ namespace InsectWars.RTS
         void StartPlaceBuilding(BuildingType type)
         {
             _buildMenuActive = false;
+            HideTooltip();
             PendingBuildingType = type;
             SetPending(PendingCommand.PlaceBuilding);
             CreateGhost(type);

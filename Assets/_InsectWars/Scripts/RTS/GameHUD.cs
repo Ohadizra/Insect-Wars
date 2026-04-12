@@ -22,6 +22,7 @@ namespace InsectWars.RTS
         [SerializeField] Sprite eggIcon;
         [SerializeField] Sprite crystalIcon;
         [SerializeField] Sprite appleIcon;
+        [SerializeField] Sprite colonyCapacityIcon;
 
         // ── Organic Palette ──
         static readonly Color ColAmber     = new(0.96f, 0.90f, 0.78f); // Parchment/Amber
@@ -29,6 +30,7 @@ namespace InsectWars.RTS
         static readonly Color ColWhite     = Color.white;
 
         Text _calorieLabel;
+        Text _ccLabel;
         Text _selectionLabel;
         const string SelectionHint = "LMB SELECT · RMB COMMAND";
 
@@ -91,6 +93,7 @@ namespace InsectWars.RTS
             if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
             if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
             if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple.png");
+            if (colonyCapacityIcon == null) colonyCapacityIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_colony_capacity.png");
             #endif
 
             var canvasGo = new GameObject("DemoHUD");
@@ -115,6 +118,15 @@ namespace InsectWars.RTS
             
             _calorieLabel = CreateResourceItem(container, appleIcon != null ? appleIcon : larvaIcon, "0");
 
+            // --- Colony Capacity display just below calories ---
+            var ccContainer = new GameObject("CCDisplay").AddComponent<RectTransform>();
+            ccContainer.SetParent(HudCanvasRect, false);
+            ccContainer.anchorMin = ccContainer.anchorMax = ccContainer.pivot = new Vector2(0, 1);
+            ccContainer.anchoredPosition = new Vector2(30, -70f);
+            ccContainer.sizeDelta = new Vector2(170, 42.5f);
+
+            Sprite ccIcon = colonyCapacityIcon != null ? colonyCapacityIcon : eggIcon;
+            _ccLabel = CreateResourceItem(ccContainer, ccIcon, "0 / 0");
 
             // --- Top Right: Menu Button ---
             var menuBtnGo = CreatePanel("MenuBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -25.5f), new Vector2(68, 68), buttonRoundSprite);
@@ -203,6 +215,8 @@ namespace InsectWars.RTS
                 PlayerResources.Instance.OnCaloriesChanged += OnCalories;
                 OnCalories(PlayerResources.Instance.Calories);
             }
+            ColonyCapacity.OnPlayerCCChanged += OnCCChanged;
+            OnCCChanged();
         }
 
         void OnDestroy()
@@ -211,6 +225,7 @@ namespace InsectWars.RTS
             {
                 PlayerResources.Instance.OnCaloriesChanged -= OnCalories;
             }
+            ColonyCapacity.OnPlayerCCChanged -= OnCCChanged;
             HudCanvasRect = null;
         }
 
@@ -218,6 +233,15 @@ namespace InsectWars.RTS
         {
             if (_calorieLabel != null)
                 _calorieLabel.text = $"{n:N0}";
+        }
+
+        void OnCCChanged()
+        {
+            if (_ccLabel == null) return;
+            int used = ColonyCapacity.GetUsed(Team.Player);
+            int cap = ColonyCapacity.GetCap(Team.Player);
+            _ccLabel.text = $"{used} / {cap}";
+            _ccLabel.color = used >= cap ? new Color(1f, 0.35f, 0.3f) : ColAmber;
         }
 
         void Update()

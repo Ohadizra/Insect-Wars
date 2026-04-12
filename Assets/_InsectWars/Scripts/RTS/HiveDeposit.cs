@@ -82,6 +82,8 @@ namespace InsectWars.RTS
         public bool QueueWorker()
         {
             if (_workerQueue.Count >= MaxQueueSize) return false;
+            if (!ColonyCapacity.CanAfford(team, UnitArchetype.Worker))
+                return false;
             int cost = ProductionBuilding.GetUnitCost(UnitArchetype.Worker);
             if (team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
                 return false;
