@@ -477,7 +477,18 @@ namespace InsectWars.RTS
 
             if (_agent.pathPending) return;
             if (!_wantsAttackMove && _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
+            {
+                if (definition != null && definition.canGather)
+                {
+                    var nearby = FindNearbyFruit(6f);
+                    if (nearby != null)
+                    {
+                        OrderGather(nearby);
+                        return;
+                    }
+                }
                 _order = UnitOrder.Idle;
+            }
         }
 
         void TickAttackMoveScan()
@@ -633,26 +644,32 @@ namespace InsectWars.RTS
             return Mathf.Max(hive.localScale.x, hive.localScale.z) * 0.5f + 1.5f;
         }
 
-        void TickIdleAutoGather()
+        RottingFruitNode FindNearbyFruit(float radius)
         {
-            if (definition == null || !definition.canGather) return;
-            _idleScanTimer -= Time.deltaTime;
-            if (_idleScanTimer > 0f) return;
-            _idleScanTimer = 0.5f;
             var resLayer = LayerMask.NameToLayer("Resources");
             var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
-            var cols = Physics.OverlapSphere(transform.position, 15f, mask, QueryTriggerInteraction.Collide);
-            RottingFruitNode bestFruit = null;
-            float bestFruitDist = float.MaxValue;
+            var cols = Physics.OverlapSphere(transform.position, radius, mask, QueryTriggerInteraction.Collide);
+            RottingFruitNode best = null;
+            float bestDist = float.MaxValue;
             foreach (var c in cols)
             {
                 var node = c.GetComponent<RottingFruitNode>();
                 if (node != null && !node.Depleted)
                 {
                     var d = Vector3.Distance(transform.position, node.transform.position);
-                    if (d < bestFruitDist) { bestFruitDist = d; bestFruit = node; }
+                    if (d < bestDist) { bestDist = d; best = node; }
                 }
             }
+            return best;
+        }
+
+        void TickIdleAutoGather()
+        {
+            if (definition == null || !definition.canGather) return;
+            _idleScanTimer -= Time.deltaTime;
+            if (_idleScanTimer > 0f) return;
+            _idleScanTimer = 0.5f;
+            var bestFruit = FindNearbyFruit(15f);
 
             if (bestFruit != null)
                 OrderGather(bestFruit);
@@ -733,23 +750,18 @@ return;
             _agent.ResetPath();
             _agent.velocity = Vector3.zero;
 
-            var rangedDir = _attackTarget.position - transform.position;
-            rangedDir.y = 0f;
-            if (rangedDir.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.Slerp(transform.rotation,
-                    Quaternion.LookRotation(rangedDir), Time.deltaTime * 12f);
+            var animDriver = GetComponent<UnitAnimationDriver>();
 
             if (_attackCooldown > 0) return;
 
-            var lib = SkirmishDirector.ActiveVisualLibrary;
-            var spd = lib != null ? lib.projectileSpeed : 38f;
-            var life = lib != null ? lib.projectileMaxLifetime : 4f;
-            var prefab = lib != null ? lib.projectilePrefab : null;
-            var origin = GetComponent<UnitAnimationDriver>() != null
-                ? GetComponent<UnitAnimationDriver>().GetProjectileSpawnPoint()
+            var lookDir = _attackTarget.position - transform.position;
+            lookDir.y = 0f;
+            var sprayOrigin = animDriver != null
+                ? animDriver.GetSprayOrigin()
                 : transform.position + Vector3.up * 0.45f;
-            Projectile.SpawnHoming(origin, targetUnit, team, definition.attackDamage, spd, life, prefab);
-            GetComponent<UnitAnimationDriver>()?.NotifyAttack();
+            SprayAttack.Fire(sprayOrigin, lookDir.normalized, definition.attackRange,
+                team, definition.attackDamage, this);
+            animDriver?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
         }
 

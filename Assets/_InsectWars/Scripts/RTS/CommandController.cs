@@ -215,7 +215,24 @@ namespace InsectWars.RTS
             }
 
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Resources"))
+            {
+                if (pending == PendingCommand.Move)
+                {
+                    var resFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
+                    if (resFruit != null && !resFruit.Depleted)
+                    {
+                        foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                        {
+                            if (u.Definition != null && u.Definition.canGather)
+                                u.OrderGather(resFruit);
+                            else
+                                u.OrderMove(hit.point);
+                        }
+                        BottomBar.Instance.SetPending(PendingCommand.None);
+                    }
+                }
                 return;
+            }
 
             if (pending == PendingCommand.Move)
             {
