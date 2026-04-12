@@ -105,10 +105,14 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_hollow.png");
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_picture.png");
+            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
+            
+            // Set the minimap frame to match the other blocks (centerBlockFrame)
+            if (minimapFrame == null) minimapFrame = centerBlockFrame;
             if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid_empty.png");
+            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_hollow.png");
+
+            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid_empty.png");
 if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
             if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (slotFrame == null) slotFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
@@ -448,6 +452,16 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             mcrt.anchoredPosition = new Vector2(30, 0);
             mcrt.sizeDelta = new Vector2(minimapSlot - 40, -10);
 
+            var miniInner = new GameObject("MinimapInner");
+            miniInner.transform.SetParent(miniContainer.transform, false);
+            var mi = miniInner.AddComponent<RectTransform>();
+            mi.anchorMin = Vector2.zero;
+            mi.anchorMax = Vector2.one;
+            // Bring the map slightly inward so it fits nicely inside the frame
+            mi.offsetMin = new Vector2(10, 10);
+            mi.offsetMax = new Vector2(-10, -10);
+            MinimapHost = mi;
+
             var miniFrameGo = new GameObject("MinimapFrame");
             miniFrameGo.transform.SetParent(miniContainer.transform, false);
             var mfrt = miniFrameGo.AddComponent<RectTransform>();
@@ -459,17 +473,9 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var frameImg = miniFrameGo.AddComponent<Image>();
             frameImg.sprite = minimapFrame;
             frameImg.raycastTarget = false; // Fix: don't block minimap clicks
-            frameImg.type = Image.Type.Simple;
-
-            var miniInner = new GameObject("MinimapInner");
-            miniInner.transform.SetParent(miniContainer.transform, false);
-            var mi = miniInner.AddComponent<RectTransform>();
-            mi.anchorMin = Vector2.zero;
-            mi.anchorMax = Vector2.one;
-            // Bring the map slightly inward so it fits nicely inside the frame
-            mi.offsetMin = new Vector2(10, 10);
-            mi.offsetMax = new Vector2(-10, -10);
-            MinimapHost = mi;
+            frameImg.type = Image.Type.Sliced; // Changed to Sliced to match other panels
+            frameImg.fillCenter = false; // Keep the map area clear
+            frameImg.color = Color.white;
 
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);

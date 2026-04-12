@@ -863,6 +863,12 @@
       "conversation_id": "fa69bfe7-f5b4-4fd6-b785-f7ed51c488e2",
       "content": "I have significantly expanded the ornate frame's offsets in the `BottomBar` script. This makes the frame larger than the map container slot, allowing it to overflow and cover the grey background area visible in your screenshot.\n\n### Changes Summary:\n- **Minimap Frame**: Increased the frame's offsets from `0` to `±35px`. This ensures the decorative golden frame spans a larger area, effectively masking the grey background rectangle.\n- **Minimap View**: Slightly adjusted the map's inner offsets to `10px` to ensure it sits cleanly \"inside\" the new, larger frame.\n- **Hierarchy Order**: Maintained the updated order where the map content is rendered in front of the frame for better visibility.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "73622ed7-8d53-403d-9284-295eef29cf2b",
+      "conversation_id": "fa69bfe7-f5b4-4fd6-b785-f7ed51c488e2",
+      "content": "I have updated the minimap frame to match the art style used for the other HUD panels and refined its layout for a consistent look.\n\n### Changes Summary:\n- **Consistent Frame Art**: Updated `BottomBar.cs` to load the same sprite (`frame_square_panel.png`) for the minimap frame as is used for the command and selection panels. This ensures the entire HUD follows a unified visual theme.\n- **Sliced Image Mode**: Changed the minimap frame to `Sliced` mode. This matches the other panels and ensures that the corners remain crisp and undistorted as the frame expands to cover the background.\n- **Framing Depth**: Adjusted the hierarchy so the map view sits **behind** the frame. With the frame's `fillCenter` set to `false`, the map is perfectly visible through the \"window\" of the frame, which now correctly masks the map's edges and the grey background area.\n- **Improved Masking**: Maintained the larger frame offsets (`±35px`) to ensure the decorative border fully overlaps the background slot, creating a clean, integrated appearance.\n\nThese changes bring the minimap in line with the rest of the UI's aesthetic while maintaining the fixes for visibility and background masking.",
+      "snapshot_message_type": 1
     }
   ]
 }
