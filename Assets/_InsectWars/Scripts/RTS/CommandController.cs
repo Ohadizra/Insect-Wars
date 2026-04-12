@@ -196,19 +196,19 @@ namespace InsectWars.RTS
 
             if (pending == PendingCommand.Attack)
             {
-                var enemyBuildingL = hit.collider.GetComponentInParent<ProductionBuilding>();
-                if (enemyBuildingL != null && enemyBuildingL.Team == Team.Enemy && enemyBuildingL.IsAlive)
+                var bldL = hit.collider.GetComponentInParent<ProductionBuilding>();
+                if (bldL != null && bldL.IsAlive)
                 {
                     foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                        u.OrderAttackBuilding(enemyBuildingL);
+                        u.OrderAttackBuilding(bldL);
                     BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
                 }
-                var enemyHiveL = hit.collider.GetComponentInParent<HiveDeposit>();
-                if (enemyHiveL != null && enemyHiveL.Team == Team.Enemy && enemyHiveL.IsAlive)
+                var hiveL = hit.collider.GetComponentInParent<HiveDeposit>();
+                if (hiveL != null && hiveL.IsAlive)
                 {
                     foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                        u.OrderAttackHive(enemyHiveL);
+                        u.OrderAttackHive(hiveL);
                     BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
                 }

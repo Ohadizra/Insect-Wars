@@ -243,6 +243,9 @@ namespace InsectWars.RTS
                 case UnitOrder.Patrol:
                     TickPatrol();
                     break;
+                case UnitOrder.AttackBuilding:
+                    TickAttackBuilding();
+                    break;
                 case UnitOrder.Idle:
                     TickIdleAutoGather();
                     break;
@@ -494,25 +497,52 @@ namespace InsectWars.RTS
         void TickAttackMoveScan()
         {
             if (!_wantsAttackMove || _order != UnitOrder.Move) return;
-            if (s_unitsLayer < 0) return;
-            var mask = 1 << s_unitsLayer;
             var scan = definition != null ? definition.visionRadius : 12f;
-            var cols = Physics.OverlapSphere(transform.position, scan, mask, QueryTriggerInteraction.Ignore);
-            InsectUnit best = null;
-            var bestD = scan;
-            foreach (var c in cols)
+
+            InsectUnit bestUnit = null;
+            float bestD = scan;
+
+            if (s_unitsLayer >= 0)
             {
-                var u = c.GetComponentInParent<InsectUnit>();
-                if (u == null || !u.IsAlive || u.team == team) continue;
-                var d = Vector3.Distance(transform.position, u.transform.position);
-                if (d < bestD)
+                var mask = 1 << s_unitsLayer;
+                var cols = Physics.OverlapSphere(transform.position, scan, mask, QueryTriggerInteraction.Ignore);
+                foreach (var c in cols)
                 {
-                    bestD = d;
-                    best = u;
+                    var u = c.GetComponentInParent<InsectUnit>();
+                    if (u == null || !u.IsAlive || u.team == team) continue;
+                    var d = Vector3.Distance(transform.position, u.transform.position);
+                    if (d < bestD) { bestD = d; bestUnit = u; }
                 }
             }
-            if (best != null)
-                OrderAttack(best, true);
+
+            if (bestUnit != null)
+            {
+                OrderAttack(bestUnit, true);
+                return;
+            }
+
+            ProductionBuilding bestBld = null;
+            HiveDeposit bestHive = null;
+            float bestBldD = scan;
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || !bld.IsAlive || bld.Team == team) continue;
+                var d = Vector3.Distance(transform.position, bld.transform.position);
+                if (d < bestBldD) { bestBldD = d; bestBld = bld; bestHive = null; }
+            }
+
+            var eHive = team == Team.Player ? HiveDeposit.EnemyHive : HiveDeposit.PlayerHive;
+            if (eHive != null && eHive.IsAlive)
+            {
+                var d = Vector3.Distance(transform.position, eHive.transform.position);
+                if (d < bestBldD) { bestBld = null; bestHive = eHive; }
+            }
+
+            if (bestBld != null)
+                OrderAttackBuilding(bestBld);
+            else if (bestHive != null)
+                OrderAttackHive(bestHive);
         }
 
         void TickGather()
@@ -762,6 +792,53 @@ return;
             SprayAttack.Fire(sprayOrigin, lookDir.normalized, definition.attackRange,
                 team, definition.attackDamage, this);
             animDriver?.NotifyAttack();
+            _attackCooldown = definition.attackCooldown;
+        }
+
+        void TickAttackBuilding()
+        {
+            if (_attackTarget == null)
+            {
+                ResumeAfterAttack();
+                return;
+            }
+
+            var bld = _attackTarget.GetComponent<ProductionBuilding>();
+            var hive = bld == null ? _attackTarget.GetComponent<HiveDeposit>() : null;
+            bool alive = bld != null ? bld.IsAlive : (hive != null && hive.IsAlive);
+            if (!alive)
+            {
+                ResumeAfterAttack();
+                return;
+            }
+
+            var dist = Vector3.Distance(transform.position, _attackTarget.position);
+            var range = GetEffectiveAttackRange();
+
+            if (dist > range)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(_attackTarget.position);
+                return;
+            }
+
+            _agent.isStopped = true;
+            _agent.ResetPath();
+            _agent.velocity = Vector3.zero;
+
+            var lookDir = _attackTarget.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(lookDir);
+
+            if (_attackCooldown > 0) return;
+
+            if (bld != null)
+                bld.TakeDamage(definition.attackDamage);
+            else if (hive != null)
+                hive.TakeDamage(definition.attackDamage);
+
+            GetComponent<UnitAnimationDriver>()?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
         }
 

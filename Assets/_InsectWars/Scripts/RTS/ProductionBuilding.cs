@@ -126,6 +126,18 @@ namespace InsectWars.RTS
             if (_rallyFlag != null) Destroy(_rallyFlag);
         }
 
+        public void TakeDamage(float dmg)
+        {
+            if (!IsAlive) return;
+            _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
+            if (_currentHealth <= 0f)
+            {
+                _state = BuildingState.Destroyed;
+                s_all.Remove(this);
+                Destroy(gameObject, 0.3f);
+            }
+        }
+
         public void Initialize(BuildingType type, Team team = Team.Player)
         {
             _type = type;

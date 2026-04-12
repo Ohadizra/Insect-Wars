@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Elimination skirmish: win when no enemy combatants remain, lose when none of yours do.
+    /// Elimination skirmish: win/lose when all buildings and hive of a team are destroyed.
     /// </summary>
     public class MatchDirector : MonoBehaviour
     {
@@ -16,16 +16,35 @@ namespace InsectWars.RTS
         MatchState _state = MatchState.Playing;
         GameObject _overlayRoot;
         Text _overlayText;
+        float _graceTimer = 10f;
 
         void Update()
         {
             if (_state != MatchState.Playing) return;
             if (PauseController.IsPaused) return;
 
-            if (RtsSimRegistry.CountAlive(Team.Enemy) == 0)
+            if (_graceTimer > 0f)
+            {
+                _graceTimer -= Time.deltaTime;
+                return;
+            }
+
+            if (IsTeamEliminated(Team.Enemy))
                 EndMatch(MatchState.Won);
-            else if (RtsSimRegistry.CountAlive(Team.Player) == 0)
+            else if (IsTeamEliminated(Team.Player))
                 EndMatch(MatchState.Lost);
+        }
+
+        static bool IsTeamEliminated(Team team)
+        {
+            var hive = team == Team.Player ? HiveDeposit.PlayerHive : HiveDeposit.EnemyHive;
+            if (hive != null && hive.IsAlive) return false;
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld != null && bld.IsAlive && bld.Team == team) return false;
+            }
+            return true;
         }
 
         void EndMatch(MatchState end)
