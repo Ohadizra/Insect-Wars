@@ -162,32 +162,34 @@ namespace InsectWars.RTS
 
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-            // Build animation - working motion
+            // Build animation - focused labor
             if (_buildAnimTimer > 0f)
             {
                 _buildAnimTimer -= dt;
                 
-                // Rhythmic working tilt/pulse
-                float workCycle = Mathf.Sin(_idleT * 8f);
-                float workTiltHead = (workCycle * 0.5f + 0.5f) * 15f; // Extra 15 degrees tilt
-                float workTiltChest = (workCycle * 0.5f + 0.5f) * 10f;
+                // Rhythmic work cycle for front legs
+                float cycle = _idleT * 12f;
+                float leftWork = Mathf.Sin(cycle) * 20f;
+                float rightWork = Mathf.Sin(cycle + Mathf.PI) * 20f;
                 
-                // Subtle mandible/head "jitter" to simulate biting/manipulating material
-                float jitter = Mathf.Sin(_idleT * 40f) * 2f; 
-
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f + workTiltHead + jitter, jitter, 0f), dt * 10f);
-                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(15f + workTiltChest, 0f, 0f), dt * 8f);
+                // Maintain deep tilt toward ground/work site
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(40f, 0f, 0f), dt * 8f);
+                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(20f, 0f, 0f), dt * 6f);
                 
-                // Side-to-side effort rocking (slower than vertical pulse)
-                float rocking = Mathf.Sin(_idleT * 4f) * 4f;
-                modelRoot.localRotation *= Quaternion.Euler(0f, 0f, rocking);
+                // Manual labor with front legs (tamping/digging)
+                if (_lArm != null) _lArm.localRotation = _lArmBase * Quaternion.Euler(-30f + leftWork, 15f, 0f);
+                if (_rArm != null) _rArm.localRotation = _rArmBase * Quaternion.Euler(-30f + rightWork, -15f, 0f);
+                
+                // Subtle abdomen pulsing (effort/breathing)
+                if (_tail != null) _tail.localRotation = Quaternion.Slerp(_tail.localRotation, _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 5f) * 10f, 0f, 0f), dt * 5f);
 
-                // Very small vertical pulse, keeping legs mostly on the ground
-                bob += Mathf.Max(0, workCycle) * 0.03f; 
+                // No jumping or rocking - keep focus on hands
+                bob = 0f; 
 
-                ResetBonesOnly(dt * 3f, arms: true, tail: true);
-                }
-                else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+                // Reset only the bones we aren't explicitly posing
+                ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
+            }
+            else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
                 {
                 ApplyMantisLoop(dt);
                 }

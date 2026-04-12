@@ -5,9 +5,9 @@ Shader "InsectWars/ConstructionBuilding"
         _BaseMap ("Texture", 2D) = "white" {}
         _BaseColor ("Color", Color) = (1,1,1,1)
         _ConstructionProgress ("Construction Progress", Range(0, 1)) = 0
-        _GlowColor ("Glow Color", Color) = (0.3, 0.7, 1, 1)
+        _GlowColor ("Glow Color", Color) = (0.8, 0.8, 0.8, 1)
         _GlowWidth ("Glow Width", Range(0, 0.5)) = 0.1
-    }
+        }
     SubShader
     {
         Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }

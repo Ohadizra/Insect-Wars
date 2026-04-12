@@ -271,14 +271,14 @@ namespace InsectWars.RTS
                 float alpha = progress < 0.2f ? Mathf.Lerp(0.1f, 0.4f, progress / 0.2f) : Mathf.Lerp(0.4f, 1.0f, (progress - 0.2f) / 0.8f);
                 float darkening = Mathf.Lerp(0.2f, 1f, progress);
                 
-                Color constructionTint = new Color(0.5f, 0.6f, 0.8f); // Cool blue-grey construction phase
+                Color constructionTint = new Color(0.85f, 0.85f, 0.85f); // Neutral light grey construction phase
 
                 foreach (var kvp in _originalColors)
                 {
                     if (kvp.Key == null || kvp.Key.material == null) continue;
                     var orig = kvp.Value;
                     
-                    // Transition from cool construction tint to original warm colors
+                    // Transition from neutral construction tint to original warm colors
                     Color targetBase = Color.Lerp(constructionTint * darkening, orig, Mathf.Clamp01((progress - 0.4f) / 0.6f));
                     Color finalColor = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
 
@@ -297,8 +297,8 @@ namespace InsectWars.RTS
 
         void SpawnConstructionParticles(float progress)
         {
-            // Spawn thick dust/smoke particles at the growing top edge
-            if (Random.value > 0.3f) return; // Increased rate for "thickness"
+            // Spawn thick light grey dust/smoke particles at the growing top edge
+            if (Random.value > 0.32f) return; 
 
             var rends = GetComponentsInChildren<Renderer>();
             if (rends.Length == 0) return;
@@ -307,7 +307,7 @@ namespace InsectWars.RTS
 
             Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
             
-            // Spawn 1-2 particles per tick for more volume
+            // Spawn particles for volume
             int count = Random.Range(1, 3);
             for (int i = 0; i < count; i++)
             {
@@ -323,8 +323,8 @@ namespace InsectWars.RTS
                 if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
                 
                 var mat = new Material(sh);
-                // Warm earthy dust color
-                Color dustColor = new Color(0.75f, 0.7f, 0.6f, 0.6f);
+                // Realistic light grey dust
+                Color dustColor = new Color(0.85f, 0.85f, 0.85f, 0.5f);
                 if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", dustColor);
                 else mat.color = dustColor;
                 
@@ -332,8 +332,8 @@ namespace InsectWars.RTS
                 
                 // Add the procedural behavior component
                 var behavior = dust.AddComponent<ConstructionDust>();
-                behavior.lifetime = Random.Range(0.8f, 1.5f);
-                behavior.maxScale = Random.Range(2.0f, 3.5f);
+                behavior.lifetime = Random.Range(1.0f, 1.8f);
+                behavior.maxScale = Random.Range(2.5f, 4.0f);
             }
         }
 
@@ -351,24 +351,24 @@ namespace InsectWars.RTS
             }
             else
             {
-                // Fallback burst of particles
-                for (int i = 0; i < 15; i++)
+                // Fallback burst of particles - realistic light grey dust
+                for (int i = 0; i < 10; i++)
                 {
                     var debris = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     debris.transform.position = transform.position + Vector3.up * 0.5f;
-                    debris.transform.localScale = Vector3.one * Random.Range(0.1f, 0.3f);
+                    debris.transform.localScale = Vector3.one * Random.Range(0.2f, 0.5f);
                     Destroy(debris.GetComponent<Collider>());
                     
                     var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-                    mat.color = new Color(1f, 1f, 1f, 0.9f);
+                    mat.color = new Color(0.9f, 0.9f, 0.9f, 0.75f);
                     debris.GetComponent<Renderer>().sharedMaterial = mat;
                     
                     var rb = debris.AddComponent<Rigidbody>();
-                    rb.linearVelocity = Random.insideUnitSphere * 5f + Vector3.up * 3f;
-                    Destroy(debris, 1.2f);
+                    rb.linearVelocity = Random.insideUnitSphere * 3f + Vector3.up * 2f;
+                    Destroy(debris, 1.4f);
                 }
             }
-        }
+            }
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
         {
