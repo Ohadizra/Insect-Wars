@@ -435,6 +435,11 @@ namespace InsectWars.Data
                 new HighGroundPlaced { uv = new Vector2(0.5625f, 0.6667f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
                 new HighGroundPlaced { uv = new Vector2(0.3333f, 0.4375f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
                 new HighGroundPlaced { uv = new Vector2(0.6667f, 0.5625f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
+                // Neighborhood Overlooks
+                new HighGroundPlaced { uv = new Vector2(0.1667f, 0.8333f), radius = 0.03f, rampWidth = 0.02f, heightFraction = 0.04f, rotation = 315f }, // NW Overlook
+                new HighGroundPlaced { uv = new Vector2(0.8333f, 0.1667f), radius = 0.03f, rampWidth = 0.02f, heightFraction = 0.04f, rotation = 135f }, // SE Overlook
+                new HighGroundPlaced { uv = new Vector2(0.4583f, 0.5417f), radius = 0.025f, rampWidth = 0.02f, heightFraction = 0.03f, rotation = 45f },  // Center Overlook A
+                new HighGroundPlaced { uv = new Vector2(0.5417f, 0.4583f), radius = 0.025f, rampWidth = 0.02f, heightFraction = 0.03f, rotation = 225f }, // Center Overlook B
             };
 
             // ── Clay Walls (Frozen Stone Barriers) ──
@@ -454,6 +459,14 @@ namespace InsectWars.Data
                 new ClayPlaced { position = new Vector3( 15f, 0f,  15f), scale = new Vector3(4f, 5f, 4f) },
                 new ClayPlaced { position = new Vector3(-35f, 0f,  35f), scale = new Vector3(12f, 5f, 2f) },
                 new ClayPlaced { position = new Vector3( 35f, 0f, -35f), scale = new Vector3(12f, 5f, 2f) },
+                // Flanking Route Chokes
+                new ClayPlaced { position = new Vector3(-45f, 0f, 55f), scale = new Vector3(2f, 5f, 8f) },
+                new ClayPlaced { position = new Vector3( 45f, 0f, -55f), scale = new Vector3(2f, 5f, 8f) },
+                new ClayPlaced { position = new Vector3(-110f, 0f, 30f), scale = new Vector3(8f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3( 110f, 0f, -30f), scale = new Vector3(8f, 5f, 2f) },
+                // Expansion path chokes
+                new ClayPlaced { position = new Vector3(-60f, 0f, -85f), scale = new Vector3(4f, 5f, 4f) },
+                new ClayPlaced { position = new Vector3( 60f, 0f,  85f), scale = new Vector3(4f, 5f, 4f) },
             };
 
             map.fruits = new[]
@@ -471,6 +484,13 @@ namespace InsectWars.Data
                 new FruitPlaced { position = new Vector3( 45f, 0.6f, -15f), calories = 5500, gatherPerTick = 10, gatherSeconds = 5f },
                 new FruitPlaced { position = new Vector3(-15f, 0.6f,  45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
                 new FruitPlaced { position = new Vector3( 15f, 0.6f, -45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
+                // Flanking Resources
+                new FruitPlaced { position = new Vector3(-55f, 0.6f,  65f), calories = 4500, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 55f, 0.6f, -65f), calories = 4500, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-112f, 0.6f,  0f), calories = 3000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 112f, 0.6f,  0f), calories = 3000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-95f, 0.6f, 105f), calories = 3500, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 95f, 0.6f,-105f), calories = 3500, gatherPerTick = 8, gatherSeconds = 5f },
             };
 
             map.terrainFeatures = new[]
@@ -493,6 +513,52 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 55f, 0f, -5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 5f, 0f, -55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-5f, 0f,  55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
+                
+                // --- NEW CONTENT: NW Marsh Neighborhood ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-70f, 0f, 70f), radius = 9f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-50f, 0f, 75f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-65f, 0f, 80f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-60f, 0f, 50f), rotation = 30f, boxHalfExtents = new Vector2(8f, 3f) },
+                
+                // --- NEW CONTENT: SE Marsh Neighborhood (Mirror) ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 70f, 0f, -70f), radius = 9f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 50f, 0f, -75f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 65f, 0f, -80f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 60f, 0f, -50f), rotation = 210f, boxHalfExtents = new Vector2(8f, 3f) },
+                
+                // --- NEW CONTENT: Far Quadrant Pockets ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-100f, 0f, 100f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-90f, 0f, 95f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-85f, 0f, 110f), rotation = 0f, boxHalfExtents = new Vector2(6f, 2f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 100f, 0f, -100f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 90f, 0f, -95f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 85f, 0f, -110f), rotation = 180f, boxHalfExtents = new Vector2(6f, 2f) },
+                
+                // --- NEW CONTENT: Edge Corridors ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-110f, 0f, 0f), rotation = 0f, boxHalfExtents = new Vector2(15f, 3f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-115f, 0f, -10f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-110f, 0f, 15f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 110f, 0f, 0f), rotation = 0f, boxHalfExtents = new Vector2(15f, 3f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 115f, 0f, 10f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 110f, 0f, -15f), radius = 5f },
+                
+                // --- NEW CONTENT: Northern/Southern Wastelands ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-15f, 0f, 100f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 15f, 0f, 100f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 110f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(20f, 0f, 110f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 15f, 0f, -100f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-15f, 0f, -100f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, -110f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-20f, 0f, -110f), radius = 5f },
+                
+                // --- NEW CONTENT: Center Complexity ---
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-8f, 0f, 8f), rotation = 45f, boxHalfExtents = new Vector2(5f, 2f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 8f, 0f, -8f), rotation = 45f, boxHalfExtents = new Vector2(5f, 2f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(10f, 0f, 10f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-10f, 0f, -10f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(0f, 0f, 15f), radius = 4f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(0f, 0f, -15f), radius = 4f },
             };
 
             map.decorativePrefabs = new[]
@@ -505,10 +571,20 @@ namespace InsectWars.Data
                 new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, -65f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 2f },
                 new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(65f, 0f, 0f), rotation = Vector3.zero, scale = Vector3.one * 1.8f },
                 new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(-65f, 0f, 0f), rotation = new Vector3(0, 180, 0), scale = Vector3.one * 1.8f },
+                
+                // New Landmark Decoration
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire_Organic.prefab", position = new Vector3(0f, 0f, 118f), rotation = new Vector3(0, 180, 0), scale = Vector3.one * 2.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire_Organic.prefab", position = new Vector3(0f, 0f, -118f), rotation = Vector3.zero, scale = Vector3.one * 2.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3(-60f, 0f, 60f), rotation = new Vector3(0, 120, 0), scale = Vector3.one * 1.1f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3( 60f, 0f, -60f), rotation = new Vector3(0, 300, 0), scale = Vector3.one * 1.1f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenOrganicPillar.prefab", position = new Vector3(-105f, 0f, 95f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenOrganicPillar.prefab", position = new Vector3( 105f, 0f, -95f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(-15f, 0f, 15f), rotation = new Vector3(0, 45, 0), scale = Vector3.one * 1.3f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3( 15f, 0f, -15f), rotation = new Vector3(0, 225, 0), scale = Vector3.one * 1.3f },
             };
 
             return map;
-        }
+            }
     }
 }
 
