@@ -43,6 +43,9 @@ namespace InsectWars.RTS
         float _instanceOffset;
         bool _dying;
 
+        // Parameter existence cache
+        bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath;
+
         void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
@@ -55,6 +58,19 @@ namespace InsectWars.RTS
             if (animator == null && modelRoot != null)
                 animator = modelRoot.GetComponentInChildren<Animator>(true);
             
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                foreach (var p in animator.parameters)
+                {
+                    if (p.nameHash == Speed) _hasSpeed = true;
+                    if (p.nameHash == IsMoving) _hasIsMoving = true;
+                    if (p.nameHash == Gathering) _hasGathering = true;
+                    if (p.nameHash == Build) _hasBuild = true;
+                    if (p.nameHash == Attack) _hasAttack = true;
+                    if (p.nameHash == Death) _hasDeath = true;
+                }
+            }
+
             if (modelRoot != null)
             {
                 _baseLocalPos = modelRoot.localPosition;
@@ -104,10 +120,10 @@ namespace InsectWars.RTS
 
             if (animator != null && animator.runtimeAnimatorController != null && Application.isPlaying)
             {
-                animator.SetFloat(Speed, planar.magnitude);
-                animator.SetBool(IsMoving, moving);
-                animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isStopped);
-                animator.SetBool(Build, _buildAnimTimer > 0f);
+                if (_hasSpeed) animator.SetFloat(Speed, planar.magnitude);
+                if (_hasIsMoving) animator.SetBool(IsMoving, moving);
+                if (_hasGathering) animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isStopped);
+                if (_hasBuild) animator.SetBool(Build, _buildAnimTimer > 0f);
             }
 
             if (modelRoot != null)
@@ -294,7 +310,7 @@ namespace InsectWars.RTS
 
         public void NotifyAttack()
         {
-            if (HasAnimatorAttack)
+            if (_hasAttack)
                 animator.SetTrigger(Attack);
             bool isSpray = _unit != null && _unit.Archetype == UnitArchetype.BasicRanged;
             _attackAnimDuration = isSpray ? 0.5f : 0.35f;
@@ -311,7 +327,7 @@ namespace InsectWars.RTS
         {
             if (_dying) return;
             _dying = true;
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (_hasDeath)
                 animator.SetTrigger(Death);
             if (Application.isPlaying) Destroy(gameObject, destroyDelay);
         }
