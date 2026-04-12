@@ -41,10 +41,9 @@ namespace InsectWars.RTS
 
         // ──────────── Timers ────────────
         float _gatherTimer;
-        float _buildTimer;
         float _idleScanTimer;
         float _terrainSpeedTimer;
-        float _terrainDmgAccum;
+float _terrainDmgAccum;
 
         // ──────────── Flags ────────────
         bool _holdPosition;
@@ -352,9 +351,8 @@ namespace InsectWars.RTS
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
-            _buildTimer = 0f;
             RestoreAgentControl();
-        }
+            }
 
         // ──────────── Update Dispatch ────────────
 

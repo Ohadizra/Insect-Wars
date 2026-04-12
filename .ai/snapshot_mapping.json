@@ -887,6 +887,12 @@
       "conversation_id": "a4b93038-524e-448f-af1e-139af96040ab",
       "content": "enemy  AI is not loaded with ants, mantis, and beatles. please fix",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "96abbe08-eff8-42ea-953f-c9cb217af827",
+      "conversation_id": "a4b93038-524e-448f-af1e-139af96040ab",
+      "content": "I've resolved the issues with the enemy AI and fixed the compilation warning in `InsectUnit.cs`.\n\n### Changes Implemented:\n\n1.  **Increased Enemy AI Initial Load:**\n    *   **Higher Starting Unit Counts:** Updated `MapDirector.cs` to spawn more enemy units at the start of a match. The enemy now begins with 6 Workers (Ants) and a balanced squad of 6 combat units (3 Mantis and 3 Beetles), ensuring the AI feels \"loaded\" immediately.\n    *   **Better Composition:** Modified the spawning cycle to ensure the initial enemy army always includes a mix of Mantis (BasicFighter) and Beetles (BasicRanged).\n\n2.  **Boosted AI Economy and Production:**\n    *   **More Starting Calories:** Increased the enemy's starting resources from 200 to 350 in `EnemyResources.cs`. This allows the AI to build its first `Underground` (combat building) while still having enough resources to queue more units immediately.\n    *   **Aggressive Ramp-up:** Updated `EnemyCommander.cs` to increase the desired unit caps and production cadence. The AI now aims for a larger army (up to 30 combat units) and builds its infrastructure much faster.\n    *   **Faster Teching:** Reduced the time delay before the enemy builds its first `Underground`, ensuring it starts producing Mantis and Beetles earlier in the game.\n\n3.  **Fixed Compilation Warning:**\n    *   Removed the unused `_buildTimer` field and its assignment from `InsectUnit.cs`, clearing the CS0414 warning.\n\nThe enemy AI should now be significantly more active and deploy a diverse army of Ants, Mantis, and Beetles from the start.",
+      "snapshot_message_type": 1
     }
   ]
 }

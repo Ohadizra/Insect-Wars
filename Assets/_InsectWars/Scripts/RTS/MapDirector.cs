@@ -137,7 +137,7 @@ namespace InsectWars.RTS
                 SpawnUnit(SpawnPositionAroundBuilding(_playerHive, CombatSpawnRadius, angle), Team.Player, playerCombatArchs[i]);
             }
 
-            var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
+            var nWorkers = Mathf.RoundToInt(6f * GameSession.DifficultyEnemySpawnMultiplier);
             for (int i = 0; i < nWorkers; i++)
             {
                 float angle = i * (360f / Mathf.Max(nWorkers, 1));
@@ -147,12 +147,12 @@ namespace InsectWars.RTS
                     worker.OrderGather(enemyApple);
             }
 
-            var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
-            var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
+            var nCombat = Mathf.Clamp(Mathf.RoundToInt(6f * GameSession.DifficultyEnemySpawnMultiplier), 1, 12);
+            var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
             for (int i = 0; i < nCombat; i++)
             {
                 float angle = i * (360f / nCombat);
-                var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
+                var arch = archCycle[i % archCycle.Length];
                 SpawnUnit(SpawnPositionAroundBuilding(_enemyHive, CombatSpawnRadius, angle), Team.Enemy, arch);
             }
 

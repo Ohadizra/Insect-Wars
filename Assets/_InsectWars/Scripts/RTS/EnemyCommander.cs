@@ -89,14 +89,14 @@ namespace InsectWars.RTS
 
         float TickInterval => 1.5f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
-        const float ProduceBaseInterval = 4f;
-        const float BuildCheckInterval = 5f;
-        const float HarassInterval = 45f;
-        const float AttackCooldown = 50f;
+        const float ProduceBaseInterval = 3f;
+        const float BuildCheckInterval = 4.5f;
+        const float HarassInterval = 35f;
+        const float AttackCooldown = 40f;
 
-        int DesiredWorkers => Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
-        int MaxCombat => Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
-        int MaxUndergrounds => _matchTime > 120f ? 3 : (_matchTime > 60f ? 2 : 1);
+        int DesiredWorkers => Mathf.Clamp(6 + (int)(_matchTime / 25f), 6, 12);
+        int MaxCombat => Mathf.Clamp(8 + (int)(_matchTime / 18f), 8, 30);
+        int MaxUndergrounds => _matchTime > 100f ? 3 : (_matchTime > 45f ? 2 : 1);
 
         void Start()
         {
@@ -154,25 +154,25 @@ namespace InsectWars.RTS
                 if (b.Type == BuildingType.AntNest) antNests++;
             }
 
-            if (undergrounds == 0 && _matchTime > 25f)
+            if (undergrounds == 0 && _matchTime > 5f)
             {
                 TryPlaceUnderground();
                 return;
             }
 
             int nestCost = ProductionBuilding.GetBuildCost(BuildingType.AntNest);
-            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 50)
+            if (antNests < 2 && _matchTime > 75f && EnemyResources.Calories >= nestCost + 30)
             {
                 if (TryPlaceExpansionNest()) return;
             }
 
             int undergroundCost = ProductionBuilding.GetBuildCost(BuildingType.Underground);
-            if (undergrounds < MaxUndergrounds && _matchTime > 45f
-                && EnemyResources.Calories >= undergroundCost + 50)
+            if (undergrounds < MaxUndergrounds && _matchTime > 35f
+                && EnemyResources.Calories >= undergroundCost + 30)
             {
                 TryPlaceUnderground();
             }
-        }
+}
 
         void TryPlaceUnderground()
         {
