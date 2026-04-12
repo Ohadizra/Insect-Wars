@@ -881,6 +881,12 @@
       "conversation_id": "a4b93038-524e-448f-af1e-139af96040ab",
       "content": "I've resolved the issues identified in your project context.\n\n### Fixes Implemented:\n\n1.  **Resolved Video Color Shift Warning (macOS):**\n    *   Moved `MenuLoop.mp4` from `StreamingAssets` to `Assets/_InsectWars/Videos/`.\n    *   Updated `HomeMenuBootstrap.cs` to use the `VideoClip` API instead of a file URL. This allows Unity to transcode the video during import, correctly handling color space metadata and preventing the \"Color primaries unknown\" warning on macOS.\n    *   Assigned the new `VideoClip` to the `HomeMenuBootstrap` component in the `Home` scene.\n\n2.  **Fixed NavMesh \"No Valid NavMesh\" Error:**\n    *   Disabled `NavMeshAgent` and `InsectUnit` components on the decorative units in the `Home` scene. Since there is no NavMesh in the menu, these agents were triggering errors immediately upon loading the scene.\n\n3.  **Fixed \"Agent Not Close Enough to NavMesh\" Error:**\n    *   Improved the unit spawning logic in `MapDirector.cs`. The script now uses `NavMesh.SamplePosition` to find the nearest valid walkable point *before* enabling the `NavMeshAgent`. This ensures the agent is always created on or very close to a valid surface, preventing the log error during gameplay initialization.\n\nThe console is now clear of these errors.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "a4b93038-524e-448f-af1e-139af96040ab",
+      "content": "enemy  AI is not loaded with ants, mantis, and beatles. please fix",
+      "snapshot_message_type": 0
     }
   ]
 }
