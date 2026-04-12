@@ -30,6 +30,7 @@ namespace InsectWars.RTS
         Color _mapBoundsColor;
         TerrainLayer _mapBaseLayer;
         TerrainLayer _mapSecondaryLayer;
+        Material _mapAppleMaterial;
 
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
@@ -99,6 +100,7 @@ namespace InsectWars.RTS
             _mapBoundsColor = m != null ? m.mapBoundsColor : new Color(0.35f, 0.28f, 0.18f);
             _mapBaseLayer = m != null ? m.baseTerrainLayer : null;
             _mapSecondaryLayer = m != null ? m.secondaryTerrainLayer : null;
+            _mapAppleMaterial = m != null ? m.bigAppleMaterial : null;
 
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
@@ -703,7 +705,7 @@ namespace InsectWars.RTS
             s_terrain.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         }
 
-        static void AddRottingApple(Transform parent, Vector3 pos)
+        void AddRottingApple(Transform parent, Vector3 pos)
         {
             GameObject apple;
             var lib = ActiveVisualLibrary;
@@ -720,10 +722,11 @@ namespace InsectWars.RTS
                 apple.transform.position = new Vector3(pos.x, posY, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
 
-                if (lib.bigAppleMaterial != null)
+                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : lib.bigAppleMaterial;
+                if (appleMat != null)
                 {
                     foreach (var rend in apple.GetComponentsInChildren<Renderer>())
-                        rend.sharedMaterial = lib.bigAppleMaterial;
+                        rend.sharedMaterial = appleMat;
                 }
             }
             else
@@ -759,7 +762,7 @@ namespace InsectWars.RTS
                 apple.AddComponent<RottingFruitNode>();
         }
 
-        static void AddFruit(Transform parent, FruitPlaced f)
+        void AddFruit(Transform parent, FruitPlaced f)
         {
             var pos = f.position;
             GameObject fruit;
@@ -777,10 +780,11 @@ namespace InsectWars.RTS
                 fruit.transform.position = new Vector3(pos.x, posY, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
 
-                if (lib.bigAppleMaterial != null)
+                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : lib.bigAppleMaterial;
+                if (appleMat != null)
                 {
                     foreach (var rend in fruit.GetComponentsInChildren<Renderer>())
-                        rend.sharedMaterial = lib.bigAppleMaterial;
+                        rend.sharedMaterial = appleMat;
                 }
             }
             else

@@ -1,0 +1,12 @@
+{
+    "asset": "3d80e778de7f3458db7a869b170c44eb",
+    "fileName": "019d8215-30e2-7d5a-9b9d-e9f6b9417fc2.glb",
+    "prompt": "A nasty shriveled rotting apple at insect scale, organic irregular decaying shape, dark bruised red skin with patches of brown rot and white frost crystals, shrunken and deformed, high detail realistic textures, game-ready model.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "3cddcda8826e830c0cbf192af8dd9058",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

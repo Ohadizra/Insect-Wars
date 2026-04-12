@@ -69,6 +69,7 @@ namespace InsectWars.Data
         [Header("Map-Specific Visuals (optional — null falls back to default library)")]
         public TerrainLayer baseTerrainLayer;
         public TerrainLayer secondaryTerrainLayer;
+        public Material bigAppleMaterial;
         public Color clayColor = new Color(0.45f, 0.32f, 0.22f);
         public Color mapBoundsColor = new Color(0.35f, 0.28f, 0.18f);
         public ScatterTheme scatterTheme = ScatterTheme.Default;

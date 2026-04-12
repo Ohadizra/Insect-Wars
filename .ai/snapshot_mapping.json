@@ -521,6 +521,12 @@
       "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
       "content": "continue",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "f8cf7f4c-63fc-4978-a434-f6a5da044cb6",
+      "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
+      "content": "I have refined the apple assets to ensure they look suitably nasty and rotten, matching the \"Insect Wars\" theme.\n\n### Improvements Made:\n\n1.  **Nasty Rotten Apple Model**: Generated a new, high-fidelity 3D model (`NastyRottenApple 4.prefab`) featuring a shriveled, deformed shape with bruised red skin, patches of brown rot, and decaying textures.\n2.  **Global Asset Update**: Updated the `UnitVisualLibrary` to use this new nasty apple as the default for all maps, replacing the \"too nice\" placeholder models.\n3.  **Frosted Material for Tundra**: Created a specific **Frosted Nasty Apple** material (`FrostedNastyApple.mat`) with a thick layer of crystalline ice and frozen granules over the rotting skin.\n4.  **Map-Specific Overrides**: Enhanced the map system to support per-map apple material overrides. The **Frozen Expanse** map now specifically uses the frosted variant, while other maps use the standard rotten look.\n5.  **Strategic Rendering**: Updated the `SkirmishDirector` to correctly apply these realistic materials across all resource nodes (both the large base apples and the smaller fruit nodes).\n\nThe resource nodes now look like authentic, decaying organic matter preserved by frost, perfectly fitting the macro-photographic art direction of the Frozen Expanse.",
+      "snapshot_message_type": 1
     }
   ]
 }

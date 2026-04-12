@@ -411,7 +411,9 @@ namespace InsectWars.Data
                 "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
             map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
                 "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
-#endif
+            map.bigAppleMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(
+                "Assets/_InsectWars/Materials/FrostedNastyApple.mat");
+            #endif
 
             // ── Elevation (High-Ground Plateaus) ──
             // UV = (worldPos + 120) / 240
