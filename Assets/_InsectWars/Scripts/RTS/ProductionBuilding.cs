@@ -407,6 +407,14 @@ namespace InsectWars.RTS
             var angle = baseAngle + Random.Range(-25f, 25f) * Mathf.Deg2Rad;
             var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
             var spawnPos = center + offset;
+
+            // Clamp spawn position to map bounds with a 2m margin
+            float mapExtent = MapDirector.HalfExtent;
+            float margin = 2f;
+            float limit = mapExtent - margin;
+            spawnPos.x = Mathf.Clamp(spawnPos.x, -limit, limit);
+            spawnPos.z = Mathf.Clamp(spawnPos.z, -limit, limit);
+
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
 

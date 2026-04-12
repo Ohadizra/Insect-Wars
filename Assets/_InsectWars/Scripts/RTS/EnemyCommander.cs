@@ -206,15 +206,28 @@ namespace InsectWars.RTS
 
         Vector3 FindBuildPosition(Vector3 near, float radius)
         {
+            float extent = MapDirector.HalfExtent;
+            float margin = 5f;
+            float limit = extent - margin;
+
             for (int i = 0; i < 8; i++)
             {
                 float angle = i * 45f * Mathf.Deg2Rad;
                 var candidate = near + new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                
+                // Clamp candidate within map bounds before checking NavMesh
+                candidate.x = Mathf.Clamp(candidate.x, -limit, limit);
+                candidate.z = Mathf.Clamp(candidate.z, -limit, limit);
                 candidate.y = 0.02f;
+
                 if (NavMesh.SamplePosition(candidate, out var hit, 5f, NavMesh.AllAreas))
                     return new Vector3(hit.position.x, 0.02f, hit.position.z);
             }
-            return new Vector3(near.x - radius, 0.02f, near.z - radius);
+            
+            Vector3 fallback = new Vector3(near.x - radius, 0.02f, near.z - radius);
+            fallback.x = Mathf.Clamp(fallback.x, -limit, limit);
+            fallback.z = Mathf.Clamp(fallback.z, -limit, limit);
+            return fallback;
         }
 
         void TryProduceUnits()

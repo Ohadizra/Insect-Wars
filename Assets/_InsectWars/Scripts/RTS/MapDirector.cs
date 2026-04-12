@@ -265,6 +265,14 @@ namespace InsectWars.RTS
             return best;
         }
 
+        public static float HalfExtent => Instance != null ? Instance._mapHalfExtent : 88f;
+        public static MapDirector Instance { get; private set; }
+
+        void Awake()
+        {
+            Instance = this;
+        }
+
         public void BuildWorldPreview()
         {
             ApplyMapLayout();
@@ -283,6 +291,7 @@ namespace InsectWars.RTS
             // Explicitly set layers to include to ensure Ground and Environment are baked
             surface.layerMask = LayerMask.GetMask("Ground", "Environment", "Default");
             surface.ignoreNavMeshObstacle = false;
+            surface.agentTypeID = 0; // Ensure it uses the default agent type
 
             BuildTerrain(world.transform, _mapHalfExtent);
             AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
