@@ -1,0 +1,12 @@
+{
+    "asset": "3b2e1f563680a45b781f22a65e776680",
+    "fileName": "019d821b-c69a-7ec4-93a0-f6524263164f.glb",
+    "prompt": "Realistic frozen stone wall segment at insect scale, vertical slab of frost-coated rough grey rock with ice crystals, 1x1x1 proportions, organic irregular shape, jagged top, no red markings, no symbols, game-ready low-poly model with PBR texture.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "f9615336dd23c67d04585d21e9616b7c",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

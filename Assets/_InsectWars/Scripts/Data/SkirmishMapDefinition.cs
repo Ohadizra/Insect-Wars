@@ -8,6 +8,7 @@ namespace InsectWars.Data
     {
         public Vector3 position;
         public Vector3 scale;
+        public int variant;
     }
 
     [Serializable]

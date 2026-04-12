@@ -1,0 +1,12 @@
+{
+    "asset": "44e11fa9ffe81421d99031188fc1b97e",
+    "fileName": "019d821b-ed7d-741e-90bf-633fb054f282.glb",
+    "prompt": "Realistic tall narrow frozen stone pillar at insect scale, frost-coated rough grey rock with ice crystals, organic irregular shape, jagged top, sentinel post look, no red markings, no symbols, game-ready low-poly model with PBR texture.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "cfdbd1ad90b2e3af8b888022c488f7a6",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

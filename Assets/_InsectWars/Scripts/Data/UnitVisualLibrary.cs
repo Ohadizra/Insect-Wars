@@ -51,6 +51,8 @@ namespace InsectWars.Data
         public GameObject rottingApplePrefab;
         public GameObject calorieChunkPrefab;
         public GameObject clayWallPrefab;
+        public GameObject clayWallCornerPrefab;
+        public GameObject clayWallPillarPrefab;
         public Material bigAppleMaterial;
         public Material groundMaterial;
         public TerrainLayer baseSoilLayer;

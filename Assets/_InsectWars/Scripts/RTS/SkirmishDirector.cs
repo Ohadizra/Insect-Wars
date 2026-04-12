@@ -171,7 +171,7 @@ namespace InsectWars.RTS
             AddMapBounds(world.transform, _mapHalfExtent, 0.45f, _mapBoundsColor);
 
             foreach (var c in _clayLayout)
-                AddClay(world.transform, c.position, c.scale, _clayColor);
+                AddClay(world.transform, c.position, c.scale, _clayColor, c.variant);
 
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
             BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
@@ -458,13 +458,21 @@ namespace InsectWars.RTS
             return s_terrain.SampleHeight(worldPos);
         }
 
-        static void AddClay(Transform parent, Vector3 pos, Vector3 scale, Color clayColor)
+        static void AddClay(Transform parent, Vector3 pos, Vector3 scale, Color clayColor, int variant = 0)
         {
             var lib = ActiveVisualLibrary;
             GameObject clay;
-            if (lib != null && lib.clayWallPrefab != null)
+            GameObject prefab = null;
+            if (lib != null)
             {
-                clay = Instantiate(lib.clayWallPrefab, parent);
+                if (variant == 1 && lib.clayWallCornerPrefab != null) prefab = lib.clayWallCornerPrefab;
+                else if (variant == 2 && lib.clayWallPillarPrefab != null) prefab = lib.clayWallPillarPrefab;
+                else prefab = lib.clayWallPrefab;
+            }
+
+            if (prefab != null)
+            {
+                clay = Instantiate(prefab, parent);
                 clay.name = "Clay";
                 clay.tag = "Clay";
                 float h = GetHeight(pos);
