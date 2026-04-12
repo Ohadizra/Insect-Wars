@@ -403,8 +403,9 @@ namespace InsectWars.RTS
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
             go.transform.localScale *= 1.3f;
-            float groundY = SampleMaxTerrainHeight(position, 5f);
-            go.transform.position = new Vector3(position.x, groundY, position.z);
+            float groundY = SampleMaxTerrainHeight(position, 6f);
+            go.transform.position = new Vector3(position.x, 0f, position.z);
+            PlaceOnGround(go, groundY);
             go.tag = "Untagged";
 
             var hd = go.GetComponent<HiveDeposit>();
@@ -467,9 +468,10 @@ namespace InsectWars.RTS
             };
             go.transform.localScale = scale;
 
-            float footprint = Mathf.Max(scale.x, scale.z) * 4f;
+            float footprint = Mathf.Max(scale.x, scale.z) * 5f;
             float groundY = SampleMaxTerrainHeight(position, footprint);
-            go.transform.position = new Vector3(position.x, groundY, position.z);
+            go.transform.position = new Vector3(position.x, 0f, position.z);
+            PlaceOnGround(go, groundY);
 
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
@@ -518,6 +520,25 @@ namespace InsectWars.RTS
             best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(half, 0f, -half)));
             best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(-half, 0f, -half)));
             return best;
+        }
+
+        static void PlaceOnGround(GameObject go, float groundY)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+            {
+                var pos = go.transform.position;
+                go.transform.position = new Vector3(pos.x, groundY, pos.z);
+                return;
+            }
+            var combined = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                combined.Encapsulate(renderers[i].bounds);
+
+            float bottomY = combined.min.y;
+            float lift = groundY - bottomY;
+            var p = go.transform.position;
+            go.transform.position = new Vector3(p.x, p.y + lift, p.z);
         }
 
         static void ApplyMat(GameObject go, Color c)

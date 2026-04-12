@@ -441,11 +441,33 @@ namespace InsectWars.RTS
             return best;
         }
 
+        /// <summary>
+        /// Lifts a game object so the bottom of its combined renderer bounds
+        /// sits exactly at <paramref name="groundY"/>.
+        /// </summary>
+        static void PlaceOnGround(GameObject go, float groundY)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+            {
+                var pos = go.transform.position;
+                go.transform.position = new Vector3(pos.x, groundY, pos.z);
+                return;
+            }
+            var combined = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                combined.Encapsulate(renderers[i].bounds);
+
+            float bottomY = combined.min.y;
+            float lift = groundY - bottomY;
+            var p = go.transform.position;
+            go.transform.position = new Vector3(p.x, p.y + lift, p.z);
+        }
+
         void BuildHive(Transform parent, Vector3 worldPos, Team team, string name)
         {
             const float hiveScale = 2.2f;
-            float groundY = SampleMaxTerrainHeight(worldPos, 8f);
-            var placedPos = new Vector3(worldPos.x, groundY, worldPos.z);
+            float groundY = SampleMaxTerrainHeight(worldPos, 10f);
 
             GameObject hive;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)
@@ -453,8 +475,9 @@ namespace InsectWars.RTS
                 hive = Instantiate(visualLibrary.hivePrefab, parent);
                 hive.name = name;
                 if (!hive.CompareTag("Hive")) hive.tag = "Hive";
-                hive.transform.position = placedPos;
+                hive.transform.position = new Vector3(worldPos.x, 0f, worldPos.z);
                 hive.transform.localScale *= hiveScale;
+                PlaceOnGround(hive, groundY);
                 var deposit = hive.GetComponent<HiveDeposit>();
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
                 deposit.Configure(team);
@@ -485,8 +508,9 @@ namespace InsectWars.RTS
                 hive.name = name;
                 hive.tag = "Hive";
                 hive.transform.SetParent(parent);
-                hive.transform.position = placedPos;
                 hive.transform.localScale = new Vector3(4f, 2.5f, 4f) * hiveScale;
+                hive.transform.position = new Vector3(worldPos.x, 0f, worldPos.z);
+                PlaceOnGround(hive, groundY);
                 ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
                 
                 // Add straps to the primitive Hive
