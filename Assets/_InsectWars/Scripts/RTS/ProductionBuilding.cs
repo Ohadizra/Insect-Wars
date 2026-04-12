@@ -321,35 +321,36 @@ namespace InsectWars.RTS
                     return PlaceFromPrefab(position, prefab, type, team);
             }
 
-            var go = new GameObject($"Building_{type}");
-            {
-                var terrain = Terrain.activeTerrain;
-                float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
-                go.transform.position = new Vector3(position.x, terrainY, position.z);
-            }
-
             Color buildingColor;
             Vector3 scale;
             switch (type)
             {
-                case BuildingType.Underground:
-                    buildingColor = new Color(0.35f, 0.25f, 0.45f);
-                    scale = new Vector3(4f, 1.5f, 4f);
-                    break;
                 case BuildingType.AntNest:
                     buildingColor = new Color(0.5f, 0.35f, 0.2f);
-                    scale = new Vector3(3.5f, 2f, 3.5f);
+                    scale = new Vector3(6f, 3.5f, 6f);
+                    break;
+                case BuildingType.Underground:
+                    buildingColor = new Color(0.35f, 0.25f, 0.45f);
+                    scale = new Vector3(4f, 2f, 4f);
                     break;
                 case BuildingType.SkyTower:
                     buildingColor = new Color(0.3f, 0.5f, 0.6f);
-                    scale = new Vector3(2.5f, 5f, 2.5f);
+                    scale = new Vector3(3f, 5f, 3f);
+                    break;
+                case BuildingType.RootCellar:
+                    buildingColor = new Color(0.4f, 0.3f, 0.2f);
+                    scale = new Vector3(3.5f, 2.5f, 3.5f);
                     break;
                 default:
                     buildingColor = Color.gray;
-                    scale = new Vector3(3f, 2f, 3f);
+                    scale = new Vector3(3.5f, 2.5f, 3.5f);
                     break;
             }
 
+            float footprint = Mathf.Max(scale.x, scale.z);
+            float groundY = SampleMaxTerrainHeight(position, footprint);
+            var go = new GameObject($"Building_{type}");
+            go.transform.position = new Vector3(position.x, groundY, position.z);
             go.transform.localScale = scale;
 
             var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -401,9 +402,9 @@ namespace InsectWars.RTS
 
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            var terrain = Terrain.activeTerrain;
-            float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
-            go.transform.position = new Vector3(position.x, terrainY, position.z);
+            go.transform.localScale *= 1.3f;
+            float groundY = SampleMaxTerrainHeight(position, 5f);
+            go.transform.position = new Vector3(position.x, groundY, position.z);
             go.tag = "Untagged";
 
             var hd = go.GetComponent<HiveDeposit>();
@@ -457,17 +458,18 @@ namespace InsectWars.RTS
         {
             var go = Object.Instantiate(prefab);
             go.name = $"Building_{type}";
-            var terrain = Terrain.activeTerrain;
-            float terrainY = terrain != null ? terrain.SampleHeight(position) : position.y;
-            go.transform.position = new Vector3(position.x, terrainY, position.z);
 
             Vector3 scale = type switch
             {
-                BuildingType.Underground => new Vector3(1f, 0.7f, 1f),
-                BuildingType.SkyTower => new Vector3(1f, 1.2f, 1f),
+                BuildingType.Underground => new Vector3(1.1f, 0.8f, 1.1f),
+                BuildingType.SkyTower => new Vector3(1f, 1.3f, 1f),
                 _ => Vector3.one
             };
             go.transform.localScale = scale;
+
+            float footprint = Mathf.Max(scale.x, scale.z) * 4f;
+            float groundY = SampleMaxTerrainHeight(position, footprint);
+            go.transform.position = new Vector3(position.x, groundY, position.z);
 
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
@@ -503,6 +505,19 @@ namespace InsectWars.RTS
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(type, team);
             return building;
+        }
+
+        static float SampleMaxTerrainHeight(Vector3 center, float footprint)
+        {
+            var terrain = Terrain.activeTerrain;
+            if (terrain == null) return center.y;
+            float best = terrain.SampleHeight(center);
+            float half = footprint * 0.5f;
+            best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(half, 0f, half)));
+            best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(-half, 0f, half)));
+            best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(half, 0f, -half)));
+            best = Mathf.Max(best, terrain.SampleHeight(center + new Vector3(-half, 0f, -half)));
+            return best;
         }
 
         static void ApplyMat(GameObject go, Color c)

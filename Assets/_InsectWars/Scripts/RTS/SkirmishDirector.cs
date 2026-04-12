@@ -429,12 +429,23 @@ namespace InsectWars.RTS
             obs.center = Vector3.zero;
         }
 
+        static float SampleMaxTerrainHeight(Vector3 center, float footprint)
+        {
+            if (s_terrain == null) return 0f;
+            float best = s_terrain.SampleHeight(center);
+            float half = footprint * 0.5f;
+            best = Mathf.Max(best, s_terrain.SampleHeight(center + new Vector3(half, 0f, half)));
+            best = Mathf.Max(best, s_terrain.SampleHeight(center + new Vector3(-half, 0f, half)));
+            best = Mathf.Max(best, s_terrain.SampleHeight(center + new Vector3(half, 0f, -half)));
+            best = Mathf.Max(best, s_terrain.SampleHeight(center + new Vector3(-half, 0f, -half)));
+            return best;
+        }
+
         void BuildHive(Transform parent, Vector3 worldPos, Team team, string name)
         {
-            float h = GetHeight(worldPos);
-            var placedPos = new Vector3(worldPos.x, h + worldPos.y, worldPos.z);
-
-            const float hiveScale = 1.75f;
+            const float hiveScale = 2.2f;
+            float groundY = SampleMaxTerrainHeight(worldPos, 8f);
+            var placedPos = new Vector3(worldPos.x, groundY, worldPos.z);
 
             GameObject hive;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)
@@ -475,7 +486,7 @@ namespace InsectWars.RTS
                 hive.tag = "Hive";
                 hive.transform.SetParent(parent);
                 hive.transform.position = placedPos;
-                hive.transform.localScale = new Vector3(4f, 2f, 4f) * hiveScale;
+                hive.transform.localScale = new Vector3(4f, 2.5f, 4f) * hiveScale;
                 ApplyMat(hive, new Color(0.32f, 0.52f, 0.88f));
                 
                 // Add straps to the primitive Hive
