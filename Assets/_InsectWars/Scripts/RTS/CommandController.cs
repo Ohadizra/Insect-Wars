@@ -1,17 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// Right-click: move / attack / gather. Left-click with pending command: move, attack-move, patrol, gather.
-    /// </summary>
     public class CommandController : MonoBehaviour
     {
         Camera _cam;
         Vector2 _lmbDownPos;
         bool _lmbTracked;
+
+        static readonly List<InsectUnit> s_cmdBuffer = new(32);
 
         void Awake()
         {
@@ -27,6 +27,7 @@ namespace InsectWars.RTS
         {
             if (Mouse.current == null) return;
             if (_cam == null) _cam = Camera.main;
+            if (_cam == null) return;
 
             if (Mouse.current.leftButton.wasPressedThisFrame)
             {
@@ -47,10 +48,10 @@ namespace InsectWars.RTS
             BottomBar.Instance?.SetPending(PendingCommand.None);
 
             if (SelectionController.Instance == null) return;
-            var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-            // Collide mode detects units and resources that use trigger colliders.
-            // Distance 1500 ensures the terrain is always reachable regardless of camera height.
-            if (!Physics.Raycast(ray, out var hit, 1500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
+
+            Vector3 moveTarget;
+            if (!RaycastGround(Mouse.current.position.ReadValue(), out var hit, out moveTarget))
+                return;
 
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
@@ -74,15 +75,18 @@ namespace InsectWars.RTS
                 return;
             }
 
+            SnapshotSelectedUnits();
+            if (s_cmdBuffer.Count == 0) return;
+
             var fruit = hit.collider.GetComponentInParent<RottingFruitNode>();
             if (fruit != null && !fruit.Depleted && SelectionController.Instance.HasWorkerSelected())
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                 {
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
                     else
-                        u.OrderMove(hit.point);
+                        u.OrderMove(moveTarget);
                 }
                 return;
             }
@@ -90,7 +94,7 @@ namespace InsectWars.RTS
             var enemy = hit.collider.GetComponentInParent<InsectUnit>();
             if (enemy != null && enemy.Team == Team.Enemy && enemy.IsAlive)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderAttack(enemy);
                 return;
             }
@@ -98,7 +102,7 @@ namespace InsectWars.RTS
             var enemyBuilding = hit.collider.GetComponentInParent<ProductionBuilding>();
             if (enemyBuilding != null && enemyBuilding.Team == Team.Enemy && enemyBuilding.IsAlive)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderAttackBuilding(enemyBuilding);
                 return;
             }
@@ -106,25 +110,51 @@ namespace InsectWars.RTS
             var enemyHive = hit.collider.GetComponentInParent<HiveDeposit>();
             if (enemyHive != null && enemyHive.Team == Team.Enemy && enemyHive.IsAlive)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderAttackHive(enemyHive);
                 return;
             }
 
-            // No special target found. If the primary hit was a trigger collider (e.g. a
-            // player-unit capsule or a resource trigger sitting in front of the terrain),
-            // re-cast ignoring triggers so we get the actual ground surface point.
-            // This prevents "OrderMove(unit.position)" when right-clicking near own units.
-            Vector3 moveTarget = hit.point;
-            if (hit.collider.isTrigger)
+            foreach (var u in s_cmdBuffer)
+                u.OrderMove(moveTarget);
+        }
+
+        bool RaycastGround(Vector2 screenPos, out RaycastHit hit, out Vector3 groundPoint)
+        {
+            hit = default;
+            groundPoint = Vector3.zero;
+
+            var ray = _cam.ScreenPointToRay(screenPos);
+
+            if (Physics.Raycast(ray, out hit, 1500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide))
             {
-                if (Physics.Raycast(ray, out var groundHit, 1500f,
-                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                    moveTarget = groundHit.point;
+                groundPoint = hit.point;
+                if (hit.collider.isTrigger)
+                {
+                    if (Physics.Raycast(ray, out var groundHit, 1500f,
+                            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        groundPoint = groundHit.point;
+                }
+                return true;
             }
 
+            // Fallback: intersect the Y=0 plane when the raycast misses all colliders.
+            var plane = new Plane(Vector3.up, Vector3.zero);
+            if (plane.Raycast(ray, out float enter))
+            {
+                groundPoint = ray.GetPoint(enter);
+                return true;
+            }
+
+            return false;
+        }
+
+        void SnapshotSelectedUnits()
+        {
+            s_cmdBuffer.Clear();
+            if (SelectionController.Instance == null) return;
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                u.OrderMove(moveTarget);
+                s_cmdBuffer.Add(u);
         }
 
         void TryLeftClickCommand(Vector2 screen)
@@ -141,26 +171,21 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var hasSel = false;
-            foreach (var _ in SelectionController.Instance.SelectedPlayerUnits())
-            {
-                hasSel = true;
-                break;
-            }
-            if (!hasSel) return;
+            SnapshotSelectedUnits();
+            if (s_cmdBuffer.Count == 0) return;
 
             var ray = _cam.ScreenPointToRay(screen);
             if (!Physics.Raycast(ray, out var hit, 1500f)) return;
 
             if (pending == PendingCommand.Gather)
             {
-                var fruit = hit.collider.GetComponentInParent<RottingFruitNode>();
-                if (fruit != null && !fruit.Depleted)
+                var gatherFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
+                if (gatherFruit != null && !gatherFruit.Depleted)
                 {
-                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    foreach (var u in s_cmdBuffer)
                     {
                         if (u.Definition != null && u.Definition.canGather)
-                            u.OrderGather(fruit);
+                            u.OrderGather(gatherFruit);
                     }
                     BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
@@ -172,7 +197,7 @@ namespace InsectWars.RTS
             {
                 if (PatrolCoordinator.TryHandlePatrolClick(hit.point, out var a, out var b))
                     return;
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderPatrol(a, b);
                 BottomBar.Instance.SetPending(PendingCommand.None);
                 return;
@@ -187,7 +212,7 @@ namespace InsectWars.RTS
             {
                 if (pending == PendingCommand.Attack)
                 {
-                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    foreach (var u in s_cmdBuffer)
                         u.OrderAttack(enemy);
                     BottomBar.Instance.SetPending(PendingCommand.None);
                 }
@@ -199,7 +224,7 @@ namespace InsectWars.RTS
                 var enemyBuildingL = hit.collider.GetComponentInParent<ProductionBuilding>();
                 if (enemyBuildingL != null && enemyBuildingL.Team == Team.Enemy && enemyBuildingL.IsAlive)
                 {
-                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    foreach (var u in s_cmdBuffer)
                         u.OrderAttackBuilding(enemyBuildingL);
                     BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
@@ -207,7 +232,7 @@ namespace InsectWars.RTS
                 var enemyHiveL = hit.collider.GetComponentInParent<HiveDeposit>();
                 if (enemyHiveL != null && enemyHiveL.Team == Team.Enemy && enemyHiveL.IsAlive)
                 {
-                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    foreach (var u in s_cmdBuffer)
                         u.OrderAttackHive(enemyHiveL);
                     BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
@@ -219,13 +244,13 @@ namespace InsectWars.RTS
 
             if (pending == PendingCommand.Move)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderMove(hit.point);
                 BottomBar.Instance.SetPending(PendingCommand.None);
             }
             else if (pending == PendingCommand.Attack)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                foreach (var u in s_cmdBuffer)
                     u.OrderAttackMove(hit.point);
                 BottomBar.Instance.SetPending(PendingCommand.None);
             }
@@ -253,7 +278,8 @@ namespace InsectWars.RTS
 
             var building = ProductionBuilding.Place(worldPos, buildType);
 
-            foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+            SnapshotSelectedUnits();
+            foreach (var u in s_cmdBuffer)
             {
                 if (u.Definition != null && u.Definition.canGather)
                     u.OrderBuild(building);

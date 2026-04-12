@@ -43,7 +43,6 @@ namespace InsectWars.RTS
         float _gatherTimer;
         float _buildTimer;
         float _idleScanTimer;
-        float _navBindRetryTimer;
         float _terrainSpeedTimer;
         float _terrainDmgAccum;
 
@@ -92,27 +91,25 @@ namespace InsectWars.RTS
 
         void Start()
         {
-            EnsureDefinition();
+            EnsureDefinition(Archetype);
             ApplyDefinition();
+
             if (_health <= 0.001f)
             {
                 _health = definition.maxHealth;
                 if (team == Team.Enemy)
                     _health *= GameSession.DifficultyEnemyHpMultiplier;
             }
+
             if (GetComponent<UnitHealthBar>() == null)
                 gameObject.AddComponent<UnitHealthBar>();
-            TryBindNavMesh();
         }
 
         public void Configure(Team t, UnitDefinition def, UnitArchetype archetype = UnitArchetype.Worker)
         {
             team = t;
-            definition = def != null
-                ? def
-                : UnitDefinition.CreateRuntimeDefault(archetype, TeamPalette.UnitBody(team, archetype));
-
-            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (def != null) definition = def;
+            EnsureDefinition(archetype);
             ApplyDefinition();
 
             _health = definition.maxHealth;
@@ -123,71 +120,47 @@ namespace InsectWars.RTS
                 gameObject.AddComponent<UnitHealthBar>();
         }
 
-        void EnsureDefinition()
+        void EnsureDefinition(UnitArchetype archetype)
         {
             if (definition != null) return;
-            definition = UnitDefinition.CreateRuntimeDefault(Archetype, TeamPalette.UnitBody(team, Archetype));
+            definition = UnitDefinition.CreateRuntimeDefault(archetype,
+                TeamPalette.UnitBody(team, archetype));
         }
 
         void ApplyDefinition()
         {
             if (definition == null) return;
             if (_agent == null) _agent = GetComponent<NavMeshAgent>();
-            if (_agent != null)
-            {
-                _agent.speed = definition.moveSpeed;
-                if (_agent.radius > 0.45f) _agent.radius = 0.45f;
-                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged
-                    ? definition.attackRange * 0.85f
-                    : 0.5f;
-            }
-            TeamPalette.ApplyToGameObject(team, gameObject, _selectionRing);
-        }
+            if (_agent == null) return;
 
-        void TryBindNavMesh()
-        {
-            if (_agent == null || !_agent.enabled || _agent.isOnNavMesh) return;
-            if (NavMesh.SamplePosition(transform.position, out var hit, 10f, NavMesh.AllAreas))
-                _agent.Warp(hit.position);
+            _agent.speed = definition.moveSpeed;
+            if (_agent.radius > 0.45f) _agent.radius = 0.45f;
+            _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged
+                ? definition.attackRange * 0.85f
+                : 0.5f;
+            _agent.autoRepath = true;
+            _agent.autoBraking = true;
+
+            var animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+                animator.applyRootMotion = false;
+
+            TeamPalette.ApplyToGameObject(team, gameObject, _selectionRing);
         }
 
         // ──────────── NavMesh Helpers ────────────
 
         void SafeSetDestination(Vector3 dest)
         {
-            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
-            if (_agent == null) return;
-            if (!_agent.enabled) _agent.enabled = true;
-
-            if (_order == UnitOrder.Move || _order == UnitOrder.Idle)
-                _agent.stoppingDistance = 0.5f;
-            else if (_order == UnitOrder.Attack && definition != null)
-                _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged
-                    ? definition.attackRange * 0.85f
-                    : 0.5f;
-
-            if (!_agent.isOnNavMesh)
+            if (AgentReady)
             {
-                if (NavMesh.SamplePosition(transform.position, out var hit, 10f, NavMesh.AllAreas))
-                    _agent.Warp(hit.position);
-            }
-
-            if (_agent.isOnNavMesh)
-            {
-                _agent.updatePosition = true;
-                _agent.updateRotation = true;
                 _agent.isStopped = false;
-                if (NavMesh.SamplePosition(dest, out var destHit, Mathf.Max(_agent.height * 4f, 2f), NavMesh.AllAreas))
-                    dest = destHit.position;
                 _agent.SetDestination(dest);
             }
         }
 
         void SafeStopAgent()
         {
-            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
-            if (_agent == null) return;
-            if (!_agent.enabled) _agent.enabled = true;
             if (AgentReady)
             {
                 _agent.isStopped = true;
@@ -389,16 +362,6 @@ namespace InsectWars.RTS
         {
             if (!IsAlive) return;
 
-            if (_agent != null && _agent.enabled && !_agent.isOnNavMesh)
-            {
-                _navBindRetryTimer -= Time.unscaledDeltaTime;
-                if (_navBindRetryTimer <= 0f)
-                {
-                    _navBindRetryTimer = 0.25f;
-                    TryBindNavMesh();
-                }
-            }
-
             _attackCooldown -= Time.deltaTime;
             TickTerrainEffects();
 
@@ -445,12 +408,21 @@ namespace InsectWars.RTS
         void TickMove()
         {
             if (_wantsAttackMove) ScanForEnemies();
-            if (!AgentReady || _agent.pathPending) return;
+            if (!AgentReady) return;
+            if (_agent.pathPending) return;
 
-            if (!_wantsAttackMove && _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
+            if (_agent.pathStatus == NavMeshPathStatus.PathInvalid)
+            {
                 _order = UnitOrder.Idle;
-            if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                return;
+            }
+
+            if (!_wantsAttackMove && _agent.hasPath &&
+                _agent.remainingDistance <= _agent.stoppingDistance + 0.2f &&
+                _agent.velocity.sqrMagnitude < 0.01f)
+            {
                 _order = UnitOrder.Idle;
+            }
         }
 
         void ScanForEnemies()

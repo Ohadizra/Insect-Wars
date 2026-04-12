@@ -12,7 +12,7 @@ namespace InsectWars.UI
 {
     public class HomeMenuBootstrap : MonoBehaviour
     {
-        [SerializeField] string streamingVideoName = "MenuLoop.mp4";
+        [SerializeField] VideoClip backgroundVideoClip;
         [SerializeField] UnitVisualLibrary visualLibrary;
 
         [Header("Steampunk Sketch Assets")]
@@ -149,13 +149,11 @@ namespace InsectWars.UI
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.targetTexture = vrt;
             vp.aspectRatio = VideoAspectRatio.FitInside;
-            vp.source = VideoSource.Url;
+            vp.source = VideoSource.VideoClip;
 
-            var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
-            if (System.IO.File.Exists(path))
+            if (backgroundVideoClip != null)
             {
-                // Use file:// prefix for absolute paths to ensure compatibility
-                vp.url = "file://" + path;
+                vp.clip = backgroundVideoClip;
                 vp.Prepare();
                 vp.prepareCompleted += (p) => {
                     p.Play();
@@ -164,7 +162,7 @@ namespace InsectWars.UI
             }
             else
             {
-                Debug.LogWarning($"HomeMenu: Video file not found at {path}");
+                Debug.LogWarning("HomeMenu: backgroundVideoClip not assigned.");
                 vp.enabled = false;
             }
 
