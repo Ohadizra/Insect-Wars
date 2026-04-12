@@ -491,6 +491,12 @@
       "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
       "content": "continur",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "3946516b-1474-4f89-91bd-f66d4cab5bbd",
+      "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
+      "content": "I have successfully created and registered the new **Frozen Expanse** map in `SkirmishMapPresets.cs`.\n\n### Changes Made:\n1.  **Registered the Map**: Updated `GetAll()` to include `CreateFrozenExpanse()`, making it available for selection in the skirmish menu.\n2.  **Implemented `CreateFrozenExpanse()`**:\n    *   **Scale**: Set `mapHalfExtent` to `120f`, creating a large 240x240 playable area.\n    *   **Symmetry**: Used strict diagonal mirror symmetry (negated X and Z for all mirrored elements).\n    *   **Main Bases**: Positioned in opposite corners on elevated frost plateaus with narrow, defensible ramps (`rampWidth = 0.022f`).\n    *   **Natural Expansions**: Semi-walled expansions with rich 12,000-calorie frosted apples.\n    *   **Dynamic Terrain**: \n        *   **Ice Sheets** (WaterPuddle) and **Frozen Slush** (MudPatch) at key chokes to slow movement.\n        *   **Frozen Brambles** (ThornPatch) on flanking routes to punish reckless pathing.\n        *   **Icicle Ridges** (RockyRidge) providing vision and pathing blocks to create non-linear attack routes.\n        *   **Dead Winter Grass** (TallGrass) for ambush positions near resource nodes.\n    *   **Resource Distribution**: A total of 15 frosted apples (resource nodes) distributed between bases, expansions, and high-value contested areas in the center.\n\nThe map is now ready for use. You can select \"Frozen Expanse\" from the skirmish map list to experience the new high-fidelity realistic winter design.",
+      "snapshot_message_type": 1
     }
   ]
 }
