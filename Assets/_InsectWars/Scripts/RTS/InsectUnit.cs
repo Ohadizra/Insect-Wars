@@ -36,6 +36,7 @@ namespace InsectWars.RTS
         RottingFruitNode _gatherTarget;
         RottingFruitNode _lastGatherTarget;
         float _gatherTimer;
+        float _gatherAngle;
         float _idleScanTimer;
         bool _holdPosition;
         bool _patrolActive;
@@ -384,10 +385,11 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _gatherTarget = node;
             _lastGatherTarget = node;
+            _gatherAngle = Random.Range(0f, Mathf.PI * 2f);
             _order = UnitOrder.Gather;
             _agent.ResetPath();
             _agent.isStopped = false;
-            _agent.SetDestination(node.GetGatherPoint(transform.position));
+            _agent.SetDestination(node.GetGatherPoint(_gatherAngle));
         }
 
         public void OrderReturnToHive()
@@ -557,7 +559,7 @@ namespace InsectWars.RTS
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
                 _agent.isStopped = false;
-                _agent.SetDestination(_gatherTarget.GetGatherPoint(transform.position));
+                _agent.SetDestination(_gatherTarget.GetGatherPoint(_gatherAngle));
                 return;
             }
             _agent.isStopped = true;

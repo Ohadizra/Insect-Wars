@@ -21,10 +21,10 @@ namespace InsectWars.RTS
         public float GatherTickSeconds => gatherTickSeconds;
 
         /// <summary>How close a worker must be (XZ) to start gathering.</summary>
-        public float GatherRange => VisualRadius + 1.5f;
+        public float GatherRange => VisualRadius + 2.5f;
 
         /// <summary>Visual radius plus buffer — ants should navigate to this distance, not the center.</summary>
-        public float StopRadius => VisualRadius + 0.5f;
+        public float StopRadius => VisualRadius + 1.5f;
 
         float VisualRadius
         {
@@ -40,13 +40,11 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>Returns a world position on the fruit surface facing the requester.</summary>
-        public Vector3 GetGatherPoint(Vector3 fromPosition)
+        /// <summary>Returns a world position on the fruit surface at the given angle (radians).</summary>
+        public Vector3 GetGatherPoint(float angleRad)
         {
-            var dir = fromPosition - transform.position;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            return transform.position + dir.normalized * StopRadius;
+            var dir = new Vector3(Mathf.Cos(angleRad), 0f, Mathf.Sin(angleRad));
+            return transform.position + dir * StopRadius;
         }
 
         void Awake()
