@@ -235,12 +235,42 @@ namespace InsectWars.RTS
                     else
                         kvp.Key.material.color = kvp.Value;
                 }
-            }
-        }
+                PlayCompletionEffect();
+                }
+                }
 
         void UpdateConstructionVisual()
         {
             float progress = ConstructionProgress;
+            
+            // Set shader property if applicable
+            bool hasCustomShader = false;
+            foreach (var kvp in _originalColors)
+            {
+                if (kvp.Key == null || kvp.Key.material == null) continue;
+                if (kvp.Key.material.HasProperty("_ConstructionProgress"))
+                {
+                    kvp.Key.material.SetFloat("_ConstructionProgress", progress);
+                    hasCustomShader = true;
+                }
+            }
+
+            if (!hasCustomShader)
+            {
+                // Fallback darkening logic
+                float darkening = Mathf.Lerp(0.35f, 1f, progress);
+                foreach (var kvp in _originalColors)
+                {
+                    if (kvp.Key == null || kvp.Key.material == null) continue;
+                    var orig = kvp.Value;
+                    var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
+
+                    if (kvp.Key.material.HasProperty("_BaseColor"))
+                        kvp.Key.material.SetColor("_BaseColor", tinted);
+                    else
+                        kvp.Key.material.color = tinted;
+                }
+            }
 
             float scaleY = Mathf.Lerp(0.4f, 1f, progress);
             transform.localScale = new Vector3(
@@ -248,17 +278,70 @@ namespace InsectWars.RTS
                 _originalScale.y * scaleY,
                 _originalScale.z);
 
-            float darkening = Mathf.Lerp(0.35f, 1f, progress);
-            foreach (var kvp in _originalColors)
+            if (_assignedBuilders > 0 && progress < 1f)
             {
-                if (kvp.Key == null || kvp.Key.material == null) continue;
-                var orig = kvp.Value;
-                var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
+                SpawnConstructionParticles(progress);
+            }
+        }
 
-                if (kvp.Key.material.HasProperty("_BaseColor"))
-                    kvp.Key.material.SetColor("_BaseColor", tinted);
-                else
-                    kvp.Key.material.color = tinted;
+        void SpawnConstructionParticles(float progress)
+        {
+            // Spawn subtle dust/spark particles at the growing top edge
+            if (Random.value > 0.15f) return;
+
+            var rends = GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) return;
+            var bounds = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
+
+            Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
+            Vector3 randomOffset = new Vector3(Random.Range(-2f, 2f), 0f, Random.Range(-2f, 2f));
+            
+            // Simple dust particles fallback
+            var debris = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            debris.transform.position = topCenter + randomOffset;
+            debris.transform.localScale = Vector3.one * Random.Range(0.05f, 0.15f);
+            Destroy(debris.GetComponent<Collider>());
+            
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            mat.color = new Color(0.8f, 0.75f, 0.65f, 0.8f);
+            debris.GetComponent<Renderer>().sharedMaterial = mat;
+            
+            var rb = debris.AddComponent<Rigidbody>();
+            rb.linearVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(1f, 3f), Random.Range(-1f, 1f));
+            Destroy(debris, 0.6f);
+        }
+
+        void PlayCompletionEffect()
+        {
+            // Completion thunk/crystallization sound
+            if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
+                GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
+
+            // Use VFX prefab if available
+            var lib = SkirmishDirector.ActiveVisualLibrary;
+            if (lib != null && lib.completionVfxPrefab != null)
+            {
+                Instantiate(lib.completionVfxPrefab, transform.position, Quaternion.identity);
+            }
+            else
+            {
+                // Fallback burst of particles
+                for (int i = 0; i < 15; i++)
+                {
+                    var debris = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    debris.transform.position = transform.position + Vector3.up * 0.5f;
+                    debris.transform.localScale = Vector3.one * Random.Range(0.1f, 0.3f);
+                    Destroy(debris.GetComponent<Collider>());
+                    
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                    mat.color = new Color(1f, 1f, 1f, 0.9f);
+                    debris.GetComponent<Renderer>().sharedMaterial = mat;
+                    
+                    var rb = debris.AddComponent<Rigidbody>();
+                    rb.linearVelocity = Random.insideUnitSphere * 5f + Vector3.up * 3f;
+                    Destroy(debris, 1.2f);
+                }
             }
         }
 

@@ -13,6 +13,7 @@ namespace InsectWars.RTS
         static readonly int IsMoving = Animator.StringToHash("IsMoving");
         static readonly int Attack = Animator.StringToHash("Attack");
         static readonly int Gathering = Animator.StringToHash("Gathering");
+        static readonly int Build = Animator.StringToHash("Build");
         static readonly int Death = Animator.StringToHash("Death");
 
         [SerializeField] Transform modelRoot;
@@ -106,6 +107,7 @@ namespace InsectWars.RTS
                 animator.SetFloat(Speed, planar.magnitude);
                 animator.SetBool(IsMoving, moving);
                 animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isStopped);
+                animator.SetBool(Build, _buildAnimTimer > 0f);
             }
 
             if (modelRoot != null)

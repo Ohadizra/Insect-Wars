@@ -32,22 +32,26 @@ namespace InsectWars.Data
             if (rootCellarPrefab == null)
                 rootCellarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Prefabs/RootCellar.prefab");
-        }
-        #endif
+            if (completionVfxPrefab == null)
+                completionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Prefabs/BuildingCompleteVFX.prefab");
+            }
+            #endif
 
-        [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
-        public GameObject workerPrefab;
-        public GameObject meleePrefab;
-        public GameObject rangedPrefab;
+            [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
+            public GameObject workerPrefab;
+            public GameObject meleePrefab;
+            public GameObject rangedPrefab;
 
-        [Header("Buildings")]
-        public GameObject hivePrefab;
-        public Material hiveMaterial;
-        public GameObject undergroundPrefab;
-        public GameObject skyTowerPrefab;
-        public GameObject rootCellarPrefab;
+            [Header("Buildings")]
+            public GameObject hivePrefab;
+            public Material hiveMaterial;
+            public GameObject undergroundPrefab;
+            public GameObject skyTowerPrefab;
+            public GameObject rootCellarPrefab;
+            public GameObject completionVfxPrefab;
 
-        [Header("Environment")]
+            [Header("Environment")]
         public GameObject rottingApplePrefab;
         public GameObject calorieChunkPrefab;
         public GameObject clayWallPrefab;
