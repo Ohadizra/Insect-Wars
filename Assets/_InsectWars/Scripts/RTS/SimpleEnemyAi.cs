@@ -4,13 +4,6 @@ using UnityEngine;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// SC2/WC3-grade per-unit AI for enemy team.
-    /// Workers: round-trip gathering via <see cref="EnemyCommander.FindBestFruit"/>,
-    ///          saturation tracking, flee toward nearby allies.
-    /// Combat:  leash radius, assist nearby allies, focus-fire injured targets,
-    ///          ranged kiting, low-HP retreat, re-aggro on damage.
-    /// </summary>
     public class SimpleEnemyAi : MonoBehaviour, IAiController
     {
         [SerializeField] float thinkInterval = 1.2f;
@@ -19,13 +12,11 @@ namespace InsectWars.RTS
         float _timer;
         float _thinkSeconds;
 
-        // Combat state
         bool _aggro;
         Vector3 _engagementOrigin;
         bool _hasEngagementOrigin;
         float _lastKnownHp = float.MaxValue;
 
-        // Worker gather tracking
         RottingFruitNode _assignedFruit;
 
         const float LeashRadius = 40f;
@@ -52,7 +43,6 @@ namespace InsectWars.RTS
         {
             if (_self == null || !_self.IsAlive || _self.Team != Team.Enemy) return;
 
-            // Re-aggro on damage: any HP loss while passive triggers aggro
             if (!_aggro && _self.Archetype != UnitArchetype.Worker)
             {
                 if (_self.CurrentHealth < _lastKnownHp - 0.01f)
@@ -77,13 +67,10 @@ namespace InsectWars.RTS
             TickCombat();
         }
 
-        // ──────────── Worker AI ────────────
-
         void TickWorker()
         {
             float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
 
-            // Threat scan — flee from non-worker player combat units
             InsectUnit threat = null;
             float threatDist = vision;
             foreach (var u in RtsSimRegistry.Units)
@@ -104,11 +91,9 @@ namespace InsectWars.RTS
                 return;
             }
 
-            // Already busy gathering or returning — keep going
             if (_self.CurrentOrder is UnitOrder.Gather or UnitOrder.ReturnDeposit)
                 return;
 
-            // Idle — pick the best fruit using round-trip scoring
             if (_self.CurrentOrder == UnitOrder.Idle)
             {
                 ClearFruitAssignment();
@@ -123,7 +108,6 @@ namespace InsectWars.RTS
 
         Vector3 FindFleeDestination()
         {
-            // Prefer fleeing toward a nearby allied combat unit so the threat gets engaged
             InsectUnit nearestAlly = null;
             float bestDist = 25f;
             foreach (var u in RtsSimRegistry.Units)
@@ -154,15 +138,12 @@ namespace InsectWars.RTS
             _assignedFruit = null;
         }
 
-        // ──────────── Combat AI ────────────
-
         void TickCombat()
         {
             float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
             float hpFrac = _self.MaxHealth > 0.01f ? _self.CurrentHealth / _self.MaxHealth : 1f;
             bool isRanged = _self.Archetype == UnitArchetype.BasicRanged;
 
-            // --- Low HP retreat ---
             if (hpFrac <= RetreatHpFraction)
             {
                 _aggro = false;
@@ -172,7 +153,6 @@ namespace InsectWars.RTS
                 return;
             }
 
-            // --- Leash: disengage if chased too far from engagement origin ---
             if (_hasEngagementOrigin && _aggro)
             {
                 if (Vector3.Distance(transform.position, _engagementOrigin) > LeashRadius)
@@ -184,12 +164,11 @@ namespace InsectWars.RTS
                 }
             }
 
-            // --- Aggro trigger ---
             if (!_aggro)
             {
                 foreach (var u in RtsSimRegistry.Units)
                 {
-                    if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
+                    if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                     float d = Vector3.Distance(transform.position, u.transform.position);
                     if (d > vision) continue;
                     float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
@@ -202,7 +181,6 @@ namespace InsectWars.RTS
                 if (!_aggro) return;
             }
 
-            // --- Assist nearby ally under attack ---
             var assistTarget = FindAssistTarget(vision);
             if (assistTarget != null)
             {
@@ -211,7 +189,6 @@ namespace InsectWars.RTS
                 return;
             }
 
-            // --- Ranged kiting ---
             if (isRanged && _self.CurrentOrder == UnitOrder.Attack && _self.AttackTarget != null)
             {
                 float dist = Vector3.Distance(transform.position, _self.AttackTarget.position);
@@ -228,13 +205,12 @@ namespace InsectWars.RTS
                 }
             }
 
-            // --- Target selection with focus-fire scoring ---
             InsectUnit best = null;
             float bestScore = float.MaxValue;
 
             foreach (var u in RtsSimRegistry.Units)
             {
-                if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
+                if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 float d = Vector3.Distance(transform.position, u.transform.position);
                 if (d > vision * 2.5f) continue;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
@@ -245,7 +221,6 @@ namespace InsectWars.RTS
                 float workerBias = u.Archetype == UnitArchetype.Worker ? 0.75f : 1f;
                 float injuredBias = 0.3f + 0.7f * uHpFrac;
 
-                // Prefer targets already taking damage from allies (focus-fire)
                 float focusBias = (u.LastDamageTime >= 0 && Time.time - u.LastDamageTime < 3f) ? 0.7f : 1f;
 
                 float score = d * workerBias * injuredBias * focusBias;
@@ -256,13 +231,41 @@ namespace InsectWars.RTS
                 && !(_self.CurrentOrder == UnitOrder.Attack && _self.AttackTarget == best.transform))
             {
                 _self.OrderAttack(best);
+                return;
+            }
+
+            // No units in range — attack a nearby player building if visible
+            if (_self.CurrentOrder != UnitOrder.AttackBuilding)
+                TryAttackNearbyBuilding(vision * 2.5f);
+        }
+
+        void TryAttackNearbyBuilding(float searchRadius)
+        {
+            // Check player production buildings
+            ProductionBuilding bestBuilding = null;
+            float bestDist = searchRadius;
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                float d = Vector3.Distance(transform.position, b.transform.position);
+                if (d < bestDist) { bestDist = d; bestBuilding = b; }
+            }
+            if (bestBuilding != null)
+            {
+                _self.OrderAttackBuilding(bestBuilding);
+                return;
+            }
+
+            // Check player hive
+            var playerHive = HiveDeposit.PlayerHive;
+            if (playerHive != null && playerHive.IsAlive)
+            {
+                float d = Vector3.Distance(transform.position, playerHive.transform.position);
+                if (d < searchRadius)
+                    _self.OrderAttackHive(playerHive);
             }
         }
 
-        /// <summary>
-        /// Scans nearby allies; if one was recently damaged, returns the closest
-        /// player unit to that ally (the likely attacker).
-        /// </summary>
         InsectUnit FindAssistTarget(float visionRange)
         {
             foreach (var ally in RtsSimRegistry.Units)

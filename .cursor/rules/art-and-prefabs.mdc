@@ -1,0 +1,41 @@
+---
+description: Prefab conventions, performance budgets, and visual library pipeline
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# Prefab and Asset Conventions
+
+## Visual Library Pipeline
+
+All prefabs are assigned via `UnitVisualLibrary` (ScriptableObject, `Insect Wars/Unit Visual Library`). The runtime falls back to **procedural placeholder geometry** when no prefab is provided — this is by design.
+
+Prefab slots in `UnitVisualLibrary`:
+- **Units:** `workerPrefab`, `meleePrefab`, `rangedPrefab`
+- **Buildings:** `hivePrefab`, `undergroundPrefab`, `skyTowerPrefab`
+- **Environment:** `rottingApplePrefab`, `calorieChunkPrefab`, `clayWallPrefab`, `bigAppleMaterial`, `groundMaterial`, `baseSoilLayer`, `drySoilLayer`
+- **Terrain features:** `waterPuddlePrefab`, `tallGrassPrefab`, `mudPatchPrefab`, `thornPatchPrefab`, `rockyRidgePrefab`
+- **Combat:** `projectilePrefab`
+
+## Prefab Rules
+
+- **Pivot** at ground level, center XZ
+- **No colliders** — added programmatically (`NavMeshObstacle`, `BoxCollider`, `CapsuleCollider`)
+- **No NavMeshObstacle/NavMeshModifier** — added by code
+- **No MonoBehaviour scripts** on art prefabs
+- **No lights or cameras**
+- **Y rotation** is set by the system — don't bake rotation into prefabs
+- Unit prefabs require `NavMeshAgent`, `CapsuleCollider`, `InsectUnit` on root (added if missing)
+
+## Performance Budgets
+
+- Terrain feature prefabs: **under 1500 triangles**
+- **1–2 materials** per prefab (URP/Lit or URP/Simple Lit)
+- Avoid transparency (use alpha-clip if needed for grass)
+- No real-time lights, reflections, or heavy transparency
+- Use LODs for complex meshes (rocky ridges)
+- Static shared meshes/materials for selection rings, health bars
+
+## Team Color Application
+
+`TeamPalette` tinting is applied at spawn via `MaterialPropertyBlock` (prefabs) or material tint cache (procedural). Art prefabs should use a **neutral/white base color** so team tinting works correctly. The system sets `_BaseColor` or `_Color` on all renderers.

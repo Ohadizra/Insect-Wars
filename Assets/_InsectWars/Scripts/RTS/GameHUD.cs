@@ -13,18 +13,24 @@ namespace InsectWars.RTS
         public static RectTransform SelectionPanel { get; private set; }
         public static RectTransform ActionPanel { get; private set; }
 
-        [SerializeField] GameObject hudCanvasPrefab;
+        [Header("Natural Ornate Assets")]
+        [SerializeField] Sprite barMechanicalSprite;
+        [SerializeField] Sprite frameSquareSprite;
+        [SerializeField] Sprite portraitFrameSprite;
+        [SerializeField] Sprite buttonRoundSprite;
+        [SerializeField] Sprite larvaIcon;
+        [SerializeField] Sprite eggIcon;
+        [SerializeField] Sprite crystalIcon;
+        [SerializeField] Sprite appleIcon;
 
-        [Header("Insectoid UI Skin")]
-        [SerializeField] Sprite barSprite;
-        [SerializeField] Sprite frameSprite;
-        [SerializeField] Sprite actionGridSprite;
-        [SerializeField] Sprite buttonSprite;
+        // ── Organic Palette ──
+        static readonly Color ColAmber     = new(0.96f, 0.90f, 0.78f); // Parchment/Amber
+        static readonly Color ColSub       = new(0.83f, 0.69f, 0.44f); // Copper
+        static readonly Color ColWhite     = Color.white;
 
         Text _calorieLabel;
         Text _selectionLabel;
-        const string SelectionHint =
-            "LMB select · RMB move/attack/gather · M/S/H/P/A commands (see bottom bar)";
+        const string SelectionHint = "LMB SELECT · RMB COMMAND";
 
         void Awake()
         {
@@ -37,13 +43,55 @@ namespace InsectWars.RTS
             {
                 var es = new GameObject("EventSystem");
                 es.AddComponent<EventSystem>();
-                es.AddComponent<InputSystemUIInputModule>();
+                var mod = es.AddComponent<InputSystemUIInputModule>();
+                
+                // Manual Link Actions for responsiveness
+                var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+                if (asset != null)
+                {
+                    mod.actionsAsset = asset;
+                    var uiMap = asset.FindActionMap("UI");
+                    if (uiMap != null)
+                    {
+                        mod.point = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Point"));
+                        mod.leftClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Click"));
+                        mod.rightClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("RightClick"));
+                        mod.middleClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("MiddleClick"));
+                        mod.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("ScrollWheel"));
+                        mod.move = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Navigate"));
+                        mod.submit = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Submit"));
+                        mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
+                    }
+                }
             }
         }
 
-                void BuildHud()
+        void BuildHud()
         {
             EnsureEventSystem();
+
+            // Clear ALL existing Canvases to ensure replacement
+            var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var c in canvases)
+            {
+                if (c.name.Contains("HUD") || c.name.Contains("Canvas") || c.name.Contains("UI"))
+                {
+                    c.gameObject.SetActive(false);
+                    if (c.name == "DemoHUD") DestroyImmediate(c.gameObject);
+                }
+            }
+
+        #if UNITY_EDITOR
+            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            if (barMechanicalSprite == null) barMechanicalSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "top_bar_frame.png");
+            if (frameSquareSprite == null) frameSquareSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
+            if (portraitFrameSprite == null) portraitFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
+            if (buttonRoundSprite == null) buttonRoundSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
+            if (larvaIcon == null) larvaIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
+            if (eggIcon == null) eggIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_egg.png");
+            if (crystalIcon == null) crystalIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_crystal.png");
+            if (appleIcon == null) appleIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/icon_apple.png");
+            #endif
 
             var canvasGo = new GameObject("DemoHUD");
             canvasGo.transform.SetParent(transform);
@@ -58,45 +106,54 @@ namespace InsectWars.RTS
             canvasGo.AddComponent<GraphicRaycaster>();
             HudCanvasRect = canvasGo.GetComponent<RectTransform>();
 
-#if UNITY_EDITOR
-            // Auto-wire the new Chitin art if null
-            if (barSprite == null) barSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Bar_Chitin_Horizontal.png");
-            if (frameSprite == null) frameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Frame_Chitin_Square.png");
-            if (actionGridSprite == null) actionGridSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_ActionPanel_Chitin.png");
-            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/UI_Button_Chitin.png");
-#endif
+            // --- Top Left: Resource Display (Icon + Text Only) ---
+            var container = new GameObject("CalorieDisplay").AddComponent<RectTransform>();
+            container.SetParent(HudCanvasRect, false);
+            container.anchorMin = container.anchorMax = container.pivot = new Vector2(0, 1);
+            container.anchoredPosition = new Vector2(30, -25.5f);
+            container.sizeDelta = new Vector2(170, 42.5f);
+            
+            _calorieLabel = CreateResourceItem(container, appleIcon != null ? appleIcon : larvaIcon, "0");
 
-            // --- Top Left: Resources ---
-            var resourceContainer = new GameObject("Resources").AddComponent<RectTransform>();
-            resourceContainer.SetParent(HudCanvasRect, false);
-            resourceContainer.anchorMin = resourceContainer.anchorMax = resourceContainer.pivot = new Vector2(0, 1);
-            resourceContainer.anchoredPosition = new Vector2(30, -30);
-            resourceContainer.sizeDelta = new Vector2(360, 50);
 
-            var calPanel = CreatePanel("CaloriePanel", resourceContainer, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, barSprite);
-            _calorieLabel = CreateText("Text", calPanel.transform, Vector2.zero, Vector2.one, new Vector2(15, 0), new Vector2(-15, 0), new Vector2(0.5f, 0.5f), "Calories: 0", 18, Color.white);
-            _calorieLabel.alignment = TextAnchor.MiddleCenter;
-
-            // --- Top Right: Menu ---
-            var menuPanel = CreatePanel("MenuButton", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -30), new Vector2(140, 50), buttonSprite);
-            var menuBtn = menuPanel.gameObject.AddComponent<Button>();
-            menuBtn.onClick.AddListener(() => SceneLoader.LoadHome());
-            CreateText("Label", menuPanel.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, "MENU", 18, Color.white).alignment = TextAnchor.MiddleCenter;
-
-            // --- Mid Left: Assistant ---
-            var assistantFrame = CreatePanel("AssistantFrame", HudCanvasRect, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(30, 80), new Vector2(100, 100), frameSprite);
-            CreateText("Label", assistantFrame.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 1), new Vector2(0, -5), new Vector2(100, 20), "ASSISTANT", 10, new Color(0.7f, 0.7f, 0.7f)).alignment = TextAnchor.MiddleCenter;
+            // --- Top Right: Menu Button ---
+            var menuBtnGo = CreatePanel("MenuBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -25.5f), new Vector2(68, 68), buttonRoundSprite);
+            menuBtnGo.gameObject.AddComponent<Button>().onClick.AddListener(() => SceneLoader.LoadHome());
 
             // --- Bottom Left: Map ---
-            MapPanel = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(30, 30), new Vector2(280, 280), frameSprite);
+            // Removed MapFrame, SelectionPanel, ActionPanel as they are handled by BottomBar
+
+            // MapPanel = CreatePanel("MapFrame", HudCanvasRect, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(30, 30), new Vector2(300, 300), frameSquareSprite);
 
             // --- Bottom Center: Selection ---
-            SelectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(640, 140), frameSprite);
-            _selectionLabel = CreateText("SelectionText", SelectionPanel.transform, Vector2.zero, Vector2.one, new Vector2(30, 30), new Vector2(-30, -30), new Vector2(0.5f, 0.5f), SelectionHint, 16, Color.white);
-            _selectionLabel.alignment = TextAnchor.MiddleCenter;
+            // SelectionPanel = CreatePanel("SelectionPanel", HudCanvasRect, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(600, 200), frameSquareSprite);
+            // _selectionLabel = CreateText("Hint", SelectionPanel, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(40, 40), new Vector2(-40, -40), SelectionHint, 18, ColAmber);
+            // _selectionLabel.alignment = TextAnchor.MiddleCenter;
 
             // --- Bottom Right: Actions ---
-            ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 260), actionGridSprite);
+            // ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 300), frameSquareSprite);
+            }
+
+        Text CreateResourceItem(Transform parent, Sprite icon, string initialVal)
+        {
+            var go = new GameObject("ResItem");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            
+            var img = new GameObject("Icon").AddComponent<Image>();
+            img.transform.SetParent(rt, false);
+            img.sprite = icon;
+            img.rectTransform.anchorMin = new Vector2(0, 0.5f); img.rectTransform.anchorMax = new Vector2(0, 0.5f);
+            img.rectTransform.pivot = new Vector2(0, 0.5f); img.rectTransform.anchoredPosition = Vector2.zero;
+            img.rectTransform.sizeDelta = new Vector2(44, 44);
+            img.preserveAspect = true;
+            
+            var val = CreateText("Val", rt, new Vector2(0, 0), new Vector2(1, 1), new Vector2(0, 0.5f), new Vector2(55, 0), Vector2.zero, initialVal, 22, ColAmber);
+            val.alignment = TextAnchor.MiddleLeft;
+            return val;
         }
 
         RectTransform CreatePanel(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPos, Vector2 size, Sprite sprite)
@@ -111,8 +168,8 @@ namespace InsectWars.RTS
             rt.sizeDelta = size;
             var img = go.AddComponent<Image>();
             img.sprite = sprite;
+            img.color = ColWhite;
             img.type = Image.Type.Sliced;
-            img.color = new Color(0.1f, 0.1f, 0.1f, 0.7f);
             return rt;
         }
 
@@ -132,11 +189,10 @@ namespace InsectWars.RTS
             rt.pivot = pivot;
             rt.offsetMin = offsetMin;
             rt.offsetMax = offsetMax;
-
-            var shadow = go.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0, 0, 0, 0.8f);
-            shadow.effectDistance = new Vector2(1, -1);
-
+            
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0.1f, 0.08f, 0.05f, 0.8f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
             return t;
         }
 
@@ -161,7 +217,7 @@ namespace InsectWars.RTS
         void OnCalories(int n)
         {
             if (_calorieLabel != null)
-                _calorieLabel.text = $"Calories: {n:N0}";
+                _calorieLabel.text = $"{n:N0}";
         }
 
         void Update()
@@ -170,7 +226,7 @@ namespace InsectWars.RTS
             {
                 var c = 0;
                 foreach (var _ in SelectionController.Instance.SelectedPlayerUnits()) c++;
-                _selectionLabel.text = c > 0 ? $"Selected: {c} unit(s)" : SelectionHint;
+                _selectionLabel.text = c > 0 ? $"SELECTED: {c} UNITS" : SelectionHint;
             }
         }
     }

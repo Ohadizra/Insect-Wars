@@ -44,11 +44,13 @@ namespace InsectWars.RTS
 
             if (!Mouse.current.rightButton.wasPressedThisFrame) return;
             if (PointerOverUi()) return;
-            Sc2BottomBar.Instance?.SetPending(PendingCommand.None);
+            BottomBar.Instance?.SetPending(PendingCommand.None);
 
             if (SelectionController.Instance == null) return;
             var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (!Physics.Raycast(ray, out var hit, 500f)) return;
+            // Collide mode detects units and resources that use trigger colliders.
+            // Distance 1500 ensures the terrain is always reachable regardless of camera height.
+            if (!Physics.Raycast(ray, out var hit, 1500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
 
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
@@ -79,6 +81,8 @@ namespace InsectWars.RTS
                 {
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
+                    else
+                        u.OrderMove(hit.point);
                 }
                 return;
             }
@@ -91,20 +95,45 @@ namespace InsectWars.RTS
                 return;
             }
 
-            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Resources"))
+            var enemyBuilding = hit.collider.GetComponentInParent<ProductionBuilding>();
+            if (enemyBuilding != null && enemyBuilding.Team == Team.Enemy && enemyBuilding.IsAlive)
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    u.OrderAttackBuilding(enemyBuilding);
                 return;
+            }
+
+            var enemyHive = hit.collider.GetComponentInParent<HiveDeposit>();
+            if (enemyHive != null && enemyHive.Team == Team.Enemy && enemyHive.IsAlive)
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                    u.OrderAttackHive(enemyHive);
+                return;
+            }
+
+            // No special target found. If the primary hit was a trigger collider (e.g. a
+            // player-unit capsule or a resource trigger sitting in front of the terrain),
+            // re-cast ignoring triggers so we get the actual ground surface point.
+            // This prevents "OrderMove(unit.position)" when right-clicking near own units.
+            Vector3 moveTarget = hit.point;
+            if (hit.collider.isTrigger)
+            {
+                if (Physics.Raycast(ray, out var groundHit, 1500f,
+                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                    moveTarget = groundHit.point;
+            }
 
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                u.OrderMove(hit.point);
+                u.OrderMove(moveTarget);
         }
 
         void TryLeftClickCommand(Vector2 screen)
         {
-            var pending = Sc2BottomBar.Pending;
+            var pending = BottomBar.Pending;
             if (pending == PendingCommand.None && !PatrolCoordinator.WaitingForSecondPoint)
                 return;
             if (PointerOverUi()) return;
-            if (SelectionController.Instance == null || Sc2BottomBar.Instance == null) return;
+            if (SelectionController.Instance == null || BottomBar.Instance == null) return;
 
             if (pending == PendingCommand.PlaceBuilding)
             {
@@ -121,7 +150,7 @@ namespace InsectWars.RTS
             if (!hasSel) return;
 
             var ray = _cam.ScreenPointToRay(screen);
-            if (!Physics.Raycast(ray, out var hit, 500f)) return;
+            if (!Physics.Raycast(ray, out var hit, 1500f)) return;
 
             if (pending == PendingCommand.Gather)
             {
@@ -133,7 +162,7 @@ namespace InsectWars.RTS
                         if (u.Definition != null && u.Definition.canGather)
                             u.OrderGather(fruit);
                     }
-                    Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
                     return;
                 }
                 return;
@@ -145,7 +174,7 @@ namespace InsectWars.RTS
                     return;
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderPatrol(a, b);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
                 return;
             }
 
@@ -160,9 +189,29 @@ namespace InsectWars.RTS
                 {
                     foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                         u.OrderAttack(enemy);
-                    Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
                 }
                 return;
+            }
+
+            if (pending == PendingCommand.Attack)
+            {
+                var enemyBuildingL = hit.collider.GetComponentInParent<ProductionBuilding>();
+                if (enemyBuildingL != null && enemyBuildingL.Team == Team.Enemy && enemyBuildingL.IsAlive)
+                {
+                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                        u.OrderAttackBuilding(enemyBuildingL);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
+                    return;
+                }
+                var enemyHiveL = hit.collider.GetComponentInParent<HiveDeposit>();
+                if (enemyHiveL != null && enemyHiveL.Team == Team.Enemy && enemyHiveL.IsAlive)
+                {
+                    foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                        u.OrderAttackHive(enemyHiveL);
+                    BottomBar.Instance.SetPending(PendingCommand.None);
+                    return;
+                }
             }
 
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Resources"))
@@ -172,13 +221,13 @@ namespace InsectWars.RTS
             {
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderMove(hit.point);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
             }
             else if (pending == PendingCommand.Attack)
             {
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
                     u.OrderAttackMove(hit.point);
-                Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+                BottomBar.Instance.SetPending(PendingCommand.None);
             }
         }
 
@@ -192,7 +241,11 @@ namespace InsectWars.RTS
             var terrain = Terrain.activeTerrain;
             float terrainY = terrain != null ? terrain.SampleHeight(flatPos) : flatPos.y;
             var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
-            var buildType = Sc2BottomBar.PendingBuildingType;
+
+            if (!BuildZoneRegistry.IsInBuildZone(worldPos))
+                return;
+
+            var buildType = BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
 
             if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(cost))
@@ -203,13 +256,10 @@ namespace InsectWars.RTS
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
             {
                 if (u.Definition != null && u.Definition.canGather)
-                {
-                    u.OrderMove(building.transform.position);
-                    break;
-                }
+                    u.OrderBuild(building);
             }
 
-            Sc2BottomBar.Instance.SetPending(PendingCommand.None);
+            BottomBar.Instance.SetPending(PendingCommand.None);
         }
     }
 }

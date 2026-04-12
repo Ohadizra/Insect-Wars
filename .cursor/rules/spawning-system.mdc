@@ -1,0 +1,35 @@
+---
+description: Unit spawning rules — all spawn positions are building-relative, never map-relative
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# Spawning System
+
+All unit spawning is **building-relative**. No spawn position may be derived from map layout, hive-to-apple direction, or any `MapDefinition` field. This ensures consistent spawning across all maps.
+
+## Starting Army (match begin)
+
+Handled in `MapDirector.Start()` using `SpawnPositionAroundBuilding()`.
+
+- **Workers** spawn in a close ring around the hive (`WorkerSpawnRadius = 5f`), just outside the building edge.
+- **Combat units** (Mantis, Beetle) spawn in a separate outer ring (`CombatSpawnRadius = 10f`), clearly separated from workers.
+- Both rings use `SpawnPositionAroundBuilding()` which samples terrain height and snaps to NavMesh.
+- Camera focuses on the hive position, not a derived point.
+
+## Produced Units (during match)
+
+Handled in `ProductionBuilding.SpawnFinishedUnit()` and `HiveDeposit.SpawnWorker()`.
+
+- Units spawn from a **narrow arc (±25°)** at the front of the building, not scattered around the full perimeter.
+- The spawn direction faces the **rally point** (if set) or the building's `transform.forward`.
+- Spawn distance = building extent + 1.5 (ProductionBuilding) or renderer extent + 1.2 (HiveDeposit).
+
+## Key Rules
+
+1. **Never use map-relative spawn positions.** `MapDefinition` has no spawn/army-start fields.
+2. **Never use full 360° random angles for production spawns.** Use the rally-facing narrow arc pattern.
+3. **Always snap spawn positions to NavMesh** via `NavMesh.SamplePosition`.
+4. **Always use terrain height** (`GetHeight()`) as the Y starting point for NavMesh sampling on elevated maps.
+5. **New maps** only define hive/apple positions, terrain, and resources — spawning is automatic.
+6. **New buildings** that produce units must follow the arc-spawn pattern from `ProductionBuilding.SpawnFinishedUnit()`.

@@ -1,0 +1,98 @@
+---
+description: Insect Wars game architecture — systems, key types, and how they connect
+alwaysApply: true
+---
+
+# Game Architecture
+
+## Scene Flow
+
+```
+Home.unity → SceneLoader.LoadMap(map) → Gameplay.unity
+                                         ↓
+                                    MapDirector reads GameSession.SelectedMap
+                                    and builds the world procedurally
+```
+
+All maps share one `Gameplay.unity` scene. Map data is defined in `MapDefinition` (ScriptableObject) and selected via `MapPresets.GetAll()` in the menu. `SkirmishDemo.unity` is a dev-only scene that will be removed.
+
+## Composition Root
+
+`MapDirector` (`[DefaultExecutionOrder(-50)]`) is the **composition root**. It runs first and:
+1. Reads `GameSession` for difficulty and selected map (`MapDefinition`)
+2. Builds the world (terrain, clay, hives, fruit nodes, terrain features, passive scatter)
+3. Bakes the **NavMesh** at runtime
+4. Spawns starting units for both teams via `SpawnUnit()`
+5. Creates a `Systems` GameObject and adds all runtime services as components:
+   `PlayerResources`, `SelectionController`, `CommandController`, `GameHUD`, `BottomBar`,
+   `Minimap`, `FogOfWarSystem`, `MatchDirector`, `EnemyCommander`, `PauseController`, `GameAudio`
+
+## Core Systems Map
+
+```
+MapDirector (bootstrap)
+├── Economy
+│   ├── PlayerResources (singleton, Calories, events)
+│   ├── EnemyResources (static mirror for AI)
+│   ├── RottingFruitNode (harvestable, registered in RtsSimRegistry)
+│   └── HiveDeposit (PlayerHive / EnemyHive statics, deposit + worker production)
+├── Units
+│   ├── InsectUnit (orders state machine, combat, gather, patrol)
+│   ├── UnitDefinition (ScriptableObject — stats per archetype)
+│   ├── RtsSimRegistry (static registry — fast iteration, no FindObjectsByType)
+│   └── WorkerInventory (cargo tracking for workers)
+├── Production
+│   ├── ProductionBuilding (queue, costs, spawn, rally; types: Underground, AntNest, SkyTower)
+│   ├── NestEvolution (one-time player upgrade)
+│   └── BuildZoneRegistry (placement rings around hives/fruit)
+├── Player Interaction
+│   ├── SelectionController (click, box-select, double-click same-type)
+│   ├── CommandController (right-click orders, building placement, pending commands)
+│   ├── BottomBar (StarCraft-style HUD: minimap, selection, command grid)
+│   └── RTSCameraController (pan, zoom, minimap click)
+├── AI
+│   ├── EnemyCommander (macro: build, produce, attack waves, defend)
+│   └── SimpleEnemyAi (per-unit micro: gather, aggro, kite, flee; implements IAiController)
+├── Vision
+│   ├── FogOfWarSystem (256² texture, R=explored, G=current; disables enemy renderers)
+│   └── TerrainFeatureRegistry (vision blocking, speed/concealment zones)
+├── Match Flow
+│   ├── MatchDirector (win/lose by alive count, overlay, Time.timeScale)
+│   └── PauseController
+└── Cross-Scene
+    ├── GameSession (static — difficulty, selected map, PlayerPrefs keys)
+    └── SceneLoader (Home → Gameplay scene; stores MapDefinition in GameSession)
+```
+
+## Unit Archetypes
+
+No deep class hierarchy — all units are `InsectUnit` + `UnitDefinition`. Archetype enum drives behavior:
+- **Worker** — gathers calories, builds, cheap; UI name "Worker"
+- **BasicFighter** — melee combat; UI name "Mantis"
+- **BasicRanged** — cone spray attack (`SprayAttack`); UI name "Beetle" / "Bombardier"
+
+## Important Statics and Singletons
+
+| Type | Access Pattern | Purpose |
+|------|---------------|---------|
+| `SelectionController.Instance` | Singleton | Current selection state |
+| `PlayerResources.Instance` | Singleton | Player economy + `OnCaloriesChanged` event |
+| `FogOfWarSystem.Instance` | Singleton | Fog queries and texture |
+| `GameAudio.Instance` | Singleton | Sound effects |
+| `BottomBar.Instance` | Singleton | Bottom bar UI |
+| `HiveDeposit.PlayerHive/EnemyHive` | Static refs | Main nests |
+| `EnemyResources` | Static class | AI economy |
+| `RtsSimRegistry` | Static class | Unit and fruit node registry |
+| `ProductionBuilding.All` | Static list | All production buildings |
+| `GameSession` | Static class | Cross-scene state |
+
+## Communication Patterns
+
+- **C# events** for economy UI: `PlayerResources.OnCaloriesChanged`
+- **Direct references** and **static registries** — no event bus or messaging framework
+- **Singletons** set in `Awake`/`OnEnable`, cleared in `OnDestroy`/`OnDisable`
+- **Registry pattern**: units call `RtsSimRegistry.Register/Unregister` in `OnEnable/OnDisable`
+
+## Difficulty Scaling
+
+`GameSession.Difficulty` (`DemoDifficulty` enum) scales: enemy HP multiplier, AI think interval, opening unit counts, starting calories.

@@ -5,7 +5,7 @@ namespace InsectWars.RTS
 {
     /// <summary>
     /// Enemy-side economy tracker. Mirror of PlayerResources but static (no MonoBehaviour needed).
-    /// Reset each match via <see cref="SkirmishDirector"/>.
+    /// Reset each match via <see cref="MapDirector"/>.
     /// </summary>
     public static class EnemyResources
     {

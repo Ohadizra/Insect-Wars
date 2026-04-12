@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -14,10 +15,15 @@ namespace InsectWars.RTS
         Camera _cam;
         Vector2 _dragStart;
         bool _boxActive;
+        bool _pressedOnWorld;   // true when the press was on world space (not UI)
 
         HiveDeposit _selectedHive;
         RottingFruitNode _selectedResource;
         ProductionBuilding _selectedBuilding;
+
+        float _lastClickTime;
+        InsectUnit _lastClickedUnit;
+        const float DoubleClickThreshold = 0.3f;
 
         public HiveDeposit SelectedHive => _selectedHive;
         public RottingFruitNode SelectedResource => _selectedResource;
@@ -41,30 +47,30 @@ namespace InsectWars.RTS
 
         void BuildMarqueeOverlay()
         {
-            var go = new GameObject("SelectionMarqueeCanvas");
+            // Named "MarqueeBox" deliberately — GameHUD.BuildHud() disables any canvas
+            // whose name contains "HUD", "Canvas", or "UI", which would kill the marquee.
+            var go = new GameObject("MarqueeBox");
             go.transform.SetParent(transform);
             _marqueeCanvas = go.AddComponent<Canvas>();
             _marqueeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _marqueeCanvas.sortingOrder = 40;
+            // Sort above the GameHUD canvas (sortingOrder 200) so it is always visible.
+            _marqueeCanvas.sortingOrder = 210;
             _marqueeCanvas.pixelPerfect = false;
+            // ConstantPixelSize: 1 canvas unit == 1 screen pixel — simplest coordinate math.
             var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
-            go.AddComponent<GraphicRaycaster>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            // No GraphicRaycaster — the marquee is purely visual and must NOT interfere
+            // with EventSystem.IsPointerOverGameObject() checks in SelectionController.
 
             _marqueeCanvasRt = go.GetComponent<RectTransform>();
-            _marqueeCanvasRt.anchorMin = Vector2.zero;
-            _marqueeCanvasRt.anchorMax = Vector2.one;
-            _marqueeCanvasRt.offsetMin = Vector2.zero;
-            _marqueeCanvasRt.offsetMax = Vector2.zero;
 
             var fillGo = new GameObject("MarqueeFill");
             fillGo.transform.SetParent(go.transform, false);
             _marqueeFill = fillGo.AddComponent<RectTransform>();
-            _marqueeFill.anchorMin = _marqueeFill.anchorMax = new Vector2(0.5f, 0.5f);
-            _marqueeFill.pivot = new Vector2(0.5f, 0.5f);
+            // Anchor bottom-left so anchoredPosition == screen pixel position directly.
+            _marqueeFill.anchorMin = Vector2.zero;
+            _marqueeFill.anchorMax = Vector2.zero;
+            _marqueeFill.pivot = Vector2.zero;
             var img = fillGo.AddComponent<Image>();
             img.color = new Color(0.25f, 0.85f, 0.35f, 0.22f);
             img.raycastTarget = false;
@@ -84,13 +90,18 @@ namespace InsectWars.RTS
             {
                 _dragStart = Mouse.current.position.ReadValue();
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-                if (Sc2BottomBar.SuppressSelectionDrag || overUi)
-                    _boxActive = false;
-                else
+                _pressedOnWorld = !overUi;
+
+                // Only start the drag-box when no pending command is waiting for a click.
+                if (!BottomBar.SuppressSelectionDrag && !overUi)
                 {
                     _boxActive = true;
                     UpdateMarqueeVisual(_dragStart, _dragStart);
                     _marqueeFill.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _boxActive = false;
                 }
             }
 
@@ -99,38 +110,43 @@ namespace InsectWars.RTS
                 UpdateMarqueeVisual(_dragStart, Mouse.current.position.ReadValue());
             }
 
-            if (Mouse.current.leftButton.wasReleasedThisFrame && _boxActive)
+            if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
-                _boxActive = false;
                 _marqueeFill.gameObject.SetActive(false);
                 var end = Mouse.current.position.ReadValue();
                 var dist = Vector2.Distance(_dragStart, end);
-                if (dist < 6f)
+
+                if (_boxActive)
+                {
+                    // Normal flow: drag box was active.
+                    _boxActive = false;
+                    if (dist < 12f)
+                        ClickSelect(_dragStart);
+                    else
+                        BoxSelect(_dragStart, end);
+                }
+                else if (_pressedOnWorld && dist < 12f && !BottomBar.SuppressSelectionDrag)
+                {
+                    // Fallback: box was suppressed (e.g., stale pending state at startup)
+                    // but the user did a short click on world space — still click-select.
                     ClickSelect(_dragStart);
-                else
-                    BoxSelect(_dragStart, end);
+                }
+
+                _pressedOnWorld = false;
             }
         }
 
         void UpdateMarqueeVisual(Vector2 screenA, Vector2 screenB)
         {
-            if (_marqueeFill == null || _marqueeCanvasRt == null) return;
+            if (_marqueeFill == null) return;
             var min = Vector2.Min(screenA, screenB);
             var max = Vector2.Max(screenA, screenB);
-            var size = max - min;
-            size.x = Mathf.Max(size.x, 2f);
-            size.y = Mathf.Max(size.y, 2f);
-
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _marqueeCanvasRt, min, null, out var localMin);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _marqueeCanvasRt, max, null, out var localMax);
-            var center = (localMin + localMax) * 0.5f;
-
-            _marqueeFill.anchoredPosition = center;
+            // With ConstantPixelSize and bottom-left anchor/pivot,
+            // anchoredPosition == bottom-left screen pixel and sizeDelta == pixel size.
+            _marqueeFill.anchoredPosition = min;
             _marqueeFill.sizeDelta = new Vector2(
-                Mathf.Abs(localMax.x - localMin.x),
-                Mathf.Abs(localMax.y - localMin.y));
+                Mathf.Max(max.x - min.x, 2f),
+                Mathf.Max(max.y - min.y, 2f));
         }
 
         void ClearAll()
@@ -146,11 +162,25 @@ namespace InsectWars.RTS
         void ClickSelect(Vector2 screen)
         {
             var ray = _cam.ScreenPointToRay(screen);
-            if (!Physics.Raycast(ray, out var hit, 500f)) return;
+            if (!Physics.Raycast(ray, out var hit, 1500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
 
             var u = hit.collider.GetComponentInParent<InsectUnit>();
             if (u != null && u.Team == Team.Player && u.IsAlive)
             {
+                float now = Time.unscaledTime;
+                bool isDoubleClick = _lastClickedUnit != null
+                    && _lastClickedUnit.Archetype == u.Archetype
+                    && (now - _lastClickTime) <= DoubleClickThreshold;
+
+                _lastClickTime = now;
+                _lastClickedUnit = u;
+
+                if (isDoubleClick)
+                {
+                    SelectAllOfTypeInView(u.Archetype);
+                    return;
+                }
+
                 var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
                 if (!shift) ClearAll();
                 if (!_selected.Contains(u))
@@ -185,6 +215,8 @@ namespace InsectWars.RTS
                 return;
             }
 
+            // Nothing selectable hit — clear selection so clicking empty ground deselects.
+            ClearAll();
         }
 
         void BoxSelect(Vector2 a, Vector2 b)
@@ -239,6 +271,23 @@ namespace InsectWars.RTS
                 {
                     _selectedResource = node;
                     return;
+                }
+            }
+        }
+
+        void SelectAllOfTypeInView(UnitArchetype archetype)
+        {
+            ClearAll();
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u.Team != Team.Player || !u.IsAlive) continue;
+                if (u.Archetype != archetype) continue;
+                var VP = _cam.WorldToViewportPoint(u.transform.position);
+                if (VP.z <= 0 || VP.x < 0 || VP.x > 1 || VP.y < 0 || VP.y > 1) continue;
+                if (!_selected.Contains(u))
+                {
+                    _selected.Add(u);
+                    u.IsSelected = true;
                 }
             }
         }

@@ -1,0 +1,45 @@
+---
+description: C# coding conventions and style for Insect Wars scripts
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# C# Conventions
+
+## Namespaces
+
+All game code uses folder-aligned namespaces under `InsectWars`:
+- `InsectWars.Core` — session, audio, scene loading
+- `InsectWars.Data` — ScriptableObject definitions, enums
+- `InsectWars.RTS` — all gameplay systems
+- `InsectWars.UI` — menu/home UI
+
+## Naming
+
+| Element | Convention | Example |
+|---------|-----------|---------|
+| Types, enums, enum members | PascalCase | `InsectUnit`, `UnitOrder.Idle` |
+| Interfaces | `I` prefix | `IAiController` |
+| Public methods/properties | PascalCase | `OrderMove()`, `Team` |
+| Private instance fields | `_camelCase` | `_agent`, `_timer` |
+| Private static fields | `s_camelCase` | `s_units`, `s_sharedRingMesh` |
+| `[SerializeField]` fields | camelCase (no underscore) | `definition`, `thinkInterval` |
+| Locals / parameters | camelCase | `bestDist`, `workerPos` |
+| Constants | PascalCase | `TexRes`, `LeashRadius` |
+| Shader globals | `_IW_` prefix | `_IW_FogWarTex` |
+
+## Code Organization
+
+- **One feature per file** (small helper types in the same file are acceptable, e.g. `WorkerInventory` inside `InsectUnit.cs`)
+- **Section banners** for large files: `// ──────────── Section Name ────────────`
+- **XML `<summary>`** on types and non-obvious public members
+- **Using order:** `System.*` first, then project namespaces, then `UnityEngine.*` / packages
+- **No `#region`** — use section banners instead
+
+## Patterns to Follow
+
+- Prefer `switch` expressions for archetype/type dispatch
+- Use `[SerializeField]` for designer-tunable values; use `CreateRuntimeDefault()` for fallback when no asset is assigned
+- Use `#if UNITY_EDITOR` + `AssetDatabase` for auto-wiring sprites/fonts in `OnValidate`
+- Keep magic numbers as named constants or `const` locals with comments
+- Use `[DefaultExecutionOrder]` when a MonoBehaviour must initialize before others

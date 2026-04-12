@@ -20,24 +20,40 @@ namespace InsectWars.Data
             if (calorieChunkPrefab == null)
                 calorieChunkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Models/CalorieChunk 4.prefab");
-        }
-        #endif
+            if (bigAppleMaterial == null)
+                bigAppleMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/BigRootedApple.mat");
+            if (clayWallPrefab == null)
+                clayWallPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Models/ClayWall.prefab");
+            if (hiveMaterial == null)
+                hiveMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Buildings/AntNest/AntNestStage2Mat.mat");
+            if (rootCellarPrefab == null)
+                rootCellarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Prefabs/RootCellar.prefab");
+            }
+            #endif
 
-        [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
-        public GameObject workerPrefab;
-        public GameObject meleePrefab;
-        public GameObject rangedPrefab;
+            [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
+            public GameObject workerPrefab;
+            public GameObject meleePrefab;
+            public GameObject rangedPrefab;
 
-        [Header("Buildings")]
-        public GameObject hivePrefab;
-        public GameObject undergroundPrefab;
-        public GameObject skyTowerPrefab;
+            [Header("Buildings")]
+            public GameObject hivePrefab;
+            public Material hiveMaterial;
+            public GameObject undergroundPrefab;
+            public GameObject skyTowerPrefab;
+            public GameObject rootCellarPrefab;
 
-        [Header("Environment")]
-        public GameObject rottingApplePrefab;
-        public GameObject calorieChunkPrefab;
-        public Material groundMaterial;
-        public TerrainLayer baseSoilLayer;
+            [Header("Environment")]
+            public GameObject rottingApplePrefab;
+            public GameObject calorieChunkPrefab;
+            public GameObject clayWallPrefab;
+            public Material bigAppleMaterial;
+            public Material groundMaterial;
+public TerrainLayer baseSoilLayer;
 public TerrainLayer drySoilLayer;
 
         [Header("Terrain Features (optional — falls back to procedural)")]
@@ -80,6 +96,7 @@ public TerrainLayer drySoilLayer;
                 RTS.BuildingType.AntNest => hivePrefab,
                 RTS.BuildingType.Underground => undergroundPrefab,
                 RTS.BuildingType.SkyTower => skyTowerPrefab,
+                RTS.BuildingType.RootCellar => rootCellarPrefab,
                 _ => null
             };
         }

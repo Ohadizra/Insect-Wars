@@ -6,17 +6,8 @@ using UnityEngine.AI;
 
 namespace InsectWars.RTS
 {
-    /// <summary>
-    /// SC2/WC3-grade strategic AI for the enemy team.
-    /// Economy: round-trip resource scoring, worker saturation tracking.
-    /// Construction: expansion nests, multiple Undergrounds with NavMesh-validated placement.
-    /// Production: dynamic worker caps, mixed army composition from all buildings.
-    /// Combat: army-threshold attacks, worker harass, defensive recall, all-in detection.
-    /// </summary>
     public class EnemyCommander : MonoBehaviour
     {
-        // ──────────── Worker-per-node saturation tracking ────────────
-
         static readonly Dictionary<int, int> s_workersByNode = new();
         const int MaxWorkersPerNode = 3;
 
@@ -45,13 +36,6 @@ namespace InsectWars.RTS
 
         public static void ResetTracking() => s_workersByNode.Clear();
 
-        // ──────────── Round-trip resource scoring ────────────
-
-        /// <summary>
-        /// Picks the best fruit for an enemy worker using round-trip distance
-        /// (worker→fruit + fruit→nearest deposit) with a saturation penalty so
-        /// workers spread across nodes instead of all piling onto one.
-        /// </summary>
         public static RottingFruitNode FindBestFruit(Vector3 workerPos, RottingFruitNode exclude = null)
         {
             RottingFruitNode best = null;
@@ -76,7 +60,6 @@ namespace InsectWars.RTS
             return best;
         }
 
-        /// <summary>Distance from a position to the nearest enemy deposit (hive or AntNest).</summary>
         public static float DistToNearestEnemyDeposit(Vector3 pos)
         {
             float best = float.MaxValue;
@@ -86,14 +69,13 @@ namespace InsectWars.RTS
 
             foreach (var bld in ProductionBuilding.All)
             {
-                if (bld == null || bld.Team != Team.Enemy || bld.Type != BuildingType.AntNest) continue;
+                if (bld == null || bld.Team != Team.Enemy) continue;
+                if (bld.Type != BuildingType.AntNest && bld.Type != BuildingType.RootCellar) continue;
                 float d = Vector3.Distance(pos, bld.transform.position);
                 if (d < best) best = d;
             }
             return best;
         }
-
-        // ──────────── Strategic state ────────────
 
         float _matchTime;
         float _tickTimer;
@@ -108,13 +90,13 @@ namespace InsectWars.RTS
         float TickInterval => 1.5f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
         const float ProduceBaseInterval = 4f;
-        const float BuildCheckInterval = 10f;
+        const float BuildCheckInterval = 5f;
         const float HarassInterval = 45f;
         const float AttackCooldown = 50f;
 
         int DesiredWorkers => Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
         int MaxCombat => Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
-        int MaxUndergrounds => _matchTime > 180f ? 2 : 1;
+        int MaxUndergrounds => _matchTime > 120f ? 3 : (_matchTime > 60f ? 2 : 1);
 
         void Start()
         {
@@ -142,8 +124,6 @@ namespace InsectWars.RTS
             TryAttackOrDefend();
         }
 
-        // ──────────── Economy: worker assignment ────────────
-
         void AssignIdleWorkers()
         {
             if (_matchTime < _nextWorkerAssignTime) return;
@@ -160,8 +140,6 @@ namespace InsectWars.RTS
                     u.OrderGather(fruit);
             }
         }
-
-        // ──────────── Building construction ────────────
 
         void TryBuild()
         {
@@ -183,14 +161,14 @@ namespace InsectWars.RTS
             }
 
             int nestCost = ProductionBuilding.GetBuildCost(BuildingType.AntNest);
-            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 100)
+            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 50)
             {
                 if (TryPlaceExpansionNest()) return;
             }
 
             int undergroundCost = ProductionBuilding.GetBuildCost(BuildingType.Underground);
-            if (undergrounds < MaxUndergrounds && _matchTime > 150f
-                && EnemyResources.Calories >= undergroundCost + 100)
+            if (undergrounds < MaxUndergrounds && _matchTime > 45f
+                && EnemyResources.Calories >= undergroundCost + 50)
             {
                 TryPlaceUnderground();
             }
@@ -198,11 +176,11 @@ namespace InsectWars.RTS
 
         void TryPlaceUnderground()
         {
-            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             var hive = HiveDeposit.EnemyHive;
             if (hive == null) return;
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.Underground))) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 8f),
-                BuildingType.Underground, Team.Enemy);
+                BuildingType.Underground, Team.Enemy, startActive: true);
         }
 
         bool TryPlaceExpansionNest()
@@ -212,17 +190,17 @@ namespace InsectWars.RTS
 
             foreach (var f in RtsSimRegistry.FruitNodes)
             {
-                if (f == null || f.Depleted || f.ChargesRemaining < 2000) continue;
+                if (f == null || f.Depleted || f.ChargesRemaining < 500) continue;
                 float distToDeposit = DistToNearestEnemyDeposit(f.transform.position);
-                if (distToDeposit < 25f) continue;
-                float value = f.ChargesRemaining * Mathf.Clamp01(distToDeposit / 60f);
+                if (distToDeposit < 12f) continue;
+                float value = f.ChargesRemaining * Mathf.Clamp01(distToDeposit / 40f);
                 if (value > bestValue) { bestValue = value; bestNode = f; }
             }
 
             if (bestNode == null) return false;
             if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.AntNest))) return false;
             ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
-                BuildingType.AntNest, Team.Enemy);
+                BuildingType.AntNest, Team.Enemy, startActive: true);
             return true;
         }
 
@@ -238,8 +216,6 @@ namespace InsectWars.RTS
             }
             return new Vector3(near.x - radius, 0.02f, near.z - radius);
         }
-
-        // ──────────── Unit production ────────────
 
         void TryProduceUnits()
         {
@@ -272,46 +248,40 @@ namespace InsectWars.RTS
                 else if (b.Type == BuildingType.Underground) undergrounds.Add(b);
             }
 
-            // --- Workers from all AntNests ---
-            if (workers < DesiredWorkers)
+            int queuedWorkers = 0, queuedCombat = 0;
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || b.Team != Team.Enemy) continue;
+                queuedWorkers += b.QueuedCountOf(UnitArchetype.Worker);
+                queuedCombat += b.QueuedCountOf(UnitArchetype.BasicFighter) + b.QueuedCountOf(UnitArchetype.BasicRanged);
+            }
+
+            if (workers + queuedWorkers < DesiredWorkers)
             {
                 foreach (var nest in nests)
                 {
-                    if (workers >= DesiredWorkers) break;
+                    if (workers + queuedWorkers >= DesiredWorkers) break;
+                    if (nest.IsProducing) continue;
                     SetNestRallyToFruit(nest);
-                    var unit = nest.ProduceUnit(UnitArchetype.Worker);
-                    if (unit == null) continue;
-                    workers++;
-                    var fruit = FindBestFruit(unit.transform.position);
-                    if (fruit != null) unit.OrderGather(fruit);
+                    if (nest.QueueUnit(UnitArchetype.Worker))
+                        queuedWorkers++;
                 }
             }
 
-            // --- Combat units from all Undergrounds (mixed fighter / ranged) ---
-            if (combat < MaxCombat && _matchTime > 20f)
+            if (combat + queuedCombat < MaxCombat && _matchTime > 20f)
             {
                 foreach (var ug in undergrounds)
                 {
-                    if (combat >= MaxCombat) break;
+                    if (combat + queuedCombat >= MaxCombat) break;
+                    if (ug.IsProducing) continue;
 
                     bool produceRanged = (_rangedToggle % 5) >= 3;
                     _rangedToggle++;
                     var arch = produceRanged ? UnitArchetype.BasicRanged : UnitArchetype.BasicFighter;
 
-                    if (ug.ProduceUnit(arch) != null) combat++;
+                    if (ug.QueueUnit(arch)) queuedCombat++;
                 }
             }
-        }
-
-        static Vector3 SpawnPosNear(Transform building)
-        {
-            var center = new Vector3(building.position.x, 0f, building.position.z);
-            float extent = building.localScale.x * 0.5f + 1.5f;
-            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            var pos = center + new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
-            if (NavMesh.SamplePosition(pos, out var hit, 4f, NavMesh.AllAreas))
-                pos = hit.position;
-            return pos;
         }
 
         void SetNestRallyToFruit(ProductionBuilding nest)
@@ -321,8 +291,6 @@ namespace InsectWars.RTS
             if (fruit != null)
                 nest.SetRallyGather(fruit.transform.position, fruit);
         }
-
-        // ──────────── Attack & Defense ────────────
 
         void TryAttackOrDefend()
         {
@@ -425,19 +393,49 @@ namespace InsectWars.RTS
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 float d = Vector3.Distance(from, u.transform.position);
-                if (u.Archetype == UnitArchetype.Worker && d < bestWorkerDist)
-                { bestWorkerDist = d; bestWorker = u; }
-                if (d < bestAnyDist) { bestAnyDist = d; bestAny = u; }
+                if (u.Archetype == UnitArchetype.Worker)
+                {
+                    if (d < bestWorkerDist) { bestWorkerDist = d; bestWorker = u; }
+                }
+                else
+                {
+                    if (d < bestAnyDist) { bestAnyDist = d; bestAny = u; }
+                }
             }
 
-            if (bestWorker != null && bestWorkerDist < bestAnyDist * 1.5f)
-                return bestWorker.transform.position;
+            // Prefer workers, then any unit
+            if (bestWorker != null) return bestWorker.transform.position;
             if (bestAny != null) return bestAny.transform.position;
-            if (HiveDeposit.PlayerHive != null) return HiveDeposit.PlayerHive.transform.position;
+
+            // Fall back to player buildings (hive or production buildings)
+            if (HiveDeposit.PlayerHive != null && HiveDeposit.PlayerHive.IsAlive)
+                return HiveDeposit.PlayerHive.transform.position;
+
+            foreach (var b in ProductionBuilding.All)
+            {
+                if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                return b.transform.position;
+            }
+
             return Vector3.zero;
         }
 
-        static bool HasActiveFruit()
+        /// <summary>
+        /// Orders all idle/moving enemy combat units to attack a specific player building.
+        /// Used when there are no player units but buildings remain.
+        /// </summary>
+        void SendArmyToAttackBuilding(Vector3 targetPos)
+        {
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
+                if (u.Archetype == UnitArchetype.Worker) continue;
+                if (u.CurrentOrder == UnitOrder.Idle || u.CurrentOrder == UnitOrder.Move)
+                    u.OrderAttackMove(targetPos);
+            }
+        }
+
+        bool HasActiveFruit()
         {
             foreach (var f in RtsSimRegistry.FruitNodes)
                 if (f != null && !f.Depleted) return true;

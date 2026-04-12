@@ -1,0 +1,94 @@
+---
+description: Unity-specific patterns and conventions used in Insect Wars
+globs: "**/*.cs"
+alwaysApply: false
+---
+
+# Unity Patterns
+
+## MonoBehaviour Lifecycle
+
+Follow this established order in all MonoBehaviours:
+
+1. **`Awake`** — Cache component refs (`GetComponent`), set singleton `Instance`
+2. **`Start`** — Read prefs, subscribe to events, initial state
+3. **`OnEnable` / `OnDisable`** — Register/unregister from static registries (`RtsSimRegistry`, `ProductionBuilding.All`)
+4. **`Update` / `LateUpdate`** — Simulation tick, UI sync
+5. **`OnDestroy`** — Clear singleton if `Instance == this`, unsubscribe events
+
+## Singleton Pattern
+
+Used extensively. Follow this exact pattern:
+
+```csharp
+public static MySystem Instance { get; private set; }
+
+void Awake()
+{
+    Instance = this;
+}
+
+void OnDestroy()
+{
+    if (Instance == this) Instance = null;
+}
+```
+
+Do NOT use `DontDestroyOnLoad` — all singletons are scene-scoped.
+
+## Registry Pattern
+
+For types that need fast iteration without `FindObjectsByType`:
+
+```csharp
+static readonly List<MyType> s_all = new();
+public static IReadOnlyList<MyType> All => s_all;
+
+void OnEnable() => s_all.Add(this);
+void OnDisable() => s_all.Remove(this);
+```
+
+Examples: `RtsSimRegistry` (units + fruit), `ProductionBuilding.All`, `TerrainFeatureRegistry`.
+
+## NavMesh
+
+- `NavMeshSurface` on the world root, baked at runtime by `MapDirector`
+- Units require `NavMeshAgent` (`[RequireComponent]` on `InsectUnit`)
+- Obstacles use `NavMeshObstacle` with carving (clay, fruit, hive, rocky ridges)
+- Use `NavMesh.SamplePosition` for spawn and building placement validation
+
+## UI Construction
+
+UI is built **programmatically at runtime** (not prefab-based):
+- `Canvas` + `CanvasScaler` (1920x1080 reference resolution, `ScaleWithScreenSize`)
+- `InputSystemUIInputModule` on `EventSystem`
+- Legacy `Text` component (not TextMeshPro)
+- `GameHUD` creates the root canvas; `Sc2BottomBar` builds the full RTS chrome underneath
+- Static `RectTransform` refs (`GameHUD.HudCanvasRect`, `MapPanel`, etc.) let other systems parent under the shared canvas
+
+## Input
+
+Uses **New Input System** but via **direct device polling** (not Input Action assets in code):
+- `Mouse.current.leftButton`, `Mouse.current.position`, `Keyboard.current.escapeKey`, etc.
+- `EventSystem.current.IsPointerOverGameObject()` to block world clicks when over UI
+
+## Editor Helpers
+
+Use `#if UNITY_EDITOR` blocks for convenience auto-wiring:
+
+```csharp
+#if UNITY_EDITOR
+void OnValidate()
+{
+    if (someSprite == null)
+        someSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/...");
+}
+#endif
+```
+
+## Performance Conventions
+
+- Static shared meshes/materials for selection rings (created once, reused)
+- Static `Collider[]` buffers for `Physics.OverlapSphere` (no per-frame allocation)
+- Material tint caches (`Dictionary<Color, Material>`) to avoid runtime material instantiation
+- `RtsSimRegistry` avoids per-frame `FindObjectsByType`

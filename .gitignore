@@ -80,3 +80,4 @@ crashlytics-build.properties
 ehthumbs.db
 Thumbs.db
 **/.vscode/**
+.cursor/debug-*.log

@@ -94,7 +94,7 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Knight fighter setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on SkirmishDirector.");
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         [MenuItem("Insect Wars/Setup Ant Worker")]
@@ -118,7 +118,7 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Ant worker setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on SkirmishDirector.");
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         [MenuItem("Insect Wars/Setup Mantis Fighter")]
@@ -142,7 +142,7 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Mantis fighter setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on SkirmishDirector.");
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         [MenuItem("Insect Wars/Setup Bombardier Beetle")]
@@ -166,7 +166,7 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Bombardier Beetle setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on SkirmishDirector.");
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         [MenuItem("Insect Wars/Setup Ant Nest")]
@@ -187,7 +187,7 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Ant nest setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on SkirmishDirector.");
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         static void FixNestImportSettings()
