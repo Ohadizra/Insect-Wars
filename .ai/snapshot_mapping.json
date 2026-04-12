@@ -371,6 +371,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "in home page, replace the title of stagbeetle odyssey  with this new logo , refine the logo before placing it",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "00cf2cf0-26a2-474d-b85a-6bab53177515",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "The game title on the **Home** page has been successfully replaced with the new **Insect Wars** logo.\n\n### Summary of Changes:\n1.  **Logo Generation & Refinement**: \n    *   Generated a high-detail, bronze-styled metallic logo featuring fighting stag beetles to match the provided image.\n    *   Ensured the logo has a transparent background for seamless integration into the UI.\n    *   Saved the asset at `Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png`.\n2.  **Code Updates (`HomeMenuBootstrap.cs`)**:\n    *   Modified the `BuildMainMenu` method to replace the old \"STAGBEETLE ODYSSEY\" text title with a high-quality `Image` component displaying the new logo.\n    *   Updated the **About/Logs** panel text to reflect the new project name, \"INSECT WARS\".\n    *   Added logic to automatically load the logo asset if it's not manually assigned in the Inspector.\n3.  **Scene Integration**:\n    *   Updated the `HomeBootstrap` object in the `Home` scene to ensure the `logoSprite` field is correctly linked to the new asset.\n\nThe home screen now features the refined \"Insect Wars\" logo as the primary title.",
+      "snapshot_message_type": 1
     }
   ]
 }

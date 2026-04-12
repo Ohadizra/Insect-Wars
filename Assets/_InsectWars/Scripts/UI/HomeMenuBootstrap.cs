@@ -19,6 +19,7 @@ namespace InsectWars.UI
         [SerializeField] Sprite mainFrameSprite;
         [SerializeField] Sprite buttonSprite;
         [SerializeField] Sprite separatorSprite;
+        [SerializeField] Sprite logoSprite;
 
         // ── Sketch Palette ──
         static readonly Color ColTitle     = new(0.96f, 0.90f, 0.78f); // Light Amber/Parchment
@@ -47,7 +48,17 @@ namespace InsectWars.UI
             if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
             if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-        #endif
+            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+#endif
 
             // Stop NavMesh errors in Home scene
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == SceneLoader.HomeScene)
@@ -181,18 +192,22 @@ namespace InsectWars.UI
             _panelMain = MakePanel("MainPanel");
             var box = DarkBox(_panelMain.transform, PanelW, PanelH);
 
-            var title = Txt(box.transform, "STAGBEETLE ODYSSEY", TitleSize, ColTitle, TextAnchor.MiddleCenter);
-            title.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(title.rectTransform, new Vector2(0, -85f), new Vector2(700, 100));
+            var titleGo = new GameObject("TitleLogo");
+            titleGo.transform.SetParent(box.transform, false);
+            var titleImg = titleGo.AddComponent<Image>();
+            titleImg.sprite = logoSprite;
+            titleImg.preserveAspect = true;
+            var titleRt = titleGo.GetComponent<RectTransform>();
+            AnchorTopCenter(titleRt, new Vector2(0, -95f), new Vector2(600, 180));
 
             var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
             sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -145f), new Vector2(600, 34));
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -185f), new Vector2(600, 34));
 
-            MakeSeparator(box.transform, -178.5f, 400f);
+            MakeSeparator(box.transform, -218.5f, 400f);
 
-            float y = -238f;
-            DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
+            float y = -268f;
+DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
@@ -223,8 +238,8 @@ namespace InsectWars.UI
             _panelAbout = MakePanel("AboutPanel");
             var boxAb = DarkBox(_panelAbout.transform, 650, 500);
             PanelHeader(boxAb.transform, "LOGS", -50f);
-            var body = Txt(boxAb.transform, "STAGBEETLE ODYSSEY\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
-            AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
+            var body = Txt(boxAb.transform, "INSECT WARS\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
+AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
             float yA = -380f;
             DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
 

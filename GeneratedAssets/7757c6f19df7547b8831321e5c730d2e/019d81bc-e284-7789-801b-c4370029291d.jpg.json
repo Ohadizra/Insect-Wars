@@ -1,0 +1,27 @@
+{
+    "asset": "7757c6f19df7547b8831321e5c730d2e",
+    "fileName": "019d81bc-e284-7789-801b-c4370029291d.jpg",
+    "prompt": "A bronze/copper metallic logo for a game called 'INSECT WARS'. The logo features two stylized stag beetles in a fighting pose, with their mandibles locked. The text 'INSECT WARS' is at the top in an elegant, carved font. The overall style is dark fantasy, intricate, and weathered. High detail. Plain dark background.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "6d4001ab74bd5de477ab00ba74e6ed54",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
