@@ -861,9 +861,35 @@ namespace InsectWars.RTS
 
         static Material CreateGhostMaterial(Color color)
         {
-            var sh = Shader.Find("Sprites/Default");
-            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null) sh = Shader.Find("Sprites/Default");
             var mat = new Material(sh);
+            
+            if (sh.name.Contains("Universal Render Pipeline"))
+            {
+                // Set to Transparent surface type
+                mat.SetFloat("_Surface", 1); 
+                mat.SetFloat("_Blend", 0); // Alpha
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.DisableKeyword("_ALPHATEST_ON");
+                mat.EnableKeyword("_ALPHABLEND_ON");
+                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                
+                // Add a subtle metallic/smoothness for the "holographic" sheen
+                if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic", 0.5f);
+                if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.8f);
+                
+                // Fresnel-like effect using Emission if supported
+                if (mat.HasProperty("_EmissionColor"))
+                {
+                    mat.EnableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", color * 0.5f);
+                }
+            }
+
             if (mat.HasProperty("_Color")) mat.color = color;
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
             return mat;

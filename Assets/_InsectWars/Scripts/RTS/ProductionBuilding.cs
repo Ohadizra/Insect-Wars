@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
@@ -230,15 +231,37 @@ namespace InsectWars.RTS
                     if (kvp.Key != null && kvp.Key.material != null)
                         kvp.Key.material.color = kvp.Value;
                 }
+                PlayCompletionEffect();
             }
         }
 
         void UpdateConstructionVisual()
         {
             float progress = ConstructionProgress;
-            float alpha = Mathf.Lerp(0.3f, 1f, progress);
-            float scaleY = Mathf.Lerp(0.6f, 1f, progress);
+            
+            // Richer visual staging
+            // 0-25%: Foundation outline, very transparent
+            // 25-50%: Growing solid, ghost top
+            // 50-75%: Mostly visible, shimmer edge
+            // 75-100%: Fading construction glow
+            
+            float alpha = 0.3f;
+            Color constructionTint = new Color(0.6f, 0.7f, 0.85f); // Cool blue-grey
 
+            if (progress < 0.25f)
+            {
+                alpha = Mathf.Lerp(0.1f, 0.4f, progress / 0.25f);
+            }
+            else if (progress < 0.5f)
+            {
+                alpha = Mathf.Lerp(0.4f, 0.7f, (progress - 0.25f) / 0.25f);
+            }
+            else
+            {
+                alpha = Mathf.Lerp(0.7f, 1.0f, (progress - 0.5f) / 0.5f);
+            }
+
+            float scaleY = Mathf.Lerp(0.4f, 1f, progress);
             transform.localScale = new Vector3(
                 _originalScale.x,
                 _originalScale.y * scaleY,
@@ -248,7 +271,75 @@ namespace InsectWars.RTS
             {
                 if (kvp.Key == null || kvp.Key.material == null) continue;
                 var orig = kvp.Value;
-                kvp.Key.material.color = new Color(orig.r, orig.g, orig.b, alpha);
+                
+                // Transition from cool construction tint to original warm colors
+                Color targetBase = Color.Lerp(constructionTint, orig, Mathf.Clamp01((progress - 0.3f) / 0.7f));
+                kvp.Key.material.color = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
+                
+                if (kvp.Key.material.HasProperty("_BaseColor"))
+                    kvp.Key.material.SetColor("_BaseColor", new Color(targetBase.r, targetBase.g, targetBase.b, alpha));
+
+                // Add edge glow effect via emission if available
+                if (kvp.Key.material.HasProperty("_EmissionColor"))
+                {
+                    float glow = Mathf.Sin(Time.time * 8f) * 0.15f + 0.2f;
+                    if (progress > 0.9f) glow *= (1f - progress) * 10f; // Fade out glow at completion
+                    kvp.Key.material.SetColor("_EmissionColor", constructionTint * glow);
+                    kvp.Key.material.EnableKeyword("_EMISSION");
+                }
+            }
+
+            if (_assignedBuilders > 0 && progress < 1f)
+            {
+                SpawnConstructionParticles(progress);
+            }
+        }
+
+        void SpawnConstructionParticles(float progress)
+        {
+            // Spawn subtle dust/spark particles at the growing top edge
+            if (Random.value > 0.15f) return;
+
+            var bounds = GetComponentInChildren<Renderer>().bounds;
+            Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
+            Vector3 randomOffset = new Vector3(Random.Range(-2f, 2f), 0f, Random.Range(-2f, 2f));
+            
+            // Since we don't have a full particle system library, we create small transient cubes as "debris"
+            var debris = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            debris.transform.position = topCenter + randomOffset;
+            debris.transform.localScale = Vector3.one * Random.Range(0.05f, 0.15f);
+            Destroy(debris.GetComponent<Collider>());
+            
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            mat.color = new Color(0.8f, 0.75f, 0.65f, 0.8f);
+            debris.GetComponent<Renderer>().sharedMaterial = mat;
+            
+            var rb = debris.AddComponent<Rigidbody>();
+            rb.linearVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(1f, 3f), Random.Range(-1f, 1f));
+            Destroy(debris, 0.6f);
+        }
+
+        void PlayCompletionEffect()
+        {
+            // Completion thunk/crystallization sound
+            if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
+                GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
+
+            // Large burst of particles
+            for (int i = 0; i < 15; i++)
+            {
+                var debris = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                debris.transform.position = transform.position + Vector3.up * 0.5f;
+                debris.transform.localScale = Vector3.one * Random.Range(0.1f, 0.3f);
+                Destroy(debris.GetComponent<Collider>());
+                
+                var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                mat.color = new Color(1f, 1f, 1f, 0.9f);
+                debris.GetComponent<Renderer>().sharedMaterial = mat;
+                
+                var rb = debris.AddComponent<Rigidbody>();
+                rb.linearVelocity = Random.insideUnitSphere * 5f + Vector3.up * 3f;
+                Destroy(debris, 1.2f);
             }
         }
 

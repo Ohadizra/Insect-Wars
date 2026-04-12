@@ -16,6 +16,7 @@ namespace InsectWars.Core
         [SerializeField] AudioClip matchDefeat;
         [SerializeField] AudioClip uiClick;
         [SerializeField] AudioClip combatHit;
+        [SerializeField] public AudioClip constructionComplete;
         [SerializeField] [Range(0f, 1f)] float uiVolume = 0.65f;
         [SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
 

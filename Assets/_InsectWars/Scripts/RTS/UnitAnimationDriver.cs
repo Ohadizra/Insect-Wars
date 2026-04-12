@@ -37,6 +37,7 @@ namespace InsectWars.RTS
         
         float _attackAnimT;
         float _attackAnimDuration;
+        float _buildAnimTimer; // Active while NotifyBuild() is called
         float _idleT;
         float _instanceOffset;
         bool _dying;
@@ -142,11 +143,32 @@ namespace InsectWars.RTS
             _idleT += dt;
 
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
+            
+            // Build animation bobbing
+            if (_buildAnimTimer > 0f)
+            {
+                _buildAnimTimer -= dt;
+                float buildBob = Mathf.Sin(_idleT * 12f) * 0.08f; // ~2 cycles per second
+                bob += buildBob;
+            }
+
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
 
             bool hasAnimator = animator != null && animator.runtimeAnimatorController != null;
 
-            if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+            if (_buildAnimTimer > 0f)
+            {
+                // Head/front body tilt forward toward the work site
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f, 0f, 0f), dt * 6f);
+                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(15f, 0f, 0f), dt * 4f);
+                
+                // Slight side-to-side rocking
+                float rocking = Mathf.Sin(_idleT * 6f) * 3f;
+                modelRoot.localRotation *= Quaternion.Euler(0f, 0f, rocking);
+
+                ResetBonesOnly(dt * 3f, arms: true, tail: true);
+            }
+            else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
             {
                 ApplyMantisLoop(dt);
             }
@@ -277,13 +299,10 @@ namespace InsectWars.RTS
             _attackAnimT = _attackAnimDuration;
         }
 
-        /// <summary>
-        /// Called each frame the worker is actively constructing a building.
-        /// Art/animation implementation is handled by the Unity art AI assistant.
-        /// </summary>
         public void NotifyBuild()
         {
-            // TODO: Art AI — implement build animation (bobbing work motion, mandible activity)
+            // Reset the timer while building to maintain the pose
+            _buildAnimTimer = 0.2f; 
         }
 
         public void NotifyDeath(float destroyDelay = 0.45f)
