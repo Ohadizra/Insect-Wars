@@ -28,7 +28,7 @@ namespace InsectWars.UI
         static readonly Color ColWhite     = Color.white;
 
         const float PanelW = 750f, PanelH = 722.5f;
-        const float BtnW = 550f, BtnH = 85f, BtnGap = 102f;
+        const float BtnW = 400f, BtnH = 120f, BtnGap = 140f;
         const int TitleSize = 48, SubSize = 15, BtnFontSize = 22;
 
         Canvas _canvas;
