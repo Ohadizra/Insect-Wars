@@ -53,32 +53,39 @@ Shader "InsectWars/ConstructionBuilding"
 
             float4 frag (Varyings input) : SV_Target
             {
-                // Simple world-space Y dissolve
-                // We'll use local space actually to make it consistent per object height
+                // Local space height dissolve
                 float3 positionLS = TransformWorldToObject(input.positionWS);
                 
-                // Assuming object height is roughly 0 to 1 in local Y for simple visualization
-                // Realistically we might need to pass bounds or just use a fixed range
-                float height = positionLS.y + 0.5; // shift -0.5..0.5 to 0..1
+                // Assuming object height is roughly normalized around 0.5 center.
+                // We use a range that ensures full visibility at 1.0 progress.
+                float height = positionLS.y + 0.5; 
                 
-                float mask = step(height, _ConstructionProgress * 1.5); // * 1.5 to ensure it fully appears
+                // Noise dissolve for more "organic" building process
+                float noise = frac(sin(dot(input.uv, float2(12.9898, 78.233))) * 43758.5453);
+                float constructionThreshold = _ConstructionProgress * 1.2;
+                float mask = smoothstep(constructionThreshold - 0.05, constructionThreshold, height - (noise * 0.05));
                 
-                float4 col = tex2D(_BaseMap, input.uv) * _BaseColor;
+                float4 texCol = tex2D(_BaseMap, input.uv);
+                float4 col = texCol * _BaseColor;
                 
-                // Darken/Transparent if above progress
-                float alpha = lerp(0.2, col.a, mask);
-                float3 finalRGB = col.rgb;
+                // Built area (mask is near 0 for bottom)
+                // Unbuilt area (mask is near 1 for top)
+                float builtMask = 1.0 - mask;
                 
-                if (mask < 1.0) {
-                    finalRGB *= 0.4; // wireframe look
-                }
-
-                // Edge glow
-                float edge = abs(height - _ConstructionProgress * 1.5);
-                if (edge < _GlowWidth && _ConstructionProgress < 0.95) {
-                    float glowIntensity = (1.0 - (edge / _GlowWidth)) * (1.0 - _ConstructionProgress);
-                    finalRGB += _GlowColor.rgb * glowIntensity * 2.0;
-                    alpha = max(alpha, glowIntensity);
+                // Visibility staging:
+                // Built: Full opacity (if texture has alpha)
+                // Unbuilt: Very faint holographic ghost
+                float alpha = lerp(0.02, col.a, builtMask);
+                float3 finalRGB = lerp(col.rgb * 0.2, col.rgb, builtMask);
+                
+                // Growth edge glow
+                float edge = abs(height - constructionThreshold);
+                if (edge < _GlowWidth && _ConstructionProgress < 0.98 && _ConstructionProgress > 0.02) {
+                    float glowIntensity = pow(1.0 - (edge / _GlowWidth), 2.0);
+                    // Add a pulse to the glow
+                    glowIntensity *= (sin(_Time.y * 10.0) * 0.2 + 0.8);
+                    finalRGB += _GlowColor.rgb * glowIntensity * 3.0;
+                    alpha = max(alpha, glowIntensity * 0.8);
                 }
 
                 return float4(finalRGB, alpha);

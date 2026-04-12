@@ -39,6 +39,7 @@ namespace InsectWars.RTS
         float _buildTimeElapsed;
 
         Vector3 _originalScale;
+        Vector3 _originalPosition;
         readonly Dictionary<Renderer, Color> _originalColors = new();
 
         struct QueueEntry
@@ -195,6 +196,7 @@ namespace InsectWars.RTS
                 _buildTimeElapsed = 0f;
                 _state = BuildingState.UnderConstruction;
                 _originalScale = transform.localScale;
+                _originalPosition = transform.position;
                 foreach (var r in GetComponentsInChildren<Renderer>(true))
                 {
                     if (r.material == null) continue;
@@ -227,6 +229,7 @@ namespace InsectWars.RTS
                 _currentHealth = _maxHealth;
                 _buildTimeElapsed = _buildTimeTotal;
                 transform.localScale = _originalScale;
+                transform.position = _originalPosition;
                 foreach (var kvp in _originalColors)
                 {
                     if (kvp.Key == null || kvp.Key.material == null) continue;
@@ -234,13 +237,16 @@ namespace InsectWars.RTS
                         kvp.Key.material.SetColor("_BaseColor", kvp.Value);
                     else
                         kvp.Key.material.color = kvp.Value;
+                    
+                    if (kvp.Key.material.HasProperty("_ConstructionProgress"))
+                        kvp.Key.material.SetFloat("_ConstructionProgress", 1f);
                 }
                 PlayCompletionEffect();
                 }
                 }
 
-        void UpdateConstructionVisual()
-        {
+            void UpdateConstructionVisual()
+            {
             float progress = ConstructionProgress;
             
             // Set shader property if applicable
@@ -255,34 +261,39 @@ namespace InsectWars.RTS
                 }
             }
 
+            // Staging logic: Building starts very flat and grows up
+            float scaleY = Mathf.Lerp(0.1f, 1f, progress);
+            transform.localScale = new Vector3(_originalScale.x, _originalScale.y * scaleY, _originalScale.z);
+
             if (!hasCustomShader)
             {
-                // Fallback darkening logic
-                float darkening = Mathf.Lerp(0.35f, 1f, progress);
+                // Fallback darkening and transparency logic
+                float alpha = progress < 0.2f ? Mathf.Lerp(0.1f, 0.4f, progress / 0.2f) : Mathf.Lerp(0.4f, 1.0f, (progress - 0.2f) / 0.8f);
+                float darkening = Mathf.Lerp(0.2f, 1f, progress);
+                
+                Color constructionTint = new Color(0.5f, 0.6f, 0.8f); // Cool blue-grey construction phase
+
                 foreach (var kvp in _originalColors)
                 {
                     if (kvp.Key == null || kvp.Key.material == null) continue;
                     var orig = kvp.Value;
-                    var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
+                    
+                    // Transition from cool construction tint to original warm colors
+                    Color targetBase = Color.Lerp(constructionTint * darkening, orig, Mathf.Clamp01((progress - 0.4f) / 0.6f));
+                    Color finalColor = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
 
                     if (kvp.Key.material.HasProperty("_BaseColor"))
-                        kvp.Key.material.SetColor("_BaseColor", tinted);
+                        kvp.Key.material.SetColor("_BaseColor", finalColor);
                     else
-                        kvp.Key.material.color = tinted;
+                        kvp.Key.material.color = finalColor;
                 }
             }
-
-            float scaleY = Mathf.Lerp(0.4f, 1f, progress);
-            transform.localScale = new Vector3(
-                _originalScale.x,
-                _originalScale.y * scaleY,
-                _originalScale.z);
 
             if (_assignedBuilders > 0 && progress < 1f)
             {
                 SpawnConstructionParticles(progress);
             }
-        }
+            }
 
         void SpawnConstructionParticles(float progress)
         {

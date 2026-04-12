@@ -162,46 +162,49 @@ namespace InsectWars.RTS
 
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-            // Build animation bobbing
+            // Build animation - working motion
             if (_buildAnimTimer > 0f)
             {
                 _buildAnimTimer -= dt;
-                float buildBob = Mathf.Sin(_idleT * 12f) * 0.08f; // ~2 cycles per second
-                bob += buildBob;
-            }
-
-            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
-
-            bool hasAnimator = animator != null && animator.runtimeAnimatorController != null;
-
-            if (_buildAnimTimer > 0f)
-            {
-                // Head/front body tilt forward toward the work site
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f, 0f, 0f), dt * 6f);
-                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(15f, 0f, 0f), dt * 4f);
                 
-                // Slight side-to-side rocking
-                float rocking = Mathf.Sin(_idleT * 6f) * 3f;
+                // Rhythmic working tilt/pulse
+                float workCycle = Mathf.Sin(_idleT * 8f);
+                float workTiltHead = (workCycle * 0.5f + 0.5f) * 15f; // Extra 15 degrees tilt
+                float workTiltChest = (workCycle * 0.5f + 0.5f) * 10f;
+                
+                // Subtle mandible/head "jitter" to simulate biting/manipulating material
+                float jitter = Mathf.Sin(_idleT * 40f) * 2f; 
+
+                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(25f + workTiltHead + jitter, jitter, 0f), dt * 10f);
+                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(15f + workTiltChest, 0f, 0f), dt * 8f);
+                
+                // Side-to-side effort rocking (slower than vertical pulse)
+                float rocking = Mathf.Sin(_idleT * 4f) * 4f;
                 modelRoot.localRotation *= Quaternion.Euler(0f, 0f, rocking);
 
+                // Very small vertical pulse, keeping legs mostly on the ground
+                bob += Mathf.Max(0, workCycle) * 0.03f; 
+
                 ResetBonesOnly(dt * 3f, arms: true, tail: true);
-            }
-            else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
-            {
+                }
+                else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+                {
                 ApplyMantisLoop(dt);
-            }
-            else
-            {
+                }
+                else
+                {
                 modelRoot.localScale = _baseScale;
                 // Only reset bones procedurally if we don't have an animator taking over.
                 // If we do have an animator, it will handle the bones itself.
-                if (!hasAnimator)
+                if (!(animator != null && animator.runtimeAnimatorController != null))
                 {
                     ResetBones(dt * 5f);
                 }
-            }
+                }
 
-            if (_attackAnimT > 0f)
+                modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
+
+                if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
                 float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
