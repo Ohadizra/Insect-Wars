@@ -387,8 +387,8 @@ namespace InsectWars.RTS
 
         void SpawnFinishedUnit(UnitArchetype archetype)
         {
-            var center = transform.position;
-            var extent = transform.localScale.x * 0.5f + 3.0f;
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
+            var extent = transform.localScale.x * 0.5f + 1.5f;
 
             Vector3 spawnDir;
             if (_rallyPoint.HasValue)

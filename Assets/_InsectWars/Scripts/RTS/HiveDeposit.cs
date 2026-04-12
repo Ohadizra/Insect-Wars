@@ -106,7 +106,7 @@ namespace InsectWars.RTS
 
         void SpawnWorker()
         {
-            var center = transform.position;
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
             var rend = GetComponentInChildren<Renderer>();
             float hiveExtent = rend != null
                 ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.2f

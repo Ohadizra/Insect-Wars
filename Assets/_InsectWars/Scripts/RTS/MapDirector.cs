@@ -595,6 +595,12 @@ namespace InsectWars.RTS
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
+            float h = GetHeight(pos);
+            Vector3 finalPos = new Vector3(pos.x, h + 0.02f, pos.z);
+
+            if (NavMesh.SamplePosition(finalPos, out var navHit, 15f, NavMesh.AllAreas))
+                finalPos = navHit.position;
+
             GameObject prefab = null;
             if (ActiveVisualLibrary != null)
                 prefab = ActiveVisualLibrary.GetUnitPrefab(arch);
@@ -609,7 +615,8 @@ namespace InsectWars.RTS
                 if (wasEnabled) prefabAgent.enabled = false;
 
                 go = Instantiate(prefab);
-                go.transform.position = pos;
+                go.name = $"{team}_{arch}";
+                go.transform.position = finalPos;
 
                 if (wasEnabled) prefabAgent.enabled = true;
 
@@ -618,36 +625,40 @@ namespace InsectWars.RTS
             }
             else
             {
-                go = new GameObject(arch.ToString());
-                go.transform.position = pos;
+                go = new GameObject($"{team}_{arch}");
+                go.transform.position = finalPos;
                 unit = go.AddComponent<InsectUnit>();
             }
 
             unit.Configure(team, null, arch);
 
-            var agent = go.GetComponent<NavMeshAgent>();
-            if (agent != null)
+            Color shellColor = TeamPalette.GetShellColor(team);
+            var block = new MaterialPropertyBlock();
+            foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
-                // Ensure the agent is off while we position it to avoid errors if the position is bad
-                agent.enabled = false;
-                
-                // Increased search radius significantly (15 -> 50) to ensure we find the NavMesh if it's there
-                if (NavMesh.SamplePosition(pos, out var hit, 50f, NavMesh.AllAreas))
+                renderer.GetPropertyBlock(block);
+                if (renderer.sharedMaterial != null)
                 {
-                    go.transform.position = hit.position;
-                    agent.enabled = true;
-                    Debug.Log($"[MapDirector] Spawned {go.name} at {hit.position}");
+                    if (renderer.sharedMaterial.HasProperty("_BaseColor"))
+                        block.SetColor("_BaseColor", shellColor);
+                    if (renderer.sharedMaterial.HasProperty("_Color"))
+                        block.SetColor("_Color", shellColor);
                 }
-                else
-                {
-                    // Fallback if no NavMesh nearby, at least it stays disabled to avoid errors
-                    go.transform.position = pos;
-                    Debug.LogWarning($"[MapDirector] FAILED to find NavMesh for {go.name} at {pos} within 50m! Agent DISABLED.");
-                }
+                renderer.SetPropertyBlock(block);
+            }
+
+            var agent = go.GetComponent<NavMeshAgent>();
+            if (agent != null && !agent.enabled)
+            {
+                agent.enabled = true;
+                if (!agent.isOnNavMesh)
+                    agent.Warp(finalPos);
             }
 
             SafeSetLayerRecursive(go, "Units");
 
+            if (go.GetComponent<UnitAnimationDriver>() == null)
+                go.AddComponent<UnitAnimationDriver>();
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
             return unit;
