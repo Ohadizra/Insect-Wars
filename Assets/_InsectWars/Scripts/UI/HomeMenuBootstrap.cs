@@ -48,7 +48,7 @@ namespace InsectWars.UI
             if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
             if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
+            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Final.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
@@ -190,23 +190,23 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
         void BuildMainMenu()
         {
             _panelMain = MakePanel("MainPanel");
-            var box = DarkBox(_panelMain.transform, PanelW, PanelH);
+            var box = DarkBox(_panelMain.transform, PanelW, 850f);
 
             var titleGo = new GameObject("TitleLogo");
-            titleGo.transform.SetParent(box.transform, false);
+titleGo.transform.SetParent(box.transform, false);
             var titleImg = titleGo.AddComponent<Image>();
             titleImg.sprite = logoSprite;
             titleImg.preserveAspect = true;
             var titleRt = titleGo.GetComponent<RectTransform>();
-            AnchorTopCenter(titleRt, new Vector2(0, -95f), new Vector2(600, 180));
+            AnchorTopCenter(titleRt, new Vector2(0, -30f), new Vector2(650, 260));
 
             var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
             sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -185f), new Vector2(600, 34));
+            AnchorTopCenter(sub.rectTransform, new Vector2(0, -290f), new Vector2(600, 34));
 
-            MakeSeparator(box.transform, -218.5f, 400f);
+            MakeSeparator(box.transform, -323.5f, 400f);
 
-            float y = -268f;
+            float y = -373f;
 DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());

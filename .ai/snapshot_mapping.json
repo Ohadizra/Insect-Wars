@@ -383,6 +383,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "good that you ask, not confirmed need to look like this",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "e7c96f4e-9838-4246-9018-c6603082f80e",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "The **Insect Wars** logo has been refined to closely match the provided reference image and is now correctly positioned in the UI.\n\n### Summary of Refinements:\n1.  **Refined Logo Generation**:\n    *   **Style Match**: Generated a high-quality landscape-oriented plaque (2048x1024) featuring two fighting stag beetles, ornate bronze framing, magma-veined rock, and blue/yellow glowing gems to match the reference.\n    *   **Text Removal**: Removed all text from the logo as requested, creating a pure emblem for the home screen.\n    *   **Background Removal**: Cleaned the asset to ensure transparency around the plaque.\n    *   **Asset Path**: `Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Final.png`.\n2.  **UI Layout Updates (`HomeMenuBootstrap.cs`)**:\n    *   **Higher Positioning**: Moved the logo higher up in the main panel (top offset shifted from -95 to -30).\n    *   **Aspect Ratio Adjustment**: Updated the logo's `RectTransform` to (650, 260) to accommodate the new landscape composition.\n    *   **Responsive Layout**: Adjusted the positions of the subtitle, separator, and buttons to maintain a balanced and centered design despite the larger logo.\n    *   **Panel Scaling**: Increased the height of the main menu container to ensure all elements fit perfectly without overlapping or overflowing the frame.\n3.  **Scene Verification**:\n    *   Updated the `HomeBootstrap` object in the **Home** scene to link to the final refined asset.\n\nThe home page now features a centered, high-placed, text-free emblem that captures the epic dark fantasy style of your reference image.",
+      "snapshot_message_type": 1
     }
   ]
 }

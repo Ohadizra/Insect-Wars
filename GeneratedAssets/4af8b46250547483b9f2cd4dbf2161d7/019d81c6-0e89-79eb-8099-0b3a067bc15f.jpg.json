@@ -1,0 +1,27 @@
+{
+    "asset": "4af8b46250547483b9f2cd4dbf2161d7",
+    "fileName": "019d81c6-0e89-79eb-8099-0b3a067bc15f.jpg",
+    "prompt": "A dark fantasy ornate plaque with two large stag beetles in a fighting pose, mandibles locked. The background is dark rock with glowing red magma veins. The plaque has an intricate bronze/copper frame with blue and yellow gems. No text, no words, no letters. High detail, weathered metal aesthetic. Solid dark background for background removal. Dark and gritty style.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "baf1b6c39e207a5f066f2ae6fc22c075",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
