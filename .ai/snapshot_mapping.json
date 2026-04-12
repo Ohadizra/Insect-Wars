@@ -461,6 +461,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "I will use the **Kling 2.5 Pro** model to generate a new 10-second cinematic video loop featuring an ant on the left side in a matching dark fantasy style and set it as your new menu background.\n\nWould you like me to continue with this generation?",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "759b8889-8363-4166-8cac-e74f85708ed2",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "I can only generate up to **10 seconds** of animation in a single step with the current AI models (like Kling 2.5 Pro). \n\nAdditionally, it's important to clarify that my tools generate **animated spritesheets** (high-resolution image grids) rather than direct `.mp4` video files. While these spritesheets can be used for high-quality looping backgrounds in Unity, they are a different format than your current `MenuLoop.mp4`.\n\n### Your Options:\n1.  **10-Second Looping Spritesheet**: I can generate a 10-second \"perfect loop\" of the ant and the dark fantasy environment. I would then need to update the `HomeMenuBootstrap` script to play this spritesheet instead of the `.mp4`.\n2.  **High-Quality Static Background**: I can generate a beautiful, highly detailed 4K static background image that matches the \"INSECT WAR\" logo perfectly.\n3.  **Manual Video Import**: If you have a specific 30-second `.mp4` you'd like to use, you can manually place it in the `Assets/StreamingAssets/` folder and I can update the code to point to it.\n\nWhich approach would you prefer?",
+      "snapshot_message_type": 1
     }
   ]
 }
