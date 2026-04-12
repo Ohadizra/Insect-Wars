@@ -468,8 +468,19 @@ namespace InsectWars.RTS
                 float h = GetHeight(pos);
                 clay.transform.position = new Vector3(pos.x, h, pos.z);
                 clay.transform.localScale = scale;
-                // Optionally apply color to the prefab's renderers if desired, 
-                // but usually the prefab has its own realistic material.
+                foreach (var r in clay.GetComponentsInChildren<Renderer>())
+                {
+                    var mats = r.materials;
+                    for (int mi = 0; mi < mats.Length; mi++)
+                    {
+                        mats[mi] = new Material(mats[mi]);
+                        if (mats[mi].HasProperty("_BaseColor"))
+                            mats[mi].SetColor("_BaseColor", clayColor);
+                        else if (mats[mi].HasProperty("_Color"))
+                            mats[mi].SetColor("_Color", clayColor);
+                    }
+                    r.materials = mats;
+                }
             }
             else
             {
