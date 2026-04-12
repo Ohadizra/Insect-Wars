@@ -235,7 +235,7 @@ namespace InsectWars.RTS
                     if (kvp.Key == null || kvp.Key.material == null) continue;
                     if (kvp.Key.material.HasProperty("_BaseColor"))
                         kvp.Key.material.SetColor("_BaseColor", kvp.Value);
-                    else
+                    else if (kvp.Key.material.HasProperty("_Color"))
                         kvp.Key.material.color = kvp.Value;
                     
                     if (kvp.Key.material.HasProperty("_ConstructionProgress"))
@@ -284,7 +284,7 @@ namespace InsectWars.RTS
 
                     if (kvp.Key.material.HasProperty("_BaseColor"))
                         kvp.Key.material.SetColor("_BaseColor", finalColor);
-                    else
+                    else if (kvp.Key.material.HasProperty("_Color"))
                         kvp.Key.material.color = finalColor;
                 }
             }

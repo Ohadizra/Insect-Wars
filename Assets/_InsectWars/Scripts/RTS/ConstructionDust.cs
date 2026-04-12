@@ -19,7 +19,12 @@ namespace InsectWars.RTS
             if (rend != null)
             {
                 _mat = rend.material;
-                _startColor = _mat.color;
+                if (_mat.HasProperty("_BaseColor"))
+                    _startColor = _mat.GetColor("_BaseColor");
+                else if (_mat.HasProperty("_Color"))
+                    _startColor = _mat.color;
+                else
+                    _startColor = Color.white;
             }
         }
 
@@ -42,7 +47,11 @@ namespace InsectWars.RTS
             {
                 Color c = _startColor;
                 c.a *= (1.0f - t);
-                _mat.color = c;
+                
+                if (_mat.HasProperty("_BaseColor"))
+                    _mat.SetColor("_BaseColor", c);
+                else
+                    _mat.color = c;
             }
             
             // Drift upward
