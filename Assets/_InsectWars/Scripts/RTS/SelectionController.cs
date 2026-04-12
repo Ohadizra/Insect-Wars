@@ -15,6 +15,7 @@ namespace InsectWars.RTS
         Camera _cam;
         Vector2 _dragStart;
         bool _boxActive;
+        bool _pressedOnWorld;   // true when the press was on world space (not UI)
 
         HiveDeposit _selectedHive;
         RottingFruitNode _selectedResource;
@@ -89,13 +90,18 @@ namespace InsectWars.RTS
             {
                 _dragStart = Mouse.current.position.ReadValue();
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-                if (BottomBar.SuppressSelectionDrag || overUi)
-                    _boxActive = false;
-                else
+                _pressedOnWorld = !overUi;
+
+                // Only start the drag-box when no pending command is waiting for a click.
+                if (!BottomBar.SuppressSelectionDrag && !overUi)
                 {
                     _boxActive = true;
                     UpdateMarqueeVisual(_dragStart, _dragStart);
                     _marqueeFill.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _boxActive = false;
                 }
             }
 
@@ -104,16 +110,29 @@ namespace InsectWars.RTS
                 UpdateMarqueeVisual(_dragStart, Mouse.current.position.ReadValue());
             }
 
-            if (Mouse.current.leftButton.wasReleasedThisFrame && _boxActive)
+            if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
-                _boxActive = false;
                 _marqueeFill.gameObject.SetActive(false);
                 var end = Mouse.current.position.ReadValue();
                 var dist = Vector2.Distance(_dragStart, end);
-                if (dist < 12f) // Increased threshold to 12 pixels to avoid accidental drags
+
+                if (_boxActive)
+                {
+                    // Normal flow: drag box was active.
+                    _boxActive = false;
+                    if (dist < 12f)
+                        ClickSelect(_dragStart);
+                    else
+                        BoxSelect(_dragStart, end);
+                }
+                else if (_pressedOnWorld && dist < 12f && !BottomBar.SuppressSelectionDrag)
+                {
+                    // Fallback: box was suppressed (e.g., stale pending state at startup)
+                    // but the user did a short click on world space — still click-select.
                     ClickSelect(_dragStart);
-                else
-                    BoxSelect(_dragStart, end);
+                }
+
+                _pressedOnWorld = false;
             }
         }
 

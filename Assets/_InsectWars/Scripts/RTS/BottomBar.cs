@@ -97,6 +97,11 @@ namespace InsectWars.RTS
         {
             Instance = this;
             _font = UiFontHelper.GetFont();
+            // Reset static state that might be stale from a previous play session
+            // when Unity's domain reload is disabled.
+            Pending = PendingCommand.None;
+            PendingBuildingType = default;
+            PatrolCoordinator.Reset();
 
         #if UNITY_EDITOR
             string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
@@ -131,6 +136,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             if (Instance == this) Instance = null;
             MinimapHost = null;
             Pending = PendingCommand.None;
+            PendingBuildingType = default;
+            PatrolCoordinator.Reset();
             DestroyGhost();
         }
 

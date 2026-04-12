@@ -468,6 +468,12 @@ namespace InsectWars.RTS
 
         void BuildHive(Transform parent, Vector3 pos, Team team, string name)
         {
+            // Save existing hive refs — AddComponent<HiveDeposit> fires Awake+OnEnable with
+            // the default team (Player) and can clobber whichever static ref was already set.
+            // We restore the correct one after Configure() runs.
+            var savedPlayerHive = HiveDeposit.PlayerHive;
+            var savedEnemyHive  = HiveDeposit.EnemyHive;
+
             var lib = ActiveVisualLibrary;
             GameObject go;
 
@@ -510,6 +516,14 @@ namespace InsectWars.RTS
 
             var hive = go.AddComponent<HiveDeposit>();
             hive.Configure(team);
+
+            // Restore whichever opposite-team ref was clobbered by the temporary default
+            // Player-team registration that fires in AddComponent's Awake/OnEnable.
+            if (team == Team.Player)
+                HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
+            else
+                HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
+
             var prod = go.AddComponent<ProductionBuilding>();
             prod.Initialize(BuildingType.AntNest, team, startActive: true);
         }
