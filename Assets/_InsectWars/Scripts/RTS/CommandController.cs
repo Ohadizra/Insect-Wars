@@ -48,8 +48,9 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance == null) return;
             var ray = _cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-            // Use Collide so units/buildings with trigger colliders are still targetable.
-            if (!Physics.Raycast(ray, out var hit, 500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
+            // Collide mode detects units and resources that use trigger colliders.
+            // Distance 1500 ensures the terrain is always reachable regardless of camera height.
+            if (!Physics.Raycast(ray, out var hit, 1500f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide)) return;
 
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
@@ -81,7 +82,7 @@ namespace InsectWars.RTS
                     if (u.Definition != null && u.Definition.canGather)
                         u.OrderGather(fruit);
                     else
-                        u.OrderMove(hit.point); // Non-gatherers should still move there
+                        u.OrderMove(hit.point);
                 }
                 return;
             }
@@ -110,8 +111,20 @@ namespace InsectWars.RTS
                 return;
             }
 
+            // No special target found. If the primary hit was a trigger collider (e.g. a
+            // player-unit capsule or a resource trigger sitting in front of the terrain),
+            // re-cast ignoring triggers so we get the actual ground surface point.
+            // This prevents "OrderMove(unit.position)" when right-clicking near own units.
+            Vector3 moveTarget = hit.point;
+            if (hit.collider.isTrigger)
+            {
+                if (Physics.Raycast(ray, out var groundHit, 1500f,
+                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                    moveTarget = groundHit.point;
+            }
+
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                u.OrderMove(hit.point);
+                u.OrderMove(moveTarget);
         }
 
         void TryLeftClickCommand(Vector2 screen)
@@ -137,7 +150,7 @@ namespace InsectWars.RTS
             if (!hasSel) return;
 
             var ray = _cam.ScreenPointToRay(screen);
-            if (!Physics.Raycast(ray, out var hit, 500f)) return;
+            if (!Physics.Raycast(ray, out var hit, 1500f)) return;
 
             if (pending == PendingCommand.Gather)
             {
