@@ -401,6 +401,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "The subtitle text \"**COMMAND THE COLONY. CONQUER THE DEPTHS.**\" and the decorative separator below it have been removed from the main menu.\n\n### Summary of Changes:\n*   **Removed Subtitle**: Deleted the code creating the subtitle `Text` component and its layout settings in `HomeMenuBootstrap.cs`.\n*   **Removed Separator**: Deleted the `MakeSeparator` call that was positioned below the subtitle.\n*   **Adjusted Vertical Layout**: Moved the primary menu buttons (**START MISSION**, **CODEX**, etc.) higher (from `-373f` to `-310f`) to reclaim the space left by the removed elements, ensuring the UI remains balanced and centered under the logo.\n\nThe main menu now displays only the refined **Insect Wars** emblem above the main action buttons.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "349200ff-d0c2-424c-a662-c36bdefb92c7",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "add title to the logo \"INSECT WAR\"",
+      "snapshot_message_type": 0
     }
   ]
 }
