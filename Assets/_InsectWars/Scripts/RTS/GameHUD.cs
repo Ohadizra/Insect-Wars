@@ -44,8 +44,8 @@ namespace InsectWars.RTS
                 var es = new GameObject("EventSystem");
                 es.AddComponent<EventSystem>();
                 var mod = es.AddComponent<InputSystemUIInputModule>();
-                
-                // Manual Link Actions for responsiveness
+
+#if UNITY_EDITOR
                 var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
                 if (asset != null)
                 {
@@ -63,6 +63,7 @@ namespace InsectWars.RTS
                         mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
                     }
                 }
+#endif
             }
         }
 
@@ -132,7 +133,7 @@ namespace InsectWars.RTS
 
             // --- Bottom Right: Actions ---
             // ActionPanel = CreatePanel("ActionPanel", HudCanvasRect, new Vector2(1, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-30, 30), new Vector2(360, 300), frameSquareSprite);
-            }
+        }
 
         Text CreateResourceItem(Transform parent, Sprite icon, string initialVal)
         {

@@ -41,13 +41,24 @@ namespace InsectWars.RTS
 
         void Update()
         {
-            if (Mouse.current == null) return;
-            var mp = Mouse.current.position.ReadValue();
             Vector2 pan = Vector2.zero;
-            if (mp.x <= edgePx) pan.x -= 1f;
-            else if (mp.x >= Screen.width - edgePx) pan.x += 1f;
-            if (mp.y <= edgePx) pan.y += 1f;
-            else if (mp.y >= Screen.height - edgePx) pan.y -= 1f;
+
+            if (Keyboard.current != null)
+            {
+                if (Keyboard.current.upArrowKey.isPressed) pan.y -= 1f;
+                if (Keyboard.current.downArrowKey.isPressed) pan.y += 1f;
+                if (Keyboard.current.leftArrowKey.isPressed) pan.x -= 1f;
+                if (Keyboard.current.rightArrowKey.isPressed) pan.x += 1f;
+            }
+
+            if (Mouse.current != null)
+            {
+                var mp = Mouse.current.position.ReadValue();
+                if (mp.x <= edgePx) pan.x -= 1f;
+                else if (mp.x >= Screen.width - edgePx) pan.x += 1f;
+                if (mp.y <= edgePx) pan.y += 1f;
+                else if (mp.y >= Screen.height - edgePx) pan.y -= 1f;
+            }
 
             if (pan.sqrMagnitude > 0.01f)
             {
@@ -58,7 +69,7 @@ namespace InsectWars.RTS
                 _pivot.position += (right * pan.x + fwd * pan.y) * (panSpeed * Time.deltaTime);
             }
 
-            if (Mouse.current.middleButton.isPressed)
+            if (Mouse.current != null && Mouse.current.middleButton.isPressed)
             {
                 var d = Mouse.current.delta.ReadValue();
                 _yaw += d.x * 0.22f;
@@ -66,15 +77,18 @@ namespace InsectWars.RTS
                 _pivot.rotation = Quaternion.Euler(_orbitPitch, _yaw, 0f);
             }
 
-            var scroll = Mouse.current.scroll.ReadValue().y;
-            if (Mathf.Abs(scroll) > 0.01f)
+            if (Mouse.current != null)
             {
-                var local = transform.localPosition;
-                var len = local.magnitude;
-                len = Mathf.Clamp(len - scroll * zoomSpeed * 0.012f, minHeight, maxHeight);
-                if (local.sqrMagnitude < 0.01f)
-                    local = new Vector3(0f, 0.71f, -0.71f);
-                transform.localPosition = local.normalized * len;
+                var scroll = Mouse.current.scroll.ReadValue().y;
+                if (Mathf.Abs(scroll) > 0.01f)
+                {
+                    var local = transform.localPosition;
+                    var len = local.magnitude;
+                    len = Mathf.Clamp(len - scroll * zoomSpeed * 0.012f, minHeight, maxHeight);
+                    if (local.sqrMagnitude < 0.01f)
+                        local = new Vector3(0f, 0.71f, -0.71f);
+                    transform.localPosition = local.normalized * len;
+                }
             }
 
             ClampPivotToPlayArea();

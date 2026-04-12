@@ -113,7 +113,7 @@ namespace InsectWars.RTS
             if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_hollow.png");
 
             if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid_empty.png");
-if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
+            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
             if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (slotFrame == null) slotFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
 

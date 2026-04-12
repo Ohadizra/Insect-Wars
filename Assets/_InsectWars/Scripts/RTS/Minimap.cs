@@ -109,7 +109,7 @@ namespace InsectWars.RTS
             lblGo.transform.SetParent(panel.transform, false);
             var lbl = lblGo.AddComponent<Text>();
             lbl.font = InsectWars.Core.UiFontHelper.GetFont();
-lbl.fontSize = 13;
+            lbl.fontSize = 13;
             lbl.color = new Color(0.95f, 0.92f, 0.85f);
             lbl.text = "MAP";
             lbl.alignment = TextAnchor.UpperCenter;

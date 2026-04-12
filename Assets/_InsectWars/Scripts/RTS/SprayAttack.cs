@@ -54,7 +54,6 @@ namespace InsectWars.RTS
             go.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
 
             var ps = go.AddComponent<ParticleSystem>();
-            // Ensure the system is stopped before we configure duration and other locked properties
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
@@ -63,10 +62,10 @@ namespace InsectWars.RTS
             main.loop = false;
             main.startLifetime = new ParticleSystem.MinMaxCurve(ParticleLifetime * 0.9f, ParticleLifetime * 1.4f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(ParticleSpeed * 0.9f, ParticleSpeed * 1.5f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.55f); // Increased size
+            main.startSize = new ParticleSystem.MinMaxCurve(0.25f, 0.55f);
             main.startColor = new ParticleSystem.MinMaxGradient(
                 new Color(1f, 1f, 1f, 1.0f),
-                new Color(0.98f, 0.95f, 0.8f, 1.0f)); // Higher initial alpha
+                new Color(0.98f, 0.95f, 0.8f, 1.0f));
             main.gravityModifier = -0.05f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.maxParticles = ParticleBurst + 60;
@@ -74,8 +73,8 @@ namespace InsectWars.RTS
 
             var emission = ps.emission;
             emission.rateOverTime = 0f;
-            // High-frequency pulsed spray (more staccato)
-            emission.SetBursts(new[] { 
+            emission.SetBursts(new[]
+            {
                 new ParticleSystem.Burst(0.00f, ParticleBurst / 5),
                 new ParticleSystem.Burst(0.05f, ParticleBurst / 5),
                 new ParticleSystem.Burst(0.10f, ParticleBurst / 5),
@@ -85,36 +84,37 @@ namespace InsectWars.RTS
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = ConeHalfAngle * 0.75f; 
+            shape.angle = ConeHalfAngle * 0.75f;
             shape.radius = 0.05f;
             shape.radiusThickness = 1f;
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
             sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.Linear(0f, 0.4f, 1f, 1.6f)); // Larger dissipation
+                AnimationCurve.Linear(0f, 0.4f, 1f, 1.6f));
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;
             var grad = new Gradient();
-            // Higher opacity and more toxic yellowish-brown tones
             grad.SetKeys(
-                new[] { 
-                    new GradientColorKey(Color.white, 0f), 
-                    new GradientColorKey(new Color(1f, 0.95f, 0.6f), 0.3f), // Caustic yellow
-                    new GradientColorKey(new Color(0.8f, 0.75f, 0.5f), 1f)  // Dissipating brown
+                new[]
+                {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(new Color(1f, 0.95f, 0.6f), 0.3f),
+                    new GradientColorKey(new Color(0.8f, 0.75f, 0.5f), 1f)
                 },
-                new[] { 
-                    new GradientAlphaKey(0.0f, 0f), 
-                    new GradientAlphaKey(1.0f, 0.1f), // Fast build up
-                    new GradientAlphaKey(0.8f, 0.5f), // High mid-life opacity
-                    new GradientAlphaKey(0.0f, 1f) 
+                new[]
+                {
+                    new GradientAlphaKey(0.0f, 0f),
+                    new GradientAlphaKey(1.0f, 0.1f),
+                    new GradientAlphaKey(0.8f, 0.5f),
+                    new GradientAlphaKey(0.0f, 1f)
                 });
             colorOverLifetime.color = grad;
 
             var noise = ps.noise;
             noise.enabled = true;
-            noise.strength = 1.8f; // More violent jitter
+            noise.strength = 1.8f;
             noise.frequency = 4f;
             noise.scrollSpeed = 2.5f;
             noise.quality = ParticleSystemNoiseQuality.Medium;
@@ -125,7 +125,7 @@ namespace InsectWars.RTS
             trail.lifetime = 0.15f;
             trail.widthOverTrail = new ParticleSystem.MinMaxCurve(0.5f, 0.1f);
             trail.colorOverLifetime = new ParticleSystem.MinMaxGradient(
-                new Color(1f, 0.95f, 0.7f, 0.6f), 
+                new Color(1f, 0.95f, 0.7f, 0.6f),
                 new Color(1f, 1f, 1f, 0f));
 
             var renderer = go.GetComponent<ParticleSystemRenderer>();
@@ -147,33 +147,29 @@ namespace InsectWars.RTS
 
             s_sprayMat = new Material(sh) { name = "IW_SprayMat" };
 
-            // Load the generated high-quality spray puff
-        #if UNITY_EDITOR
-            var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png");
+#if UNITY_EDITOR
+            var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(
+                "Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png");
             if (tex != null) s_sprayMat.mainTexture = tex;
             else s_sprayMat.mainTexture = GetSoftCircleTexture();
-        #else
+#else
             s_sprayMat.mainTexture = GetSoftCircleTexture();
-        #endif
+#endif
 
             if (s_sprayMat.HasProperty("_Surface"))
-                s_sprayMat.SetFloat("_Surface", 1f);  // Transparent
-            
-            // Standard Alpha Blending for better visibility on all backgrounds
+                s_sprayMat.SetFloat("_Surface", 1f);
             if (s_sprayMat.HasProperty("_Blend"))
-                s_sprayMat.SetFloat("_Blend", 0f);    // 0 = Alpha, 1 = Additive
-            
+                s_sprayMat.SetFloat("_Blend", 0f);
             s_sprayMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             s_sprayMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             s_sprayMat.SetInt("_ZWrite", 0);
-            
             s_sprayMat.color = new Color(1f, 1f, 1f, 1f);
             s_sprayMat.renderQueue = 3100;
             return s_sprayMat;
-            }
+        }
 
-            static Texture2D GetSoftCircleTexture()
-            {
+        static Texture2D GetSoftCircleTexture()
+        {
             if (s_softCircle != null) return s_softCircle;
             const int res = 64;
             s_softCircle = new Texture2D(res, res, TextureFormat.RGBA32, false)
@@ -196,6 +192,6 @@ namespace InsectWars.RTS
             s_softCircle.SetPixels(pixels);
             s_softCircle.Apply(false, true);
             return s_softCircle;
-            }
-            }
-            }
+        }
+    }
+}
