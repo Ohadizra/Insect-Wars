@@ -297,8 +297,8 @@ namespace InsectWars.RTS
 
         void SpawnConstructionParticles(float progress)
         {
-            // Spawn subtle dust/spark particles at the growing top edge
-            if (Random.value > 0.15f) return;
+            // Spawn thick dust/smoke particles at the growing top edge
+            if (Random.value > 0.3f) return; // Increased rate for "thickness"
 
             var rends = GetComponentsInChildren<Renderer>();
             if (rends.Length == 0) return;
@@ -306,21 +306,35 @@ namespace InsectWars.RTS
             for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
 
             Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
-            Vector3 randomOffset = new Vector3(Random.Range(-2f, 2f), 0f, Random.Range(-2f, 2f));
             
-            // Simple dust particles fallback
-            var debris = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            debris.transform.position = topCenter + randomOffset;
-            debris.transform.localScale = Vector3.one * Random.Range(0.05f, 0.15f);
-            Destroy(debris.GetComponent<Collider>());
-            
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            mat.color = new Color(0.8f, 0.75f, 0.65f, 0.8f);
-            debris.GetComponent<Renderer>().sharedMaterial = mat;
-            
-            var rb = debris.AddComponent<Rigidbody>();
-            rb.linearVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(1f, 3f), Random.Range(-1f, 1f));
-            Destroy(debris, 0.6f);
+            // Spawn 1-2 particles per tick for more volume
+            int count = Random.Range(1, 3);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 randomOffset = new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(-0.5f, 0.5f), Random.Range(-2.5f, 2.5f));
+                
+                // Use Spheres for soft smoke/dust look
+                var dust = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                dust.transform.position = topCenter + randomOffset;
+                dust.transform.localScale = Vector3.one * Random.Range(0.4f, 0.8f);
+                Destroy(dust.GetComponent<Collider>());
+                
+                var sh = Shader.Find("InsectWars/SoftDust");
+                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+                
+                var mat = new Material(sh);
+                // Warm earthy dust color
+                Color dustColor = new Color(0.75f, 0.7f, 0.6f, 0.6f);
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", dustColor);
+                else mat.color = dustColor;
+                
+                dust.GetComponent<Renderer>().sharedMaterial = mat;
+                
+                // Add the procedural behavior component
+                var behavior = dust.AddComponent<ConstructionDust>();
+                behavior.lifetime = Random.Range(0.8f, 1.5f);
+                behavior.maxScale = Random.Range(2.0f, 3.5f);
+            }
         }
 
         void PlayCompletionEffect()
