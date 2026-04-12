@@ -286,12 +286,14 @@ namespace InsectWars.RTS
 
             world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
-            surface.collectObjects = CollectObjects.Children;
-            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            // Explicitly set layers to include to ensure Ground and Environment are baked
+            surface.collectObjects = CollectObjects.All; // More robust than 'Children'
+            surface.useGeometry = NavMeshCollectGeometry.RenderMeshes; // More accurate for terrain
             surface.layerMask = LayerMask.GetMask("Ground", "Environment", "Default");
             surface.ignoreNavMeshObstacle = false;
-            surface.agentTypeID = 0; // Ensure it uses the default agent type
+            
+            // Ensure we use the correct agent type ID from the project settings
+            if (NavMesh.GetSettingsCount() > 0)
+                surface.agentTypeID = NavMesh.GetSettingsByIndex(0).agentTypeID;
 
             BuildTerrain(world.transform, _mapHalfExtent);
             AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
@@ -321,9 +323,15 @@ namespace InsectWars.RTS
 
             var tri = NavMesh.CalculateTriangulation();
             if (tri.vertices.Length == 0)
+            {
                 Debug.LogError("[MapDirector] NavMesh bake produced NO walkable surface!");
+            }
             else
-                Debug.Log($"[MapDirector] NavMesh baked: {tri.vertices.Length} verts, {tri.indices.Length / 3} tris");
+            {
+                Bounds b = new Bounds(tri.vertices[0], Vector3.zero);
+                foreach (var v in tri.vertices) b.Encapsulate(v);
+                Debug.Log($"[MapDirector] NavMesh baked: {tri.vertices.Length} verts, {tri.indices.Length / 3} tris. Bounds: {b}");
+            }
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -595,19 +603,26 @@ namespace InsectWars.RTS
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
-            // 1. Find a valid ground height and sample the NavMesh
+            // 1. Identify the agent type ID to use for sampling
+            int agentTypeId = 0;
+            if (NavMesh.GetSettingsCount() > 0)
+                agentTypeId = NavMesh.GetSettingsByIndex(0).agentTypeID;
+
+            // 2. Find a valid ground height and sample the NavMesh
             float h = GetHeight(pos);
             Vector3 finalPos = new Vector3(pos.x, h + 0.05f, pos.z);
             bool foundNav = false;
-            
+            NavMeshHit navHit;
+            NavMeshQueryFilter filter = new NavMeshQueryFilter { agentTypeID = agentTypeId, areaMask = NavMesh.AllAreas };
+
             // Increased search radius to 50f to ensure units find a home on larger maps
-            if (NavMesh.SamplePosition(finalPos, out var navHit, 50f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(finalPos, out navHit, 50f, filter))
             {
                 finalPos = navHit.position;
                 foundNav = true;
             }
 
-            // 2. Load the correct prefab
+            // 3. Load the correct prefab
             GameObject prefab = null;
             if (ActiveVisualLibrary != null)
                 prefab = ActiveVisualLibrary.GetUnitPrefab(arch);
@@ -615,13 +630,19 @@ namespace InsectWars.RTS
             GameObject go;
             InsectUnit unit;
 
-            // 3. Instantiate without modifying the source asset
+            // 4. Instantiate without triggering "not close enough" errors
             if (prefab != null)
             {
-                // Instantiate at the correct position from the start to avoid agent-creation errors
+                var agentOnPrefab = prefab.GetComponent<NavMeshAgent>();
+                bool wasEnabled = agentOnPrefab != null && agentOnPrefab.enabled;
+                if (wasEnabled) agentOnPrefab.enabled = false;
+
+                // Instantiate at the correct position from the start
                 go = Instantiate(prefab, finalPos, Quaternion.identity);
                 go.name = $"{team}_{arch}";
                 
+                if (wasEnabled) agentOnPrefab.enabled = true;
+
                 unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
             }
@@ -632,7 +653,7 @@ namespace InsectWars.RTS
                 unit = go.AddComponent<InsectUnit>();
             }
 
-            // 4. Configure the unit (team and visuals)
+            // 5. Configure the unit (team and visuals)
             unit.Configure(team, null, arch);
 
             Color shellColor = TeamPalette.GetShellColor(team);
@@ -650,7 +671,7 @@ namespace InsectWars.RTS
                 renderer.SetPropertyBlock(block);
             }
 
-            // 5. Safely handle the NavMeshAgent
+            // 6. Safely handle the NavMeshAgent
             var agent = go.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
@@ -676,11 +697,11 @@ namespace InsectWars.RTS
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
             return unit;
-            }
+        }
 
-            void EnsureLitShader()
-            {
+        void EnsureLitShader()
+        {
             if (s_lit == null) s_lit = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            }
-            }
-            }
+        }
+    }
+}
