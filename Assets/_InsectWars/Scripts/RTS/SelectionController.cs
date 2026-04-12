@@ -318,6 +318,22 @@ namespace InsectWars.RTS
             }
         }
 
+        /// <summary>Select a single production building (used by control groups).</summary>
+        public void SelectBuilding(ProductionBuilding bld)
+        {
+            if (bld == null) return;
+            ClearAll();
+            _selectedBuilding = bld;
+        }
+
+        /// <summary>Select the player hive (used by control groups).</summary>
+        public void SelectHive(HiveDeposit hive)
+        {
+            if (hive == null) return;
+            ClearAll();
+            _selectedHive = hive;
+        }
+
         public void Deselect(InsectUnit u)
         {
             if (_selected.Remove(u))

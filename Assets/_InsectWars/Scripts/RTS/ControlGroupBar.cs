@@ -145,12 +145,7 @@ namespace InsectWars.RTS
 
             for (int i = 0; i < GroupCount; i++)
             {
-                int count = 0;
-                if (mgr != null)
-                {
-                    var group = mgr.GetGroup(i);
-                    if (group != null) count = group.Count;
-                }
+                int count = mgr != null ? mgr.GetGroupCount(i) : 0;
 
                 bool isActive = mgr != null && mgr.ActiveGroup == i && count > 0;
                 bool isOccupied = count > 0;

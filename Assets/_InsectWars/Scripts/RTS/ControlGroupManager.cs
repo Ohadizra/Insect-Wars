@@ -7,6 +7,7 @@ namespace InsectWars.RTS
 {
     /// <summary>
     /// SC2-style control groups (keys 1-0 → slots 0-9).
+    /// Groups can contain units, production buildings, and/or the player hive.
     /// Ctrl/Cmd+Number = set, Shift+Number = add to group,
     /// Alt+Number = append group to selection, Number = recall,
     /// double-tap Number = recall + center camera.
@@ -18,23 +19,49 @@ namespace InsectWars.RTS
         const int GroupCount = 10;
         const float DoubleTapThreshold = 0.3f;
 
-        readonly HashSet<InsectUnit>[] _groups = new HashSet<InsectUnit>[GroupCount];
+        readonly HashSet<InsectUnit>[] _units = new HashSet<InsectUnit>[GroupCount];
+        readonly HashSet<ProductionBuilding>[] _buildings = new HashSet<ProductionBuilding>[GroupCount];
+        readonly HiveDeposit[] _hives = new HiveDeposit[GroupCount];
         readonly float[] _lastRecallTime = new float[GroupCount];
 
         /// <summary>Index of the group most recently recalled (or -1).</summary>
         public int ActiveGroup { get; private set; } = -1;
 
-        public IReadOnlyCollection<InsectUnit> GetGroup(int index)
+        public IReadOnlyCollection<InsectUnit> GetGroupUnits(int index)
         {
             if (index < 0 || index >= GroupCount) return null;
-            return _groups[index];
+            return _units[index];
+        }
+
+        public IReadOnlyCollection<ProductionBuilding> GetGroupBuildings(int index)
+        {
+            if (index < 0 || index >= GroupCount) return null;
+            return _buildings[index];
+        }
+
+        public HiveDeposit GetGroupHive(int index)
+        {
+            if (index < 0 || index >= GroupCount) return null;
+            return _hives[index];
+        }
+
+        /// <summary>Total entity count in the group (units + buildings + hive).</summary>
+        public int GetGroupCount(int index)
+        {
+            if (index < 0 || index >= GroupCount) return 0;
+            int n = _units[index].Count + _buildings[index].Count;
+            if (_hives[index] != null) n++;
+            return n;
         }
 
         void Awake()
         {
             Instance = this;
             for (int i = 0; i < GroupCount; i++)
-                _groups[i] = new HashSet<InsectUnit>();
+            {
+                _units[i] = new HashSet<InsectUnit>();
+                _buildings[i] = new HashSet<ProductionBuilding>();
+            }
         }
 
         void OnDestroy()
@@ -67,13 +94,13 @@ namespace InsectWars.RTS
                 else
                     RecallGroup(i);
 
-                break; // only one group key per frame
+                break;
             }
         }
 
         void LateUpdate()
         {
-            PruneDeadUnits();
+            PruneDead();
         }
 
         // ──────────── Group Operations ────────────
@@ -83,11 +110,23 @@ namespace InsectWars.RTS
             var sc = SelectionController.Instance;
             if (sc == null) return;
 
-            _groups[index].Clear();
-            foreach (var u in sc.SelectedPlayerUnits())
-                _groups[index].Add(u);
+            _units[index].Clear();
+            _buildings[index].Clear();
+            _hives[index] = null;
 
-            ActiveGroup = _groups[index].Count > 0 ? index : ActiveGroup;
+            foreach (var u in sc.SelectedPlayerUnits())
+                _units[index].Add(u);
+
+            var bld = sc.SelectedBuilding;
+            if (bld != null && bld.Team == Team.Player && bld.IsAlive)
+                _buildings[index].Add(bld);
+
+            var hive = sc.SelectedHive;
+            if (hive != null && hive.Team == Team.Player && hive.IsAlive)
+                _hives[index] = hive;
+
+            if (GetGroupCount(index) > 0)
+                ActiveGroup = index;
         }
 
         void AddToGroup(int index)
@@ -96,16 +135,30 @@ namespace InsectWars.RTS
             if (sc == null) return;
 
             foreach (var u in sc.SelectedPlayerUnits())
-                _groups[index].Add(u);
+                _units[index].Add(u);
+
+            var bld = sc.SelectedBuilding;
+            if (bld != null && bld.Team == Team.Player && bld.IsAlive)
+                _buildings[index].Add(bld);
+
+            var hive = sc.SelectedHive;
+            if (hive != null && hive.Team == Team.Player && hive.IsAlive)
+                _hives[index] = hive;
         }
 
         void AppendGroupToSelection(int index)
         {
             var sc = SelectionController.Instance;
             if (sc == null) return;
-            if (_groups[index].Count == 0) return;
+            if (GetGroupCount(index) == 0) return;
 
-            sc.AddToSelection(_groups[index]);
+            if (_units[index].Count > 0)
+                sc.AddToSelection(_units[index]);
+            else if (_buildings[index].Count > 0)
+                sc.SelectBuilding(FirstAliveBuilding(index));
+            else if (_hives[index] != null)
+                sc.SelectHive(_hives[index]);
+
             ActiveGroup = index;
         }
 
@@ -113,7 +166,7 @@ namespace InsectWars.RTS
         {
             var sc = SelectionController.Instance;
             if (sc == null) return;
-            if (_groups[index].Count == 0) return;
+            if (GetGroupCount(index) == 0) return;
 
             float now = Time.unscaledTime;
             bool doubleTap = ActiveGroup == index
@@ -122,27 +175,51 @@ namespace InsectWars.RTS
             _lastRecallTime[index] = now;
             ActiveGroup = index;
 
-            sc.SetSelection(_groups[index]);
+            // Priority: units > buildings > hive (matching SC2 tab-group ordering)
+            if (_units[index].Count > 0)
+                sc.SetSelection(_units[index]);
+            else if (_buildings[index].Count > 0)
+                sc.SelectBuilding(FirstAliveBuilding(index));
+            else if (_hives[index] != null)
+                sc.SelectHive(_hives[index]);
 
             if (doubleTap)
                 CenterCameraOnGroup(index);
         }
 
+        ProductionBuilding FirstAliveBuilding(int index)
+        {
+            foreach (var b in _buildings[index])
+                if (b != null && b.IsAlive) return b;
+            return null;
+        }
+
         void CenterCameraOnGroup(int index)
         {
-            if (_groups[index].Count == 0) return;
-
             var centroid = Vector3.zero;
             int count = 0;
-            foreach (var u in _groups[index])
+
+            foreach (var u in _units[index])
             {
                 if (u == null || !u.IsAlive) continue;
                 centroid += u.transform.position;
                 count++;
             }
-            if (count == 0) return;
+            foreach (var b in _buildings[index])
+            {
+                if (b == null || !b.IsAlive) continue;
+                centroid += b.transform.position;
+                count++;
+            }
+            if (_hives[index] != null && _hives[index].IsAlive)
+            {
+                centroid += _hives[index].transform.position;
+                count++;
+            }
 
+            if (count == 0) return;
             centroid /= count;
+
             var cam = Camera.main;
             if (cam == null) return;
             var ctrl = cam.GetComponent<RTSCameraController>();
@@ -151,10 +228,15 @@ namespace InsectWars.RTS
                 ctrl.FocusWorldPosition(centroid);
         }
 
-        void PruneDeadUnits()
+        void PruneDead()
         {
             for (int i = 0; i < GroupCount; i++)
-                _groups[i].RemoveWhere(u => u == null || !u.IsAlive);
+            {
+                _units[i].RemoveWhere(u => u == null || !u.IsAlive);
+                _buildings[i].RemoveWhere(b => b == null || !b.IsAlive);
+                if (_hives[i] != null && (_hives[i] == null || !_hives[i].IsAlive))
+                    _hives[i] = null;
+            }
         }
 
         // ──────────── Input Helpers ────────────
