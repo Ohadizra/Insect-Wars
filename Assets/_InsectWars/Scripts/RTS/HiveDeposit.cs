@@ -108,19 +108,34 @@ namespace InsectWars.RTS
 
         void SpawnWorker()
         {
-            var center = transform.position;
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
             var rend = GetComponentInChildren<Renderer>();
             float edge = rend != null
                 ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.5f
                 : transform.localScale.x * 0.5f + 1.5f;
-            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+
+            float angle;
+            if (_rallyPoint.HasValue)
+            {
+                var dir = _rallyPoint.Value - center;
+                dir.y = 0f;
+                angle = Mathf.Atan2(dir.z, dir.x);
+                angle += Random.Range(-0.3f, 0.3f);
+            }
+            else
+            {
+                angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            }
+
             var spawnPos = new Vector3(
                 center.x + Mathf.Cos(angle) * edge, 0f,
                 center.z + Mathf.Sin(angle) * edge);
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
+
             var unit = SkirmishDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
             if (unit == null) return;
+
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
                 unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);

@@ -145,23 +145,11 @@ namespace InsectWars.RTS
             if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
                 return null;
 
-            var center = new Vector3(transform.position.x, 0f, transform.position.z);
-            var extent = transform.localScale.x * 0.5f + 1.5f;
-            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
-            var spawnPos = center + offset;
-            if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
-                spawnPos = hit.position;
-
+            var spawnPos = GetSpawnPosition();
             var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
             if (unit == null) return null;
 
-            if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
-                unit.Definition != null && unit.Definition.canGather)
-                unit.OrderGather(_rallyGatherTarget);
-            else if (_rallyPoint.HasValue)
-                unit.OrderMove(_rallyPoint.Value);
-
+            SendToRally(unit);
             return unit;
         }
 
@@ -209,15 +197,43 @@ namespace InsectWars.RTS
 
         void ProduceUnitImmediate(UnitArchetype archetype)
         {
+            var spawnPos = GetSpawnPosition();
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
+            if (unit == null) return;
+            SendToRally(unit);
+        }
+
+        Vector3 GetSpawnPosition()
+        {
             var center = new Vector3(transform.position.x, 0f, transform.position.z);
-            var extent = transform.localScale.x * 0.5f + 1.5f;
-            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
+
+            var rend = GetComponentInChildren<Renderer>();
+            float edge = transform.localScale.x * 0.5f + 1.5f;
+            if (rend != null)
+                edge = Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.5f;
+
+            float angle;
+            if (_rallyPoint.HasValue)
+            {
+                var dir = _rallyPoint.Value - center;
+                dir.y = 0f;
+                angle = Mathf.Atan2(dir.z, dir.x);
+                angle += Random.Range(-0.3f, 0.3f);
+            }
+            else
+            {
+                angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            }
+
+            var offset = new Vector3(Mathf.Cos(angle) * edge, 0f, Mathf.Sin(angle) * edge);
             var spawnPos = center + offset;
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
-            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
-            if (unit == null) return;
+            return spawnPos;
+        }
+
+        void SendToRally(InsectUnit unit)
+        {
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
                 unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);
