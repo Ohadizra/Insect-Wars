@@ -309,11 +309,13 @@ namespace InsectWars.RTS
             }
 
             float footprint = ProductionBuilding.GetFootprintRadius(buildType);
-            var colliders = Physics.OverlapSphere(worldPos, footprint, ~0, QueryTriggerInteraction.Ignore);
+            var colliders = Physics.OverlapSphere(worldPos, footprint, ~0, QueryTriggerInteraction.Collide);
             foreach (var col in colliders)
             {
                 if (col.GetComponentInParent<ProductionBuilding>() != null) return false;
                 if (col.GetComponentInParent<HiveDeposit>() != null) return false;
+                if (col.GetComponentInParent<RottingFruitNode>() != null) return false;
+                if (col.GetComponentInParent<InsectUnit>() != null) return false;
                 if (col.GetComponent<NavMeshObstacle>() != null) return false;
             }
 

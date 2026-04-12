@@ -83,8 +83,7 @@ namespace InsectWars.RTS
         {
             BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
-            BuildingType.SkyTower => System.Array.Empty<UnitArchetype>(),
-            _ => new[] { UnitArchetype.Worker }
+            _ => System.Array.Empty<UnitArchetype>()
         };
 
         public static int GetUnitCost(UnitArchetype arch) => arch switch
@@ -143,7 +142,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => 5f,
             BuildingType.Underground => 4f,
             BuildingType.SkyTower => 3f,
-            BuildingType.RootCellar => 3.5f,
+            BuildingType.RootCellar => 1.75f,
             _ => 4f
         };
 
@@ -198,8 +197,10 @@ namespace InsectWars.RTS
                 _originalScale = transform.localScale;
                 foreach (var r in GetComponentsInChildren<Renderer>(true))
                 {
-                    if (r.material != null)
-                        _originalColors[r] = r.material.color;
+                    if (r.material == null) continue;
+                    _originalColors[r] = r.material.HasProperty("_BaseColor")
+                        ? r.material.GetColor("_BaseColor")
+                        : r.material.color;
                 }
                 UpdateConstructionVisual();
             }
@@ -228,38 +229,18 @@ namespace InsectWars.RTS
                 transform.localScale = _originalScale;
                 foreach (var kvp in _originalColors)
                 {
-                    if (kvp.Key != null && kvp.Key.material != null)
+                    if (kvp.Key == null || kvp.Key.material == null) continue;
+                    if (kvp.Key.material.HasProperty("_BaseColor"))
+                        kvp.Key.material.SetColor("_BaseColor", kvp.Value);
+                    else
                         kvp.Key.material.color = kvp.Value;
                 }
-                PlayCompletionEffect();
             }
         }
 
         void UpdateConstructionVisual()
         {
             float progress = ConstructionProgress;
-            
-            // Richer visual staging
-            // 0-25%: Foundation outline, very transparent
-            // 25-50%: Growing solid, ghost top
-            // 50-75%: Mostly visible, shimmer edge
-            // 75-100%: Fading construction glow
-            
-            float alpha = 0.3f;
-            Color constructionTint = new Color(0.6f, 0.7f, 0.85f); // Cool blue-grey
-
-            if (progress < 0.25f)
-            {
-                alpha = Mathf.Lerp(0.1f, 0.4f, progress / 0.25f);
-            }
-            else if (progress < 0.5f)
-            {
-                alpha = Mathf.Lerp(0.4f, 0.7f, (progress - 0.25f) / 0.25f);
-            }
-            else
-            {
-                alpha = Mathf.Lerp(0.7f, 1.0f, (progress - 0.5f) / 0.5f);
-            }
 
             float scaleY = Mathf.Lerp(0.4f, 1f, progress);
             transform.localScale = new Vector3(
@@ -267,79 +248,17 @@ namespace InsectWars.RTS
                 _originalScale.y * scaleY,
                 _originalScale.z);
 
+            float darkening = Mathf.Lerp(0.35f, 1f, progress);
             foreach (var kvp in _originalColors)
             {
                 if (kvp.Key == null || kvp.Key.material == null) continue;
                 var orig = kvp.Value;
-                
-                // Transition from cool construction tint to original warm colors
-                Color targetBase = Color.Lerp(constructionTint, orig, Mathf.Clamp01((progress - 0.3f) / 0.7f));
-                kvp.Key.material.color = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
-                
+                var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
+
                 if (kvp.Key.material.HasProperty("_BaseColor"))
-                    kvp.Key.material.SetColor("_BaseColor", new Color(targetBase.r, targetBase.g, targetBase.b, alpha));
-
-                // Add edge glow effect via emission if available
-                if (kvp.Key.material.HasProperty("_EmissionColor"))
-                {
-                    float glow = Mathf.Sin(Time.time * 8f) * 0.15f + 0.2f;
-                    if (progress > 0.9f) glow *= (1f - progress) * 10f; // Fade out glow at completion
-                    kvp.Key.material.SetColor("_EmissionColor", constructionTint * glow);
-                    kvp.Key.material.EnableKeyword("_EMISSION");
-                }
-            }
-
-            if (_assignedBuilders > 0 && progress < 1f)
-            {
-                SpawnConstructionParticles(progress);
-            }
-        }
-
-        void SpawnConstructionParticles(float progress)
-        {
-            // Spawn subtle dust/spark particles at the growing top edge
-            if (Random.value > 0.15f) return;
-
-            var bounds = GetComponentInChildren<Renderer>().bounds;
-            Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
-            Vector3 randomOffset = new Vector3(Random.Range(-2f, 2f), 0f, Random.Range(-2f, 2f));
-            
-            // Since we don't have a full particle system library, we create small transient cubes as "debris"
-            var debris = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            debris.transform.position = topCenter + randomOffset;
-            debris.transform.localScale = Vector3.one * Random.Range(0.05f, 0.15f);
-            Destroy(debris.GetComponent<Collider>());
-            
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            mat.color = new Color(0.8f, 0.75f, 0.65f, 0.8f);
-            debris.GetComponent<Renderer>().sharedMaterial = mat;
-            
-            var rb = debris.AddComponent<Rigidbody>();
-            rb.linearVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(1f, 3f), Random.Range(-1f, 1f));
-            Destroy(debris, 0.6f);
-        }
-
-        void PlayCompletionEffect()
-        {
-            // Completion thunk/crystallization sound
-            if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
-                GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
-
-            // Large burst of particles
-            for (int i = 0; i < 15; i++)
-            {
-                var debris = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                debris.transform.position = transform.position + Vector3.up * 0.5f;
-                debris.transform.localScale = Vector3.one * Random.Range(0.1f, 0.3f);
-                Destroy(debris.GetComponent<Collider>());
-                
-                var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-                mat.color = new Color(1f, 1f, 1f, 0.9f);
-                debris.GetComponent<Renderer>().sharedMaterial = mat;
-                
-                var rb = debris.AddComponent<Rigidbody>();
-                rb.linearVelocity = Random.insideUnitSphere * 5f + Vector3.up * 3f;
-                Destroy(debris, 1.2f);
+                    kvp.Key.material.SetColor("_BaseColor", tinted);
+                else
+                    kvp.Key.material.color = tinted;
             }
         }
 
@@ -533,7 +452,7 @@ namespace InsectWars.RTS
                     break;
                 case BuildingType.RootCellar:
                     buildingColor = new Color(0.4f, 0.3f, 0.2f);
-                    scale = new Vector3(3.5f, 2.5f, 3.5f);
+                    scale = new Vector3(1.75f, 1.25f, 1.75f);
                     break;
                 default:
                     buildingColor = Color.gray;
@@ -596,7 +515,7 @@ namespace InsectWars.RTS
 
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            go.transform.localScale *= 1.68f;
+            go.transform.localScale *= 2.7f;
             float groundY = SampleMaxTerrainHeight(position, 6f);
             go.transform.position = new Vector3(position.x, 0f, position.z);
             PlaceOnGround(go, groundY);
@@ -658,6 +577,7 @@ namespace InsectWars.RTS
             {
                 BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
                 BuildingType.SkyTower => new Vector3(1f, 1.3f, 1f),
+                BuildingType.RootCellar => new Vector3(0.5f, 0.5f, 0.5f),
                 _ => Vector3.one
             };
             go.transform.localScale = scale;

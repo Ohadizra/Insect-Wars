@@ -850,7 +850,7 @@ namespace InsectWars.RTS
                     BuildingType.Underground => new Vector3(4f, 2f, 4f),
                     BuildingType.AntNest => new Vector3(3.5f, 2f, 3.5f),
                     BuildingType.SkyTower => new Vector3(2.5f, 5f, 2.5f),
-                    BuildingType.RootCellar => new Vector3(3.5f, 2f, 3.5f),
+                    BuildingType.RootCellar => new Vector3(1.75f, 1f, 1.75f),
                     _ => new Vector3(3f, 2f, 3f)
                 };
                 _ghostPreview.transform.localScale = scale;
