@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using InsectWars.Core;
 using InsectWars.Data;
@@ -53,8 +54,10 @@ namespace InsectWars.RTS
         void DestroyObject(GameObject go)
         {
             if (go == null) return;
+            // Always destroy roots immediately during map generation to prevent 
+            // subsequent object searches from finding "ghost" objects that haven't been reaped.
             if (Application.isPlaying)
-                Destroy(go);
+                DestroyImmediate(go);
             else
                 DestroyImmediate(go);
         }
@@ -108,7 +111,7 @@ namespace InsectWars.RTS
                 Debug.LogWarning($"[MapDirector] {label} nest-to-apple distance ({dist:F0}) is very short. Units may clip into structures.");
         }
 
-        void Start()
+        IEnumerator Start()
         {
             Time.timeScale = 1f;
             PauseController.ForceUnpause();
@@ -116,6 +119,9 @@ namespace InsectWars.RTS
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
+            
+            // Allow one frame for the physics system and roots to settle after BuildWorldPreview
+            yield return null;
 
             var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
             var playerApple = FindNearestFruit(allFruit, _applePos);
@@ -286,11 +292,11 @@ namespace InsectWars.RTS
 
             world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
-            surface.collectObjects = CollectObjects.All; // More robust than 'Children'
-            surface.useGeometry = NavMeshCollectGeometry.RenderMeshes; // More accurate for terrain
+            surface.collectObjects = CollectObjects.Children; // Reverted to Children for performance
+            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders; // Reverted to PhysicsColliders (decorative props have no colliders)
             surface.layerMask = LayerMask.GetMask("Ground", "Environment", "Default");
             surface.ignoreNavMeshObstacle = false;
-            
+
             // Ensure we use the correct agent type ID from the project settings
             if (NavMesh.GetSettingsCount() > 0)
                 surface.agentTypeID = NavMesh.GetSettingsByIndex(0).agentTypeID;
@@ -615,7 +621,7 @@ namespace InsectWars.RTS
             NavMeshHit navHit;
             NavMeshQueryFilter filter = new NavMeshQueryFilter { agentTypeID = agentTypeId, areaMask = NavMesh.AllAreas };
 
-            // Increased search radius to 50f to ensure units find a home on larger maps
+            // Increased search radius to 50f for robustness
             if (NavMesh.SamplePosition(finalPos, out navHit, 50f, filter))
             {
                 finalPos = navHit.position;
@@ -630,21 +636,19 @@ namespace InsectWars.RTS
             GameObject go;
             InsectUnit unit;
 
-            // 4. Instantiate without triggering "not close enough" errors
+            // 4. Instantiate at a neutral location first if the prefab has an enabled agent
             if (prefab != null)
             {
-                var agentOnPrefab = prefab.GetComponent<NavMeshAgent>();
-                bool wasEnabled = agentOnPrefab != null && agentOnPrefab.enabled;
-                if (wasEnabled) agentOnPrefab.enabled = false;
-
-                // Instantiate at the correct position from the start
+                // Instantiate at the NavMesh position directly
                 go = Instantiate(prefab, finalPos, Quaternion.identity);
                 go.name = $"{team}_{arch}";
                 
-                if (wasEnabled) agentOnPrefab.enabled = true;
-
                 unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
+                
+                // If it fails to instantiate correctly on the NavMesh, 
+                // it might be because the NavMesh bake is still "settling" 
+                // or the position is just barely off.
             }
             else
             {
@@ -671,13 +675,16 @@ namespace InsectWars.RTS
                 renderer.SetPropertyBlock(block);
             }
 
-            // 6. Safely handle the NavMeshAgent
+            // 6. Safely handle the NavMeshAgent on the INSTANCE only
             var agent = go.GetComponent<NavMeshAgent>();
             if (agent != null)
             {
-                // If we found a valid position, make sure it's enabled and warped
+                // Ensure it's off before we warp it to be safe
+                agent.enabled = false;
+                
                 if (foundNav)
                 {
+                    go.transform.position = finalPos;
                     agent.enabled = true;
                     if (!agent.isOnNavMesh)
                         agent.Warp(finalPos);
@@ -685,7 +692,7 @@ namespace InsectWars.RTS
                 else
                 {
                     // No NavMesh nearby: leave it disabled to avoid internal engine errors
-                    agent.enabled = false;
+                    go.transform.position = finalPos;
                     Debug.LogWarning($"[MapDirector] FAILED to find NavMesh for {go.name} at {pos} within 50m! Unit is spawned but Agent is DISABLED.");
                 }
             }
