@@ -34,6 +34,8 @@ namespace InsectWars.RTS
         BuildingState _state = BuildingState.Active;
         float _maxHealth;
         float _currentHealth;
+        float _buildTimeTotal;
+        float _buildTimeElapsed;
 
         struct QueueEntry
         {
@@ -50,12 +52,15 @@ namespace InsectWars.RTS
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
         public BuildingState State => _state;
         public bool IsOperational => _state == BuildingState.Active;
-        public float ConstructionProgress => 1f;
+        public float ConstructionProgress => _buildTimeTotal > 0f
+            ? Mathf.Clamp01(_buildTimeElapsed / _buildTimeTotal) : 1f;
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
-        public bool IsAlive => _currentHealth > 0f && _state != BuildingState.Destroyed;
+        public bool IsAlive => _state != BuildingState.Destroyed;
+        public bool IsUnderConstruction => _state == BuildingState.UnderConstruction;
 
-        public int AssignedBuilders => 0;
+        int _assignedBuilders;
+        public int AssignedBuilders => _assignedBuilders;
         public bool IsProducing => _queue.Count > 0 && IsOperational;
         public int QueueCount => _queue.Count;
         public float ProductionProgress => _queue.Count > 0
@@ -120,6 +125,15 @@ namespace InsectWars.RTS
             _ => 300f
         };
 
+        public static float GetConstructionTime(BuildingType type) => type switch
+        {
+            BuildingType.Underground => 25f,
+            BuildingType.AntNest => 35f,
+            BuildingType.SkyTower => 30f,
+            BuildingType.RootCellar => 20f,
+            _ => 20f
+        };
+
         void OnDestroy()
         {
             s_all.Remove(this);
@@ -138,15 +152,66 @@ namespace InsectWars.RTS
             }
         }
 
-        public void Initialize(BuildingType type, Team team = Team.Player)
+        public void Initialize(BuildingType type, Team team = Team.Player, bool startBuilt = true)
         {
             _type = type;
             _team = team;
             _maxHealth = GetMaxHealth(type);
-            _currentHealth = _maxHealth;
-            _state = BuildingState.Active;
+            _buildTimeTotal = GetConstructionTime(type);
+
+            if (startBuilt)
+            {
+                _currentHealth = _maxHealth;
+                _buildTimeElapsed = _buildTimeTotal;
+                _state = BuildingState.Active;
+            }
+            else
+            {
+                _currentHealth = _maxHealth * 0.1f;
+                _buildTimeElapsed = 0f;
+                _state = BuildingState.UnderConstruction;
+                ApplyConstructionVisual();
+            }
+
             if (!s_all.Contains(this))
                 s_all.Add(this);
+        }
+
+        public void RegisterBuilder() => _assignedBuilders++;
+        public void UnregisterBuilder() => _assignedBuilders = Mathf.Max(0, _assignedBuilders - 1);
+
+        public void TickConstruction(float dt)
+        {
+            if (_state != BuildingState.UnderConstruction) return;
+            _buildTimeElapsed += dt;
+            float progress = Mathf.Clamp01(_buildTimeElapsed / _buildTimeTotal);
+            _currentHealth = Mathf.Lerp(_maxHealth * 0.1f, _maxHealth, progress);
+
+            if (_buildTimeElapsed >= _buildTimeTotal)
+            {
+                _state = BuildingState.Active;
+                _currentHealth = _maxHealth;
+                _buildTimeElapsed = _buildTimeTotal;
+                RemoveConstructionVisual();
+            }
+        }
+
+        void ApplyConstructionVisual()
+        {
+            foreach (var r in GetComponentsInChildren<Renderer>(true))
+            {
+                var c = r.material.color;
+                r.material.color = new Color(c.r * 0.5f, c.g * 0.5f, c.b * 0.5f, 0.7f);
+            }
+        }
+
+        void RemoveConstructionVisual()
+        {
+            foreach (var r in GetComponentsInChildren<Renderer>(true))
+            {
+                var c = r.material.color;
+                r.material.color = new Color(c.r / 0.5f, c.g / 0.5f, c.b / 0.5f, 1f);
+            }
         }
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
@@ -307,18 +372,18 @@ namespace InsectWars.RTS
             _rallyFlag.transform.position = _rallyPoint.Value;
         }
 
-        public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player)
+        public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player, bool startBuilt = false)
         {
             var lib = SkirmishDirector.ActiveVisualLibrary;
 
             if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
-                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
+                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team, startBuilt);
 
             if (lib != null)
             {
                 var prefab = lib.GetBuildingPrefab(type);
                 if (prefab != null)
-                    return PlaceFromPrefab(position, prefab, type, team);
+                    return PlaceFromPrefab(position, prefab, type, team, startBuilt);
             }
 
             Color buildingColor;
@@ -390,12 +455,12 @@ namespace InsectWars.RTS
             obs.center = new Vector3(0f, 0.5f, 0f);
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(type, team);
+            building.Initialize(type, team, startBuilt);
 
             return building;
         }
 
-        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player)
+        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player, bool startBuilt = false)
         {
             var savedPlayerHive = HiveDeposit.PlayerHive;
             var savedEnemyHive = HiveDeposit.EnemyHive;
@@ -451,11 +516,11 @@ namespace InsectWars.RTS
             }
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(BuildingType.AntNest, team);
+            building.Initialize(BuildingType.AntNest, team, startBuilt);
             return building;
         }
 
-        static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team)
+        static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team, bool startBuilt = false)
         {
             var go = Object.Instantiate(prefab);
             go.name = $"Building_{type}";
@@ -505,7 +570,7 @@ namespace InsectWars.RTS
             }
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(type, team);
+            building.Initialize(type, team, startBuilt);
             return building;
         }
 

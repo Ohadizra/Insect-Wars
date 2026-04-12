@@ -247,6 +247,9 @@ namespace InsectWars.RTS
                 case UnitOrder.AttackBuilding:
                     TickAttackBuilding();
                     break;
+                case UnitOrder.Build:
+                    TickBuild();
+                    break;
                 case UnitOrder.Idle:
                     TickIdleAutoGather();
                     break;
@@ -314,10 +317,12 @@ namespace InsectWars.RTS
         public void OrderBuild(ProductionBuilding building)
         {
             if (!IsAlive || building == null) return;
+            UnregisterFromBuildTarget();
             ClearTargets();
             _attackTarget = building.transform;
             _order = UnitOrder.Build;
             _agent.isStopped = false;
+            building.RegisterBuilder();
         }
 
         public void OrderStop()
@@ -408,11 +413,19 @@ namespace InsectWars.RTS
 
         void ClearTargets()
         {
+            UnregisterFromBuildTarget();
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
             UnlockMelee();
+        }
+
+        void UnregisterFromBuildTarget()
+        {
+            if (_order != UnitOrder.Build || _attackTarget == null) return;
+            var bld = _attackTarget.GetComponent<ProductionBuilding>();
+            if (bld != null) bld.UnregisterBuilder();
         }
 
         void UnlockMelee()
@@ -844,6 +857,47 @@ return;
             _attackCooldown = definition.attackCooldown;
         }
 
+        void TickBuild()
+        {
+            if (_attackTarget == null)
+            {
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            var bld = _attackTarget.GetComponent<ProductionBuilding>();
+            if (bld == null || !bld.IsAlive || !bld.IsUnderConstruction)
+            {
+                UnregisterFromBuildTarget();
+                _attackTarget = null;
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            var dist = Vector3.Distance(transform.position, _attackTarget.position);
+            float buildRange = 4f;
+            var rend = _attackTarget.GetComponentInChildren<Renderer>();
+            if (rend != null)
+                buildRange = Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 2f;
+
+            if (dist > buildRange)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(_attackTarget.position);
+                return;
+            }
+
+            _agent.isStopped = true;
+            _agent.ResetPath();
+
+            var lookDir = _attackTarget.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(lookDir);
+
+            bld.TickConstruction(Time.deltaTime);
+        }
+
         void ResumeAfterAttack()
         {
             _attackTarget = null;
@@ -867,6 +921,7 @@ return;
             if (_health <= 0)
             {
                 _health = 0;
+                UnregisterFromBuildTarget();
                 UnlockMelee();
                 _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);

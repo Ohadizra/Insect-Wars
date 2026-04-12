@@ -365,6 +365,12 @@
       "conversation_id": "f20baf62-c7b8-4cba-8289-b9aee33fbde5",
       "content": "fix",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "in home page, replace the title of stagbeetle odyssey  with this new logo , refine the logo before placing it",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -202,7 +202,7 @@ namespace InsectWars.RTS
             var hive = HiveDeposit.EnemyHive;
             if (hive == null) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 8f),
-                BuildingType.Underground, Team.Enemy);
+                BuildingType.Underground, Team.Enemy, startBuilt: true);
         }
 
         bool TryPlaceExpansionNest()
@@ -222,7 +222,7 @@ namespace InsectWars.RTS
             if (bestNode == null) return false;
             if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.AntNest))) return false;
             ProductionBuilding.Place(FindBuildPosition(bestNode.transform.position, 6f),
-                BuildingType.AntNest, Team.Enemy);
+                BuildingType.AntNest, Team.Enemy, startBuilt: true);
             return true;
         }
 
