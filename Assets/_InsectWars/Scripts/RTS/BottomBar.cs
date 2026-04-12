@@ -448,15 +448,6 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             mcrt.anchoredPosition = new Vector2(30, 0);
             mcrt.sizeDelta = new Vector2(minimapSlot - 40, -10);
 
-            var miniInner = new GameObject("MinimapInner");
-            miniInner.transform.SetParent(miniContainer.transform, false);
-            var mi = miniInner.AddComponent<RectTransform>();
-            mi.anchorMin = Vector2.zero;
-            mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(15, 15);
-            mi.offsetMax = new Vector2(-15, -15);
-            MinimapHost = mi;
-
             var miniFrameGo = new GameObject("MinimapFrame");
             miniFrameGo.transform.SetParent(miniContainer.transform, false);
             var mfrt = miniFrameGo.AddComponent<RectTransform>();
@@ -468,6 +459,15 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             frameImg.sprite = minimapFrame;
             frameImg.raycastTarget = false; // Fix: don't block minimap clicks
             frameImg.type = Image.Type.Simple;
+
+            var miniInner = new GameObject("MinimapInner");
+            miniInner.transform.SetParent(miniContainer.transform, false);
+            var mi = miniInner.AddComponent<RectTransform>();
+            mi.anchorMin = Vector2.zero;
+            mi.anchorMax = Vector2.one;
+            mi.offsetMin = new Vector2(15, 15);
+            mi.offsetMax = new Vector2(-15, -15);
+            MinimapHost = mi;
 
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);

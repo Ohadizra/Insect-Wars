@@ -90,7 +90,7 @@ namespace InsectWars.RTS
             }
 
             var border = panel.AddComponent<Image>();
-            border.color = new Color(0.08f, 0.07f, 0.05f, 0.98f);
+            border.color = new Color(0f, 0f, 0f, 0f); // Make it transparent
             border.raycastTarget = false;
 
             var rawGo = new GameObject("MinimapRT");
@@ -102,13 +102,14 @@ namespace InsectWars.RTS
             rrt.anchorMin = Vector2.zero;
             rrt.anchorMax = Vector2.one;
             rrt.pivot = new Vector2(0.5f, 0.5f);
-            rrt.offsetMin = new Vector2(2, 2);
-            rrt.offsetMax = new Vector2(-2, -2);
+            rrt.offsetMin = Vector2.zero;
+            rrt.offsetMax = Vector2.zero;
 
-            var lbl = new GameObject("MinimapLabel").AddComponent<Text>();
-            lbl.transform.SetParent(panel.transform, false);
+            var lblGo = new GameObject("MinimapLabel");
+            lblGo.transform.SetParent(panel.transform, false);
+            var lbl = lblGo.AddComponent<Text>();
             lbl.font = InsectWars.Core.UiFontHelper.GetFont();
-            lbl.fontSize = 13;
+lbl.fontSize = 13;
             lbl.color = new Color(0.95f, 0.92f, 0.85f);
             lbl.text = "MAP";
             lbl.alignment = TextAnchor.UpperCenter;
