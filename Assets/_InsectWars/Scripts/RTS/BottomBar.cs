@@ -825,6 +825,16 @@ namespace InsectWars.RTS
                 _ghostPreview = Instantiate(prefab);
                 _ghostPreview.name = "BuildingGhost";
 
+                Vector3 buildScale = type switch
+                {
+                    BuildingType.AntNest => Vector3.one * 2.7f,
+                    BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
+                    BuildingType.SkyTower => new Vector3(0.845f, 0.676f, 0.845f),
+                    BuildingType.RootCellar => new Vector3(0.5f, 0.5f, 0.5f),
+                    _ => Vector3.one
+                };
+                _ghostPreview.transform.localScale = Vector3.Scale(_ghostPreview.transform.localScale, buildScale);
+
                 foreach (var col in _ghostPreview.GetComponentsInChildren<Collider>(true))
                     Destroy(col);
                 foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
@@ -849,7 +859,7 @@ namespace InsectWars.RTS
                 {
                     BuildingType.Underground => new Vector3(4f, 2f, 4f),
                     BuildingType.AntNest => new Vector3(3.5f, 2f, 3.5f),
-                    BuildingType.SkyTower => new Vector3(2.5f, 5f, 2.5f),
+                    BuildingType.SkyTower => new Vector3(4f, 2f, 4f),
                     BuildingType.RootCellar => new Vector3(1.75f, 1f, 1.75f),
                     _ => new Vector3(3f, 2f, 3f)
                 };

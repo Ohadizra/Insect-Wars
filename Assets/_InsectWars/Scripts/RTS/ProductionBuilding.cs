@@ -142,7 +142,7 @@ namespace InsectWars.RTS
         {
             BuildingType.AntNest => 5f,
             BuildingType.Underground => 4f,
-            BuildingType.SkyTower => 3f,
+            BuildingType.SkyTower => 4f,
             BuildingType.RootCellar => 1.75f,
             _ => 4f
         };
@@ -556,7 +556,7 @@ namespace InsectWars.RTS
                     break;
                 case BuildingType.SkyTower:
                     buildingColor = new Color(0.3f, 0.5f, 0.6f);
-                    scale = new Vector3(3f, 5f, 3f);
+                    scale = new Vector3(4f, 2f, 4f);
                     break;
                 case BuildingType.RootCellar:
                     buildingColor = new Color(0.4f, 0.3f, 0.2f);
@@ -684,7 +684,7 @@ namespace InsectWars.RTS
             Vector3 scale = type switch
             {
                 BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
-                BuildingType.SkyTower => new Vector3(1f, 1.3f, 1f),
+                BuildingType.SkyTower => new Vector3(0.845f, 0.676f, 0.845f),
                 BuildingType.RootCellar => new Vector3(0.5f, 0.5f, 0.5f),
                 _ => Vector3.one
             };
