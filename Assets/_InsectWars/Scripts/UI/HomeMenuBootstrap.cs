@@ -278,12 +278,9 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = new Vector2(w, h);
-            var img = go.AddComponent<Image>();
-            img.sprite = mainFrameSprite;
-            img.color = ColWhite;
-            img.type = Image.Type.Sliced; // Use Sliced for better frame quality
+            // Image component removed to make the layout container transparent
             return go;
-            }
+        }
 
             void PanelHeader(Transform parent, string text, float y)
             {

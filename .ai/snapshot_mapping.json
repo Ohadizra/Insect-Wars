@@ -419,6 +419,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "remove the back frame panel that covers all btns and logo",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "87ad1ba3-5006-46ef-96bc-d76eb0592d73",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "The \"back frame panel\" has been removed from all menus, including the main menu with the buttons and logo.\n\n### Summary of Changes:\n*   **Transparent Containers**: Modified the `DarkBox` helper method in `HomeMenuBootstrap.cs` to remove the `Image` component. This keeps the layout and alignment of the logo and buttons intact while making the container itself transparent.\n*   **Global Cleanup**: This change applies to the main menu and all subpanels (**Difficulty Select**, **Settings**, **Logs**), creating a consistent, frameless aesthetic that better showcases the video background.\n\nThe logo and buttons are now floating centered on the screen, exactly as requested.",
+      "snapshot_message_type": 1
     }
   ]
 }
