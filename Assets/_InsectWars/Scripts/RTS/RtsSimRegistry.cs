@@ -33,12 +33,6 @@ namespace InsectWars.RTS
             if (n != null) s_fruits.Remove(n);
         }
 
-        public static void Clear()
-        {
-            s_units.Clear();
-            s_fruits.Clear();
-        }
-
         public static int CountAlive(Team team)
         {
             var n = 0;

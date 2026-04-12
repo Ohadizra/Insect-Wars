@@ -36,7 +36,6 @@ namespace InsectWars.RTS
         Quaternion _lArmBase, _rArmBase, _chestBase, _headBase, _tailBase;
         
         float _attackAnimT;
-        float _attackAnimDuration;
         float _idleT;
         float _instanceOffset;
         bool _dying;
@@ -115,8 +114,7 @@ namespace InsectWars.RTS
                 {
                     var t = _unit.AttackTarget.position - transform.position;
                     t.y = 0f;
-                    if (t.sqrMagnitude > 0.01f)
-                        face = _unit.Archetype == UnitArchetype.BasicRanged ? -t : t;
+                    if (t.sqrMagnitude > 0.01f) face = t;
                 }
 
                 if (face.sqrMagnitude > 0.01f)
@@ -164,49 +162,18 @@ namespace InsectWars.RTS
             if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
-                float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
+                float p = 1f - (Mathf.Max(0f, _attackAnimT) / 0.35f); 
+                float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
+                float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
+                modelRoot.localPosition += modelRoot.forward * lunge;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
 
-                if (_unit.Archetype == UnitArchetype.BasicRanged)
-                {
-                    // Real bombardier beetles pulse their spray rapidly. 
-                    // This "jitter" and "staccato" movement reflects the explosive biological mechanism.
-                    float sprayActive = (p > 0.05f && p < 0.65f) ? 1f : 0f;
-                    float jitter = sprayActive * Mathf.Sin(p * 180f) * 6f;
-                    
-                    float tailLift = Mathf.Sin(p * Mathf.PI) * 60f;
-                    if (_tail != null)
-                        _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
-
-                    float brace = Mathf.Sin(p * Mathf.PI) * 0.08f;
-                    modelRoot.localScale = Vector3.Scale(_baseScale,
-                        new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
-
-                    // Pulsing staccato recoil
-                    float recoilBase = Mathf.Sin(p * Mathf.PI) * 0.16f;
-                    float recoilPulse = sprayActive * Mathf.Sin(p * 90f) * 0.035f;
-                    float recoil = recoilBase + recoilPulse;
-                    
-                    // Rear-facing: forward is the direction the beetle is technically "facing" (the front)
-                    // Recoil from the rear should push it forward.
-                    modelRoot.localPosition += modelRoot.forward * recoil;
-
-                    if (_chest != null)
-                        _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
-                }
-                else
-                {
-                    float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
-                    float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
-                    modelRoot.localPosition += modelRoot.forward * lunge;
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
-
-                    if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                    if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                }
+                if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
             }
             else if (_unit.Archetype != UnitArchetype.BasicFighter)
             {
-                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
+                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * 0.03f;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }
@@ -265,16 +232,11 @@ namespace InsectWars.RTS
             if (tail && _tail != null) _tail.localRotation = Quaternion.Lerp(_tail.localRotation, _tailBase, speed);
         }
 
-        public bool HasAnimatorAttack =>
-            animator != null && animator.runtimeAnimatorController != null;
-
         public void NotifyAttack()
         {
-            if (HasAnimatorAttack)
+            if (animator != null && animator.runtimeAnimatorController != null)
                 animator.SetTrigger(Attack);
-            bool isSpray = _unit != null && _unit.Archetype == UnitArchetype.BasicRanged;
-            _attackAnimDuration = isSpray ? 0.5f : 0.35f;
-            _attackAnimT = _attackAnimDuration;
+            _attackAnimT = 0.35f;
         }
 
         public void NotifyDeath(float destroyDelay = 0.45f)
@@ -292,15 +254,6 @@ namespace InsectWars.RTS
             if (fp != null) return fp.position;
             if (modelRoot != null)
                 return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f;
-            return transform.position + Vector3.up * 0.4f;
-        }
-
-        public Vector3 GetSprayOrigin()
-        {
-            if (_tail != null)
-                return _tail.position;
-            if (modelRoot != null)
-                return modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f;
             return transform.position + Vector3.up * 0.4f;
         }
 

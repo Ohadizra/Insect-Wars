@@ -5,7 +5,6 @@ namespace InsectWars.RTS
     public class Projectile : MonoBehaviour
     {
         Team _ownerTeam;
-        InsectUnit _ownerUnit;
         float _damage;
         float _speed;
         float _life;
@@ -16,7 +15,7 @@ namespace InsectWars.RTS
         static readonly MaterialPropertyBlock s_pb = new();
 
         public static Projectile SpawnHoming(Vector3 position, InsectUnit target, Team ownerTeam, float damage,
-            float speed, float maxLifetime, GameObject prefab = null, InsectUnit ownerUnit = null)
+            float speed, float maxLifetime, GameObject prefab = null)
         {
             var dir = target != null ? (target.transform.position + Vector3.up * 0.35f - position).normalized : Vector3.forward;
             GameObject go;
@@ -41,7 +40,6 @@ namespace InsectWars.RTS
             var p = go.GetComponent<Projectile>();
             if (p == null) p = go.AddComponent<Projectile>();
             p._ownerTeam = ownerTeam;
-            p._ownerUnit = ownerUnit;
             p._damage = damage;
             p._speed = speed;
             p._life = maxLifetime;
@@ -101,7 +99,7 @@ namespace InsectWars.RTS
             var u = other.GetComponentInParent<InsectUnit>();
             if (u != null && u.IsAlive && u.Team != _ownerTeam)
             {
-                u.ApplyDamage(_damage, _ownerUnit);
+                u.ApplyDamage(_damage);
                 Destroy(gameObject);
             }
         }

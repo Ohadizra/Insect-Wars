@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,8 +9,6 @@ namespace InsectWars.RTS
     {
         public static HiveDeposit PlayerHive { get; private set; }
         public static HiveDeposit EnemyHive { get; private set; }
-
-        public static System.Action<HiveDeposit> OnDestroyed;
 
         const float HiveMaxHealth = 600f;
 
@@ -36,7 +33,8 @@ namespace InsectWars.RTS
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
         public bool IsProducing => _workerQueue.Count > 0;
         public int QueueCount => _workerQueue.Count;
-        public float ProductionProgress => _workerQueue.Count > 0 ? Mathf.Clamp01(_workerQueue[0].elapsed / _workerQueue[0].buildTime) : 0f;
+        public float ProductionProgress => _workerQueue.Count > 0
+            ? Mathf.Clamp01(_workerQueue[0].elapsed / _workerQueue[0].buildTime) : 0f;
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => HiveMaxHealth;
         public bool IsAlive => _currentHealth > 0f;
@@ -46,22 +44,26 @@ namespace InsectWars.RTS
             RegisterHive();
         }
 
-        void OnEnable()
-        {
-            // Re-register after domain reload (Awake doesn't re-run, OnEnable does).
-            RegisterHive();
-        }
-
-        void OnDisable()
-        {
-            if (PlayerHive == this) PlayerHive = null;
-            if (EnemyHive == this) EnemyHive = null;
-        }
-
         void OnDestroy()
         {
             if (PlayerHive == this) PlayerHive = null;
             if (EnemyHive == this) EnemyHive = null;
+        }
+
+        public void Configure(Team t)
+        {
+            if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
+            team = t;
+            RegisterHive();
+        }
+
+        void RegisterHive()
+        {
+            if (team == Team.Player)
+                PlayerHive = this;
+            else if (team == Team.Enemy)
+                EnemyHive = this;
         }
 
         void Update()
@@ -108,77 +110,28 @@ namespace InsectWars.RTS
         {
             var center = transform.position;
             var rend = GetComponentInChildren<Renderer>();
-            float hiveExtent = rend != null
-                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.2f
-                : transform.localScale.x * 0.5f + 1.2f;
-
-            Vector3 spawnDir;
-            if (_rallyPoint.HasValue)
-            {
-                spawnDir = _rallyPoint.Value - center;
-                spawnDir.y = 0f;
-            }
-            else
-            {
-                spawnDir = transform.forward;
-                spawnDir.y = 0f;
-            }
-            if (spawnDir.sqrMagnitude < 0.01f) spawnDir = Vector3.forward;
-
-            float baseAngle = Mathf.Atan2(spawnDir.z, spawnDir.x);
-            var angle = baseAngle + Random.Range(-25f, 25f) * Mathf.Deg2Rad;
-            var offset = new Vector3(Mathf.Cos(angle) * hiveExtent, 0f, Mathf.Sin(angle) * hiveExtent);
-            var spawnPos = center + offset;
-            if (NavMesh.SamplePosition(spawnPos, out var hit, 12f, NavMesh.AllAreas))
+            float edge = rend != null
+                ? Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.5f
+                : transform.localScale.x * 0.5f + 1.5f;
+            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            var spawnPos = new Vector3(
+                center.x + Mathf.Cos(angle) * edge, 0f,
+                center.z + Mathf.Sin(angle) * edge);
+            if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
-            var unit = MapDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
             if (unit == null) return;
-
-            if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted)
+            if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
+                unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);
             else if (_rallyPoint.HasValue)
                 unit.OrderMove(_rallyPoint.Value);
         }
 
-        public void ApplyDamage(float dmg)
+        public void TakeDamage(float dmg)
         {
-            if (_currentHealth <= 0f) return;
-            _currentHealth -= dmg;
-            GameAudio.PlayCombatHit(transform.position);
-            if (_currentHealth <= 0f)
-            {
-                _currentHealth = 0f;
-                DestroyHive();
-            }
+            _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
         }
-
-        void DestroyHive()
-        {
-            if (PlayerHive == this) PlayerHive = null;
-            if (EnemyHive == this) EnemyHive = null;
-            OnDestroyed?.Invoke(this);
-            Destroy(gameObject, 0.1f);
-        }
-
-        public void Configure(Team t)
-        {
-            if (PlayerHive == this) PlayerHive = null;
-            if (EnemyHive == this) EnemyHive = null;
-            team = t;
-            _currentHealth = HiveMaxHealth;
-            RegisterHive();
-            ApplyTeamColor();
-        }
-
-        void RegisterHive()
-        {
-            if (team == Team.Player)
-                PlayerHive = this;
-            else if (team == Team.Enemy)
-                EnemyHive = this;
-        }
-
-        void ApplyTeamColor() => TeamPalette.ApplyToGameObject(team, gameObject);
 
         /// <summary>
         /// Ant Nest uses the hive prefab but strips <see cref="HiveDeposit"/>. Instantiate still runs Awake on the

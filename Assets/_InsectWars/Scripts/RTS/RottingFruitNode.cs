@@ -40,18 +40,13 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>Returns a world position on the fruit surface facing the requester, at NavMesh ground level.</summary>
+        /// <summary>Returns a world position on the fruit surface facing the requester.</summary>
         public Vector3 GetGatherPoint(Vector3 fromPosition)
         {
             var dir = fromPosition - transform.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            var point = transform.position + dir.normalized * StopRadius;
-            // Snap Y to terrain/NavMesh level so SetDestination doesn't fail on
-            // elevated fruit objects (apple top can be 0.9 m above the flat NavMesh).
-            var terrain = Terrain.activeTerrain;
-            point.y = terrain != null ? terrain.SampleHeight(point) : 0f;
-            return point;
+            return transform.position + dir.normalized * StopRadius;
         }
 
         void Awake()

@@ -185,6 +185,8 @@ namespace InsectWars.RTS
 
             PlaceStarterPlayerBuildings(world.transform);
 
+            RegisterBuildZones();
+
             surface.BuildNavMesh();
 
             var systems = GameObject.Find("Systems");
@@ -194,8 +196,8 @@ namespace InsectWars.RTS
             systems.AddComponent<SelectionController>();
             systems.AddComponent<CommandController>();
             systems.AddComponent<GameHUD>();
-            systems.AddComponent<Sc2BottomBar>();
-            systems.AddComponent<SkirmishMinimap>();
+            systems.AddComponent<BottomBar>();
+            systems.AddComponent<Minimap>();
             systems.AddComponent<FogOfWarSystem>();
             systems.AddComponent<MatchDirector>();
             systems.AddComponent<EnemyCommander>();
@@ -206,6 +208,22 @@ namespace InsectWars.RTS
 
         void PlaceStarterPlayerBuildings(Transform worldRoot)
         {
+        }
+
+        void RegisterBuildZones()
+        {
+            BuildZoneRegistry.Clear();
+            BuildZoneRegistry.Register(
+                new Vector3(_playerHive.x, 0f, _playerHive.z), BuildZoneRegistry.HiveRadius);
+            BuildZoneRegistry.Register(
+                new Vector3(_enemyHive.x, 0f, _enemyHive.z), BuildZoneRegistry.HiveRadius);
+
+            var allFruit = FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
+            foreach (var f in allFruit)
+            {
+                if (f == null) continue;
+                BuildZoneRegistry.Register(f.transform.position, BuildZoneRegistry.FruitRadius);
+            }
         }
 
         List<SkirmishPassiveScatter.ExclusionZone> BuildExclusionZones()
@@ -589,18 +607,20 @@ namespace InsectWars.RTS
                 apple = Object.Instantiate(lib.rottingApplePrefab, parent);
                 apple.name = "RottingApple";
                 apple.tag = "Fruit";
-                int layer = LayerMask.NameToLayer("Resources");
-                if (layer >= 0) apple.layer = layer;
                 apple.transform.position = new Vector3(pos.x, posY, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
+
+                if (lib.bigAppleMaterial != null)
+                {
+                    foreach (var rend in apple.GetComponentsInChildren<Renderer>())
+                        rend.sharedMaterial = lib.bigAppleMaterial;
+                }
             }
             else
             {
                 apple = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 apple.name = "RottingApple";
                 apple.tag = "Fruit";
-                int layer = LayerMask.NameToLayer("Resources");
-                if (layer >= 0) apple.layer = layer;
                 apple.transform.SetParent(parent);
                 apple.transform.position = new Vector3(pos.x, posY, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
@@ -616,6 +636,10 @@ namespace InsectWars.RTS
                     r.SetPropertyBlock(pb);
                 }
             }
+
+            int resLayer = LayerMask.NameToLayer("Resources");
+            if (resLayer >= 0)
+                SetLayerRecursive(apple, resLayer);
 
             SetIgnoreNavMeshRecursive(apple);
 
@@ -640,23 +664,29 @@ namespace InsectWars.RTS
                 fruit = Object.Instantiate(lib.rottingApplePrefab, parent);
                 fruit.name = "RottingFruit";
                 fruit.tag = "Fruit";
-                int layer = LayerMask.NameToLayer("Resources");
-                if (layer >= 0) fruit.layer = layer;
                 fruit.transform.position = new Vector3(pos.x, posY, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
+
+                if (lib.bigAppleMaterial != null)
+                {
+                    foreach (var rend in fruit.GetComponentsInChildren<Renderer>())
+                        rend.sharedMaterial = lib.bigAppleMaterial;
+                }
             }
             else
             {
                 fruit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 fruit.name = "RottingFruit";
                 fruit.tag = "Fruit";
-                int layer = LayerMask.NameToLayer("Resources");
-                if (layer >= 0) fruit.layer = layer;
                 fruit.transform.SetParent(parent);
                 fruit.transform.position = new Vector3(pos.x, posY, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
                 ApplyMat(fruit, new Color(0.65f, 0.2f, 0.55f));
             }
+
+            int resLayer = LayerMask.NameToLayer("Resources");
+            if (resLayer >= 0)
+                SetLayerRecursive(fruit, resLayer);
 
             SetIgnoreNavMeshRecursive(fruit);
 
@@ -734,6 +764,13 @@ namespace InsectWars.RTS
                 obs.size = new Vector3(s.x * 0.55f, s.y, s.z * 0.55f);
                 obs.center = new Vector3(0f, s.y * 0.5f, 0f);
             }
+        }
+
+        static void SetLayerRecursive(GameObject go, int layer)
+        {
+            go.layer = layer;
+            foreach (Transform child in go.transform)
+                SetLayerRecursive(child.gameObject, layer);
         }
 
         static void SetIgnoreNavMeshRecursive(GameObject go)

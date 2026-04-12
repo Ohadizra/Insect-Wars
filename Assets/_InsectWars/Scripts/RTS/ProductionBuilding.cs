@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.AI;
@@ -27,7 +26,14 @@ namespace InsectWars.RTS
         static readonly List<ProductionBuilding> s_all = new();
         public static IReadOnlyList<ProductionBuilding> All => s_all;
 
-        public static System.Action<ProductionBuilding> OnDestroyed;
+        BuildingType _type;
+        Team _team = Team.Player;
+        Vector3? _rallyPoint;
+        RottingFruitNode _rallyGatherTarget;
+        GameObject _rallyFlag;
+        BuildingState _state = BuildingState.Active;
+        float _maxHealth;
+        float _currentHealth;
 
         struct QueueEntry
         {
@@ -35,28 +41,8 @@ namespace InsectWars.RTS
             public float buildTime;
             public float elapsed;
         }
-
         const int MaxQueueSize = 5;
         readonly List<QueueEntry> _queue = new();
-
-        BuildingType _type;
-        Team _team = Team.Player;
-        Vector3? _rallyPoint;
-        RottingFruitNode _rallyGatherTarget;
-        GameObject _rallyFlag;
-
-        // Construction
-        BuildingState _state = BuildingState.UnderConstruction;
-        float _constructionProgress; // 0..1
-        int _assignedBuilders;
-
-        // Health
-        float _maxHealth;
-        float _currentHealth;
-
-        // Visual feedback for construction
-        List<Renderer> _renderers;
-        bool _renderersGathered;
 
         public BuildingType Type => _type;
         public Team Team => _team;
@@ -64,24 +50,23 @@ namespace InsectWars.RTS
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
         public BuildingState State => _state;
         public bool IsOperational => _state == BuildingState.Active;
-        public float ConstructionProgress => _constructionProgress;
-        public int AssignedBuilders => _assignedBuilders;
-
-        public bool IsProducing => _queue.Count > 0 && IsOperational;
-        public int QueueCount => _queue.Count;
-        public float ProductionProgress => _queue.Count > 0 ? Mathf.Clamp01(_queue[0].elapsed / _queue[0].buildTime) : 0f;
-        public UnitArchetype? CurrentProducing => _queue.Count > 0 ? _queue[0].archetype : null;
-
+        public float ConstructionProgress => 1f;
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
         public bool IsAlive => _currentHealth > 0f && _state != BuildingState.Destroyed;
+
+        public int AssignedBuilders => 0;
+        public bool IsProducing => _queue.Count > 0 && IsOperational;
+        public int QueueCount => _queue.Count;
+        public float ProductionProgress => _queue.Count > 0
+            ? Mathf.Clamp01(_queue[0].elapsed / _queue[0].buildTime) : 0f;
+        public UnitArchetype? CurrentProducing => _queue.Count > 0 ? _queue[0].archetype : null;
 
         public string DisplayName => _type switch
         {
             BuildingType.Underground => "Underground",
             BuildingType.AntNest => "Ant's\nNest",
             BuildingType.SkyTower => "Sky Tower",
-            BuildingType.RootCellar => "Root\nCellar",
             _ => _type.ToString()
         };
 
@@ -90,7 +75,6 @@ namespace InsectWars.RTS
             BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
             BuildingType.SkyTower => System.Array.Empty<UnitArchetype>(),
-            BuildingType.RootCellar => System.Array.Empty<UnitArchetype>(),
             _ => new[] { UnitArchetype.Worker }
         };
 
@@ -110,14 +94,6 @@ namespace InsectWars.RTS
             _ => "Unit"
         };
 
-        public static float GetBuildTime(UnitArchetype arch) => arch switch
-        {
-            UnitArchetype.Worker => 10f,
-            UnitArchetype.BasicFighter => 18f,
-            UnitArchetype.BasicRanged => 22f,
-            _ => 15f
-        };
-
         public static int GetBuildCost(BuildingType type) => type switch
         {
             BuildingType.Underground => 200,
@@ -127,51 +103,22 @@ namespace InsectWars.RTS
             _ => 100
         };
 
-        public static float GetConstructionTime(BuildingType type) => type switch
+        public static float GetBuildTime(UnitArchetype arch) => arch switch
         {
-            BuildingType.Underground => 30f,
-            BuildingType.AntNest => 45f,
-            BuildingType.SkyTower => 25f,
-            BuildingType.RootCellar => 20f,
-            _ => 30f
+            UnitArchetype.Worker => 10f,
+            UnitArchetype.BasicFighter => 18f,
+            UnitArchetype.BasicRanged => 22f,
+            _ => 15f
         };
 
         public static float GetMaxHealth(BuildingType type) => type switch
         {
-            BuildingType.Underground => 300f,
+            BuildingType.Underground => 400f,
             BuildingType.AntNest => 500f,
-            BuildingType.SkyTower => 200f,
-            BuildingType.RootCellar => 250f,
+            BuildingType.SkyTower => 350f,
+            BuildingType.RootCellar => 300f,
             _ => 300f
         };
-
-        /// <summary>Radius within which a worker can contribute to construction.</summary>
-        public float BuildRange
-        {
-            get
-            {
-                var col = GetComponent<Collider>();
-                if (col != null)
-                {
-                    var b = col.bounds;
-                    return Mathf.Max(b.extents.x, b.extents.z) + 2.5f;
-                }
-                return transform.localScale.x * 0.5f + 2.5f;
-            }
-        }
-
-        void OnEnable()
-        {
-            // Re-register after domain reload (Initialize only runs once at creation;
-            // OnEnable re-runs after a script reload so static s_all stays consistent).
-            if (_currentHealth > 0f && _state != BuildingState.Destroyed && !s_all.Contains(this))
-                s_all.Add(this);
-        }
-
-        void OnDisable()
-        {
-            s_all.Remove(this);
-        }
 
         void OnDestroy()
         {
@@ -179,157 +126,53 @@ namespace InsectWars.RTS
             if (_rallyFlag != null) Destroy(_rallyFlag);
         }
 
-        public void Initialize(BuildingType type, Team team = Team.Player, bool startActive = false)
+        public void Initialize(BuildingType type, Team team = Team.Player)
         {
             _type = type;
             _team = team;
             _maxHealth = GetMaxHealth(type);
             _currentHealth = _maxHealth;
-            if (!s_all.Contains(this)) s_all.Add(this);
-
-            if (startActive)
-            {
-                _state = BuildingState.Active;
-                _constructionProgress = 1f;
-            }
-            else
-            {
-                _state = BuildingState.UnderConstruction;
-                _constructionProgress = 0f;
-                ApplyConstructionVisuals();
-            }
-        }
-
-        void Update()
-        {
-            if (_state == BuildingState.Destroyed) return;
-
-            if (_state == BuildingState.UnderConstruction)
-            {
-                TickConstruction();
-                return;
-            }
-
-            // Active state: run production queue
-            if (_queue.Count == 0) return;
-            var entry = _queue[0];
-            entry.elapsed += Time.deltaTime;
-            _queue[0] = entry;
-            if (entry.elapsed >= entry.buildTime)
-            {
-                _queue.RemoveAt(0);
-                SpawnFinishedUnit(entry.archetype);
-            }
-        }
-
-        void TickConstruction()
-        {
-            if (_team == Team.Enemy)
-            {
-                // Enemy buildings auto-construct without workers
-                float autoRate = 1f / GetConstructionTime(_type);
-                _constructionProgress += autoRate * Time.deltaTime;
-            }
-
-            if (_constructionProgress >= 1f)
-            {
-                CompleteConstruction();
-            }
-            else
-            {
-                ApplyConstructionVisuals();
-            }
-        }
-
-        void CompleteConstruction()
-        {
-            _constructionProgress = 1f;
             _state = BuildingState.Active;
-            _assignedBuilders = 0;
-            // Restore full visuals
-            SetRenderersAlpha(1f);
+            if (!s_all.Contains(this))
+                s_all.Add(this);
         }
 
-        /// <summary>Called each frame by a worker standing in range.</summary>
-        public void ContributeConstruction(float deltaTime)
+        public InsectUnit ProduceUnit(UnitArchetype archetype)
         {
-            if (_state != BuildingState.UnderConstruction) return;
-            float rate = 1f / GetConstructionTime(_type);
-            // Each additional assigned builder adds 70% of a worker's speed
-            float speedMultiplier = 1f + (_assignedBuilders - 1) * 0.7f;
-            _constructionProgress += rate * speedMultiplier * deltaTime;
-            _constructionProgress = Mathf.Min(_constructionProgress, 1f);
-        }
+            int cost = GetUnitCost(archetype);
+            if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
+                return null;
+            if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
+                return null;
 
-        public void AssignBuilder() => _assignedBuilders = Mathf.Max(1, _assignedBuilders + 1);
-        public void UnassignBuilder() => _assignedBuilders = Mathf.Max(0, _assignedBuilders - 1);
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
+            var extent = transform.localScale.x * 0.5f + 1.5f;
+            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
+            var spawnPos = center + offset;
+            if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
+                spawnPos = hit.position;
 
-        void GatherRenderers()
-        {
-            if (_renderersGathered) return;
-            _renderersGathered = true;
-            _renderers = new List<Renderer>(GetComponentsInChildren<Renderer>(true));
-        }
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
+            if (unit == null) return null;
 
-        void SetRenderersAlpha(float alpha)
-        {
-            GatherRenderers();
-            if (_renderers == null) return;
-            foreach (var r in _renderers)
-            {
-                if (r == null) continue;
-                foreach (var mat in r.materials)
-                {
-                    if (mat == null) continue;
-                    // URP Lit: switch to Transparent mode
-                    mat.SetFloat("_Surface", alpha < 1f ? 1f : 0f);
-                    mat.SetFloat("_Blend", 0f);
-                    if (alpha < 1f)
-                    {
-                        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                        mat.renderQueue = 3000;
-                    }
-                    else
-                    {
-                        mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                        mat.renderQueue = -1;
-                    }
+            if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
+                unit.Definition != null && unit.Definition.canGather)
+                unit.OrderGather(_rallyGatherTarget);
+            else if (_rallyPoint.HasValue)
+                unit.OrderMove(_rallyPoint.Value);
 
-                    Color c;
-                    if (mat.HasProperty("_BaseColor"))
-                    {
-                        c = mat.GetColor("_BaseColor");
-                        c.a = alpha;
-                        mat.SetColor("_BaseColor", c);
-                    }
-                    else if (mat.HasProperty("_Color"))
-                    {
-                        c = mat.color;
-                        c.a = alpha;
-                        mat.color = c;
-                    }
-                }
-            }
-        }
-
-        void ApplyConstructionVisuals()
-        {
-            // Lerp alpha 0.25 → 0.85 during construction
-            float alpha = Mathf.Lerp(0.25f, 0.85f, _constructionProgress);
-            SetRenderersAlpha(alpha);
+            return unit;
         }
 
         public bool QueueUnit(UnitArchetype archetype)
         {
-            if (!IsOperational) return false;
-            if (_queue.Count >= MaxQueueSize) return false;
-
+            if (!IsOperational || _queue.Count >= MaxQueueSize) return false;
             int cost = GetUnitCost(archetype);
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
                 return false;
             if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
                 return false;
-
             _queue.Add(new QueueEntry
             {
                 archetype = archetype,
@@ -351,76 +194,36 @@ namespace InsectWars.RTS
                 EnemyResources.AddCalories(refund);
         }
 
-        public int QueuedCountOf(UnitArchetype arch)
+        void Update()
         {
-            int count = 0;
-            foreach (var e in _queue)
-                if (e.archetype == arch) count++;
-            return count;
-        }
-
-        // ─── Health / Combat ─────────────────────────────────────────────────────
-
-        public void ApplyDamage(float dmg)
-        {
-            if (_state == BuildingState.Destroyed || _currentHealth <= 0f) return;
-            _currentHealth -= dmg;
-            GameAudio.PlayCombatHit(transform.position);
-            if (_currentHealth <= 0f)
+            if (_queue.Count == 0 || !IsOperational) return;
+            var entry = _queue[0];
+            entry.elapsed += Time.deltaTime;
+            _queue[0] = entry;
+            if (entry.elapsed >= entry.buildTime)
             {
-                _currentHealth = 0f;
-                DestroyBuilding();
+                _queue.RemoveAt(0);
+                ProduceUnitImmediate(entry.archetype);
             }
         }
 
-        void DestroyBuilding()
+        void ProduceUnitImmediate(UnitArchetype archetype)
         {
-            _state = BuildingState.Destroyed;
-            _queue.Clear();
-            OnDestroyed?.Invoke(this);
-            s_all.Remove(this);
-            if (_rallyFlag != null) Destroy(_rallyFlag);
-            Destroy(gameObject, 0.1f);
-        }
-
-        // ─── Unit Spawning ────────────────────────────────────────────────────────
-
-        void SpawnFinishedUnit(UnitArchetype archetype)
-        {
-            var center = transform.position;
-            var extent = transform.localScale.x * 0.5f + 3.0f;
-
-            Vector3 spawnDir;
-            if (_rallyPoint.HasValue)
-            {
-                spawnDir = _rallyPoint.Value - center;
-                spawnDir.y = 0f;
-            }
-            else
-            {
-                spawnDir = transform.forward;
-                spawnDir.y = 0f;
-            }
-            if (spawnDir.sqrMagnitude < 0.01f) spawnDir = Vector3.forward;
-
-            float baseAngle = Mathf.Atan2(spawnDir.z, spawnDir.x);
-            var angle = baseAngle + Random.Range(-25f, 25f) * Mathf.Deg2Rad;
+            var center = new Vector3(transform.position.x, 0f, transform.position.z);
+            var extent = transform.localScale.x * 0.5f + 1.5f;
+            var angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
             var offset = new Vector3(Mathf.Cos(angle) * extent, 0f, Mathf.Sin(angle) * extent);
             var spawnPos = center + offset;
             if (NavMesh.SamplePosition(spawnPos, out var hit, 4f, NavMesh.AllAreas))
                 spawnPos = hit.position;
-
-            var unit = MapDirector.SpawnUnit(spawnPos, _team, archetype);
+            var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
             if (unit == null) return;
-
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
                 unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);
             else if (_rallyPoint.HasValue)
                 unit.OrderMove(_rallyPoint.Value);
         }
-
-        // ─── Rally ───────────────────────────────────────────────────────────────
 
         public void SetRallyPoint(Vector3 pos)
         {
@@ -469,27 +272,25 @@ namespace InsectWars.RTS
                 banner.transform.localPosition = new Vector3(0.2f, 1.05f, 0f);
                 banner.transform.localScale = new Vector3(0.35f, 0.22f, 0.05f);
                 Destroy(banner.GetComponent<Collider>());
-                ApplyMat(banner, TeamPalette.GetTeamColor(_team));
+                ApplyMat(banner, TeamPalette.GetTeamColor(_team)); // Team color banner
             }
 
             _rallyFlag.SetActive(true);
             _rallyFlag.transform.position = _rallyPoint.Value;
         }
 
-        // ─── Placement ───────────────────────────────────────────────────────────
-
-        public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player, bool startActive = false)
+        public static ProductionBuilding Place(Vector3 position, BuildingType type, Team team = Team.Player)
         {
-            var lib = MapDirector.ActiveVisualLibrary;
+            var lib = SkirmishDirector.ActiveVisualLibrary;
 
             if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
-                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team, startActive);
+                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team);
 
             if (lib != null)
             {
                 var prefab = lib.GetBuildingPrefab(type);
                 if (prefab != null)
-                    return PlaceFromPrefab(position, prefab, type, team, startActive);
+                    return PlaceFromPrefab(position, prefab, type, team);
             }
 
             var go = new GameObject($"Building_{type}");
@@ -515,10 +316,6 @@ namespace InsectWars.RTS
                     buildingColor = new Color(0.3f, 0.5f, 0.6f);
                     scale = new Vector3(2.5f, 5f, 2.5f);
                     break;
-                case BuildingType.RootCellar:
-                    buildingColor = new Color(0.5f, 0.35f, 0.2f);
-                    scale = new Vector3(3.5f, 2f, 3.5f);
-                    break;
                 default:
                     buildingColor = Color.gray;
                     scale = new Vector3(3f, 2f, 3f);
@@ -534,7 +331,8 @@ namespace InsectWars.RTS
             visual.transform.localScale = Vector3.one;
             Destroy(visual.GetComponent<Collider>());
             ApplyMat(visual, buildingColor);
-
+            
+            // Straps for buildings
             var strapColor = TeamPalette.GetTeamColor(team);
             var strap1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             strap1.name = "Strap_Top";
@@ -563,13 +361,12 @@ namespace InsectWars.RTS
             obs.center = new Vector3(0f, 0.5f, 0f);
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(type, team, startActive);
+            building.Initialize(type, team);
 
-            SitOnGround(go);
             return building;
         }
 
-        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player, bool startActive = false)
+        static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player)
         {
             var savedPlayerHive = HiveDeposit.PlayerHive;
             var savedEnemyHive = HiveDeposit.EnemyHive;
@@ -606,47 +403,29 @@ namespace InsectWars.RTS
                 obs.size = new Vector3(2f, 2f, 2f);
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
-
+            
+            // Apply skin color to prefab renderers
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
                 var mats = renderer.sharedMaterials;
-                bool changed = false;
                 for (int i = 0; i < mats.Length; i++)
                 {
                     if (mats[i] == null) continue;
                     var m = new Material(mats[i]);
-                    if (m.HasProperty("_EmissionColor"))
-                    {
-                        m.SetColor("_EmissionColor", skinColor * 0.15f);
-                        m.EnableKeyword("_EMISSION");
-                        changed = true;
-                    }
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
+                    else if (m.HasProperty("_Color")) m.color = skinColor;
                     mats[i] = m;
                 }
-                if (changed) renderer.sharedMaterials = mats;
+                renderer.sharedMaterials = mats;
             }
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(BuildingType.AntNest, team, startActive);
-
-            SitOnGround(go);
+            building.Initialize(BuildingType.AntNest, team);
             return building;
         }
 
-        static void SitOnGround(GameObject go)
-        {
-            var renderer = go.GetComponentInChildren<Renderer>();
-            if (renderer == null) return;
-            float bottomY = renderer.bounds.min.y;
-            var terrain = Terrain.activeTerrain;
-            float groundY = terrain != null ? terrain.SampleHeight(go.transform.position) : 0f;
-            float offset = groundY - bottomY;
-            if (offset > 0.01f || offset < -0.01f)
-                go.transform.position += new Vector3(0f, offset, 0f);
-        }
-
-        static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team, bool startActive = false)
+        static ProductionBuilding PlaceFromPrefab(Vector3 position, GameObject prefab, BuildingType type, Team team)
         {
             var go = Object.Instantiate(prefab);
             go.name = $"Building_{type}";
@@ -658,7 +437,6 @@ namespace InsectWars.RTS
             {
                 BuildingType.Underground => new Vector3(1f, 0.7f, 1f),
                 BuildingType.SkyTower => new Vector3(1f, 1.2f, 1f),
-                BuildingType.RootCellar => Vector3.one,
                 _ => Vector3.one
             };
             go.transform.localScale = scale;
@@ -695,9 +473,7 @@ namespace InsectWars.RTS
             }
 
             var building = go.AddComponent<ProductionBuilding>();
-            building.Initialize(type, team, startActive);
-
-            SitOnGround(go);
+            building.Initialize(type, team);
             return building;
         }
 

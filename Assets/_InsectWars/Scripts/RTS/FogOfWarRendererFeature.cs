@@ -23,12 +23,6 @@ namespace InsectWars.RTS
             _pass.renderPassEvent = injectionPoint;
         }
 
-        // #region agent log
-        static readonly string _dbgLog = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), ".cursor", "debug-ad7c7c.log");
-        static int _dbgCount;
-        static void DbgLog(string msg, string data, string hyp) { try { var j = "{\"sessionId\":\"ad7c7c\",\"location\":\"FogOfWarRendererFeature.cs\",\"message\":\"" + msg + "\",\"data\":" + data + ",\"timestamp\":" + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + ",\"hypothesisId\":\"" + hyp + "\"}"; System.IO.File.AppendAllText(_dbgLog, j + "\n"); Debug.Log("[DBG-ad7c7c] " + msg + " " + data); } catch (System.Exception ex) { Debug.LogError("[DBG-ad7c7c] Log write failed: " + ex.Message); } }
-        // #endregion
-
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             var cam = renderingData.cameraData.camera;
@@ -41,25 +35,14 @@ namespace InsectWars.RTS
                 if (s_runtimeMat == null)
                 {
                     var sh = Shader.Find("Hidden/InsectWars/FogOfWarComposite");
-                    // #region agent log
-                    if (_dbgCount < 3) { _dbgCount++; DbgLog("AddRenderPasses_shaderLookup", "{\"shaderFound\":" + (sh != null ? "true" : "false") + "}", "B"); }
-                    // #endregion
                     if (sh != null)
                         s_runtimeMat = new Material(sh) { name = "FogOfWarRuntime" };
                 }
                 mat = s_runtimeMat;
             }
             if (mat == null)
-            {
-                // #region agent log
-                DbgLog("AddRenderPasses_NO_MATERIAL", "{}", "B");
-                // #endregion
                 return;
-            }
 
-            // #region agent log
-            if (_dbgCount < 5) { DbgLog("AddRenderPasses_enqueued", "{\"matName\":\"" + mat.name + "\"}", "B"); }
-            // #endregion
             _pass.Setup(mat);
             renderer.EnqueuePass(_pass);
         }

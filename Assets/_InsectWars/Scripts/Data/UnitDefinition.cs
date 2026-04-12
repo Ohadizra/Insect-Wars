@@ -52,12 +52,12 @@ namespace InsectWars.Data
             };
             d.attackDamage = type switch
             {
-                UnitArchetype.BasicRanged => 5f,
+                UnitArchetype.BasicRanged => 7f,
                 UnitArchetype.BasicFighter => 9f,
                 _ => 4f
             };
-            d.attackRange = type == UnitArchetype.BasicRanged ? 5.5f : 1.55f;
-            d.attackCooldown = type == UnitArchetype.BasicRanged ? 1.3f : 0.95f;
+            d.attackRange = type == UnitArchetype.BasicRanged ? 8f : 1.55f;
+            d.attackCooldown = type == UnitArchetype.BasicRanged ? 0.82f : 0.95f;
             d.visionRadius = 12f;
             return d;
         }

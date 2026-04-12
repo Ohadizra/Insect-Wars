@@ -238,13 +238,14 @@ namespace InsectWars.UI
             var box = DarkBox(_panelMapSelect.transform, 750, 750);
             PanelHeader(box.transform, "SELECT MAP", -40f);
             
-            var maps = MapPresets.GetAll();
+            var maps = SkirmishMapPresets.GetAll();
             float y = -120f;
             foreach(var m in maps)
             {
                 var mapName = m.displayName;
                 DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
-                    SceneLoader.LoadMap(m);
+                    GameSession.SetSelectedMap(m);
+                    SceneLoader.LoadSkirmishDemo();
                 });
             }
 DarkButton(box.transform, "BACK", ref y, () => ShowPlay());

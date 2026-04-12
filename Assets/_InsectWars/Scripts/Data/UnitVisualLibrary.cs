@@ -32,29 +32,29 @@ namespace InsectWars.Data
             if (rootCellarPrefab == null)
                 rootCellarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Prefabs/RootCellar.prefab");
-            }
-            #endif
+        }
+        #endif
 
-            [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
-            public GameObject workerPrefab;
-            public GameObject meleePrefab;
-            public GameObject rangedPrefab;
+        [Header("Units — root must have NavMeshAgent, CapsuleCollider, InsectUnit")]
+        public GameObject workerPrefab;
+        public GameObject meleePrefab;
+        public GameObject rangedPrefab;
 
-            [Header("Buildings")]
-            public GameObject hivePrefab;
-            public Material hiveMaterial;
-            public GameObject undergroundPrefab;
-            public GameObject skyTowerPrefab;
-            public GameObject rootCellarPrefab;
+        [Header("Buildings")]
+        public GameObject hivePrefab;
+        public Material hiveMaterial;
+        public GameObject undergroundPrefab;
+        public GameObject skyTowerPrefab;
+        public GameObject rootCellarPrefab;
 
-            [Header("Environment")]
-            public GameObject rottingApplePrefab;
-            public GameObject calorieChunkPrefab;
-            public GameObject clayWallPrefab;
-            public Material bigAppleMaterial;
-            public Material groundMaterial;
-public TerrainLayer baseSoilLayer;
-public TerrainLayer drySoilLayer;
+        [Header("Environment")]
+        public GameObject rottingApplePrefab;
+        public GameObject calorieChunkPrefab;
+        public GameObject clayWallPrefab;
+        public Material bigAppleMaterial;
+        public Material groundMaterial;
+        public TerrainLayer baseSoilLayer;
+        public TerrainLayer drySoilLayer;
 
         [Header("Terrain Features (optional — falls back to procedural)")]
         public GameObject waterPuddlePrefab;

@@ -135,8 +135,8 @@ lbl.fontSize = 13;
             _miniCam = camGo.AddComponent<Camera>();
             _miniCam.orthographic = true;
 
-            float ortho = PlayArea.HasBounds
-                ? PlayArea.HalfExtent
+            float ortho = SkirmishPlayArea.HasBounds
+                ? SkirmishPlayArea.HalfExtent
                 : orthographicSize;
             _miniCam.orthographicSize = ortho;
 
@@ -241,9 +241,9 @@ lbl.fontSize = 13;
         {
             if (_viewBox == null) return;
             var mc = Camera.main;
-            if (mc == null || !PlayArea.HasBounds) return;
+            if (mc == null || !SkirmishPlayArea.HasBounds) return;
 
-            float h = PlayArea.HalfExtent;
+            float h = SkirmishPlayArea.HalfExtent;
             float inv = 1f / (2f * h);
 
             float minX = float.MaxValue, maxX = float.MinValue;
@@ -307,7 +307,7 @@ lbl.fontSize = 13;
 
         void HandlePointer(PointerEventData eventData)
         {
-            if (_mapRect == null || _onClick == null || !PlayArea.HasBounds) return;
+            if (_mapRect == null || _onClick == null || !SkirmishPlayArea.HasBounds) return;
 
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     _mapRect, eventData.position, eventData.pressEventCamera, out var local))
@@ -317,7 +317,7 @@ lbl.fontSize = 13;
             float u = (local.x - rect.x) / rect.width;
             float v = (local.y - rect.y) / rect.height;
 
-            float h = PlayArea.HalfExtent;
+            float h = SkirmishPlayArea.HalfExtent;
             float worldX = (u * 2f - 1f) * h;
             float worldZ = (v * 2f - 1f) * h;
 

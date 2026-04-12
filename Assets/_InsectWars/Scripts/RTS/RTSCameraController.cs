@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Edge pan, MMB drag orbit, scroll zoom — RTS-style on a tilted pivot.
+    /// Edge pan, MMB drag orbit, scroll zoom — SC2-style on a tilted pivot.
     /// </summary>
     public class RTSCameraController : MonoBehaviour
     {
@@ -32,11 +32,11 @@ namespace InsectWars.RTS
         void Start()
         {
             var lp = transform.localPosition;
-            if (lp.sqrMagnitude < 0.0001f)
-                lp = new Vector3(0f, 1f, -1f);
-                
-            var d = Mathf.Clamp(defaultOrbitDistance, minHeight, maxHeight);
-            transform.localPosition = lp.normalized * d;
+            if (lp.sqrMagnitude > 0.0001f)
+            {
+                var d = Mathf.Clamp(defaultOrbitDistance, minHeight, maxHeight);
+                transform.localPosition = lp.normalized * d;
+            }
         }
 
         void Update()
@@ -82,8 +82,8 @@ namespace InsectWars.RTS
 
         void ClampPivotToPlayArea()
         {
-            if (!PlayArea.HasBounds) return;
-            var h = PlayArea.HalfExtent;
+            if (!SkirmishPlayArea.HasBounds) return;
+            var h = SkirmishPlayArea.HalfExtent;
             var m = Mathf.Max(boundsMargin, 6f);
             if (h <= m + 0.5f) return;
             var p = _pivot.position;

@@ -15,7 +15,6 @@ namespace InsectWars.EditorTools
             EditorApplication.delayCall += () =>
             {
                 FixHivePrefabIfNeeded();
-                FixGameplaySceneIfNeeded();
             };
         }
 
@@ -38,31 +37,16 @@ namespace InsectWars.EditorTools
             Debug.Log($"[EditorAutoFix] hivePrefab → {prefabPath}");
         }
 
-        static void FixGameplaySceneIfNeeded()
+        [MenuItem("Insect Wars/Rebuild SkirmishDemo Scene")]
+        static void RebuildSkirmishScene()
         {
-            const string scenePath = "Assets/_InsectWars/Scenes/Gameplay.unity";
-            if (!System.IO.File.Exists(scenePath)) return;
-
-            var currentScene = SceneManager.GetActiveScene();
-            bool wasGameplay = currentScene.path == scenePath;
-
-            if (!wasGameplay)
-            {
-                if (currentScene.isDirty)
-                    return;
-            }
-        }
-
-        [MenuItem("Insect Wars/Rebuild Gameplay Scene")]
-        static void RebuildGameplayScene()
-        {
-            const string scenePath = "Assets/_InsectWars/Scenes/Gameplay.unity";
+            const string scenePath = "Assets/_InsectWars/Scenes/SkirmishDemo.unity";
             const string libPath = "Assets/_InsectWars/Data/DefaultVisualLibrary.asset";
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            var directorGo = new GameObject("MapDirector");
-            var director = directorGo.AddComponent<MapDirector>();
+            var directorGo = new GameObject("SkirmishDirector");
+            var director = directorGo.AddComponent<SkirmishDirector>();
 
             var lib = AssetDatabase.LoadAssetAtPath<UnitVisualLibrary>(libPath);
             if (lib != null)
@@ -99,7 +83,7 @@ namespace InsectWars.EditorTools
 
             EnsureInBuildSettings(scenePath);
 
-            Debug.Log("[EditorAutoFix] Gameplay.unity rebuilt with MapDirector, Camera, and Light.");
+            Debug.Log("[EditorAutoFix] SkirmishDemo.unity rebuilt with SkirmishDirector, Camera, and Light.");
         }
 
         static void EnsureInBuildSettings(string path)

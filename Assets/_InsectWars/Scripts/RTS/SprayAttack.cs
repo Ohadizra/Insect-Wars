@@ -43,7 +43,7 @@ namespace InsectWars.RTS
 
                 float distFraction = toTarget.magnitude / range;
                 float falloff = Mathf.Lerp(1f, 0.6f, distFraction);
-                u.ApplyDamage(damage * falloff, owner);
+                u.ApplyDamage(damage * falloff);
             }
         }
 
