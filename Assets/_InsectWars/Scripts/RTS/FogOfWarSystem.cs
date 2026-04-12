@@ -18,6 +18,7 @@ namespace InsectWars.RTS
         static readonly int FogActiveId = Shader.PropertyToID("_IW_FogActive");
 
         [SerializeField] float hiveVisionRadius = 16f;
+        [SerializeField] float buildingVisionRadius = 14f;
         [SerializeField] float visionFalloffWorld = 2.2f;
 
         Texture2D _tex;
@@ -90,6 +91,12 @@ namespace InsectWars.RTS
 
             if (HiveDeposit.PlayerHive != null)
                 StampVision(HiveDeposit.PlayerHive.transform.position, hiveVisionRadius);
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || !bld.IsAlive || bld.Team != Team.Player) continue;
+                StampVision(bld.transform.position, buildingVisionRadius);
+            }
 
             for (var i = 0; i < _pix.Length; i++)
             {
