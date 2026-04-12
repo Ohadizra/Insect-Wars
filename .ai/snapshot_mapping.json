@@ -839,6 +839,12 @@
       "conversation_id": "9da64bf2-330b-4f2b-9772-57124efcba39",
       "content": "I have reduced the overall UI height by 15% across both the gameplay HUD and the home menus, and I have modified the minimap frame asset to resolve the UX issues where decorative elements were obscuring the map.\n\n### 1. UI Height Reduction (15%)\nI updated the dynamic UI generation in the following scripts:\n*   **Bottom Bar (`BottomBar.cs`)**:\n    *   Reduced total height from **310** to **263.5**.\n    *   Scaled minimap and command panel widths to maintain visual balance.\n    *   Shrunk command grid cells (56→48) and selection cells (50→42).\n    *   Decreased font sizes proportionally (e.g., unit labels from 22 to 19).\n*   **Game HUD (`GameHUD.cs`)**:\n    *   Adjusted Top-Left (Resources) and Top-Right (Menu Button) positions to be 15% closer to the top edge.\n    *   Reduced the size of the resource container and menu button.\n*   **Home Menu (`HomeMenuBootstrap.cs`)**:\n    *   Reduced main panel height from **850** to **722.5**.\n    *   Shrunk button heights and adjusted the vertical gap between buttons by 15%.\n    *   Proportionally shifted the title, subtitle, and separator positions.\n\n### 2. Minimap Frame Cleanup\nI performed an AI-assisted edit on the **`frame_minimap_hollow.png`** sprite asset:\n*   **Task**: Removed all protruding gears and insect-like decorative elements that were extending into the inner rectangular area.\n*   **Result**: The frame now has a clean, unobstructed rectangular opening, allowing players to see the corners and edges of the minimap clearly while preserving the ornate brass/steampunk aesthetic on the outer border.\n\nThe UI is now more compact and the map is fully visible, improving the overall gameplay experience.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "fa69bfe7-f5b4-4fd6-b785-f7ed51c488e2",
+      "content": "refine art so it will contain background, make sure that the map is visable (now it has bug)",
+      "snapshot_message_type": 0
     }
   ]
 }
