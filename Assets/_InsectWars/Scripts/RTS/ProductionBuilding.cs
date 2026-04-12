@@ -265,116 +265,35 @@ namespace InsectWars.RTS
                     if (kvp.Key == null || kvp.Key.material == null) continue;
                     if (kvp.Key.material.HasProperty("_BaseColor"))
                         kvp.Key.material.SetColor("_BaseColor", kvp.Value);
-                    else if (kvp.Key.material.HasProperty("_Color"))
+                    else
                         kvp.Key.material.color = kvp.Value;
-                    
-                    if (kvp.Key.material.HasProperty("_ConstructionProgress"))
-                        kvp.Key.material.SetFloat("_ConstructionProgress", 1f);
                 }
-                PlayCompletionEffect();
                 ColonyCapacity.NotifyChanged();
-                }
-                }
-
-            void UpdateConstructionVisual()
-            {
-            float progress = ConstructionProgress;
-            
-            // Set shader property if applicable
-            bool hasCustomShader = false;
-            foreach (var kvp in _originalColors)
-            {
-                if (kvp.Key == null || kvp.Key.material == null) continue;
-                if (kvp.Key.material.HasProperty("_ConstructionProgress"))
-                {
-                    kvp.Key.material.SetFloat("_ConstructionProgress", progress);
-                    hasCustomShader = true;
-                }
-            }
-
-            // Staging logic: Building starts very flat and grows up
-            float scaleY = Mathf.Lerp(0.1f, 1f, progress);
-            transform.localScale = new Vector3(_originalScale.x, _originalScale.y * scaleY, _originalScale.z);
-
-            if (!hasCustomShader)
-            {
-                // Fallback darkening and transparency logic
-                float alpha = progress < 0.2f ? Mathf.Lerp(0.1f, 0.4f, progress / 0.2f) : Mathf.Lerp(0.4f, 1.0f, (progress - 0.2f) / 0.8f);
-                float darkening = Mathf.Lerp(0.2f, 1f, progress);
-                
-                Color constructionTint = new Color(0.85f, 0.85f, 0.85f); // Neutral light grey construction phase
-
-                foreach (var kvp in _originalColors)
-                {
-                    if (kvp.Key == null || kvp.Key.material == null) continue;
-                    var orig = kvp.Value;
-                    
-                    // Transition from neutral construction tint to original warm colors
-                    Color targetBase = Color.Lerp(constructionTint * darkening, orig, Mathf.Clamp01((progress - 0.4f) / 0.6f));
-                    Color finalColor = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
-
-                    if (kvp.Key.material.HasProperty("_BaseColor"))
-                        kvp.Key.material.SetColor("_BaseColor", finalColor);
-                    else if (kvp.Key.material.HasProperty("_Color"))
-                        kvp.Key.material.color = finalColor;
-                }
-            }
-
-            if (_assignedBuilders > 0 && progress < 1f)
-            {
-                SpawnConstructionParticles(progress);
-            }
-            }
-
-        void SpawnConstructionParticles(float progress)
-        {
-            // Spawn thick light grey dust/smoke particles at the growing top edge
-            if (Random.value > 0.32f) return; 
-
-            var rends = GetComponentsInChildren<Renderer>();
-            if (rends.Length == 0) return;
-            var bounds = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
-
-            Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
-            
-            // Spawn particles for volume
-            int count = Random.Range(1, 3);
-            for (int i = 0; i < count; i++)
-            {
-                Vector3 randomOffset = new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(-0.5f, 0.5f), Random.Range(-2.5f, 2.5f));
-                
-                // Use Spheres for soft smoke/dust look
-                var dust = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                dust.transform.position = topCenter + randomOffset;
-                dust.transform.localScale = Vector3.one * Random.Range(0.4f, 0.8f);
-                Destroy(dust.GetComponent<Collider>());
-                
-                var sh = Shader.Find("InsectWars/SoftDust");
-                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
-                
-                var mat = new Material(sh);
-                // Realistic light grey dust
-                Color dustColor = new Color(0.85f, 0.85f, 0.85f, 0.5f);
-                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", dustColor);
-                else mat.color = dustColor;
-                
-                dust.GetComponent<Renderer>().sharedMaterial = mat;
-                
-                // Add the procedural behavior component
-                var behavior = dust.AddComponent<ConstructionDust>();
-                behavior.lifetime = Random.Range(1.0f, 1.8f);
-                behavior.maxScale = Random.Range(2.5f, 4.0f);
             }
         }
 
-        void PlayCompletionEffect()
+        void UpdateConstructionVisual()
         {
-            // Completion thunk/crystallization sound (Audio only, no explosion)
-            if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
-                GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
+            float progress = ConstructionProgress;
 
-            // Visual explosion removed as requested. Smoke simply ends.
+            float scaleY = Mathf.Lerp(0.5f, 1f, progress);
+            transform.localScale = new Vector3(
+                _originalScale.x,
+                _originalScale.y * scaleY,
+                _originalScale.z);
+
+            float darkening = Mathf.Lerp(0.35f, 1f, progress);
+            foreach (var kvp in _originalColors)
+            {
+                if (kvp.Key == null || kvp.Key.material == null) continue;
+                var orig = kvp.Value;
+                var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
+
+                if (kvp.Key.material.HasProperty("_BaseColor"))
+                    kvp.Key.material.SetColor("_BaseColor", tinted);
+                else
+                    kvp.Key.material.color = tinted;
+            }
         }
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
@@ -634,21 +553,27 @@ namespace InsectWars.RTS
 
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            go.transform.localScale *= 2.7f;
-            float groundY = SampleMaxTerrainHeight(position, 6f);
-            go.transform.position = new Vector3(position.x, 0f, position.z);
-            PlaceOnGround(go, groundY);
             go.tag = "Untagged";
 
-            var hd = go.GetComponent<HiveDeposit>();
-            if (hd != null) Destroy(hd);
-            var hv = go.GetComponent<HiveVisual>();
-            if (hv != null) Destroy(hv);
+            // Strip all hive-specific components immediately so their Update
+            // never runs on this clone. DestroyImmediate is required because
+            // deferred Destroy lets Awake/Update execute for one more frame.
+            foreach (var hd in go.GetComponentsInChildren<HiveDeposit>(true))
+                DestroyImmediate(hd);
+            foreach (var hv in go.GetComponentsInChildren<HiveVisual>(true))
+                DestroyImmediate(hv);
+            foreach (var ne in go.GetComponentsInChildren<NestEvolution>(true))
+                DestroyImmediate(ne);
 
             if (team == Team.Player)
                 HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
             else if (team == Team.Enemy)
                 HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
+
+            go.transform.localScale *= 2.7f;
+            float groundY = SampleMaxTerrainHeight(position, 6f);
+            go.transform.position = new Vector3(position.x, 0f, position.z);
+            PlaceOnGround(go, groundY);
 
             if (go.GetComponent<Collider>() == null)
             {
@@ -665,8 +590,7 @@ namespace InsectWars.RTS
                 obs.size = new Vector3(2f, 2f, 2f);
                 obs.center = new Vector3(0f, 0.5f, 0f);
             }
-            
-            // Apply skin color to prefab renderers
+
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {

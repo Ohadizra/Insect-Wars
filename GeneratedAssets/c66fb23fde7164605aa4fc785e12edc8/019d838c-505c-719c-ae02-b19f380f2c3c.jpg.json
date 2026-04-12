@@ -1,0 +1,36 @@
+{
+    "asset": "c66fb23fde7164605aa4fc785e12edc8",
+    "fileName": "019d838c-505c-719c-ae02-b19f380f2c3c.jpg",
+    "prompt": "A 2D game icon for 'colony capacity' in an insect RTS. The icon features a cluster of three small, stylized ant silhouettes. The icon is perfectly centered inside a light beige, parchment-textured rounded square frame with a subtle brown inner border, exactly matching the framing and painterly style of the apple icon reference. Soft lighting, detailed texture, 1024x1024 resolution, white background outside the frame.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "d43eb0eb69c947697d0bf682f8fbb970",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "b85b1894a49f04ae09cead545d7d655b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
