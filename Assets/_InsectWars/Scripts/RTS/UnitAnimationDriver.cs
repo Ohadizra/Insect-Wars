@@ -162,31 +162,46 @@ namespace InsectWars.RTS
 
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-            // Build animation - focused labor
+            // Build animation - focused mandible and leg labor
             if (_buildAnimTimer > 0f)
             {
                 _buildAnimTimer -= dt;
                 
-                // Rhythmic work cycle for front legs
-                float cycle = _idleT * 12f;
-                float leftWork = Mathf.Sin(cycle) * 20f;
-                float rightWork = Mathf.Sin(cycle + Mathf.PI) * 20f;
+                // Work cycles
+                float workSpeed = 14f;
+                float cycle = _idleT * workSpeed;
                 
-                // Maintain deep tilt toward ground/work site
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(40f, 0f, 0f), dt * 8f);
-                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(20f, 0f, 0f), dt * 6f);
+                // Front legs: Picking/Placing motion (tamping)
+                // Offset the phases for a more natural "busy" look
+                float leftLegMove = Mathf.Sin(cycle) * 25f;
+                float rightLegMove = Mathf.Sin(cycle + 2.5f) * 25f;
                 
-                // Manual labor with front legs (tamping/digging)
-                if (_lArm != null) _lArm.localRotation = _lArmBase * Quaternion.Euler(-30f + leftWork, 15f, 0f);
-                if (_rArm != null) _rArm.localRotation = _rArmBase * Quaternion.Euler(-30f + rightWork, -15f, 0f);
-                
-                // Subtle abdomen pulsing (effort/breathing)
-                if (_tail != null) _tail.localRotation = Quaternion.Slerp(_tail.localRotation, _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 5f) * 10f, 0f, 0f), dt * 5f);
+                // Head nodding: Synchronized with the picking motion
+                float headNod = Mathf.Sin(cycle * 2f) * 10f; 
+                // Subtle searching: Slow side-to-side head tilt
+                float headSearch = Mathf.Sin(_idleT * 3f) * 8f;
 
-                // No jumping or rocking - keep focus on hands
+                if (_head != null) 
+                    _head.localRotation = _headBase * Quaternion.Euler(40f + headNod, headSearch, 0f);
+                
+                if (_chest != null)
+                {
+                    // Subtle torso rocking to show weight transfer
+                    float chestRock = Mathf.Sin(cycle * 0.5f) * 3f;
+                    _chest.localRotation = _chestBase * Quaternion.Euler(20f, 0f, chestRock);
+                }
+                
+                // Manual labor with front legs
+                if (_lArm != null) _lArm.localRotation = _lArmBase * Quaternion.Euler(-35f + leftLegMove, 12f, 0f);
+                if (_rArm != null) _rArm.localRotation = _rArmBase * Quaternion.Euler(-35f + rightLegMove, -12f, 0f);
+                
+                // Abdomen pulsing (effort/breathing)
+                if (_tail != null) 
+                    _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 6f) * 12f, 0f, 0f);
+
+                // Absolutely grounded
                 bob = 0f; 
 
-                // Reset only the bones we aren't explicitly posing
                 ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
             }
             else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)

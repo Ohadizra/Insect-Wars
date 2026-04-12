@@ -12,9 +12,9 @@ namespace InsectWars.RTS
     public class ControlGroupBar : MonoBehaviour
     {
         const int GroupCount = 10;
-        const float TabWidth = 38f;
-        const float TabHeight = 24f;
-        const float TabSpacing = 3f;
+        const float TabWidth = 52f;
+        const float TabHeight = 34f;
+        const float TabSpacing = 4f;
         const float BarBottomOffset = 263.5f; // matches BottomBar.barHeight
         const float MinimapSlot = 357f;
 
@@ -85,23 +85,24 @@ namespace InsectWars.RTS
                 int groupIndex = i;
                 btn.onClick.AddListener(() => OnTabClicked(groupIndex));
 
-                // Number label (top-left)
-                var numText = CreateText($"Num", tab.transform, 11, ColTextNormal, TextAnchor.UpperLeft);
+                // Number label (large, centered)
+                var numText = CreateText("Num", tab.transform, 16, ColTextNormal, TextAnchor.MiddleCenter);
                 numText.text = displayNum.ToString();
+                numText.fontStyle = FontStyle.Bold;
                 var nrt = numText.rectTransform;
                 nrt.anchorMin = Vector2.zero;
                 nrt.anchorMax = Vector2.one;
-                nrt.offsetMin = new Vector2(3f, 1f);
-                nrt.offsetMax = new Vector2(-1f, -1f);
+                nrt.offsetMin = Vector2.zero;
+                nrt.offsetMax = Vector2.zero;
                 _tabLabels[i] = numText;
 
-                // Unit count (bottom-right)
-                var countText = CreateText($"Count", tab.transform, 9, ColTextNormal, TextAnchor.LowerRight);
+                // Entity count (small, bottom-right corner)
+                var countText = CreateText("Count", tab.transform, 9, ColTextNormal, TextAnchor.LowerRight);
                 countText.text = "";
                 var crt = countText.rectTransform;
                 crt.anchorMin = Vector2.zero;
                 crt.anchorMax = Vector2.one;
-                crt.offsetMin = new Vector2(1f, 0f);
+                crt.offsetMin = new Vector2(1f, 1f);
                 crt.offsetMax = new Vector2(-3f, -1f);
                 _tabCounts[i] = countText;
             }

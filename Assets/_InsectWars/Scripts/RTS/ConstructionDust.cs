@@ -9,12 +9,16 @@ namespace InsectWars.RTS
         
         float _timer;
         Vector3 _startScale;
+        Vector3 _driftDir;
         Material _mat;
         Color _startColor;
 
         void Start()
         {
             _startScale = transform.localScale;
+            // Random drift direction for natural dispersion
+            _driftDir = new Vector3(Random.Range(-0.3f, 0.3f), 1.0f, Random.Range(-0.3f, 0.3f)).normalized;
+            
             var rend = GetComponent<Renderer>();
             if (rend != null)
             {
@@ -24,7 +28,7 @@ namespace InsectWars.RTS
                 else if (_mat.HasProperty("_Color"))
                     _startColor = _mat.color;
                 else
-                    _startColor = Color.white;
+                    _startColor = new Color(0.85f, 0.85f, 0.85f, 0.5f); // Realistic grey fallback
             }
         }
 
@@ -39,14 +43,15 @@ namespace InsectWars.RTS
                 return;
             }
 
-            // Grow over time
+            // Grow over time (dissipation)
             transform.localScale = Vector3.Lerp(_startScale, _startScale * maxScale, t);
             
             // Fade out
             if (_mat != null)
             {
                 Color c = _startColor;
-                c.a *= (1.0f - t);
+                // Cubic fade out for softer end
+                c.a *= (1.0f - (t * t * t));
                 
                 if (_mat.HasProperty("_BaseColor"))
                     _mat.SetColor("_BaseColor", c);
@@ -54,8 +59,9 @@ namespace InsectWars.RTS
                     _mat.color = c;
             }
             
-            // Drift upward
-            transform.position += Vector3.up * Time.deltaTime * 0.5f;
+            // Drift and disperse
+            float speed = Mathf.Lerp(0.6f, 0.2f, t); // Slow down as it expands
+            transform.position += _driftDir * Time.deltaTime * speed;
         }
     }
 }

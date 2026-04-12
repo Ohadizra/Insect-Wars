@@ -339,36 +339,12 @@ namespace InsectWars.RTS
 
         void PlayCompletionEffect()
         {
-            // Completion thunk/crystallization sound
+            // Completion thunk/crystallization sound (Audio only, no explosion)
             if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
                 GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
 
-            // Use VFX prefab if available
-            var lib = SkirmishDirector.ActiveVisualLibrary;
-            if (lib != null && lib.completionVfxPrefab != null)
-            {
-                Instantiate(lib.completionVfxPrefab, transform.position, Quaternion.identity);
-            }
-            else
-            {
-                // Fallback burst of particles - realistic light grey dust
-                for (int i = 0; i < 10; i++)
-                {
-                    var debris = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    debris.transform.position = transform.position + Vector3.up * 0.5f;
-                    debris.transform.localScale = Vector3.one * Random.Range(0.2f, 0.5f);
-                    Destroy(debris.GetComponent<Collider>());
-                    
-                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-                    mat.color = new Color(0.9f, 0.9f, 0.9f, 0.75f);
-                    debris.GetComponent<Renderer>().sharedMaterial = mat;
-                    
-                    var rb = debris.AddComponent<Rigidbody>();
-                    rb.linearVelocity = Random.insideUnitSphere * 3f + Vector3.up * 2f;
-                    Destroy(debris, 1.4f);
-                }
-            }
-            }
+            // Visual explosion removed as requested. Smoke simply ends.
+        }
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
         {
