@@ -48,7 +48,7 @@ namespace InsectWars.UI
             if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
             if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Final.png");
+            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_WithTitle.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
@@ -232,7 +232,7 @@ DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             _panelAbout = MakePanel("AboutPanel");
             var boxAb = DarkBox(_panelAbout.transform, 650, 500);
             PanelHeader(boxAb.transform, "LOGS", -50f);
-            var body = Txt(boxAb.transform, "INSECT WARS\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
+            var body = Txt(boxAb.transform, "INSECT WAR\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
 AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
             float yA = -380f;
             DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
