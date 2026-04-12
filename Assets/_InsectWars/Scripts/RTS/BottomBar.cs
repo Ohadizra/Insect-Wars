@@ -105,6 +105,8 @@ namespace InsectWars.RTS
 
         #if UNITY_EDITOR
             string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
+            string np = "Assets/_InsectWars/Sprites/UI/NewIcons/";
+            
             if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             
             // Set the minimap frame to match the other blocks (centerBlockFrame)
@@ -117,15 +119,23 @@ namespace InsectWars.RTS
             if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
             if (slotFrame == null) slotFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
 
-            if (iconMove == null) iconMove = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_running_person.png");
-            if (iconAttack == null) iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_beetle_action.png");
+            // Load new symbolic icons with an insectoid touch
+            iconMove = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_move_new 1.png");
+            iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_attack_new 1.png");
+            iconStop = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_stop_new 1.png");
+            iconPatrol = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_patrol_new 1.png");
+            iconHold = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_hold_new.png");
+            
+            iconStop = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_stop_new 1.png"); // Stop and Cancel use the same symbolic X
+            iconCancel = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_stop_new 1.png");
+            
             if (iconBuild == null) iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_hammer_wrench.png");
             if (iconWorker == null) iconWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
             if (iconFighter == null) iconFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_view.png");
             if (iconRanged == null) iconRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_view.png");
 
             if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "portrait_stag_beetle.png");
-            if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_alt.png");
+if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_alt.png");
             if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_alt.png");
         #endif
         }
@@ -704,16 +714,10 @@ namespace InsectWars.RTS
             krt.offsetMin = new Vector2(2f, 2f);
             krt.offsetMax = new Vector2(-2f, -1f);
 
-            var label = CreateText("Label", go.transform, 9, ColTitle, TextAnchor.UpperCenter);
-            label.supportRichText = true;
-            label.text = name;
-            var lrt = label.rectTransform;
-            lrt.anchorMin = new Vector2(-0.2f, -0.6f);
-            lrt.anchorMax = new Vector2(1.2f, -0.1f);
-            lrt.offsetMin = lrt.offsetMax = Vector2.zero;
+            // Removed button labels to clean up the UI as requested.
 
             _cmdButtonImages[name] = img;
-        }
+            }
 
         Sprite GetCommandIcon(string cmdName)
         {

@@ -1,0 +1,36 @@
+{
+    "asset": "e531e1f3c1c1943d4aaa9c83d135ea21",
+    "fileName": "019d80cf-fc5c-7f9b-b1c5-b8d65bbb540d.jpg",
+    "prompt": "Attack action icon for a strategy game. A crosshair symbol consisting of a center dot and four yellow rectangles framing it. The symbols are glowing bioluminescent yellow. Ornate organic insectoid chitin details on the symbols. Dark background. Fantasy insect theme. High quality UI sprite. Fine organic details. No text. Round icon.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "e7a1ba6364a202c6a0ad10a2279b0a9c",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "610c35db0eb7e4ffcbcc1612b70d560b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

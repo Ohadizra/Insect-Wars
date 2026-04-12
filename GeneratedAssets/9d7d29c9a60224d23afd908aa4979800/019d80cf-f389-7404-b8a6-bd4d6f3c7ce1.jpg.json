@@ -1,0 +1,36 @@
+{
+    "asset": "9d7d29c9a60224d23afd908aa4979800",
+    "fileName": "019d80cf-f389-7404-b8a6-bd4d6f3c7ce1.jpg",
+    "prompt": "Move action icon for a strategy game. A glowing yellow arrow pointing right inside a thick ornate circular frame. The frame has an organic, insectoid chitin texture. Glowing bioluminescent yellow effect. Dark background. Fantasy insect theme. High quality UI sprite. Fine organic details. No text. Round icon.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "cd0096d10bd99e053fd1b831f4573599",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "610c35db0eb7e4ffcbcc1612b70d560b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

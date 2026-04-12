@@ -1,0 +1,36 @@
+{
+    "asset": "e111eeef1ea43437d987c7ab02972edb",
+    "fileName": "019d80d0-9a9c-7256-9c98-0b339fe44527.jpg",
+    "prompt": "Hold position action icon for a strategy game. A glowing small square inside a thick ornate circular frame. The frame has an organic, insectoid chitin texture. Glowing bioluminescent yellow effect. Dark background. Fantasy insect theme. High quality UI sprite. Fine organic details. No text. Round icon.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "eb19f5a08b7460b1b89cc71fbde728e6",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "610c35db0eb7e4ffcbcc1612b70d560b"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
