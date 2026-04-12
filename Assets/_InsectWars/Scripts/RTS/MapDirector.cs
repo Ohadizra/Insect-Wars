@@ -595,12 +595,19 @@ namespace InsectWars.RTS
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
+            // 1. Find a valid ground height and sample the NavMesh
             float h = GetHeight(pos);
-            Vector3 finalPos = new Vector3(pos.x, h + 0.02f, pos.z);
-
-            if (NavMesh.SamplePosition(finalPos, out var navHit, 15f, NavMesh.AllAreas))
+            Vector3 finalPos = new Vector3(pos.x, h + 0.05f, pos.z);
+            bool foundNav = false;
+            
+            // Increased search radius to 50f to ensure units find a home on larger maps
+            if (NavMesh.SamplePosition(finalPos, out var navHit, 50f, NavMesh.AllAreas))
+            {
                 finalPos = navHit.position;
+                foundNav = true;
+            }
 
+            // 2. Load the correct prefab
             GameObject prefab = null;
             if (ActiveVisualLibrary != null)
                 prefab = ActiveVisualLibrary.GetUnitPrefab(arch);
@@ -608,18 +615,13 @@ namespace InsectWars.RTS
             GameObject go;
             InsectUnit unit;
 
+            // 3. Instantiate without modifying the source asset
             if (prefab != null)
             {
-                var prefabAgent = prefab.GetComponent<NavMeshAgent>();
-                bool wasEnabled = prefabAgent != null && prefabAgent.enabled;
-                if (wasEnabled) prefabAgent.enabled = false;
-
-                go = Instantiate(prefab);
+                // Instantiate at the correct position from the start to avoid agent-creation errors
+                go = Instantiate(prefab, finalPos, Quaternion.identity);
                 go.name = $"{team}_{arch}";
-                go.transform.position = finalPos;
-
-                if (wasEnabled) prefabAgent.enabled = true;
-
+                
                 unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
             }
@@ -630,6 +632,7 @@ namespace InsectWars.RTS
                 unit = go.AddComponent<InsectUnit>();
             }
 
+            // 4. Configure the unit (team and visuals)
             unit.Configure(team, null, arch);
 
             Color shellColor = TeamPalette.GetShellColor(team);
@@ -647,12 +650,23 @@ namespace InsectWars.RTS
                 renderer.SetPropertyBlock(block);
             }
 
+            // 5. Safely handle the NavMeshAgent
             var agent = go.GetComponent<NavMeshAgent>();
-            if (agent != null && !agent.enabled)
+            if (agent != null)
             {
-                agent.enabled = true;
-                if (!agent.isOnNavMesh)
-                    agent.Warp(finalPos);
+                // If we found a valid position, make sure it's enabled and warped
+                if (foundNav)
+                {
+                    agent.enabled = true;
+                    if (!agent.isOnNavMesh)
+                        agent.Warp(finalPos);
+                }
+                else
+                {
+                    // No NavMesh nearby: leave it disabled to avoid internal engine errors
+                    agent.enabled = false;
+                    Debug.LogWarning($"[MapDirector] FAILED to find NavMesh for {go.name} at {pos} within 50m! Unit is spawned but Agent is DISABLED.");
+                }
             }
 
             SafeSetLayerRecursive(go, "Units");
@@ -662,11 +676,11 @@ namespace InsectWars.RTS
             if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                 go.AddComponent<SimpleEnemyAi>();
             return unit;
-        }
+            }
 
-        void EnsureLitShader()
-        {
+            void EnsureLitShader()
+            {
             if (s_lit == null) s_lit = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        }
-    }
-}
+            }
+            }
+            }
