@@ -292,6 +292,32 @@ namespace InsectWars.RTS
             }
         }
 
+        /// <summary>Replace the current selection with the given units (used by control groups).</summary>
+        public void SetSelection(IEnumerable<InsectUnit> units)
+        {
+            ClearAll();
+            foreach (var u in units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
+                if (_selected.Add(u))
+                    u.IsSelected = true;
+            }
+        }
+
+        /// <summary>Add units to the current selection without clearing (used by control group Alt+Number).</summary>
+        public void AddToSelection(IEnumerable<InsectUnit> units)
+        {
+            _selectedHive = null;
+            _selectedResource = null;
+            _selectedBuilding = null;
+            foreach (var u in units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
+                if (_selected.Add(u))
+                    u.IsSelected = true;
+            }
+        }
+
         public void Deselect(InsectUnit u)
         {
             if (_selected.Remove(u))

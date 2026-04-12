@@ -467,7 +467,7 @@ namespace InsectWars.RTS
 
             var go = Object.Instantiate(hivePrefab);
             go.name = "Building_AntNest";
-            go.transform.localScale *= 1.3f;
+            go.transform.localScale *= 1.68f;
             float groundY = SampleMaxTerrainHeight(position, 6f);
             go.transform.position = new Vector3(position.x, 0f, position.z);
             PlaceOnGround(go, groundY);
@@ -527,7 +527,7 @@ namespace InsectWars.RTS
 
             Vector3 scale = type switch
             {
-                BuildingType.Underground => new Vector3(1.1f, 0.8f, 1.1f),
+                BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
                 BuildingType.SkyTower => new Vector3(1f, 1.3f, 1f),
                 _ => Vector3.one
             };

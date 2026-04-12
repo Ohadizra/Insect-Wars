@@ -14,6 +14,7 @@ namespace InsectWars.RTS
         [SerializeField] float gatherTickSeconds = 5f;
 
         int _initialCalories;
+        float _cachedVisualRadius = -1f;
 
         public int ChargesRemaining => chargesRemaining;
         public int InitialCalories => _initialCalories;
@@ -21,23 +22,30 @@ namespace InsectWars.RTS
         public float GatherTickSeconds => gatherTickSeconds;
 
         /// <summary>How close a worker must be (XZ) to start gathering.</summary>
-        public float GatherRange => VisualRadius + 2.5f;
+        public float GatherRange => CachedVisualRadius + 1.5f;
 
         /// <summary>Visual radius plus buffer — ants should navigate to this distance, not the center.</summary>
-        public float StopRadius => VisualRadius + 1.5f;
+        public float StopRadius => CachedVisualRadius + 0.5f;
 
-        float VisualRadius
+        float CachedVisualRadius
         {
             get
             {
-                var rend = GetComponentInChildren<Renderer>();
-                if (rend != null)
-                {
-                    var ext = rend.bounds.extents;
-                    return Mathf.Max(ext.x, ext.z);
-                }
-                return Mathf.Max(transform.localScale.x, transform.localScale.z) * 0.5f;
+                if (_cachedVisualRadius < 0f)
+                    _cachedVisualRadius = ComputeVisualRadius();
+                return _cachedVisualRadius;
             }
+        }
+
+        float ComputeVisualRadius()
+        {
+            var rend = GetComponentInChildren<Renderer>();
+            if (rend != null)
+            {
+                var ext = rend.bounds.extents;
+                return Mathf.Max(ext.x, ext.z);
+            }
+            return Mathf.Max(transform.localScale.x, transform.localScale.z) * 0.5f;
         }
 
         /// <summary>Returns a world position on the fruit surface at the given angle (radians).</summary>

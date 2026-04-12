@@ -116,34 +116,38 @@ namespace InsectWars.RTS
             EnemyResources.Reset();
             BuildWorldPreview();
 
-            var playerStart = _playerStart;
+            // Workers spawn in a close ring around the hive building
+            const float WorkerSpawnRadius = 5f;
+            const float CombatSpawnRadius = 10f;
+            var playerHiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
             for (var i = 0; i < 5; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
-                SpawnUnit(playerStart + offset, Team.Player, UnitArchetype.Worker);
+                var offset = new Vector3(Mathf.Cos(angle) * WorkerSpawnRadius, 0f, Mathf.Sin(angle) * WorkerSpawnRadius);
+                SpawnUnit(playerHiveXZ + offset, Team.Player, UnitArchetype.Worker);
             }
-            SpawnUnit(playerStart + new Vector3(1f, 0, 1f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(3.5f, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
-            SpawnUnit(playerStart + new Vector3(-1f, 0, -1.5f), Team.Player, UnitArchetype.BasicRanged);
-            SpawnUnit(playerStart + new Vector3(2f, 0, -2f), Team.Player, UnitArchetype.BasicRanged);
+            // Combat units in a wider ring so they don't crowd the workers
+            SpawnUnit(playerHiveXZ + new Vector3(CombatSpawnRadius, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerHiveXZ + new Vector3(-CombatSpawnRadius, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(playerHiveXZ + new Vector3(0f, 0, CombatSpawnRadius), Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(playerHiveXZ + new Vector3(0f, 0, -CombatSpawnRadius), Team.Player, UnitArchetype.BasicRanged);
 
-            var enemyStart = _enemyStart;
+            var enemyHiveXZ = new Vector3(_enemyHive.x, 0f, _enemyHive.z);
             var nWorkers = Mathf.RoundToInt(4f * GameSession.DifficultyEnemySpawnMultiplier);
             for (var i = 0; i < nWorkers; i++)
             {
                 var angle = i * 72f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 2.5f, 0f, Mathf.Sin(angle) * 2.5f);
-                SpawnUnit(enemyStart + offset, Team.Enemy, UnitArchetype.Worker);
+                var offset = new Vector3(Mathf.Cos(angle) * WorkerSpawnRadius, 0f, Mathf.Sin(angle) * WorkerSpawnRadius);
+                SpawnUnit(enemyHiveXZ + offset, Team.Enemy, UnitArchetype.Worker);
             }
             var nCombat = Mathf.Clamp(Mathf.RoundToInt(3f * GameSession.DifficultyEnemySpawnMultiplier), 1, 8);
             var archCycle = new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
             for (var i = 0; i < nCombat; i++)
             {
                 var angle = (i + nWorkers) * 60f * Mathf.Deg2Rad;
-                var offset = new Vector3(Mathf.Cos(angle) * 4f, 0f, Mathf.Sin(angle) * 4f);
+                var offset = new Vector3(Mathf.Cos(angle) * CombatSpawnRadius, 0f, Mathf.Sin(angle) * CombatSpawnRadius);
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
-                SpawnUnit(enemyStart + offset, Team.Enemy, arch);
+                SpawnUnit(enemyHiveXZ + offset, Team.Enemy, arch);
             }
 
             var camCtrl = FindFirstObjectByType<RTSCameraController>();
@@ -222,6 +226,8 @@ namespace InsectWars.RTS
             systems.AddComponent<EnemyCommander>();
             systems.AddComponent<PauseController>();
             systems.AddComponent<GameAudio>();
+            systems.AddComponent<ControlGroupManager>();
+            systems.AddComponent<ControlGroupBar>();
         }
 
 
@@ -549,7 +555,7 @@ namespace InsectWars.RTS
 
         void BuildHive(Transform parent, Vector3 worldPos, Team team, string name)
         {
-            const float hiveScale = 2.2f;
+            const float hiveScale = 2.7f;
             float groundY = SampleMaxTerrainHeight(worldPos, 10f);
 
             GameObject hive;
@@ -660,10 +666,41 @@ namespace InsectWars.RTS
                     float maxH = 0f;
                     foreach (var hg in hgList)
                     {
+                        if (hg.radius <= 0.001f) continue;
+
                         float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
                         float rw = Mathf.Max(hg.rampWidth, 0.01f);
-                        if (dist < hg.radius) maxH = Mathf.Max(maxH, hg.heightFraction);
-                        else if (dist < hg.radius + rw) maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, (dist - hg.radius) / rw));
+                        if (dist < hg.radius)
+                        {
+                            maxH = Mathf.Max(maxH, hg.heightFraction);
+                        }
+                        else
+                        {
+                            // Directional ramp logic using hg.rotation
+                            float angle = Mathf.Atan2(v - hg.uv.y, u - hg.uv.x) * Mathf.Rad2Deg;
+                            float angleDiff = Mathf.Abs(Mathf.DeltaAngle(angle, hg.rotation));
+                            float rampHalfAngle = (rw / hg.radius) * Mathf.Rad2Deg * 0.5f;
+
+                            if (angleDiff < rampHalfAngle)
+                            {
+                                // Gentle walkable ramp
+                                if (dist < hg.radius + rw)
+                                {
+                                    float t = (dist - hg.radius) / rw;
+                                    maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, t));
+                                }
+                            }
+                            else
+                            {
+                                // Steep impassable cliff
+                                const float cliffWidth = 0.008f;
+                                if (dist < hg.radius + cliffWidth)
+                                {
+                                    float t = (dist - hg.radius) / cliffWidth;
+                                    maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, Mathf.Pow(t, 4)));
+                                }
+                            }
+                        }
                     }
                     heights[y, x] = maxH;
                 }
@@ -681,10 +718,32 @@ namespace InsectWars.RTS
                     float h = 0f;
                     foreach (var hg in hgList)
                     {
+                        if (hg.radius <= 0.001f) continue;
+
                         float dist = Vector2.Distance(new Vector2(u, v), hg.uv);
                         float rw = Mathf.Max(hg.rampWidth, 0.01f);
-                        if (dist < hg.radius) h = 1f;
-                        else if (dist < hg.radius + rw) h = Mathf.Max(h, Mathf.InverseLerp(hg.radius + rw, hg.radius, dist));
+                        if (dist < hg.radius)
+                        {
+                            h = 1f;
+                        }
+                        else
+                        {
+                            float angle = Mathf.Atan2(v - hg.uv.y, u - hg.uv.x) * Mathf.Rad2Deg;
+                            float angleDiff = Mathf.Abs(Mathf.DeltaAngle(angle, hg.rotation));
+                            float rampHalfAngle = (rw / hg.radius) * Mathf.Rad2Deg * 0.5f;
+
+                            if (angleDiff < rampHalfAngle)
+                            {
+                                if (dist < hg.radius + rw)
+                                    h = Mathf.Max(h, Mathf.InverseLerp(hg.radius + rw, hg.radius, dist));
+                            }
+                            else
+                            {
+                                const float cliffWidth = 0.008f;
+                                if (dist < hg.radius + cliffWidth)
+                                    h = Mathf.Max(h, Mathf.Pow(Mathf.InverseLerp(hg.radius + cliffWidth, hg.radius, dist), 4));
+                            }
+                        }
                     }
 
                     float noise = Mathf.PerlinNoise(x * 0.1f, y * 0.1f);
@@ -828,6 +887,30 @@ namespace InsectWars.RTS
                 else Object.DestroyImmediate(existing);
             }
 
+            // Replace any prefab colliders with a single SphereCollider that
+            // matches the renderer bounds so ants are physically stopped at
+            // the apple surface but not too far away.
+            foreach (var col in fruit.GetComponentsInChildren<Collider>())
+            {
+                if (Application.isPlaying) Object.Destroy(col);
+                else Object.DestroyImmediate(col);
+            }
+
+            var rend = fruit.GetComponentInChildren<Renderer>();
+            float visualRadius = 1f;
+            if (rend != null)
+                visualRadius = Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z);
+            else
+                visualRadius = Mathf.Max(fruit.transform.localScale.x, fruit.transform.localScale.z) * 0.5f;
+
+            var sc = fruit.AddComponent<SphereCollider>();
+            sc.center = rend != null
+                ? fruit.transform.InverseTransformPoint(rend.bounds.center)
+                : Vector3.zero;
+            // Radius in local space: world visual radius / max XZ scale
+            float maxXZScale = Mathf.Max(fruit.transform.lossyScale.x, fruit.transform.lossyScale.z);
+            sc.radius = maxXZScale > 0.001f ? visualRadius / maxXZScale : 0.5f;
+
             var s = fruit.transform.localScale;
             var obsGo = new GameObject("NavObstacle");
             obsGo.transform.SetParent(fruit.transform, false);
@@ -837,18 +920,17 @@ namespace InsectWars.RTS
             var obs = obsGo.AddComponent<NavMeshObstacle>();
             obs.carving = true;
 
-            var rend = fruit.GetComponentInChildren<Renderer>();
             if (rend != null)
             {
                 var b = rend.bounds;
                 obs.shape = NavMeshObstacleShape.Box;
-                obs.size = b.size * 0.85f;
+                obs.size = b.size * 0.5f;
                 obs.center = b.center - fruit.transform.position;
             }
             else
             {
                 obs.shape = NavMeshObstacleShape.Capsule;
-                obs.radius = Mathf.Max(s.x, s.z) * 0.55f;
+                obs.radius = Mathf.Max(s.x, s.z) * 0.45f;
                 obs.height = s.y;
                 obs.center = Vector3.zero;
             }
@@ -1107,7 +1189,19 @@ namespace InsectWars.RTS
                 go.name = $"{team}_{arch}";
                 int layer = LayerMask.NameToLayer("Units");
                 if (layer >= 0) go.layer = layer;
+
+                var agent = go.GetComponent<NavMeshAgent>();
+                if (agent != null) agent.enabled = false;
                 go.transform.position = finalPos;
+                if (agent != null)
+                {
+                    agent.enabled = true;
+                    if (NavMesh.SamplePosition(finalPos, out var hit, 5f, NavMesh.AllAreas))
+                        agent.Warp(hit.position);
+                    else
+                        agent.Warp(finalPos);
+                }
+
                 var unit = go.GetComponent<InsectUnit>();
                 if (unit == null) unit = go.AddComponent<InsectUnit>();
                 
@@ -1179,24 +1273,30 @@ namespace InsectWars.RTS
 
             go2.transform.position = finalPos;
 
-            var agent = go2.AddComponent<NavMeshAgent>();
-            agent.acceleration = 48f;
-            agent.angularSpeed = 520f;
+            var agent2 = go2.AddComponent<NavMeshAgent>();
+            agent2.enabled = false;
+            agent2.acceleration = 48f;
+            agent2.angularSpeed = 520f;
             switch (arch)
             {
                 case UnitArchetype.Worker:
-                    agent.height = 0.92f;
-                    agent.radius = 0.3f;
+                    agent2.height = 0.92f;
+                    agent2.radius = 0.3f;
                     break;
                 case UnitArchetype.BasicFighter:
-                    agent.height = 0.5f;
-                    agent.radius = 0.42f;
+                    agent2.height = 0.5f;
+                    agent2.radius = 0.42f;
                     break;
                 default:
-                    agent.height = 1.12f;
-                    agent.radius = 0.27f;
+                    agent2.height = 1.12f;
+                    agent2.radius = 0.27f;
                     break;
             }
+            agent2.enabled = true;
+            if (NavMesh.SamplePosition(finalPos, out var hit2, 5f, NavMesh.AllAreas))
+                agent2.Warp(hit2.position);
+            else
+                agent2.Warp(finalPos);
 
             var unit2 = go2.AddComponent<InsectUnit>();
             var def2 = UnitDefinition.CreateRuntimeDefault(arch, body2);

@@ -390,12 +390,12 @@ namespace InsectWars.Data
             map.mapHalfExtent = 120f;
 
             // ── Spawns (Diagonal Mirror Symmetry: negate both X and Z) ──
-            // Army start must be adjacent to the hive so workers auto-gather
+            // Army start at the hive XZ so units spawn right around the building
             map.playerHivePosition    = new Vector3(-105f, 1f, -100f);
             map.enemyHivePosition     = new Vector3( 105f, 1f,  100f);
-            map.playerArmyStart       = new Vector3(-103f, 0f, -98f);
-            map.enemyArmyStart        = new Vector3( 103f, 0f,  98f);
-            map.cameraFocusWorld      = new Vector3(-95f, 0f, -90f);
+            map.playerArmyStart       = new Vector3(-105f, 0f, -100f);
+            map.enemyArmyStart        = new Vector3( 105f, 0f,  100f);
+            map.cameraFocusWorld      = new Vector3(-100f, 0f, -95f);
             map.bigApplePosition      = new Vector3(-93f, 1.5f, -88f);
             map.enemyBigApplePosition = new Vector3( 93f, 1.5f,  88f);
 
@@ -419,8 +419,8 @@ namespace InsectWars.Data
             // UV = (worldPos + 120) / 240
             map.highGrounds = new[]
             {
-                new HighGroundPlaced { uv = new Vector2(0.0625f, 0.0833f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
-                new HighGroundPlaced { uv = new Vector2(0.9375f, 0.9167f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
+                new HighGroundPlaced { uv = new Vector2(0.0625f, 0.0833f), radius = 0.12f, rampWidth = 0.022f, heightFraction = 0.20f, rotation = 45f },
+                new HighGroundPlaced { uv = new Vector2(0.9375f, 0.9167f), radius = 0.12f, rampWidth = 0.022f, heightFraction = 0.20f, rotation = 225f },
                 // Natural expansions
                 new HighGroundPlaced { uv = new Vector2(0.1875f, 0.2292f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
                 new HighGroundPlaced { uv = new Vector2(0.8125f, 0.7708f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
@@ -440,24 +440,6 @@ namespace InsectWars.Data
             // ── Clay Walls (Frozen Stone Barriers) ──
             map.clay = new[]
             {
-                // Player 1 base perimeter (SW corner) — tall narrow walls, not platforms
-                new ClayPlaced { position = new Vector3(-90f, 0f, -80f), scale = new Vector3(3f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3(-83f, 0f, -86f), scale = new Vector3(2f, 6f, 3f) },
-                new ClayPlaced { position = new Vector3(-118f, 0f, -90f), scale = new Vector3(2f, 6f, 16f) },
-                new ClayPlaced { position = new Vector3(-90f, 0f, -118f), scale = new Vector3(16f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3(-108f, 0f, -78f), scale = new Vector3(14f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3(-78f, 0f, -108f), scale = new Vector3(2f, 6f, 14f) },
-                new ClayPlaced { position = new Vector3(-116f, 0f, -112f), scale = new Vector3(2f, 6f, 8f) },
-                new ClayPlaced { position = new Vector3(-112f, 0f, -116f), scale = new Vector3(8f, 6f, 2f) },
-                // Player 2 base perimeter (NE corner)
-                new ClayPlaced { position = new Vector3( 90f, 0f,  80f), scale = new Vector3(3f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3( 83f, 0f,  86f), scale = new Vector3(2f, 6f, 3f) },
-                new ClayPlaced { position = new Vector3( 118f, 0f,  90f), scale = new Vector3(2f, 6f, 16f) },
-                new ClayPlaced { position = new Vector3( 90f, 0f,  118f), scale = new Vector3(16f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3( 108f, 0f,  78f), scale = new Vector3(14f, 6f, 2f) },
-                new ClayPlaced { position = new Vector3( 78f, 0f,  108f), scale = new Vector3(2f, 6f, 14f) },
-                new ClayPlaced { position = new Vector3( 116f, 0f,  112f), scale = new Vector3(2f, 6f, 8f) },
-                new ClayPlaced { position = new Vector3( 112f, 0f,  116f), scale = new Vector3(8f, 6f, 2f) },
                 // Natural expansion defenses
                 new ClayPlaced { position = new Vector3(-65f, 0f, -42f), scale = new Vector3(12f, 5f, 2f) },
                 new ClayPlaced { position = new Vector3(-42f, 0f, -65f), scale = new Vector3(2f, 5f, 12f) },
@@ -506,11 +488,6 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 110f, 0f, -20f), radius = 7f },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 20f, 0f, -110f), radius = 7f },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-20f, 0f,  110f), radius = 7f },
-                // Base perimeter icicle ridges
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-115f, 0f, -75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-75f, 0f, -115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 115f, 0f,  75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 75f, 0f,  115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
                 // Mid-map lane dividers
                 new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-55f, 0f, 5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 55f, 0f, -5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },

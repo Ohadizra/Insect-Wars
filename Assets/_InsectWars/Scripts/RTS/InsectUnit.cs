@@ -698,7 +698,7 @@ namespace InsectWars.RTS
             float bestDist = float.MaxValue;
             foreach (var c in cols)
             {
-                var node = c.GetComponent<RottingFruitNode>();
+                var node = c.GetComponentInParent<RottingFruitNode>();
                 if (node != null && !node.Depleted)
                 {
                     var d = Vector3.Distance(transform.position, node.transform.position);
@@ -714,7 +714,7 @@ namespace InsectWars.RTS
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
-            var bestFruit = FindNearbyFruit(15f);
+            var bestFruit = FindNearbyFruit(30f);
 
             if (bestFruit != null)
                 OrderGather(bestFruit);
