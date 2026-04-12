@@ -369,206 +369,167 @@ namespace InsectWars.Data
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 46f, 0f, -48f), radius = 3f },
                 // North corner thorns (mirror)
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-46f, 0f,  48f), radius = 3f },
-                };
+            };
 
-                return map;
-                }
+            return map;
+        }
 
-                /// <summary>
-                /// Large competitive frozen tundra map with diagonal mirror symmetry.
-            /// Features protected main bases, natural expansions, and treacherous frozen terrain.
-            /// <summary>
-            /// Large competitive frozen tundra map with diagonal mirror symmetry.
-            /// Features protected main bases, natural expansions, and treacherous frozen terrain.
-            /// Art Direction: High-fidelity realistic winter garden floor.
-            /// </summary>
-            static SkirmishMapDefinition CreateFrozenExpanse()
+        /// <summary>
+        /// Large competitive frozen tundra map with diagonal mirror symmetry.
+        /// Features protected main bases, natural expansions, and treacherous frozen terrain.
+        /// </summary>
+        static SkirmishMapDefinition CreateFrozenExpanse()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "FrozenExpanse";
+            map.displayName = "Frozen Expanse";
+            map.description =
+                "A vast frozen clearing at insect scale, where frost-covered stone barriers and icicle ridges define the battlefield.\n" +
+                "Navigate treacherous frozen brambles and ice sheets to secure the central frosted apples.";
+
+            map.mapHalfExtent = 120f;
+
+            // ── Spawns (Diagonal Mirror Symmetry: negate both X and Z) ──
+            // Army start must be adjacent to the hive so workers auto-gather
+            map.playerHivePosition    = new Vector3(-105f, 1f, -100f);
+            map.enemyHivePosition     = new Vector3( 105f, 1f,  100f);
+            map.playerArmyStart       = new Vector3(-103f, 0f, -98f);
+            map.enemyArmyStart        = new Vector3( 103f, 0f,  98f);
+            map.cameraFocusWorld      = new Vector3(-95f, 0f, -90f);
+            map.bigApplePosition      = new Vector3(-93f, 1.5f, -88f);
+            map.enemyBigApplePosition = new Vector3( 93f, 1.5f,  88f);
+
+            map.passiveScatterSeed = 98213;
+
+            // ── Visual Overrides ──
+            map.clayColor = new Color(0.55f, 0.58f, 0.65f);
+            map.mapBoundsColor = new Color(0.48f, 0.52f, 0.58f);
+            map.scatterTheme = ScatterTheme.Frozen;
+
+#if UNITY_EDITOR
+            map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
+            map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
+#endif
+
+            // ── Elevation (High-Ground Plateaus) ──
+            // UV = (worldPos + 120) / 240
+            map.highGrounds = new[]
             {
-                var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
-                map.name = "FrozenExpanse";
-                map.displayName = "Frozen Expanse";
-                map.description =
-                    "A vast frozen clearing at insect scale, where frost-covered stone barriers and icicle ridges define the battlefield.\n" +
-                    "Navigate treacherous frozen brambles and ice sheets to secure the central frosted apples.";
+                new HighGroundPlaced { uv = new Vector2(0.0625f, 0.0833f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
+                new HighGroundPlaced { uv = new Vector2(0.9375f, 0.9167f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
+                // Natural expansions
+                new HighGroundPlaced { uv = new Vector2(0.1875f, 0.2292f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
+                new HighGroundPlaced { uv = new Vector2(0.8125f, 0.7708f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
+                // Exposed Third Bases
+                new HighGroundPlaced { uv = new Vector2(0.3542f, 0.1875f), radius = 0.065f, rampWidth = 0.035f, heightFraction = 0.07f },
+                new HighGroundPlaced { uv = new Vector2(0.6458f, 0.8125f), radius = 0.065f, rampWidth = 0.035f, heightFraction = 0.07f },
+                // Pocket Fourth Bases
+                new HighGroundPlaced { uv = new Vector2(0.1042f, 0.3750f), radius = 0.06f, rampWidth = 0.025f, heightFraction = 0.08f },
+                new HighGroundPlaced { uv = new Vector2(0.8958f, 0.6250f), radius = 0.06f, rampWidth = 0.025f, heightFraction = 0.08f },
+                // Elevated Siege Positions
+                new HighGroundPlaced { uv = new Vector2(0.4375f, 0.3333f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
+                new HighGroundPlaced { uv = new Vector2(0.5625f, 0.6667f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
+                new HighGroundPlaced { uv = new Vector2(0.3333f, 0.4375f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
+                new HighGroundPlaced { uv = new Vector2(0.6667f, 0.5625f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
+            };
 
-                map.mapHalfExtent = 120f; // 240x240 playable area
+            // ── Clay Walls (Frozen Stone Barriers) ──
+            map.clay = new[]
+            {
+                // Player 1 base perimeter (SW corner) — tall narrow walls, not platforms
+                new ClayPlaced { position = new Vector3(-90f, 0f, -80f), scale = new Vector3(3f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3(-83f, 0f, -86f), scale = new Vector3(2f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3(-118f, 0f, -90f), scale = new Vector3(2f, 6f, 16f) },
+                new ClayPlaced { position = new Vector3(-90f, 0f, -118f), scale = new Vector3(16f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3(-108f, 0f, -78f), scale = new Vector3(14f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3(-78f, 0f, -108f), scale = new Vector3(2f, 6f, 14f) },
+                new ClayPlaced { position = new Vector3(-116f, 0f, -112f), scale = new Vector3(2f, 6f, 8f) },
+                new ClayPlaced { position = new Vector3(-112f, 0f, -116f), scale = new Vector3(8f, 6f, 2f) },
+                // Player 2 base perimeter (NE corner)
+                new ClayPlaced { position = new Vector3( 90f, 0f,  80f), scale = new Vector3(3f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3( 83f, 0f,  86f), scale = new Vector3(2f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3( 118f, 0f,  90f), scale = new Vector3(2f, 6f, 16f) },
+                new ClayPlaced { position = new Vector3( 90f, 0f,  118f), scale = new Vector3(16f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3( 108f, 0f,  78f), scale = new Vector3(14f, 6f, 2f) },
+                new ClayPlaced { position = new Vector3( 78f, 0f,  108f), scale = new Vector3(2f, 6f, 14f) },
+                new ClayPlaced { position = new Vector3( 116f, 0f,  112f), scale = new Vector3(2f, 6f, 8f) },
+                new ClayPlaced { position = new Vector3( 112f, 0f,  116f), scale = new Vector3(8f, 6f, 2f) },
+                // Natural expansion defenses
+                new ClayPlaced { position = new Vector3(-65f, 0f, -42f), scale = new Vector3(12f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3(-42f, 0f, -65f), scale = new Vector3(2f, 5f, 12f) },
+                new ClayPlaced { position = new Vector3(-82f, 0f, -48f), scale = new Vector3(8f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3(-48f, 0f, -82f), scale = new Vector3(2f, 5f, 8f) },
+                new ClayPlaced { position = new Vector3( 65f, 0f,  42f), scale = new Vector3(12f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3( 42f, 0f,  65f), scale = new Vector3(2f, 5f, 12f) },
+                new ClayPlaced { position = new Vector3( 82f, 0f,  48f), scale = new Vector3(8f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3( 48f, 0f,  82f), scale = new Vector3(2f, 5f, 8f) },
+                // Mid lane chokes
+                new ClayPlaced { position = new Vector3(-15f, 0f, -15f), scale = new Vector3(4f, 5f, 4f) },
+                new ClayPlaced { position = new Vector3( 15f, 0f,  15f), scale = new Vector3(4f, 5f, 4f) },
+                new ClayPlaced { position = new Vector3(-35f, 0f,  35f), scale = new Vector3(12f, 5f, 2f) },
+                new ClayPlaced { position = new Vector3( 35f, 0f, -35f), scale = new Vector3(12f, 5f, 2f) },
+            };
 
-                // ── Spawns (Diagonal Mirror Symmetry: negate both X and Z) ──
-                map.playerHivePosition = new Vector3(-105f, 1f, -100f);
-                map.enemyHivePosition = new Vector3(105f, 1f, 100f);
-                map.playerArmyStart = new Vector3(-95f, 0f, -90f);
-                map.enemyArmyStart = new Vector3(95f, 0f, 90f);
-                map.cameraFocusWorld = new Vector3(-90f, 0f, -85f);
-                map.bigApplePosition = new Vector3(-102f, 1.5f, -98f); // Tucked inside the corner
-                map.enemyBigApplePosition = new Vector3(102f, 1.5f, 98f);
+            map.fruits = new[]
+            {
+                new FruitPlaced { position = new Vector3(-75f, 0.6f, -65f), calories = 12000, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 75f, 0.6f,  65f), calories = 12000, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-35f, 0.6f, -75f), calories = 9000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 35f, 0.6f,  75f), calories = 9000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-95f, 0.6f, -30f), calories = 7000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 95f, 0.6f,  30f), calories = 7000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-105f, 0.6f, 85f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 105f, 0.6f, -85f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(  0f, 0.6f,   0f), calories = 6000, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-45f, 0.6f,  15f), calories = 5500, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 45f, 0.6f, -15f), calories = 5500, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-15f, 0.6f,  45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 15f, 0.6f, -45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
+            };
 
-                map.passiveScatterSeed = 98213;
+            map.terrainFeatures = new[]
+            {
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 15f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-60f, 0f, 60f), radius = 10f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 60f, 0f, -60f), radius = 10f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-55f, 0f, -35f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 55f, 0f,  35f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-35f, 0f, -55f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 35f, 0f,  55f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-25f, 0f, -25f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 25f, 0f,  25f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-110f, 0f, 20f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 110f, 0f, -20f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 20f, 0f, -110f), radius = 7f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-20f, 0f,  110f), radius = 7f },
+                // Base perimeter icicle ridges
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-115f, 0f, -75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-75f, 0f, -115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 115f, 0f,  75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 75f, 0f,  115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
+                // Mid-map lane dividers
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-55f, 0f, 5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 55f, 0f, -5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 5f, 0f, -55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-5f, 0f,  55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
+            };
 
-                // ── Visual Overrides ──
-                map.clayColor = new Color(0.55f, 0.58f, 0.65f); // Cold grey-blue stone
-                map.mapBoundsColor = new Color(0.48f, 0.52f, 0.58f); // Frosted edge
-                map.scatterTheme = ScatterTheme.Frozen;
+            map.decorativePrefabs = new[]
+            {
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3(-115f, 0f, -115f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3(-70f, 0f, -95f), rotation = new Vector3(0, 45, 0), scale = Vector3.one * 1.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3(115f, 0f, 115f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3(70f, 0f, 95f), rotation = new Vector3(0, 225, 0), scale = Vector3.one * 1.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, 65f), rotation = new Vector3(0, 90, 0), scale = Vector3.one * 2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, -65f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(65f, 0f, 0f), rotation = Vector3.zero, scale = Vector3.one * 1.8f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(-65f, 0f, 0f), rotation = new Vector3(0, 180, 0), scale = Vector3.one * 1.8f },
+            };
 
-            #if UNITY_EDITOR
-                map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                    "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
-                map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                    "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
-            #endif
-
-                // ── Elevation (High-Ground Plateaus) ──
-                // UV = (worldPos + 120) / 240
-                map.highGrounds = new[]
-                {
-                    // Main bases — frost plateaus with single icy ramps
-                    new HighGroundPlaced { uv = new Vector2(0.0625f, 0.0833f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
-                    new HighGroundPlaced { uv = new Vector2(0.9375f, 0.9167f), radius = 0.10f, rampWidth = 0.022f, heightFraction = 0.12f },
-
-                    // Natural expansions — semi-walled frost plateaus
-                    new HighGroundPlaced { uv = new Vector2(0.1875f, 0.2292f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
-                    new HighGroundPlaced { uv = new Vector2(0.8125f, 0.7708f), radius = 0.06f, rampWidth = 0.03f, heightFraction = 0.08f },
-
-                    // Exposed Third Bases (Moved inward from UV 0.33, 0.10)
-                    new HighGroundPlaced { uv = new Vector2(0.3542f, 0.1875f), radius = 0.065f, rampWidth = 0.035f, heightFraction = 0.07f },
-                    new HighGroundPlaced { uv = new Vector2(0.6458f, 0.8125f), radius = 0.065f, rampWidth = 0.035f, heightFraction = 0.07f },
-
-                    // Pocket Fourth Bases (Moved inward from UV 0.04, 0.33)
-                    new HighGroundPlaced { uv = new Vector2(0.1042f, 0.3750f), radius = 0.06f, rampWidth = 0.025f, heightFraction = 0.08f },
-                    new HighGroundPlaced { uv = new Vector2(0.8958f, 0.6250f), radius = 0.06f, rampWidth = 0.025f, heightFraction = 0.08f },
-
-                    // Elevated Siege Positions overlooking main paths
-                    new HighGroundPlaced { uv = new Vector2(0.4375f, 0.3333f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
-                    new HighGroundPlaced { uv = new Vector2(0.5625f, 0.6667f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
-                    new HighGroundPlaced { uv = new Vector2(0.3333f, 0.4375f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
-                    new HighGroundPlaced { uv = new Vector2(0.6667f, 0.5625f), radius = 0.04f, rampWidth = 0.025f, heightFraction = 0.05f },
-                };
-
-                // ── Clay Walls (Frozen Stone Barriers) ──
-                map.clay = new[]
-                {
-                    // --- PLAYER 1 BASE PROTECTION (SW Corner) ---
-                    // Narrow the ramp exit at ~(-88, -83)
-                    new ClayPlaced { position = new Vector3(-89f, 0f, -80f), scale = new Vector3(4f, 4f, 3f) },
-                    new ClayPlaced { position = new Vector3(-84f, 0f, -85f), scale = new Vector3(3f, 4f, 4f) },
-                    // Perimeter walls to seal the plateau edge gaps
-                    new ClayPlaced { position = new Vector3(-118f, 0f, -85f), scale = new Vector3(4f, 4f, 12f) },
-                    new ClayPlaced { position = new Vector3(-85f, 0f, -118f), scale = new Vector3(12f, 4f, 4f) },
-                    new ClayPlaced { position = new Vector3(-105f, 0f, -78f), scale = new Vector3(15f, 4f, 3f) },
-                    new ClayPlaced { position = new Vector3(-78f, 0f, -105f), scale = new Vector3(3f, 4f, 15f) },
-                    new ClayPlaced { position = new Vector3(-115f, 0f, -105f), scale = new Vector3(4f, 4f, 10f) },
-                    new ClayPlaced { position = new Vector3(-105f, 0f, -115f), scale = new Vector3(10f, 4f, 4f) },
-
-                    // --- PLAYER 2 BASE PROTECTION (NE Corner) ---
-                    new ClayPlaced { position = new Vector3( 89f, 0f,  80f), scale = new Vector3(4f, 4f, 3f) },
-                    new ClayPlaced { position = new Vector3( 84f, 0f,  85f), scale = new Vector3(3f, 4f, 4f) },
-                    new ClayPlaced { position = new Vector3( 118f, 0f,  85f), scale = new Vector3(4f, 4f, 12f) },
-                    new ClayPlaced { position = new Vector3( 85f, 0f,  118f), scale = new Vector3(12f, 4f, 4f) },
-                    new ClayPlaced { position = new Vector3( 105f, 0f,  78f), scale = new Vector3(15f, 4f, 3f) },
-                    new ClayPlaced { position = new Vector3( 78f, 0f,  105f), scale = new Vector3(3f, 4f, 15f) },
-                    new ClayPlaced { position = new Vector3( 115f, 0f,  105f), scale = new Vector3(4f, 4f, 10f) },
-                    new ClayPlaced { position = new Vector3( 105f, 0f,  115f), scale = new Vector3(10f, 4f, 4f) },
-
-                    // --- NATURAL EXPANSION DEFENSES ---
-                    new ClayPlaced { position = new Vector3(-65f, 0f, -45f), scale = new Vector3(10f, 3f, 3f) },
-                    new ClayPlaced { position = new Vector3(-45f, 0f, -65f), scale = new Vector3(3f, 3f, 10f) },
-                    new ClayPlaced { position = new Vector3(-85f, 0f, -45f), scale = new Vector3(10f, 3f, 3f) },
-                    new ClayPlaced { position = new Vector3(-45f, 0f, -85f), scale = new Vector3(3f, 3f, 10f) },
-                    
-                    new ClayPlaced { position = new Vector3( 65f, 0f,  45f), scale = new Vector3(10f, 3f, 3f) },
-                    new ClayPlaced { position = new Vector3( 45f, 0f,  65f), scale = new Vector3(3f, 3f, 10f) },
-                    new ClayPlaced { position = new Vector3( 85f, 0f,  45f), scale = new Vector3(10f, 3f, 3f) },
-                    new ClayPlaced { position = new Vector3( 45f, 0f,  85f), scale = new Vector3(3f, 3f, 10f) },
-
-                    // --- MID LANE CHOKES ---
-                    new ClayPlaced { position = new Vector3(-15f, 0f, -15f), scale = new Vector3(6f, 4f, 6f) },
-                    new ClayPlaced { position = new Vector3( 15f, 0f,  15f), scale = new Vector3(6f, 4f, 6f) },
-                    new ClayPlaced { position = new Vector3(-35f, 0f, 35f), scale = new Vector3(15f, 3f, 4f) },
-                    new ClayPlaced { position = new Vector3( 35f, 0f, -35f), scale = new Vector3(15f, 3f, 4f) },
-                };
-
-                // ── Resources (Frosted Apples) ──
-                map.fruits = new[]
-                {
-                    // Natural expansion frosted apples
-                    new FruitPlaced { position = new Vector3(-75f, 0.6f, -65f), calories = 12000, gatherPerTick = 10, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 75f, 0.6f,  65f), calories = 12000, gatherPerTick = 10, gatherSeconds = 5f },
-
-                    // Third base frosted apples
-                    new FruitPlaced { position = new Vector3(-35f, 0.6f, -75f), calories = 9000, gatherPerTick = 8, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 35f, 0.6f,  75f), calories = 9000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                    // Pocket fourth frosted apples
-                    new FruitPlaced { position = new Vector3(-95f, 0.6f, -30f), calories = 7000, gatherPerTick = 8, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 95f, 0.6f,  30f), calories = 7000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                    // Exposed far frosted apples
-                    new FruitPlaced { position = new Vector3(-105f, 0.6f,  85f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 105f, 0.6f, -85f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-
-                    // Central contested frosted apples (Spread out more)
-                    new FruitPlaced { position = new Vector3(0f, 0.6f, 0f), calories = 6000, gatherPerTick = 10, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3(-45f, 0.6f, 15f), calories = 5500, gatherPerTick = 10, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 45f, 0.6f, -15f), calories = 5500, gatherPerTick = 10, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3(-15f, 0.6f, 45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
-                    new FruitPlaced { position = new Vector3( 15f, 0.6f, -45f), calories = 5000, gatherPerTick = 10, gatherSeconds = 5f },
-                };
-
-                // ── Terrain Features ──
-                map.terrainFeatures = new[]
-                {
-                    // Ice Sheets
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 15f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-60f, 0f, 60f), radius = 10f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 60f, 0f, -60f), radius = 10f },
-
-                    // Dead Winter Grass near Expansion Paths
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-55f, 0f, -35f), radius = 8f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 55f, 0f,  35f), radius = 8f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-35f, 0f, -55f), radius = 8f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 35f, 0f,  55f), radius = 8f },
-
-                    // Frozen Slush at Lane Chokes
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3(-25f, 0f, -25f), radius = 7f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.MudPatch, position = new Vector3( 25f, 0f,  25f), radius = 7f },
-
-                    // Frozen Brambles on Flanks
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-110f, 0f, 20f), radius = 7f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 110f, 0f, -20f), radius = 7f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3( 20f, 0f, -110f), radius = 7f },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(-20f, 0f,  110f), radius = 7f },
-
-                    // Icicle Ridges (Rocky Ridge Overrides) - reinforcing the base perimeter
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-115f, 0f, -75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-75f, 0f, -115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 115f, 0f,  75f), rotation = 0f, boxHalfExtents = new Vector2(10f, 3f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 75f, 0f,  115f), rotation = 90f, boxHalfExtents = new Vector2(10f, 3f) },
-
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-55f, 0f, 5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 55f, 0f, -5f), rotation = 70f, boxHalfExtents = new Vector2(12f, 4f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3( 5f, 0f, -55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
-                    new TerrainFeaturePlaced { type = TerrainFeatureType.RockyRidge, position = new Vector3(-5f, 0f,  55f), rotation = 160f, boxHalfExtents = new Vector2(12f, 4f) },
-                };
-
-                // ── Decorative Frozen Prefabs ──
-                map.decorativePrefabs = new[]
-                {
-                    // Near player base
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3(-115f, 0f, -115f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3(-70f, 0f, -95f), rotation = new Vector3(0, 45, 0), scale = Vector3.one * 1.2f },
-                
-                    // Near enemy base
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3(115f, 0f, 115f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectPillar.prefab", position = new Vector3(70f, 0f, 95f), rotation = new Vector3(0, 225, 0), scale = Vector3.one * 1.2f },
-
-                    // Landmarks
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, 65f), rotation = new Vector3(0, 90, 0), scale = Vector3.one * 2f },
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, -65f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 2f },
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(65f, 0f, 0f), rotation = new Vector3(0, 0, 0), scale = Vector3.one * 1.8f },
-                    new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenChitinClaw.prefab", position = new Vector3(-65f, 0f, 0f), rotation = new Vector3(0, 180, 0), scale = Vector3.one * 1.8f },
-                };
-
-                return map;
-            }
-            }
-            }
+            return map;
+        }
+    }
+}
 

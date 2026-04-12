@@ -83,4 +83,4 @@ namespace InsectWars.Data
 
         public DecorativePrefabPlaced[] decorativePrefabs = Array.Empty<DecorativePrefabPlaced>();
     }
-    }
+}

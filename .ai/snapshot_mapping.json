@@ -515,6 +515,12 @@
       "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
       "content": "the art of the apples looks too nice, it shuld be very nasty looking rooten bad apple",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "6c27ceb4-7378-4fb0-80e0-eae7d9519f20",
+      "conversation_id": "65fb8944-1b3d-4876-b316-50c38f949bf1",
+      "content": "continue",
+      "snapshot_message_type": 0
     }
   ]
 }
