@@ -1,0 +1,12 @@
+{
+    "asset": "1b7b786ff122e44e1b84bceda0af7aa8",
+    "fileName": "019d8218-caba-7fe4-a612-1d580b855561_Preview.jpg",
+    "prompt": "Macro photograph of a shriveled rotting apple skin with a thick layer of white frost crystals and ice granules, dark bruised red and brown tones visible through the frost, realistic, high detail.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 331762178,
+    "w3CTraceId": "3b45055195b4c7ee1022b8115b1463e1",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
