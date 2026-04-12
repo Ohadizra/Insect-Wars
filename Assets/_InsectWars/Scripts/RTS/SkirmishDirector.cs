@@ -25,9 +25,16 @@ namespace InsectWars.RTS
         Vector3 _applePos;
         Vector3 _enemyApplePos;
         int _scatterSeed;
+        ScatterTheme _scatterTheme;
+        Color _clayColor;
+        Color _mapBoundsColor;
+        TerrainLayer _mapBaseLayer;
+        TerrainLayer _mapSecondaryLayer;
+
         ClayPlaced[] _clayLayout;
         FruitPlaced[] _fruitLayout;
         TerrainFeaturePlaced[] _terrainFeatureLayout;
+        DecorativePrefabPlaced[] _decorativePrefabs;
 
         static readonly ClayPlaced[] DefaultClayList =
         {
@@ -87,11 +94,18 @@ namespace InsectWars.RTS
             _applePos = m != null ? m.bigApplePosition : new Vector3(-50f, 1.5f, -42f);
             _enemyApplePos = m != null ? m.enemyBigApplePosition : new Vector3(50f, 1.5f, 42f);
             _scatterSeed = m != null ? m.passiveScatterSeed : 18427;
+            _scatterTheme = m != null ? m.scatterTheme : ScatterTheme.Default;
+            _clayColor = m != null ? m.clayColor : new Color(0.45f, 0.32f, 0.22f);
+            _mapBoundsColor = m != null ? m.mapBoundsColor : new Color(0.35f, 0.28f, 0.18f);
+            _mapBaseLayer = m != null ? m.baseTerrainLayer : null;
+            _mapSecondaryLayer = m != null ? m.secondaryTerrainLayer : null;
+
             _clayLayout = m != null && m.clay != null && m.clay.Length > 0 ? m.clay : DefaultClayList;
             _fruitLayout = m != null && m.fruits != null && m.fruits.Length > 0 ? m.fruits : DefaultFruitList;
             _terrainFeatureLayout = m != null && m.terrainFeatures != null && m.terrainFeatures.Length > 0
                 ? m.terrainFeatures
                 : System.Array.Empty<TerrainFeaturePlaced>();
+            _decorativePrefabs = m != null && m.decorativePrefabs != null ? m.decorativePrefabs : System.Array.Empty<DecorativePrefabPlaced>();
         }
 
         void Start()
@@ -152,10 +166,10 @@ namespace InsectWars.RTS
             surface.ignoreNavMeshObstacle = false;
 
             BuildTerrain(world.transform, _mapHalfExtent);
-            AddMapBounds(world.transform, _mapHalfExtent, 0.45f);
+            AddMapBounds(world.transform, _mapHalfExtent, 0.45f, _mapBoundsColor);
 
             foreach (var c in _clayLayout)
-                AddClay(world.transform, c.position, c.scale);
+                AddClay(world.transform, c.position, c.scale, _clayColor);
 
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
             BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
@@ -169,7 +183,10 @@ namespace InsectWars.RTS
             foreach (var tf in _terrainFeatureLayout)
                 AddTerrainFeature(world.transform, tf);
 
-#if UNITY_EDITOR
+            foreach (var dp in _decorativePrefabs)
+                SpawnDecorativePrefab(world.transform, dp);
+
+            #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
                 SpawnUnit(_playerStart + Vector3.forward * 2f, Team.Player, UnitArchetype.Worker).transform.SetParent(world.transform);
@@ -178,10 +195,10 @@ namespace InsectWars.RTS
                 SpawnUnit(_enemyStart + Vector3.back * 2f, Team.Enemy, UnitArchetype.BasicFighter).transform.SetParent(world.transform);
                 SpawnUnit(_enemyStart + Vector3.left * 2f, Team.Enemy, UnitArchetype.BasicRanged).transform.SetParent(world.transform);
             }
-#endif
+            #endif
 
             var exclusions = BuildExclusionZones();
-            SkirmishPassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions);
+            SkirmishPassiveScatter.Scatter(world.transform, _mapHalfExtent, _scatterSeed, exclusions, _scatterTheme);
 
             PlaceStarterPlayerBuildings(world.transform);
 
@@ -254,9 +271,36 @@ namespace InsectWars.RTS
             return z;
         }
 
-        static void AddMapBounds(Transform parent, float extent, float thickness)
+        void SpawnDecorativePrefab(Transform parent, DecorativePrefabPlaced dp)
         {
-            var c = new Color(0.35f, 0.28f, 0.18f);
+            if (string.IsNullOrEmpty(dp.prefabPath)) return;
+            GameObject prefab = Resources.Load<GameObject>(dp.prefabPath);
+        #if UNITY_EDITOR
+            if (prefab == null)
+                prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(dp.prefabPath);
+        #endif
+            if (prefab == null) return;
+
+            var go = Instantiate(prefab, parent);
+            go.name = "Decorative_" + prefab.name;
+            go.transform.position = dp.position;
+            go.transform.rotation = Quaternion.Euler(dp.rotation);
+            go.transform.localScale = dp.scale;
+
+            // Ensure it doesn't block pathing or show up in NavMesh
+            var mod = go.GetComponent<NavMeshModifier>();
+            if (mod == null) mod = go.AddComponent<NavMeshModifier>();
+            mod.ignoreFromBuild = true;
+
+            var obs = go.GetComponent<NavMeshObstacle>();
+            if (obs != null) obs.enabled = false;
+
+            // Ignore from build recursive
+            SetIgnoreNavMeshRecursive(go);
+        }
+
+        static void AddMapBounds(Transform parent, float extent, float thickness, Color boundsColor)
+        {
             float y = thickness * 0.5f;
             float len = extent * 2f;
             void Edge(string name, Vector3 pos, Vector3 scale)
@@ -266,7 +310,7 @@ namespace InsectWars.RTS
                 e.transform.SetParent(parent);
                 e.transform.position = pos + Vector3.up * y;
                 e.transform.localScale = scale;
-                ApplyMat(e, c);
+                ApplyMat(e, boundsColor);
                 Object.Destroy(e.GetComponent<Collider>());
             }
             Edge("MapEdge_N", new Vector3(0f, 0f, extent), new Vector3(len, thickness, thickness));
@@ -412,7 +456,7 @@ namespace InsectWars.RTS
             return s_terrain.SampleHeight(worldPos);
         }
 
-        static void AddClay(Transform parent, Vector3 pos, Vector3 scale)
+        static void AddClay(Transform parent, Vector3 pos, Vector3 scale, Color clayColor)
         {
             var clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
             clay.name = "Clay";
@@ -421,7 +465,7 @@ namespace InsectWars.RTS
             float h = GetHeight(pos);
             clay.transform.position = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
             clay.transform.localScale = scale;
-            ApplyMat(clay, new Color(0.45f, 0.32f, 0.22f));
+            ApplyMat(clay, clayColor);
             var obs = clay.AddComponent<NavMeshObstacle>();
             obs.carving = true;
             obs.shape = NavMeshObstacleShape.Box;
@@ -544,7 +588,9 @@ namespace InsectWars.RTS
             terrainData.size = new Vector3(size, 20f, size);
             terrainData.alphamapResolution = 128;
 
-            if (visualLibrary != null && visualLibrary.baseSoilLayer != null && visualLibrary.drySoilLayer != null)
+            if (_mapBaseLayer != null && _mapSecondaryLayer != null)
+                terrainData.terrainLayers = new[] { _mapBaseLayer, _mapSecondaryLayer };
+            else if (visualLibrary != null && visualLibrary.baseSoilLayer != null && visualLibrary.drySoilLayer != null)
                 terrainData.terrainLayers = new[] { visualLibrary.baseSoilLayer, visualLibrary.drySoilLayer };
 
             var mapDef = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
@@ -862,11 +908,11 @@ namespace InsectWars.RTS
                 var mod = root.AddComponent<NavMeshModifier>();
                 mod.ignoreFromBuild = true;
             }
-        }
+            }
 
-        void BuildProceduralFeatureVisual(Transform root, TerrainFeaturePlaced placed)
-        {
-            var color = TerrainFeatureProperties.GetBaseColor(placed.type);
+            void BuildProceduralFeatureVisual(Transform root, TerrainFeaturePlaced placed)
+            {
+            var color = TerrainFeatureProperties.GetBaseColor(placed.type, _scatterTheme);
             switch (placed.type)
             {
                 case TerrainFeatureType.WaterPuddle:
@@ -885,7 +931,7 @@ namespace InsectWars.RTS
                     BuildProceduralRockyRidge(root, placed, color);
                     break;
             }
-        }
+            }
 
         void BuildProceduralWater(Transform root, TerrainFeaturePlaced p, Color color)
         {

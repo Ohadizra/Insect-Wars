@@ -36,6 +36,17 @@ namespace InsectWars.Data
         public float heightFraction;
     }
 
+    [Serializable]
+    public struct DecorativePrefabPlaced
+    {
+        public string prefabPath;
+        public Vector3 position;
+        public Vector3 rotation;
+        public Vector3 scale;
+    }
+
+    public enum ScatterTheme { Default, Frozen }
+
     /// <summary>
     /// Serialized map layout for SkirmishDirector. Assign on the director or leave null for built-in Demo 0 defaults.
     /// </summary>
@@ -54,6 +65,14 @@ namespace InsectWars.Data
         public Vector3 bigApplePosition = new Vector3(-50f, 1.5f, -42f);
         public Vector3 enemyBigApplePosition = new Vector3(50f, 1.5f, 42f);
         public int passiveScatterSeed = 18427;
+
+        [Header("Map-Specific Visuals (optional — null falls back to default library)")]
+        public TerrainLayer baseTerrainLayer;
+        public TerrainLayer secondaryTerrainLayer;
+        public Color clayColor = new Color(0.45f, 0.32f, 0.22f);
+        public Color mapBoundsColor = new Color(0.35f, 0.28f, 0.18f);
+        public ScatterTheme scatterTheme = ScatterTheme.Default;
+
         public ClayPlaced[] clay = Array.Empty<ClayPlaced>();
         public FruitPlaced[] fruits = Array.Empty<FruitPlaced>();
         /// <summary>Terrain elevation features. Empty = flat terrain. Null falls back to demo defaults.</summary>
@@ -61,5 +80,7 @@ namespace InsectWars.Data
 
         /// <summary>Strategic terrain zones: water, tall grass, mud, thorns, rocky ridges.</summary>
         public TerrainFeaturePlaced[] terrainFeatures = Array.Empty<TerrainFeaturePlaced>();
+
+        public DecorativePrefabPlaced[] decorativePrefabs = Array.Empty<DecorativePrefabPlaced>();
     }
-}
+    }

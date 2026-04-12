@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using InsectWars.Data;
 
 namespace InsectWars.RTS
 {
@@ -54,7 +55,7 @@ namespace InsectWars.RTS
             return false;
         }
 
-        public static void Scatter(Transform parent, float halfExtent, int seed, IReadOnlyList<ExclusionZone> exclusions)
+        public static void Scatter(Transform parent, float halfExtent, int seed, IReadOnlyList<ExclusionZone> exclusions, ScatterTheme theme = ScatterTheme.Default)
         {
             var rng = new System.Random(seed);
             var root = new GameObject("PassiveFill");
@@ -74,18 +75,18 @@ namespace InsectWars.RTS
 
                 var roll = rng.Next(100);
                 if (roll < 38)
-                    SpawnGrassTuft(root.transform, x, z, rng);
+                    SpawnGrassTuft(root.transform, x, z, rng, theme);
                 else if (roll < 68)
-                    SpawnRock(root.transform, x, z, rng);
+                    SpawnRock(root.transform, x, z, rng, theme);
                 else if (roll < 88)
-                    SpawnMushroom(root.transform, x, z, rng);
+                    SpawnMushroom(root.transform, x, z, rng, theme);
                 else
-                    SpawnTwig(root.transform, x, z, rng);
+                    SpawnTwig(root.transform, x, z, rng, theme);
                 spawned++;
             }
         }
 
-        static void SpawnGrassTuft(Transform parent, float x, float z, System.Random rng)
+        static void SpawnGrassTuft(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = "GrassTuft";
@@ -95,11 +96,17 @@ namespace InsectWars.RTS
             go.transform.position = new Vector3(x, g * 0.5f, z);
             go.transform.localScale = new Vector3(0.35f + (float)rng.NextDouble() * 0.5f, g, 0.35f + (float)rng.NextDouble() * 0.5f);
             go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f);
-            var c = Color.Lerp(new Color(0.18f, 0.42f, 0.14f), new Color(0.28f, 0.52f, 0.2f), (float)rng.NextDouble());
+
+            Color c;
+            if (theme == ScatterTheme.Frozen)
+                c = Color.Lerp(new Color(0.65f, 0.58f, 0.38f), new Color(0.78f, 0.72f, 0.55f), (float)rng.NextDouble());
+            else
+                c = Color.Lerp(new Color(0.18f, 0.42f, 0.14f), new Color(0.28f, 0.52f, 0.2f), (float)rng.NextDouble());
+
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
 
-        static void SpawnRock(Transform parent, float x, float z, System.Random rng)
+        static void SpawnRock(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = "Rock";
@@ -112,12 +119,37 @@ namespace InsectWars.RTS
                 (float)rng.NextDouble() * 20f - 10f,
                 (float)rng.NextDouble() * 360f,
                 (float)rng.NextDouble() * 20f - 10f);
-            var c = Color.Lerp(new Color(0.32f, 0.3f, 0.26f), new Color(0.48f, 0.44f, 0.38f), (float)rng.NextDouble());
+
+            Color c;
+            if (theme == ScatterTheme.Frozen)
+                c = Color.Lerp(new Color(0.68f, 0.68f, 0.72f), new Color(0.85f, 0.85f, 0.9f), (float)rng.NextDouble());
+            else
+                c = Color.Lerp(new Color(0.32f, 0.3f, 0.26f), new Color(0.48f, 0.44f, 0.38f), (float)rng.NextDouble());
+
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
 
-        static void SpawnMushroom(Transform parent, float x, float z, System.Random rng)
+        static void SpawnMushroom(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
+            if (theme == ScatterTheme.Frozen)
+            {
+                // Spawn ice crystal instead
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = "IceCrystal";
+                go.transform.SetParent(parent, false);
+                Object.Destroy(go.GetComponent<Collider>());
+                var h = 0.25f + (float)rng.NextDouble() * 0.6f;
+                go.transform.position = new Vector3(x, h * 0.45f, z);
+                go.transform.localScale = new Vector3(0.15f, h, 0.15f);
+                go.transform.rotation = Quaternion.Euler(
+                    (float)rng.NextDouble() * 15f,
+                    (float)rng.NextDouble() * 360f,
+                    (float)rng.NextDouble() * 15f);
+                var c = new Color(0.82f, 0.88f, 0.95f, 0.6f);
+                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
+                return;
+            }
+
             var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             stem.name = "ShroomStem";
             stem.transform.SetParent(parent, false);
@@ -136,7 +168,7 @@ namespace InsectWars.RTS
             cap.GetComponent<Renderer>().sharedMaterial = Mat(capC);
         }
 
-        static void SpawnTwig(Transform parent, float x, float z, System.Random rng)
+        static void SpawnTwig(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Twig";
@@ -145,7 +177,14 @@ namespace InsectWars.RTS
             go.transform.position = new Vector3(x, 0.04f, z);
             go.transform.localScale = new Vector3(0.65f + (float)rng.NextDouble(), 0.06f, 0.08f);
             go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, (float)rng.NextDouble() * 16f - 8f);
-            go.GetComponent<Renderer>().sharedMaterial = Mat(new Color(0.38f, 0.28f, 0.18f));
+
+            Color c;
+            if (theme == ScatterTheme.Frozen)
+                c = new Color(0.32f, 0.28f, 0.26f);
+            else
+                c = new Color(0.38f, 0.28f, 0.18f);
+
+            go.GetComponent<Renderer>().sharedMaterial = Mat(c);
         }
     }
 }

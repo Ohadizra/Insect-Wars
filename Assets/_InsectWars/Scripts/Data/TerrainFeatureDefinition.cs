@@ -66,14 +66,30 @@ namespace InsectWars.Data
         public static bool BlocksVision(TerrainFeatureType t) =>
             t == TerrainFeatureType.RockyRidge;
 
-        public static Color GetBaseColor(TerrainFeatureType t) => t switch
+        public static Color GetBaseColor(TerrainFeatureType t, ScatterTheme theme = ScatterTheme.Default)
         {
-            TerrainFeatureType.WaterPuddle => new Color(0.22f, 0.48f, 0.72f),
-            TerrainFeatureType.TallGrass   => new Color(0.30f, 0.58f, 0.22f),
-            TerrainFeatureType.MudPatch    => new Color(0.38f, 0.28f, 0.14f),
-            TerrainFeatureType.ThornPatch  => new Color(0.22f, 0.40f, 0.12f),
-            TerrainFeatureType.RockyRidge  => new Color(0.52f, 0.50f, 0.48f),
-            _ => Color.white
-        };
+            if (theme == ScatterTheme.Frozen)
+            {
+                return t switch
+                {
+                    TerrainFeatureType.WaterPuddle => new Color(0.72f, 0.82f, 0.92f), // Ice sheets
+                    TerrainFeatureType.TallGrass   => new Color(0.58f, 0.50f, 0.32f), // Dead winter grass
+                    TerrainFeatureType.MudPatch    => new Color(0.30f, 0.26f, 0.22f), // Frozen slush
+                    TerrainFeatureType.ThornPatch  => new Color(0.28f, 0.25f, 0.24f), // Frozen brambles
+                    TerrainFeatureType.RockyRidge  => new Color(0.55f, 0.58f, 0.65f), // Icicle ridges
+                    _ => Color.white
+                };
+            }
+
+            return t switch
+            {
+                TerrainFeatureType.WaterPuddle => new Color(0.22f, 0.48f, 0.72f),
+                TerrainFeatureType.TallGrass   => new Color(0.30f, 0.58f, 0.22f),
+                TerrainFeatureType.MudPatch    => new Color(0.38f, 0.28f, 0.14f),
+                TerrainFeatureType.ThornPatch  => new Color(0.22f, 0.40f, 0.12f),
+                TerrainFeatureType.RockyRidge  => new Color(0.52f, 0.50f, 0.48f),
+                _ => Color.white
+            };
+        }
     }
 }
