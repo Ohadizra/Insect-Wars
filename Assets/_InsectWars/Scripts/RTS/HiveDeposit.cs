@@ -46,6 +46,18 @@ namespace InsectWars.RTS
             RegisterHive();
         }
 
+        void OnEnable()
+        {
+            // Re-register after domain reload (Awake doesn't re-run, OnEnable does).
+            RegisterHive();
+        }
+
+        void OnDisable()
+        {
+            if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
+        }
+
         void OnDestroy()
         {
             if (PlayerHive == this) PlayerHive = null;

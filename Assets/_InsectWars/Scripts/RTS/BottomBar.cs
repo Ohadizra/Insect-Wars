@@ -420,7 +420,16 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             barRt.sizeDelta = new Vector2(0f, barHeight);
 
             var bg = bar.AddComponent<Image>();
-            bg.color = Color.clear;
+            if (barBackground != null)
+            {
+                bg.sprite = barBackground;
+                bg.type = Image.Type.Sliced;
+                bg.color = Color.white;
+            }
+            else
+            {
+                bg.color = new Color(0.1f, 0.08f, 0.06f, 0.95f);
+            }
             bg.raycastTarget = false; // Allow clicking through to the world
 
             var miniContainer = new GameObject("MinimapContainer");
@@ -465,8 +474,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var cmdFrameImg = cmdPanel.AddComponent<Image>();
             cmdFrameImg.sprite = centerBlockFrame;
             cmdFrameImg.type = Image.Type.Sliced;
-            cmdFrameImg.fillCenter = false;
-            cmdFrameImg.color = Color.white;
+            cmdFrameImg.fillCenter = true; // Enable background
+            cmdFrameImg.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Slight tint
             cmdFrameImg.raycastTarget = false; 
 
             var grid = new GameObject("CmdGrid");
@@ -496,8 +505,8 @@ if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>
             var centerBg = center.AddComponent<Image>();
             centerBg.sprite = centerBlockFrame;
             centerBg.type = Image.Type.Sliced;
-            centerBg.fillCenter = false;
-            centerBg.color = Color.white;
+            centerBg.fillCenter = true; // Enable background
+            centerBg.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Slight tint
             centerBg.raycastTarget = true; 
 
             var portrait = new GameObject("PortraitBlock");

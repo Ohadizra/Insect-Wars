@@ -29,8 +29,10 @@ namespace InsectWars.RTS
 
         IEnumerator CoInit()
         {
-            if (BottomBar.MinimapHost == null)
+            // Wait until the host is ready
+            while (BottomBar.MinimapHost == null)
                 yield return null;
+
             BuildMinimapUi();
             BuildMinimapCamera();
             BuildViewportIndicator();
@@ -42,7 +44,7 @@ namespace InsectWars.RTS
         {
             if (_rt != null)
             {
-                _miniCam.targetTexture = null;
+                if (_miniCam != null) _miniCam.targetTexture = null;
                 _rt.Release();
                 Destroy(_rt);
             }
@@ -77,8 +79,6 @@ namespace InsectWars.RTS
                 prt.pivot = new Vector2(0.5f, 0.5f);
                 prt.offsetMin = Vector2.zero;
                 prt.offsetMax = Vector2.zero;
-                prt.anchoredPosition = Vector2.zero;
-                prt.sizeDelta = Vector2.zero;
             }
             else
             {
@@ -90,7 +90,7 @@ namespace InsectWars.RTS
             }
 
             var border = panel.AddComponent<Image>();
-            border.color = new Color(0.1f, 0.08f, 0.06f, 0.95f);
+            border.color = new Color(0.08f, 0.07f, 0.05f, 0.98f);
             border.raycastTarget = false;
 
             var rawGo = new GameObject("MinimapRT");
@@ -99,28 +99,17 @@ namespace InsectWars.RTS
             _raw.raycastTarget = false;
             _raw.color = Color.white;
             var rrt = _raw.rectTransform;
-            if (host != null)
-            {
-                rrt.anchorMin = Vector2.zero;
-                rrt.anchorMax = Vector2.one;
-                rrt.pivot = new Vector2(0.5f, 0.5f);
-                rrt.offsetMin = Vector2.zero;
-                rrt.offsetMax = Vector2.zero;
-            }
-else
-            {
-                rrt.anchorMin = new Vector2(0.5f, 0.5f);
-                rrt.anchorMax = new Vector2(0.5f, 0.5f);
-                rrt.pivot = new Vector2(0.5f, 0.5f);
-                rrt.sizeDelta = uiSize;
-                rrt.anchoredPosition = Vector2.zero;
-            }
+            rrt.anchorMin = Vector2.zero;
+            rrt.anchorMax = Vector2.one;
+            rrt.pivot = new Vector2(0.5f, 0.5f);
+            rrt.offsetMin = new Vector2(2, 2);
+            rrt.offsetMax = new Vector2(-2, -2);
 
             var lbl = new GameObject("MinimapLabel").AddComponent<Text>();
             lbl.transform.SetParent(panel.transform, false);
             lbl.font = InsectWars.Core.UiFontHelper.GetFont();
             lbl.fontSize = 13;
-            lbl.color = new Color(0.85f, 0.9f, 0.75f);
+            lbl.color = new Color(0.95f, 0.92f, 0.85f);
             lbl.text = "MAP";
             lbl.alignment = TextAnchor.UpperCenter;
             lbl.raycastTarget = false;
@@ -130,13 +119,14 @@ else
             lrt.pivot = new Vector2(0.5f, 1f);
             lrt.anchoredPosition = new Vector2(0f, 25f);
             lrt.sizeDelta = new Vector2(120f, 30f);
-}
+        }
 
         void BuildMinimapCamera()
         {
             if (_raw == null) return;
 
             _rt = new RenderTexture(textureResolution, textureResolution, 16, RenderTextureFormat.ARGB32);
+            _rt.name = "MinimapRT";
             _rt.Create();
 
             var camGo = new GameObject("MinimapCamera");
@@ -150,12 +140,16 @@ else
             _miniCam.orthographicSize = ortho;
 
             _miniCam.clearFlags = CameraClearFlags.SolidColor;
-            _miniCam.backgroundColor = new Color(0.02f, 0.025f, 0.04f, 1f);
-            _miniCam.cullingMask = ~(1 << 5);
-            _miniCam.depth = -10f;
+            _miniCam.backgroundColor = new Color(0.05f, 0.06f, 0.08f, 1f);
+            
+            // Render Ground, Units, Resources, Environment
+            _miniCam.cullingMask = LayerMask.GetMask("Ground", "Units", "Resources", "Environment");
+            if (_miniCam.cullingMask == 0) _miniCam.cullingMask = ~(1 << 5);
+
+            _miniCam.depth = -5f; // Render before Main Camera so vision can be applied if needed
             _miniCam.targetTexture = _rt;
-            _miniCam.nearClipPlane = 1f;
-            _miniCam.farClipPlane = 200f;
+            _miniCam.nearClipPlane = 0.5f;
+            _miniCam.farClipPlane = 300f;
 
             camGo.transform.position = new Vector3(0f, cameraHeight, 0f);
             camGo.transform.rotation = Quaternion.Euler(90f, 0f, 0f);

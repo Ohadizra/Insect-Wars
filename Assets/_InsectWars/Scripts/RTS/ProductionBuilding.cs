@@ -160,6 +160,19 @@ namespace InsectWars.RTS
             }
         }
 
+        void OnEnable()
+        {
+            // Re-register after domain reload (Initialize only runs once at creation;
+            // OnEnable re-runs after a script reload so static s_all stays consistent).
+            if (_currentHealth > 0f && _state != BuildingState.Destroyed && !s_all.Contains(this))
+                s_all.Add(this);
+        }
+
+        void OnDisable()
+        {
+            s_all.Remove(this);
+        }
+
         void OnDestroy()
         {
             s_all.Remove(this);
@@ -172,7 +185,7 @@ namespace InsectWars.RTS
             _team = team;
             _maxHealth = GetMaxHealth(type);
             _currentHealth = _maxHealth;
-            s_all.Add(this);
+            if (!s_all.Contains(this)) s_all.Add(this);
 
             if (startActive)
             {
