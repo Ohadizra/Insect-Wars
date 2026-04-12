@@ -413,6 +413,12 @@
       "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
       "content": "The title **\"INSECT WAR\"** has been successfully integrated into the logo design, and the UI has been updated to use this new titled emblem.\n\n### Summary of Changes:\n1.  **Titled Logo Generation**:\n    *   **Integrated Title**: Generated a new version of the plaque with the text **\"INSECT WAR\"** carved in a bold, epic, bronze metallic font. The title is elegantly integrated into the top frame of the plaque.\n    *   **Consistent Style**: Maintained the dark fantasy, weathered metal aesthetic with fighting stag beetles and glowing magma elements.\n    *   **Background Removal**: Extracted the titled logo from its background to ensure clean transparency.\n    *   **Asset Path**: `Assets/_InsectWars/Sprites/UI/InsectWarsLogo_WithTitle.png`.\n2.  **UI & Code Updates (`HomeMenuBootstrap.cs`)**:\n    *   **Sprite Update**: Updated the `HomeMenuBootstrap` script to load the titled logo as the default title image.\n    *   **Project Rebrand**: Updated the **Logs** panel text to match the new singular title, **\"INSECT WAR\"**.\n    *   **Positioning**: Maintained the higher, centered positioning for the emblem to ensure it remains the visual focus of the home screen.\n3.  **Scene Verification**:\n    *   Updated the `HomeBootstrap` object in the **Home** scene to ensure the `logoSprite` serialized field is correctly linked to the titled version.\n\nThe main menu now prominently displays the **\"INSECT WAR\"** emblem above the navigation buttons.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "896ac3a2-8fc3-4467-a45d-9c528389a12b",
+      "conversation_id": "059ae0c3-9c2a-4423-8aea-ce59f6214256",
+      "content": "remove the back frame panel that covers all btns and logo",
+      "snapshot_message_type": 0
     }
   ]
 }
