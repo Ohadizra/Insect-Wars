@@ -98,13 +98,22 @@ namespace InsectWars.RTS
 
             if (!_agent.isOnNavMesh)
             {
-                if (NavMesh.SamplePosition(transform.position, out var hit, 5f, NavMesh.AllAreas))
+                if (NavMesh.SamplePosition(transform.position, out var hit, 10f, NavMesh.AllAreas))
                     _agent.Warp(hit.position);
             }
 
             if (_agent.isOnNavMesh)
             {
+                _agent.updatePosition = true;
+                _agent.updateRotation = true;
                 _agent.isStopped = false;
+                // Snap destination Y to the NavMesh surface. Many world positions (apple tops,
+                // hive centres, attack targets) sit above the flat terrain at Y=0.  The agent
+                // calls NavMesh.SamplePosition internally using agentHeight*2 as the search
+                // radius; for small ant models (height ~0.2–0.4) this radius is smaller than
+                // the vertical gap and SetDestination silently fails leaving hasPath=false.
+                if (NavMesh.SamplePosition(dest, out var destHit, Mathf.Max(_agent.height * 4f, 2f), NavMesh.AllAreas))
+                    dest = destHit.position;
                 _agent.SetDestination(dest);
             }
         }
@@ -534,6 +543,10 @@ namespace InsectWars.RTS
             {
                 _agent.updatePosition = true;
                 _agent.updateRotation = true;
+                // Resync agent's internal position to the transform so it doesn't
+                // snap the unit back to where the agent thinks it should be.
+                if (_agent.isOnNavMesh)
+                    _agent.Warp(transform.position);
             }
         }
 
@@ -654,20 +667,20 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
-                // Only (re)request the path when not already computing or following one —
-                // calling SetDestination every frame keeps pathPending=true forever and
-                // prevents the PathInvalid check below from ever triggering.
-                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
-                    SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
-
-                // If the NavMesh cannot route to this resource, abandon it so
-                // TickIdleAutoGather can find an accessible alternative.
+                // Abandon first if path is invalid — must be checked BEFORE any
+                // SetDestination retry, otherwise pathPending=true blocks this test.
                 if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
                 {
                     _gatherTarget = null;
                     _lastGatherTarget = null;
                     _order = UnitOrder.Idle;
+                    return;
                 }
+
+                // Request (or re-request) the path only when the agent has no active path
+                // and is not already computing one — avoids resetting path every frame.
+                if (!_agent.pathPending && !_agent.hasPath)
+                    SafeSetDestination(_gatherTarget.GetGatherPoint(transform.position));
                 return;
             }
             SafeStopAgent();
@@ -708,7 +721,7 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _buildTarget.BuildRange)
             {
-                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                if (!_agent.pathPending && !_agent.hasPath)
                     SafeSetDestination(_buildTarget.transform.position);
                 return;
             }
@@ -749,7 +762,7 @@ namespace InsectWars.RTS
             {
                 // Restore agent control while closing the distance.
                 if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
-                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                if (!_agent.pathPending && !_agent.hasPath)
                     SafeSetDestination(targetTransform.position);
                 return;
             }
@@ -813,18 +826,18 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > arrivalDist)
             {
-                // Only (re)request path when not already computing or following one.
-                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
-                    SafeSetDestination(depositDest.Value);
-
-                // If the hive is unreachable, drop cargo and try to re-gather so
-                // the worker doesn't loop forever.
+                // Abandon first if path is invalid — must precede any SetDestination
+                // retry so pathPending=true doesn't mask this check.
                 if (!_agent.pathPending && _agent.pathStatus == NavMeshPathStatus.PathInvalid)
                 {
                     if (inv != null) inv.Carrying = 0;
                     _lastGatherTarget = null;
                     _order = UnitOrder.Idle;
+                    return;
                 }
+                // Re-request path only when the agent has no active path and isn't computing one.
+                if (!_agent.pathPending && !_agent.hasPath)
+                    SafeSetDestination(depositDest.Value);
                 return;
             }
             SafeStopAgent();
@@ -1030,7 +1043,7 @@ namespace InsectWars.RTS
             if (dist > range)
             {
                 if (_agent != null) { _agent.updatePosition = true; _agent.updateRotation = true; }
-                if (!_agent.pathPending && _agent.pathStatus != NavMeshPathStatus.PathComplete)
+                if (!_agent.pathPending && !_agent.hasPath)
                     SafeSetDestination(_hiveAttackTarget.transform.position);
                 return;
             }

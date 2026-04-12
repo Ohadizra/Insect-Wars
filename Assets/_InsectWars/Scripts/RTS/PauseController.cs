@@ -11,6 +11,13 @@ namespace InsectWars.RTS
     {
         public static bool IsPaused { get; private set; }
 
+        /// <summary>Reset pause state — called by MapDirector to clear stale static state.</summary>
+        public static void ForceUnpause()
+        {
+            IsPaused = false;
+            Time.timeScale = 1f;
+        }
+
         void Update()
         {
             if (Keyboard.current == null) return;

@@ -111,8 +111,10 @@ namespace InsectWars.RTS
 
         IEnumerator Start()
         {
-            // Guarantee the game isn't accidentally paused from a previous session.
+            // Guarantee the game isn't accidentally paused from a previous session
+            // (static IsPaused can persist when domain reload is disabled).
             Time.timeScale = 1f;
+            PauseController.ForceUnpause();
 
             GameSession.LoadPrefs();
             EnemyResources.Reset();
