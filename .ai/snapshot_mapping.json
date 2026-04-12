@@ -359,6 +359,12 @@
       "conversation_id": "07be6bc9-c459-4071-90fd-c066c7e51ddc",
       "content": "I've created a new stylized 3D model for the \"calories material\" that ants gather from apples and updated the ant worker to carry it in front of them instead of on their back.\n\n### Changes:\n1.  **New Art Asset**: Generated a stylized, glowing \"calorie chunk\" mesh at `Assets/_InsectWars/Models/CalorieChunk 4.prefab`. It features an organic shape with glowing yellow details to represent the apple's energy.\n2.  **Visual Library Update**: Added the new prefab to the `UnitVisualLibrary` (`Assets/_InsectWars/Data/DefaultVisualLibrary.asset`) so it can be used by all workers.\n3.  **Code Update**: Modified the `WorkerInventory` script in `InsectUnit.cs`:\n    *   Replaced the default yellow sphere with the new **CalorieChunk** model.\n    *   Moved the carrying position from the back (`z: -0.2`) to the front (`z: 0.55`) and adjusted the height to align with the ant's mouth/mandibles area.\n\nThe ant workers will now visibly carry these glowing apple chunks in their jaws when returning to the hive.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "f20baf62-c7b8-4cba-8289-b9aee33fbde5",
+      "content": "fix",
+      "snapshot_message_type": 0
     }
   ]
 }
