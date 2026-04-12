@@ -155,8 +155,9 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             var vgo = new GameObject("VideoPlayer");
             vgo.transform.SetParent(bg.transform, false);
             var vp = vgo.AddComponent<VideoPlayer>();
-            vp.playOnAwake = true;
-            vp.isLooping = true;
+            vp.playOnAwake = false;
+            vp.isLooping = false;
+            vp.skipOnDrop = true;
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.targetTexture = vrt;
             vp.aspectRatio = VideoAspectRatio.FitInside;
@@ -165,13 +166,13 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
             if (System.IO.File.Exists(path))
             {
-                // Use file:// prefix for absolute paths to ensure compatibility
                 vp.url = "file://" + path;
                 vp.Prepare();
-                vp.prepareCompleted += (p) => {
-                    p.Play();
-                    Debug.Log("HomeMenu: Video started playing.");
-                };
+                vp.prepareCompleted += (p) => { p.Play(); };
+                vp.loopPointReached += (p) => { p.Pause(); };
+                var freeze = vgo.AddComponent<VideoFreezeBeforeEnd>();
+                freeze.player = vp;
+                freeze.freezeBeforeEnd = 0.4;
             }
             else
             {
@@ -364,5 +365,19 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
         }
 
         void SetDiff(DemoDifficulty d) => GameSession.SetDifficulty(d);
+    }
+
+    public class VideoFreezeBeforeEnd : MonoBehaviour
+    {
+        public UnityEngine.Video.VideoPlayer player;
+        public double freezeBeforeEnd = 0.4;
+
+        void Update()
+        {
+            if (player == null || !player.isPrepared || !player.isPlaying) return;
+            if (player.length <= 0) return;
+            if (player.time >= player.length - freezeBeforeEnd)
+                player.Pause();
+        }
     }
 }
