@@ -200,15 +200,9 @@ titleGo.transform.SetParent(box.transform, false);
             var titleRt = titleGo.GetComponent<RectTransform>();
             AnchorTopCenter(titleRt, new Vector2(0, -30f), new Vector2(650, 260));
 
-            var sub = Txt(box.transform, "COMMAND THE COLONY. CONQUER THE DEPTHS.", SubSize, ColSub, TextAnchor.MiddleCenter);
-            sub.fontStyle = FontStyle.Bold;
-            AnchorTopCenter(sub.rectTransform, new Vector2(0, -290f), new Vector2(600, 34));
-
-            MakeSeparator(box.transform, -323.5f, 400f);
-
-            float y = -373f;
-DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
-            DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
+            float y = -310f;
+            DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
+DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
