@@ -895,6 +895,7 @@ return;
             if (lookDir.sqrMagnitude > 0.001f)
                 transform.rotation = Quaternion.LookRotation(lookDir);
 
+            GetComponent<UnitAnimationDriver>()?.NotifyBuild();
             bld.TickConstruction(Time.deltaTime);
         }
 

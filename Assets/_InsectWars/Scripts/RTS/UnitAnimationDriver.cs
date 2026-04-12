@@ -277,6 +277,15 @@ namespace InsectWars.RTS
             _attackAnimT = _attackAnimDuration;
         }
 
+        /// <summary>
+        /// Called each frame the worker is actively constructing a building.
+        /// Art/animation implementation is handled by the Unity art AI assistant.
+        /// </summary>
+        public void NotifyBuild()
+        {
+            // TODO: Art AI — implement build animation (bobbing work motion, mandible activity)
+        }
+
         public void NotifyDeath(float destroyDelay = 0.45f)
         {
             if (_dying) return;

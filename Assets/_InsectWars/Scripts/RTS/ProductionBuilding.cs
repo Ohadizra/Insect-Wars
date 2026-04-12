@@ -37,6 +37,9 @@ namespace InsectWars.RTS
         float _buildTimeTotal;
         float _buildTimeElapsed;
 
+        Vector3 _originalScale;
+        readonly Dictionary<Renderer, Color> _originalColors = new();
+
         struct QueueEntry
         {
             public UnitArchetype archetype;
@@ -134,10 +137,31 @@ namespace InsectWars.RTS
             _ => 20f
         };
 
+        public static float GetFootprintRadius(BuildingType type) => type switch
+        {
+            BuildingType.AntNest => 5f,
+            BuildingType.Underground => 4f,
+            BuildingType.SkyTower => 3f,
+            BuildingType.RootCellar => 3.5f,
+            _ => 4f
+        };
+
         void OnDestroy()
         {
             s_all.Remove(this);
             if (_rallyFlag != null) Destroy(_rallyFlag);
+        }
+
+        public void CancelConstruction()
+        {
+            if (_state != BuildingState.UnderConstruction) return;
+            int cost = GetBuildCost(_type);
+            int refund = Mathf.RoundToInt(cost * 0.8f);
+            if (_team == Team.Player && PlayerResources.Instance != null)
+                PlayerResources.Instance.AddCalories(refund);
+            _state = BuildingState.Destroyed;
+            s_all.Remove(this);
+            Destroy(gameObject, 0.1f);
         }
 
         public void TakeDamage(float dmg)
@@ -170,7 +194,13 @@ namespace InsectWars.RTS
                 _currentHealth = _maxHealth * 0.1f;
                 _buildTimeElapsed = 0f;
                 _state = BuildingState.UnderConstruction;
-                ApplyConstructionVisual();
+                _originalScale = transform.localScale;
+                foreach (var r in GetComponentsInChildren<Renderer>(true))
+                {
+                    if (r.material != null)
+                        _originalColors[r] = r.material.color;
+                }
+                UpdateConstructionVisual();
             }
 
             if (!s_all.Contains(this))
@@ -187,30 +217,38 @@ namespace InsectWars.RTS
             float progress = Mathf.Clamp01(_buildTimeElapsed / _buildTimeTotal);
             _currentHealth = Mathf.Lerp(_maxHealth * 0.1f, _maxHealth, progress);
 
+            UpdateConstructionVisual();
+
             if (_buildTimeElapsed >= _buildTimeTotal)
             {
                 _state = BuildingState.Active;
                 _currentHealth = _maxHealth;
                 _buildTimeElapsed = _buildTimeTotal;
-                RemoveConstructionVisual();
+                transform.localScale = _originalScale;
+                foreach (var kvp in _originalColors)
+                {
+                    if (kvp.Key != null && kvp.Key.material != null)
+                        kvp.Key.material.color = kvp.Value;
+                }
             }
         }
 
-        void ApplyConstructionVisual()
+        void UpdateConstructionVisual()
         {
-            foreach (var r in GetComponentsInChildren<Renderer>(true))
-            {
-                var c = r.material.color;
-                r.material.color = new Color(c.r * 0.5f, c.g * 0.5f, c.b * 0.5f, 0.7f);
-            }
-        }
+            float progress = ConstructionProgress;
+            float alpha = Mathf.Lerp(0.3f, 1f, progress);
+            float scaleY = Mathf.Lerp(0.6f, 1f, progress);
 
-        void RemoveConstructionVisual()
-        {
-            foreach (var r in GetComponentsInChildren<Renderer>(true))
+            transform.localScale = new Vector3(
+                _originalScale.x,
+                _originalScale.y * scaleY,
+                _originalScale.z);
+
+            foreach (var kvp in _originalColors)
             {
-                var c = r.material.color;
-                r.material.color = new Color(c.r / 0.5f, c.g / 0.5f, c.b / 0.5f, 1f);
+                if (kvp.Key == null || kvp.Key.material == null) continue;
+                var orig = kvp.Value;
+                kvp.Key.material.color = new Color(orig.r, orig.g, orig.b, alpha);
             }
         }
 

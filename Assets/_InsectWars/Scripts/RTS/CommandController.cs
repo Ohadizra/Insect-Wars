@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
@@ -259,24 +260,76 @@ namespace InsectWars.RTS
             float terrainY = terrain != null ? terrain.SampleHeight(flatPos) : flatPos.y;
             var worldPos = new Vector3(flatPos.x, terrainY, flatPos.z);
 
-            if (!BuildZoneRegistry.IsInBuildZone(worldPos))
+            var buildType = BottomBar.PendingBuildingType;
+
+            if (!IsValidBuildLocation(worldPos, buildType))
                 return;
 
-            var buildType = BottomBar.PendingBuildingType;
             int cost = ProductionBuilding.GetBuildCost(buildType);
-
             if (PlayerResources.Instance == null || !PlayerResources.Instance.TrySpend(cost))
                 return;
 
             var building = ProductionBuilding.Place(worldPos, buildType);
 
+            InsectUnit builder = null;
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
             {
                 if (u.Definition != null && u.Definition.canGather)
-                    u.OrderBuild(building);
+                {
+                    builder = u;
+                    break;
+                }
             }
+            if (builder != null) builder.OrderBuild(building);
 
             BottomBar.Instance.SetPending(PendingCommand.None);
+        }
+
+        /// <summary>
+        /// Validates whether a building can be placed at the given world position.
+        /// Used by both CommandController and BottomBar ghost preview.
+        /// </summary>
+        public static bool IsValidBuildLocation(Vector3 worldPos, BuildingType buildType)
+        {
+            if (!BuildZoneRegistry.IsInBuildZone(worldPos))
+                return false;
+
+            var terrain = Terrain.activeTerrain;
+            if (terrain != null)
+            {
+                var td = terrain.terrainData;
+                var tp = terrain.transform.position;
+                float normX = (worldPos.x - tp.x) / td.size.x;
+                float normZ = (worldPos.z - tp.z) / td.size.z;
+                if (normX >= 0f && normX <= 1f && normZ >= 0f && normZ <= 1f)
+                {
+                    float steepness = td.GetSteepness(normX, normZ);
+                    if (steepness > 20f) return false;
+                }
+            }
+
+            float footprint = ProductionBuilding.GetFootprintRadius(buildType);
+            var colliders = Physics.OverlapSphere(worldPos, footprint, ~0, QueryTriggerInteraction.Ignore);
+            foreach (var col in colliders)
+            {
+                if (col.GetComponentInParent<ProductionBuilding>() != null) return false;
+                if (col.GetComponentInParent<HiveDeposit>() != null) return false;
+                if (col.GetComponent<NavMeshObstacle>() != null) return false;
+            }
+
+            if (buildType == BuildingType.AntNest)
+            {
+                const float minAppleDistance = 15f;
+                foreach (var fruit in RtsSimRegistry.FruitNodes)
+                {
+                    if (fruit == null) continue;
+                    if (Vector3.Distance(worldPos, fruit.transform.position) < minAppleDistance)
+                        return false;
+                }
+            }
+
+            // TODO: fog-of-war explored check
+            return true;
         }
     }
 }

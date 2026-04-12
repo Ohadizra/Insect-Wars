@@ -404,7 +404,9 @@ namespace InsectWars.RTS
                     {
                         if (bld.State == BuildingState.UnderConstruction)
                         {
-                            // No production buttons while under construction — workers must build first
+                            int refund = Mathf.RoundToInt(ProductionBuilding.GetBuildCost(bld.Type) * 0.8f);
+                            AddCmdButton(_cmdGridParent, $"Cancel\n<size=11>+{refund} cal</size>", "Esc",
+                                () => { bld.CancelConstruction(); ForceRebuild(); });
                         }
                         else
                         {
@@ -810,42 +812,61 @@ namespace InsectWars.RTS
         void CreateGhost(BuildingType type)
         {
             DestroyGhost();
-            _ghostPreview = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            _ghostPreview.name = "BuildingGhost";
-            Destroy(_ghostPreview.GetComponent<Collider>());
-            Vector3 scale;
-            Color col;
-            switch (type)
+
+            var lib = SkirmishDirector.ActiveVisualLibrary;
+            GameObject prefab = null;
+            if (lib != null)
             {
-                case BuildingType.Underground:
-                    scale = new Vector3(4f, 2f, 4f);
-                    col = new Color(0.35f, 0.25f, 0.45f, 0.4f);
-                    break;
-                case BuildingType.AntNest:
-                    scale = new Vector3(3.5f, 2f, 3.5f);
-                    col = new Color(0.5f, 0.35f, 0.2f, 0.4f);
-                    break;
-                case BuildingType.RootCellar:
-                    scale = new Vector3(3.5f, 2f, 3.5f);
-                    col = new Color(0.5f, 0.35f, 0.2f, 0.4f);
-                    break;
-                case BuildingType.SkyTower:
-                    scale = new Vector3(2.5f, 5f, 2.5f);
-                    col = new Color(0.3f, 0.5f, 0.6f, 0.4f);
-                    break;
-                default:
-                    scale = new Vector3(3f, 2f, 3f);
-                    col = new Color(0.5f, 0.5f, 0.5f, 0.4f);
-                    break;
+                prefab = type == BuildingType.AntNest ? lib.hivePrefab : lib.GetBuildingPrefab(type);
             }
-            _ghostPreview.transform.localScale = scale;
-            _ghostPreview.transform.position = new Vector3(0f, scale.y * 0.5f, 0f);
+
+            if (prefab != null)
+            {
+                _ghostPreview = Instantiate(prefab);
+                _ghostPreview.name = "BuildingGhost";
+
+                foreach (var col in _ghostPreview.GetComponentsInChildren<Collider>(true))
+                    Destroy(col);
+                foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
+                    Destroy(obs);
+                foreach (var pb in _ghostPreview.GetComponentsInChildren<ProductionBuilding>(true))
+                    Destroy(pb);
+                foreach (var hd in _ghostPreview.GetComponentsInChildren<HiveDeposit>(true))
+                    Destroy(hd);
+                foreach (var hv in _ghostPreview.GetComponentsInChildren<HiveVisual>(true))
+                    Destroy(hv);
+
+                var ghostMat = CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
+                foreach (var r in _ghostPreview.GetComponentsInChildren<Renderer>(true))
+                    r.sharedMaterial = ghostMat;
+            }
+            else
+            {
+                _ghostPreview = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                _ghostPreview.name = "BuildingGhost";
+                Destroy(_ghostPreview.GetComponent<Collider>());
+                Vector3 scale = type switch
+                {
+                    BuildingType.Underground => new Vector3(4f, 2f, 4f),
+                    BuildingType.AntNest => new Vector3(3.5f, 2f, 3.5f),
+                    BuildingType.SkyTower => new Vector3(2.5f, 5f, 2.5f),
+                    BuildingType.RootCellar => new Vector3(3.5f, 2f, 3.5f),
+                    _ => new Vector3(3f, 2f, 3f)
+                };
+                _ghostPreview.transform.localScale = scale;
+                _ghostPreview.GetComponent<Renderer>().sharedMaterial =
+                    CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
+            }
+        }
+
+        static Material CreateGhostMaterial(Color color)
+        {
             var sh = Shader.Find("Sprites/Default");
             if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
             var mat = new Material(sh);
-            if (mat.HasProperty("_Color")) mat.color = col;
-            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", col);
-            _ghostPreview.GetComponent<Renderer>().sharedMaterial = mat;
+            if (mat.HasProperty("_Color")) mat.color = color;
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+            return mat;
         }
 
         void DestroyGhost()
@@ -872,16 +893,19 @@ namespace InsectWars.RTS
                 var worldPos = ray.GetPoint(enter);
                 var terrain = Terrain.activeTerrain;
                 float terrainY = terrain != null ? terrain.SampleHeight(worldPos) : 0f;
-                var halfY = _ghostPreview.transform.localScale.y * 0.5f;
-                _ghostPreview.transform.position = new Vector3(worldPos.x, terrainY + halfY, worldPos.z);
+                _ghostPreview.transform.position = new Vector3(worldPos.x, terrainY, worldPos.z);
 
-                bool valid = BuildZoneRegistry.IsInBuildZone(worldPos);
+                bool valid = CommandController.IsValidBuildLocation(
+                    new Vector3(worldPos.x, terrainY, worldPos.z),
+                    PendingBuildingType);
+
                 var tint = valid
                     ? new Color(0.3f, 0.85f, 0.4f, 0.45f)
                     : new Color(0.85f, 0.25f, 0.2f, 0.45f);
-                var r = _ghostPreview.GetComponent<Renderer>();
-                if (r != null && r.material != null)
+
+                foreach (var r in _ghostPreview.GetComponentsInChildren<Renderer>(true))
                 {
+                    if (r.material == null) continue;
                     if (r.material.HasProperty("_Color")) r.material.color = tint;
                     if (r.material.HasProperty("_BaseColor")) r.material.SetColor("_BaseColor", tint);
                 }
