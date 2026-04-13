@@ -957,8 +957,25 @@ namespace InsectWars.RTS
 
             if (prefab != null)
             {
+                var savedPlayerHive = HiveDeposit.PlayerHive;
+                var savedEnemyHive = HiveDeposit.EnemyHive;
+
                 _ghostPreview = Instantiate(prefab);
                 _ghostPreview.name = "BuildingGhost";
+
+                // Strip ALL MonoBehaviours (including missing scripts) immediately
+                foreach (var mb in _ghostPreview.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    if (mb == null) continue;
+                    DestroyImmediate(mb);
+                }
+                foreach (var col in _ghostPreview.GetComponentsInChildren<Collider>(true))
+                    DestroyImmediate(col);
+                foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
+                    DestroyImmediate(obs);
+
+                HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
+                HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
 
                 Vector3 buildScale = type switch
                 {
@@ -969,17 +986,6 @@ namespace InsectWars.RTS
                     _ => Vector3.one
                 };
                 _ghostPreview.transform.localScale = Vector3.Scale(_ghostPreview.transform.localScale, buildScale);
-
-                foreach (var col in _ghostPreview.GetComponentsInChildren<Collider>(true))
-                    Destroy(col);
-                foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
-                    Destroy(obs);
-                foreach (var pb in _ghostPreview.GetComponentsInChildren<ProductionBuilding>(true))
-                    Destroy(pb);
-                foreach (var hd in _ghostPreview.GetComponentsInChildren<HiveDeposit>(true))
-                    Destroy(hd);
-                foreach (var hv in _ghostPreview.GetComponentsInChildren<HiveVisual>(true))
-                    Destroy(hv);
 
                 var ghostMat = CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
                 foreach (var r in _ghostPreview.GetComponentsInChildren<Renderer>(true))

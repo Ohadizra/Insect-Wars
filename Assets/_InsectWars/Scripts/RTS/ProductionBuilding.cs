@@ -546,6 +546,15 @@ namespace InsectWars.RTS
             return building;
         }
 
+        static void StripAllBehaviours(GameObject go)
+        {
+            foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (mb == null) continue;
+                DestroyImmediate(mb);
+            }
+        }
+
         static ProductionBuilding PlaceAntNestFromPrefab(Vector3 position, GameObject hivePrefab, Team team = Team.Player, bool startBuilt = false)
         {
             var savedPlayerHive = HiveDeposit.PlayerHive;
@@ -555,20 +564,10 @@ namespace InsectWars.RTS
             go.name = "Building_AntNest";
             go.tag = "Untagged";
 
-            // Strip all hive-specific components immediately so their Update
-            // never runs on this clone. DestroyImmediate is required because
-            // deferred Destroy lets Awake/Update execute for one more frame.
-            foreach (var hd in go.GetComponentsInChildren<HiveDeposit>(true))
-                DestroyImmediate(hd);
-            foreach (var hv in go.GetComponentsInChildren<HiveVisual>(true))
-                DestroyImmediate(hv);
-            foreach (var ne in go.GetComponentsInChildren<NestEvolution>(true))
-                DestroyImmediate(ne);
+            StripAllBehaviours(go);
 
-            if (team == Team.Player)
-                HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
-            else if (team == Team.Enemy)
-                HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
+            HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
+            HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
 
             go.transform.localScale *= 2.7f;
             float groundY = SampleMaxTerrainHeight(position, 6f);

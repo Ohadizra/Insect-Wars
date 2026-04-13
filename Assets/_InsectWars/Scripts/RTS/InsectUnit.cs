@@ -653,7 +653,7 @@ namespace InsectWars.RTS
 
             foreach (var bld in ProductionBuilding.All)
             {
-                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest) continue;
+                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest || !bld.IsOperational) continue;
                 float d = Vector3.Distance(transform.position, bld.transform.position);
                 if (d < bestDist) { bestDist = d; bestPoint = bld.transform.position; }
             }
@@ -675,7 +675,7 @@ namespace InsectWars.RTS
 
             foreach (var bld in ProductionBuilding.All)
             {
-                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest) continue;
+                if (bld == null || bld.Team != team || bld.Type != BuildingType.AntNest || !bld.IsOperational) continue;
                 float d = Vector3.Distance(transform.position, bld.transform.position);
                 if (d < bestDist) { bestDist = d; best = bld.transform; }
             }
