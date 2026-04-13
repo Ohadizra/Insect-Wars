@@ -18,7 +18,7 @@ namespace InsectWars.RTS
             Time.timeScale = 1f;
         }
 
-        void Update()
+        void LateUpdate()
         {
             if (Keyboard.current == null) return;
             if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;

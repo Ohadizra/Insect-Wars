@@ -566,8 +566,8 @@ namespace InsectWars.RTS
 
             StripAllBehaviours(go);
 
-            HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
-            HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
+            HiveDeposit.SetMainPlayerHive(savedPlayerHive);
+            HiveDeposit.SetMainEnemyHive(savedEnemyHive);
 
             go.transform.localScale *= 2.7f;
             float groundY = SampleMaxTerrainHeight(position, 6f);

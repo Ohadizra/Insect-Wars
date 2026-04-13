@@ -567,9 +567,27 @@ namespace InsectWars.RTS
                 hive.transform.position = new Vector3(worldPos.x, 0f, worldPos.z);
                 hive.transform.localScale *= hiveScale;
                 PlaceOnGround(hive, groundY);
+                
                 var deposit = hive.GetComponent<HiveDeposit>();
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
+                
+                // CRITICAL: Configure before any logic runs to set correct static refs
                 deposit.Configure(team);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
+                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
+                
                 if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
                 
                 // Apply skin color to prefab renderers

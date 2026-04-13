@@ -61,9 +61,13 @@ namespace InsectWars.RTS
         void RegisterHive()
         {
             if (team == Team.Player)
-                PlayerHive = this;
+            {
+                if (PlayerHive == null) PlayerHive = this;
+            }
             else if (team == Team.Enemy)
-                EnemyHive = this;
+            {
+                if (EnemyHive == null) EnemyHive = this;
+            }
         }
 
         void Update()
@@ -148,6 +152,20 @@ namespace InsectWars.RTS
         public void TakeDamage(float dmg)
         {
             _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
+        }
+
+        /// <summary>
+        /// Forcefully sets the main player hive reference. Used when the primary hive
+        /// is definitively known (e.g. at map build) or needs to be restored after ghost stripping.
+        /// </summary>
+        public static void SetMainPlayerHive(HiveDeposit hive)
+        {
+            PlayerHive = hive;
+        }
+
+        public static void SetMainEnemyHive(HiveDeposit hive)
+        {
+            EnemyHive = hive;
         }
 
         /// <summary>

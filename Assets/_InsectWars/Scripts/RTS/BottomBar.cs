@@ -974,8 +974,8 @@ namespace InsectWars.RTS
                 foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
                     DestroyImmediate(obs);
 
-                HiveDeposit.RestorePlayerHiveReference(savedPlayerHive);
-                HiveDeposit.RestoreEnemyHiveReference(savedEnemyHive);
+                HiveDeposit.SetMainPlayerHive(savedPlayerHive);
+                HiveDeposit.SetMainEnemyHive(savedEnemyHive);
 
                 Vector3 buildScale = type switch
                 {
