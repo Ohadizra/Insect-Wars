@@ -156,13 +156,7 @@ namespace InsectWars.RTS
             if (sc == null) return;
             if (GetGroupCount(index) == 0) return;
 
-            if (_units[index].Count > 0)
-                sc.AddToSelection(_units[index]);
-            else if (_buildings[index].Count > 0)
-                sc.SelectBuildings(_buildings[index]);
-            else if (_hives[index] != null)
-                sc.SelectHive(_hives[index]);
-
+            sc.AddAllToSelection(_units[index], _buildings[index], _hives[index]);
             ActiveGroup = index;
         }
 
@@ -179,12 +173,7 @@ namespace InsectWars.RTS
             _lastRecallTime[index] = now;
             ActiveGroup = index;
 
-            if (_units[index].Count > 0)
-                sc.SetSelection(_units[index]);
-            else if (_buildings[index].Count > 0)
-                sc.SelectBuildings(_buildings[index]);
-            else if (_hives[index] != null)
-                sc.SelectHive(_hives[index]);
+            sc.SetFullSelection(_units[index], _buildings[index], _hives[index]);
 
             if (doubleTap)
                 CenterCameraOnGroup(index);

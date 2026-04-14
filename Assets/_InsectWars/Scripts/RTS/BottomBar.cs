@@ -171,12 +171,12 @@ namespace InsectWars.RTS
         {
             if (Keyboard.current == null) return;
 
-            // Tab cycles building subgroups when multiple building types are selected
+            // Tab cycles through all subgroups (units, each building type)
             if (Keyboard.current.tabKey.wasPressedThisFrame &&
                 SelectionController.Instance != null &&
-                SelectionController.Instance.HasMultipleBuildingTypes)
+                SelectionController.Instance.HasMultipleSubgroups)
             {
-                SelectionController.Instance.CycleBuildingSubgroup();
+                SelectionController.Instance.CycleSubgroup();
                 return;
             }
 
@@ -1273,6 +1273,7 @@ namespace InsectWars.RTS
                 return;
             }
 
+            // ── Building subgroup active: show building info ──
             if (SelectionController.Instance.SelectedBuilding != null)
             {
                 var sc = SelectionController.Instance;
@@ -1300,34 +1301,16 @@ namespace InsectWars.RTS
                     _attributeLabel.text = "Structure - Biological";
                 }
 
-                if (sc.HasMultipleBuildingTypes)
-                {
+                if (sc.HasMultipleSubgroups)
                     _attributeLabel.text += " · Tab to cycle";
-                }
 
                 ShowHpDisplay(activeHp, activeMaxHp);
 
-                var bldCounts = new Dictionary<BuildingType, int>();
-                foreach (var b in sc.SelectedBuildings)
-                {
-                    if (b == null || !b.IsAlive) continue;
-                    bldCounts.TryGetValue(b.Type, out var n);
-                    bldCounts[b.Type] = n + 1;
-                }
-                int cellIdx = 0;
-                foreach (var kvp in bldCounts)
-                {
-                    if (cellIdx >= _selectionCells.Length) break;
-                    var cell = _selectionCells[cellIdx];
-                    bool isActive = sc.ActiveBuildingType.HasValue && kvp.Key == sc.ActiveBuildingType.Value;
-                    cell.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
-                    var tx = cell.GetComponentInChildren<Text>();
-                    if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
-                    cellIdx++;
-                }
+                ShowMixedSelectionGrid(sc);
                 return;
             }
 
+            // ── Units subgroup active (or units only): show unit info ──
             var list = new System.Collections.Generic.List<InsectUnit>();
             foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
             {
@@ -1341,6 +1324,10 @@ namespace InsectWars.RTS
             _attributeLabel.text = GetAttributes(first);
             if (_portraitMain != null) { _portraitMain.sprite = GetUnitPortrait(first.Archetype); _portraitMain.color = Color.white; }
 
+            var sc2 = SelectionController.Instance;
+            if (sc2.HasMultipleSubgroups)
+                _attributeLabel.text += " · Tab to cycle";
+
             float totalHp = 0f, totalMax = 0f;
             foreach (var u in list)
             {
@@ -1349,26 +1336,53 @@ namespace InsectWars.RTS
             }
             ShowHpDisplay(totalHp, totalMax);
 
-            var counts = new System.Collections.Generic.Dictionary<UnitArchetype, int>();
-            foreach (var u in list)
+            ShowMixedSelectionGrid(sc2);
+        }
+
+        /// <summary>Show the selection grid with all unit archetypes + building types, sorted for Tab order.</summary>
+        void ShowMixedSelectionGrid(SelectionController sc)
+        {
+            int cellIdx = 0;
+            bool hasActiveType = sc.ActiveBuildingType.HasValue;
+
+            // Unit archetype chips
+            var unitCounts = new Dictionary<UnitArchetype, int>();
+            foreach (var u in sc.SelectedPlayerUnits())
             {
-                var a = u.Archetype;
-                counts.TryGetValue(a, out var n);
-                counts[a] = n + 1;
+                unitCounts.TryGetValue(u.Archetype, out var n);
+                unitCounts[u.Archetype] = n + 1;
+            }
+            var unitOrder = new[] { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
+            bool unitsAreActive = !hasActiveType && unitCounts.Count > 0;
+            foreach (var arch in unitOrder)
+            {
+                if (!unitCounts.TryGetValue(arch, out var cnt)) continue;
+                if (cellIdx >= _selectionCells.Length) break;
+                var cell = _selectionCells[cellIdx];
+                cell.sprite = GetUnitPortrait(arch);
+                cell.color = unitsAreActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
+                var tx = cell.GetComponentInChildren<Text>();
+                if (tx != null) tx.text = cnt > 1 ? $"{cnt}" : "";
+                cellIdx++;
             }
 
-            var order = new[] { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged };
-            var idx = 0;
-            foreach (var arch in order)
+            // Building type chips (sorted by enum to match Tab cycling order)
+            var bldCounts = new SortedDictionary<BuildingType, int>();
+            foreach (var b in sc.SelectedBuildings)
             {
-                if (!counts.TryGetValue(arch, out var cnt)) continue;
-                if (idx >= _selectionCells.Length) break;
-                var img = _selectionCells[idx];
-                img.sprite = GetUnitPortrait(arch);
-                img.color = Color.white;
-                var tx = img.GetComponentInChildren<Text>();
-                if (tx != null) tx.text = cnt > 1 ? $"{cnt}" : "";
-                idx++;
+                if (b == null || !b.IsAlive) continue;
+                bldCounts.TryGetValue(b.Type, out var n);
+                bldCounts[b.Type] = n + 1;
+            }
+            foreach (var kvp in bldCounts)
+            {
+                if (cellIdx >= _selectionCells.Length) break;
+                var cell = _selectionCells[cellIdx];
+                bool isActive = hasActiveType && kvp.Key == sc.ActiveBuildingType.Value;
+                cell.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
+                var tx = cell.GetComponentInChildren<Text>();
+                if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
+                cellIdx++;
             }
         }
 

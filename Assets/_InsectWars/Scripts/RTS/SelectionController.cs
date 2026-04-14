@@ -20,6 +20,9 @@ namespace InsectWars.RTS
         HiveDeposit _selectedHive;
         RottingFruitNode _selectedResource;
         readonly HashSet<ProductionBuilding> _selectedBuildings = new();
+
+        // null = units subgroup active (or buildings-only with auto-set);
+        // non-null = a specific building type subgroup is active for the command card.
         BuildingType? _activeBuildingType;
 
         float _lastClickTime;
@@ -32,80 +35,103 @@ namespace InsectWars.RTS
         public RottingFruitNode SelectedResource => _selectedResource;
 
         /// <summary>
-        /// Primary selected building — first alive building of the active type.
-        /// All existing code that reads a single building keeps working.
+        /// Primary selected building of the active building subgroup.
+        /// Returns null when the units subgroup is active in a mixed selection.
         /// </summary>
         public ProductionBuilding SelectedBuilding
         {
             get
             {
-                if (_selectedBuildings.Count == 0) return null;
+                if (_selectedBuildings.Count == 0 || _activeBuildingType == null) return null;
                 foreach (var b in _selectedBuildings)
                 {
                     if (b == null || !b.IsAlive) continue;
-                    if (_activeBuildingType == null || b.Type == _activeBuildingType)
-                        return b;
+                    if (b.Type == _activeBuildingType) return b;
                 }
                 return null;
             }
         }
 
-        /// <summary>All selected buildings (may contain multiple types).</summary>
         public IReadOnlyCollection<ProductionBuilding> SelectedBuildings => _selectedBuildings;
 
-        /// <summary>Only buildings matching the currently active building type subgroup.</summary>
         public IEnumerable<ProductionBuilding> SelectedBuildingsOfActiveType
         {
             get
             {
-                if (_activeBuildingType == null)
-                {
-                    foreach (var b in _selectedBuildings)
-                        if (b != null && b.IsAlive) yield return b;
-                }
-                else
-                {
-                    foreach (var b in _selectedBuildings)
-                        if (b != null && b.IsAlive && b.Type == _activeBuildingType)
-                            yield return b;
-                }
+                if (_activeBuildingType == null) yield break;
+                foreach (var b in _selectedBuildings)
+                    if (b != null && b.IsAlive && b.Type == _activeBuildingType)
+                        yield return b;
             }
         }
 
         public BuildingType? ActiveBuildingType => _activeBuildingType;
 
-        /// <summary>True when the building selection contains more than one distinct building type.</summary>
-        public bool HasMultipleBuildingTypes
+        /// <summary>True when Tab has something to cycle through: mixed unit+building, or multiple building types.</summary>
+        public bool HasMultipleSubgroups
         {
             get
             {
-                BuildingType? first = null;
+                bool hasUnits = false;
+                foreach (var u in _selected)
+                {
+                    if (u != null && u.IsAlive && u.Team == Team.Player) { hasUnits = true; break; }
+                }
+
+                BuildingType? firstBldType = null;
+                bool multipleTypes = false;
                 foreach (var b in _selectedBuildings)
                 {
                     if (b == null || !b.IsAlive) continue;
-                    if (first == null) { first = b.Type; continue; }
-                    if (b.Type != first) return true;
+                    if (firstBldType == null) { firstBldType = b.Type; continue; }
+                    if (b.Type != firstBldType) { multipleTypes = true; break; }
                 }
-                return false;
+
+                bool hasBuildings = firstBldType != null;
+                return (hasUnits && hasBuildings) || multipleTypes;
             }
         }
 
-        /// <summary>Cycle to the next building type subgroup (Tab key).</summary>
-        public void CycleBuildingSubgroup()
+        /// <summary>
+        /// Cycle to the next subgroup (Tab key).
+        /// Order: units (if any) -> each building type sorted -> wrap.
+        /// </summary>
+        public void CycleSubgroup()
         {
-            if (_selectedBuildings.Count == 0) return;
+            bool hasUnits = false;
+            foreach (var u in _selected)
+            {
+                if (u != null && u.IsAlive && u.Team == Team.Player) { hasUnits = true; break; }
+            }
 
-            var types = new List<BuildingType>();
+            var bldTypes = new List<BuildingType>();
             foreach (var b in _selectedBuildings)
             {
                 if (b == null || !b.IsAlive) continue;
-                if (!types.Contains(b.Type)) types.Add(b.Type);
+                if (!bldTypes.Contains(b.Type)) bldTypes.Add(b.Type);
             }
-            if (types.Count <= 1) return;
+            bldTypes.Sort();
 
-            types.Sort();
-            int idx = _activeBuildingType.HasValue ? types.IndexOf(_activeBuildingType.Value) : -1;
-            _activeBuildingType = types[(idx + 1) % types.Count];
+            int totalSubgroups = (hasUnits ? 1 : 0) + bldTypes.Count;
+            if (totalSubgroups <= 1) return;
+
+            int currentIdx;
+            if (_activeBuildingType == null)
+            {
+                currentIdx = 0;
+            }
+            else
+            {
+                int bldIdx = bldTypes.IndexOf(_activeBuildingType.Value);
+                currentIdx = (hasUnits ? 1 : 0) + (bldIdx >= 0 ? bldIdx : 0);
+            }
+
+            int nextIdx = (currentIdx + 1) % totalSubgroups;
+
+            if (hasUnits && nextIdx == 0)
+                _activeBuildingType = null;
+            else
+                _activeBuildingType = bldTypes[nextIdx - (hasUnits ? 1 : 0)];
 
             BottomBar.Instance?.ForceRebuild();
         }
@@ -251,11 +277,28 @@ namespace InsectWars.RTS
                 }
 
                 var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
-                if (!shift) ClearAll();
-                if (!_selected.Contains(u))
+                if (!shift)
                 {
+                    ClearAll();
                     _selected.Add(u);
                     u.IsSelected = true;
+                }
+                else
+                {
+                    // Toggle: deselect if already selected, otherwise add
+                    _selectedHive = null;
+                    _selectedResource = null;
+                    if (_selected.Contains(u))
+                    {
+                        _selected.Remove(u);
+                        u.IsSelected = false;
+                    }
+                    else
+                    {
+                        _selected.Add(u);
+                        u.IsSelected = true;
+                    }
+                    // Keep _selectedBuildings and _activeBuildingType unchanged (mixed OK)
                 }
                 return;
             }
@@ -286,21 +329,29 @@ namespace InsectWars.RTS
                 }
 
                 var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
-                if (shift)
-                {
-                    // Clear non-building selection types so we switch to building mode
-                    foreach (var s in _selected) s.IsSelected = false;
-                    _selected.Clear();
-                    _selectedHive = null;
-                    _selectedResource = null;
-                    _selectedBuildings.Add(building);
-                    AutoSetActiveBuildingType();
-                }
-                else
+                if (!shift)
                 {
                     ClearAll();
                     _selectedBuildings.Add(building);
                     _activeBuildingType = building.Type;
+                }
+                else
+                {
+                    // Toggle: deselect if already selected, otherwise add
+                    _selectedHive = null;
+                    _selectedResource = null;
+                    if (_selectedBuildings.Contains(building))
+                    {
+                        _selectedBuildings.Remove(building);
+                        ValidateActiveType();
+                    }
+                    else
+                    {
+                        _selectedBuildings.Add(building);
+                        if (_activeBuildingType == null && _selected.Count == 0)
+                            _activeBuildingType = building.Type;
+                    }
+                    // Keep _selected unchanged (mixed OK)
                 }
                 return;
             }
@@ -324,7 +375,6 @@ namespace InsectWars.RTS
             if (Keyboard.current == null || !Keyboard.current.leftShiftKey.isPressed)
                 ClearAll();
 
-            // Collect units in the box
             var boxUnits = new List<InsectUnit>();
             foreach (var u in RtsSimRegistry.Units)
             {
@@ -335,7 +385,6 @@ namespace InsectWars.RTS
                     boxUnits.Add(u);
             }
 
-            // Collect player buildings in the box
             var boxBuildings = new List<ProductionBuilding>();
             foreach (var bld in ProductionBuilding.All)
             {
@@ -345,9 +394,7 @@ namespace InsectWars.RTS
                     boxBuildings.Add(bld);
             }
 
-            // Priority: if units found, select units only (SC2 behavior).
-            // If no units but buildings found, select buildings.
-            // If neither, try hive then resources.
+            // Units take priority in box-select (SC2 behavior).
             if (boxUnits.Count > 0)
             {
                 foreach (var u in boxUnits)
@@ -362,7 +409,8 @@ namespace InsectWars.RTS
             {
                 foreach (var bld in boxBuildings)
                     _selectedBuildings.Add(bld);
-                AutoSetActiveBuildingType();
+                if (_activeBuildingType == null && _selected.Count == 0)
+                    AutoSetActiveBuildingType();
                 return;
             }
 
@@ -398,11 +446,8 @@ namespace InsectWars.RTS
                 if (u.Archetype != archetype) continue;
                 var VP = _cam.WorldToViewportPoint(u.transform.position);
                 if (VP.z <= 0 || VP.x < 0 || VP.x > 1 || VP.y < 0 || VP.y > 1) continue;
-                if (!_selected.Contains(u))
-                {
-                    _selected.Add(u);
+                if (_selected.Add(u))
                     u.IsSelected = true;
-                }
             }
         }
 
@@ -420,27 +465,72 @@ namespace InsectWars.RTS
             _activeBuildingType = type;
         }
 
-        // ──────────── Public API for Control Groups ────────────
+        // ──────────── Public API ────────────
 
-        /// <summary>Replace the current selection with the given units.</summary>
+        /// <summary>Replace the entire selection with units + buildings + hive at once (control group recall).</summary>
+        public void SetFullSelection(IEnumerable<InsectUnit> units, IEnumerable<ProductionBuilding> buildings, HiveDeposit hive)
+        {
+            ClearAll();
+
+            if (units != null)
+            {
+                foreach (var u in units)
+                {
+                    if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
+                    if (_selected.Add(u)) u.IsSelected = true;
+                }
+            }
+
+            if (buildings != null)
+            {
+                foreach (var b in buildings)
+                {
+                    if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                    _selectedBuildings.Add(b);
+                }
+            }
+
+            if (hive != null && hive.IsAlive && hive.Team == Team.Player)
+                _selectedHive = hive;
+
+            // Default to units subgroup if units exist; otherwise building subgroup
+            if (_selected.Count > 0)
+                _activeBuildingType = null;
+            else
+                AutoSetActiveBuildingType();
+        }
+
+        /// <summary>Merge units + buildings + hive into the current selection (Alt+Number).</summary>
+        public void AddAllToSelection(IEnumerable<InsectUnit> units, IEnumerable<ProductionBuilding> buildings, HiveDeposit hive)
+        {
+            _selectedResource = null;
+
+            if (units != null)
+            {
+                foreach (var u in units)
+                {
+                    if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
+                    if (_selected.Add(u)) u.IsSelected = true;
+                }
+            }
+
+            if (buildings != null)
+            {
+                foreach (var b in buildings)
+                {
+                    if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
+                    _selectedBuildings.Add(b);
+                }
+            }
+
+            if (hive != null && hive.IsAlive && hive.Team == Team.Player)
+                _selectedHive = hive;
+        }
+
+        /// <summary>Replace the current selection with the given units only.</summary>
         public void SetSelection(IEnumerable<InsectUnit> units)
         {
             ClearAll();
-            foreach (var u in units)
-            {
-                if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
-                if (_selected.Add(u))
-                    u.IsSelected = true;
-            }
-        }
-
-        /// <summary>Add units to the current selection without clearing.</summary>
-        public void AddToSelection(IEnumerable<InsectUnit> units)
-        {
-            _selectedHive = null;
-            _selectedResource = null;
-            _selectedBuildings.Clear();
-            _activeBuildingType = null;
             foreach (var u in units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
@@ -464,7 +554,7 @@ namespace InsectWars.RTS
             ClearAll();
             foreach (var b in buildings)
             {
-                if (b == null || !b.IsAlive) continue;
+                if (b == null || !b.IsAlive || b.Team != Team.Player) continue;
                 _selectedBuildings.Add(b);
             }
             AutoSetActiveBuildingType();
@@ -510,6 +600,17 @@ namespace InsectWars.RTS
                 _activeBuildingType = b.Type;
                 break;
             }
+        }
+
+        /// <summary>Ensure _activeBuildingType still refers to a type present in the selection.</summary>
+        void ValidateActiveType()
+        {
+            if (_activeBuildingType == null) return;
+            foreach (var b in _selectedBuildings)
+            {
+                if (b != null && b.IsAlive && b.Type == _activeBuildingType) return;
+            }
+            AutoSetActiveBuildingType();
         }
     }
 }
