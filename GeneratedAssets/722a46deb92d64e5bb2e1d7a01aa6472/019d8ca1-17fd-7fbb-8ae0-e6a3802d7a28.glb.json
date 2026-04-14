@@ -1,0 +1,12 @@
+{
+    "asset": "722a46deb92d64e5bb2e1d7a01aa6472",
+    "fileName": "019d8ca1-17fd-7fbb-8ae0-e6a3802d7a28.glb",
+    "prompt": "An organic insect construction cocoon, a mound of dirt and sticks held together by translucent white silken webbing, ant hill style, stylized game asset, low poly but detailed texture, organic look, insect wars theme",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "a6da855eb68d2b433ae5aa3e6c5cbd25",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

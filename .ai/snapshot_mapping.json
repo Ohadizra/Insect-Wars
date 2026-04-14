@@ -653,6 +653,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "the art exsist now but it looks not so good, can you make a better fiting art?",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "838c9e03-4fd8-450c-8e72-90da55b7526d",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "I've generated a new, thematic 3D asset for the construction visual and updated your project to use it.\n\n### Changes Made:\n*   **New 3D Model**: Generated an \"Organic Insect Construction Cocoon\" that looks like an ant-hill mound of dirt and sticks held together by silken webbing. This fits the \"Insect Wars\" theme much better than the previous art.\n*   **Asset Replacement**: Moved the new asset to `Assets/_InsectWars/Models/ConstructionCocoon.prefab` and backed up the old one as `ConstructionCocoon_Old.prefab`.\n*   **Library Update**: Updated the `DefaultVisualLibrary.asset` to point to the new prefab, ensuring all new buildings constructed in your skirmish will use this art.\n\nYour ants will now build within a much more immersive, organic-looking structure!",
+      "snapshot_message_type": 1
     }
   ]
 }
