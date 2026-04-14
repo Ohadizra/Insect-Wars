@@ -641,6 +641,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "while ants work on ne building , before it is finished , the building is invisable, like art did not fit well",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "f2e46904-dc89-4b15-a71e-8c16d795d752",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "The issue where buildings were invisible while under construction was caused by a logic error in the `ProductionBuilding.Place` method. \n\n### Issues Identified:\n1.  **Subterranean Placement**: When a construction prefab (the \"cocoon\") was used, the script calculated its ground offset but then incorrectly subtracted the absolute terrain height from its local position. This resulted in the construction visual being buried deep underground (e.g., if the terrain was at height 20, the building was moved 20 units below the surface).\n2.  **Low Initial Visibility**: The construction visual started with very low scale and transparency (10% of final size/opacity), making it difficult to see even if it were correctly placed.\n3.  **Material Limitations**: The construction material was set to Opaque, meaning transparency changes wouldn't take effect even if the code attempted to apply them.\n\n### Changes Made:\n*   **Fixed Burial Bug**: Removed the incorrect `- groundY` subtraction from the construction visual's local position in `ProductionBuilding.cs`. The visual now correctly sits on the terrain surface.\n*   **Improved Initial Visibility**: Increased the starting vertical scale from **10% to 35%** and the starting alpha/tint from **10% to 45%** in `UpdateConstructionVisual`. This ensures the building has a substantial visual presence as soon as construction begins.\n*   **Refined Placement**: Ensured that the construction visual's bottom remains aligned with the ground even as it grows in height during the construction process.\n\nThese changes ensure that whenever your ants start working on a new building, a visible \"construction cocoon\" will appear immediately at the correct location, growing until the final building art swaps in upon completion.",
+      "snapshot_message_type": 1
     }
   ]
 }

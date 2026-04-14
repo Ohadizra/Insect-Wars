@@ -269,7 +269,7 @@ namespace InsectWars.RTS
         {
             float progress = ConstructionProgress;
 
-            float scaleY = Mathf.Lerp(0.1f, 1f, progress);
+            float scaleY = Mathf.Lerp(0.35f, 1f, progress);
             transform.localScale = new Vector3(
                 _originalScale.x,
                 _originalScale.y * scaleY,
@@ -289,8 +289,8 @@ namespace InsectWars.RTS
             if (!hasCustomShader)
             {
                 float alpha = progress < 0.2f
-                    ? Mathf.Lerp(0.1f, 0.4f, progress / 0.2f)
-                    : Mathf.Lerp(0.4f, 1.0f, (progress - 0.2f) / 0.8f);
+                    ? Mathf.Lerp(0.45f, 0.65f, progress / 0.2f)
+                    : Mathf.Lerp(0.65f, 1.0f, (progress - 0.2f) / 0.8f);
                 float darkening = Mathf.Lerp(0.2f, 1f, progress);
                 Color constructionTint = new Color(0.85f, 0.85f, 0.85f);
 
@@ -600,9 +600,8 @@ namespace InsectWars.RTS
                 visual.transform.localScale = Vector3.one;
                 // Place on ground exactly
                 PlaceOnGround(visual, groundY);
-                // Shift local position so the bottom is at parent root
-                visual.transform.localPosition = new Vector3(0, visual.transform.localPosition.y - groundY, 0);
-            }
+                // The local position now correctly offsets the mesh from groundY.
+                }
             else
             {
                 visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
