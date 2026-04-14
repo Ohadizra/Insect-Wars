@@ -635,6 +635,12 @@
       "conversation_id": "6c5daa9d-0205-4b07-b4ed-e56795ff4cdb",
       "content": "I have replaced the placeholder \"boxes\" used during building construction with a thematic, organic \"Construction Cocoon\" visual.\n\n### Key Changes:\n1.  **New 3D Asset**: Generated a custom 3D mesh (`ConstructionCocoon.prefab`) using AI, designed to look like an organic mound made of soil and dried grass, perfectly fitting the insect-RTS aesthetic.\n2.  **Visual Library Integration**: Updated the `UnitVisualLibrary` to include a reference to this new construction prefab, ensuring it is automatically loaded and managed by the game's visual system.\n3.  **Dynamic Construction Visuals**: Modified `ProductionBuilding.Place` to instantiate the organic cocoon whenever a building is under construction. \n    *   The cocoon replaces the previous primitive cube.\n    *   Added logic to perfectly align the bottom of the cocoon with the terrain.\n    *   Disabled the legacy \"straps\" (accent boxes) when the cocoon is active to keep the visual clean.\n4.  **Robust Fallback**: Maintained the original primitive cube logic as a fallback if the construction prefab is ever missing, ensuring the game remains stable.\n\nBuildings will now emerge from these organic mounds, providing a much higher level of visual polish during the expansion and immersion during the early construction phase feedback and polish during the construction phase.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "while ants work on ne building , before it is finished , the building is invisable, like art did not fit well",
+      "snapshot_message_type": 0
     }
   ]
 }
