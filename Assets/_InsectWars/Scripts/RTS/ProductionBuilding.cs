@@ -258,16 +258,8 @@ namespace InsectWars.RTS
                 _state = BuildingState.Active;
                 _currentHealth = _maxHealth;
                 _buildTimeElapsed = _buildTimeTotal;
-                transform.localScale = _originalScale;
-                transform.position = _originalPosition;
-                foreach (var kvp in _originalColors)
-                {
-                    if (kvp.Key == null || kvp.Key.material == null) continue;
-                    if (kvp.Key.material.HasProperty("_BaseColor"))
-                        kvp.Key.material.SetColor("_BaseColor", kvp.Value);
-                    else
-                        kvp.Key.material.color = kvp.Value;
-                }
+                PlayCompletionEffect();
+                SwapToFinalVisual();
                 ColonyCapacity.NotifyChanged();
             }
         }
@@ -276,24 +268,115 @@ namespace InsectWars.RTS
         {
             float progress = ConstructionProgress;
 
-            float scaleY = Mathf.Lerp(0.5f, 1f, progress);
+            float scaleY = Mathf.Lerp(0.1f, 1f, progress);
             transform.localScale = new Vector3(
                 _originalScale.x,
                 _originalScale.y * scaleY,
                 _originalScale.z);
 
-            float darkening = Mathf.Lerp(0.35f, 1f, progress);
+            bool hasCustomShader = false;
             foreach (var kvp in _originalColors)
             {
                 if (kvp.Key == null || kvp.Key.material == null) continue;
-                var orig = kvp.Value;
-                var tinted = new Color(orig.r * darkening, orig.g * darkening, orig.b * darkening, orig.a);
-
-                if (kvp.Key.material.HasProperty("_BaseColor"))
-                    kvp.Key.material.SetColor("_BaseColor", tinted);
-                else
-                    kvp.Key.material.color = tinted;
+                if (kvp.Key.material.HasProperty("_ConstructionProgress"))
+                {
+                    kvp.Key.material.SetFloat("_ConstructionProgress", progress);
+                    hasCustomShader = true;
+                }
             }
+
+            if (!hasCustomShader)
+            {
+                float alpha = progress < 0.2f
+                    ? Mathf.Lerp(0.1f, 0.4f, progress / 0.2f)
+                    : Mathf.Lerp(0.4f, 1.0f, (progress - 0.2f) / 0.8f);
+                float darkening = Mathf.Lerp(0.2f, 1f, progress);
+                Color constructionTint = new Color(0.85f, 0.85f, 0.85f);
+
+                foreach (var kvp in _originalColors)
+                {
+                    if (kvp.Key == null || kvp.Key.material == null) continue;
+                    var orig = kvp.Value;
+                    Color targetBase = Color.Lerp(constructionTint * darkening, orig, Mathf.Clamp01((progress - 0.4f) / 0.6f));
+                    Color finalColor = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
+
+                    if (kvp.Key.material.HasProperty("_BaseColor"))
+                        kvp.Key.material.SetColor("_BaseColor", finalColor);
+                    else if (kvp.Key.material.HasProperty("_Color"))
+                        kvp.Key.material.color = finalColor;
+                }
+            }
+
+            if (_assignedBuilders > 0 && progress < 1f)
+                SpawnConstructionParticles(progress);
+        }
+
+        void SpawnConstructionParticles(float progress)
+        {
+            if (Random.value > 0.32f) return;
+
+            var rends = GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) return;
+            var bounds = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
+
+            Vector3 topCenter = new Vector3(transform.position.x, bounds.max.y, transform.position.z);
+
+            int count = Random.Range(1, 3);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 randomOffset = new Vector3(
+                    Random.Range(-2.5f, 2.5f), Random.Range(-0.5f, 0.5f), Random.Range(-2.5f, 2.5f));
+
+                var dust = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                dust.transform.position = topCenter + randomOffset;
+                dust.transform.localScale = Vector3.one * Random.Range(0.4f, 0.8f);
+                Destroy(dust.GetComponent<Collider>());
+
+                var sh = Shader.Find("InsectWars/SoftDust");
+                if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+
+                var mat = new Material(sh);
+                Color dustColor = new Color(0.85f, 0.85f, 0.85f, 0.5f);
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", dustColor);
+                else mat.color = dustColor;
+
+                dust.GetComponent<Renderer>().sharedMaterial = mat;
+
+                var behavior = dust.AddComponent<ConstructionDust>();
+                behavior.lifetime = Random.Range(1.0f, 1.8f);
+                behavior.maxScale = Random.Range(2.5f, 4.0f);
+            }
+        }
+
+        void PlayCompletionEffect()
+        {
+            if (GameAudio.Instance != null && GameAudio.Instance.constructionComplete != null)
+                GameAudio.PlayWorld(GameAudio.Instance.constructionComplete, transform.position);
+        }
+
+        void SwapToFinalVisual()
+        {
+            var position = transform.position;
+            var savedRally = _rallyPoint;
+            var savedRallyTarget = _rallyGatherTarget;
+            bool wasSelected = SelectionController.Instance != null &&
+                               SelectionController.Instance.SelectedBuildings.Contains(this);
+
+            s_all.Remove(this);
+
+            var newBuilding = Place(position, _type, _team, startBuilt: true);
+
+            if (savedRallyTarget != null && savedRally.HasValue)
+                newBuilding.SetRallyGather(savedRally.Value, savedRallyTarget);
+            else if (savedRally.HasValue)
+                newBuilding.SetRallyPoint(savedRally.Value);
+
+            if (wasSelected && SelectionController.Instance != null)
+                SelectionController.Instance.SelectBuilding(newBuilding);
+
+            _rallyFlag = null;
+            Destroy(gameObject);
         }
 
         public InsectUnit ProduceUnit(UnitArchetype archetype)
@@ -462,14 +545,17 @@ namespace InsectWars.RTS
         {
             var lib = SkirmishDirector.ActiveVisualLibrary;
 
-            if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
-                return PlaceAntNestFromPrefab(position, lib.hivePrefab, team, startBuilt);
-
-            if (lib != null)
+            if (startBuilt)
             {
-                var prefab = lib.GetBuildingPrefab(type);
-                if (prefab != null)
-                    return PlaceFromPrefab(position, prefab, type, team, startBuilt);
+                if (type == BuildingType.AntNest && lib != null && lib.hivePrefab != null)
+                    return PlaceAntNestFromPrefab(position, lib.hivePrefab, team, true);
+
+                if (lib != null)
+                {
+                    var prefab = lib.GetBuildingPrefab(type);
+                    if (prefab != null)
+                        return PlaceFromPrefab(position, prefab, type, team, true);
+                }
             }
 
             Color buildingColor;
@@ -478,7 +564,7 @@ namespace InsectWars.RTS
             {
                 case BuildingType.AntNest:
                     buildingColor = new Color(0.5f, 0.35f, 0.2f);
-                    scale = new Vector3(6f, 3.5f, 6f);
+                    scale = new Vector3(3.5f, 2f, 3.5f);
                     break;
                 case BuildingType.Underground:
                     buildingColor = new Color(0.35f, 0.25f, 0.45f);
@@ -551,7 +637,7 @@ namespace InsectWars.RTS
             foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
             {
                 if (mb == null) continue;
-                DestroyImmediate(mb);
+                Destroy(mb);
             }
         }
 
@@ -574,22 +660,6 @@ namespace InsectWars.RTS
             go.transform.position = new Vector3(position.x, 0f, position.z);
             PlaceOnGround(go, groundY);
 
-            if (go.GetComponent<Collider>() == null)
-            {
-                var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 0.5f, 0f);
-                col.size = new Vector3(2f, 2f, 2f);
-            }
-
-            if (go.GetComponent<NavMeshObstacle>() == null)
-            {
-                var obs = go.AddComponent<NavMeshObstacle>();
-                obs.carving = true;
-                obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(2f, 2f, 2f);
-                obs.center = new Vector3(0f, 0.5f, 0f);
-            }
-
             var skinColor = TeamPalette.GetShellColor(team);
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
@@ -604,6 +674,8 @@ namespace InsectWars.RTS
                 }
                 renderer.sharedMaterials = mats;
             }
+
+            SizeObstacleFromBounds(go);
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(BuildingType.AntNest, team, startBuilt);
@@ -644,25 +716,42 @@ namespace InsectWars.RTS
                 renderer.sharedMaterials = mats;
             }
 
-            if (go.GetComponent<Collider>() == null)
-            {
-                var col = go.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 1.5f, 0f);
-                col.size = new Vector3(5f, 3f, 5f);
-            }
-
-            if (go.GetComponent<NavMeshObstacle>() == null)
-            {
-                var obs = go.AddComponent<NavMeshObstacle>();
-                obs.carving = true;
-                obs.shape = NavMeshObstacleShape.Box;
-                obs.size = new Vector3(4f, 3f, 4f);
-                obs.center = new Vector3(0f, 1.5f, 0f);
-            }
+            SizeObstacleFromBounds(go);
 
             var building = go.AddComponent<ProductionBuilding>();
             building.Initialize(type, team, startBuilt);
             return building;
+        }
+
+        static void SizeObstacleFromBounds(GameObject go)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0) return;
+
+            var bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+                bounds.Encapsulate(renderers[i].bounds);
+
+            var s = go.transform.localScale;
+            var worldObsSize = new Vector3(bounds.size.x * 0.55f, bounds.size.y, bounds.size.z * 0.55f);
+            var worldCenter = bounds.center - go.transform.position;
+
+            var localSize = new Vector3(worldObsSize.x / s.x, worldObsSize.y / s.y, worldObsSize.z / s.z);
+            var localCenter = new Vector3(worldCenter.x / s.x, worldCenter.y / s.y, worldCenter.z / s.z);
+
+            var existing = go.GetComponent<NavMeshObstacle>();
+            if (existing != null) Destroy(existing);
+
+            var col = go.GetComponent<BoxCollider>();
+            if (col == null) col = go.AddComponent<BoxCollider>();
+            col.size = localSize;
+            col.center = localCenter;
+
+            var obs = go.AddComponent<NavMeshObstacle>();
+            obs.carving = true;
+            obs.shape = NavMeshObstacleShape.Box;
+            obs.size = localSize;
+            obs.center = localCenter;
         }
 
         static float SampleMaxTerrainHeight(Vector3 center, float footprint)

@@ -15,11 +15,12 @@ namespace InsectWars.RTS
         Camera _cam;
         Vector2 _dragStart;
         bool _boxActive;
-        bool _pressedOnWorld;   // true when the press was on world space (not UI)
+        bool _pressedOnWorld;
 
         HiveDeposit _selectedHive;
         RottingFruitNode _selectedResource;
-        ProductionBuilding _selectedBuilding;
+        readonly HashSet<ProductionBuilding> _selectedBuildings = new();
+        BuildingType? _activeBuildingType;
 
         float _lastClickTime;
         InsectUnit _lastClickedUnit;
@@ -27,7 +28,85 @@ namespace InsectWars.RTS
 
         public HiveDeposit SelectedHive => _selectedHive;
         public RottingFruitNode SelectedResource => _selectedResource;
-        public ProductionBuilding SelectedBuilding => _selectedBuilding;
+
+        /// <summary>
+        /// Primary selected building — first alive building of the active type.
+        /// All existing code that reads a single building keeps working.
+        /// </summary>
+        public ProductionBuilding SelectedBuilding
+        {
+            get
+            {
+                if (_selectedBuildings.Count == 0) return null;
+                foreach (var b in _selectedBuildings)
+                {
+                    if (b == null || !b.IsAlive) continue;
+                    if (_activeBuildingType == null || b.Type == _activeBuildingType)
+                        return b;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>All selected buildings (may contain multiple types).</summary>
+        public IReadOnlyCollection<ProductionBuilding> SelectedBuildings => _selectedBuildings;
+
+        /// <summary>Only buildings matching the currently active building type subgroup.</summary>
+        public IEnumerable<ProductionBuilding> SelectedBuildingsOfActiveType
+        {
+            get
+            {
+                if (_activeBuildingType == null)
+                {
+                    foreach (var b in _selectedBuildings)
+                        if (b != null && b.IsAlive) yield return b;
+                }
+                else
+                {
+                    foreach (var b in _selectedBuildings)
+                        if (b != null && b.IsAlive && b.Type == _activeBuildingType)
+                            yield return b;
+                }
+            }
+        }
+
+        public BuildingType? ActiveBuildingType => _activeBuildingType;
+
+        /// <summary>True when the building selection contains more than one distinct building type.</summary>
+        public bool HasMultipleBuildingTypes
+        {
+            get
+            {
+                BuildingType? first = null;
+                foreach (var b in _selectedBuildings)
+                {
+                    if (b == null || !b.IsAlive) continue;
+                    if (first == null) { first = b.Type; continue; }
+                    if (b.Type != first) return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>Cycle to the next building type subgroup (Tab key).</summary>
+        public void CycleBuildingSubgroup()
+        {
+            if (_selectedBuildings.Count == 0) return;
+
+            var types = new List<BuildingType>();
+            foreach (var b in _selectedBuildings)
+            {
+                if (b == null || !b.IsAlive) continue;
+                if (!types.Contains(b.Type)) types.Add(b.Type);
+            }
+            if (types.Count <= 1) return;
+
+            types.Sort();
+            int idx = _activeBuildingType.HasValue ? types.IndexOf(_activeBuildingType.Value) : -1;
+            _activeBuildingType = types[(idx + 1) % types.Count];
+
+            BottomBar.Instance?.ForceRebuild();
+        }
 
         RectTransform _marqueeCanvasRt;
         RectTransform _marqueeFill;
@@ -47,27 +126,20 @@ namespace InsectWars.RTS
 
         void BuildMarqueeOverlay()
         {
-            // Named "MarqueeBox" deliberately — GameHUD.BuildHud() disables any canvas
-            // whose name contains "HUD", "Canvas", or "UI", which would kill the marquee.
             var go = new GameObject("MarqueeBox");
             go.transform.SetParent(transform);
             _marqueeCanvas = go.AddComponent<Canvas>();
             _marqueeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            // Sort above the GameHUD canvas (sortingOrder 200) so it is always visible.
             _marqueeCanvas.sortingOrder = 210;
             _marqueeCanvas.pixelPerfect = false;
-            // ConstantPixelSize: 1 canvas unit == 1 screen pixel — simplest coordinate math.
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-            // No GraphicRaycaster — the marquee is purely visual and must NOT interfere
-            // with EventSystem.IsPointerOverGameObject() checks in SelectionController.
 
             _marqueeCanvasRt = go.GetComponent<RectTransform>();
 
             var fillGo = new GameObject("MarqueeFill");
             fillGo.transform.SetParent(go.transform, false);
             _marqueeFill = fillGo.AddComponent<RectTransform>();
-            // Anchor bottom-left so anchoredPosition == screen pixel position directly.
             _marqueeFill.anchorMin = Vector2.zero;
             _marqueeFill.anchorMax = Vector2.zero;
             _marqueeFill.pivot = Vector2.zero;
@@ -92,7 +164,6 @@ namespace InsectWars.RTS
                 bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
                 _pressedOnWorld = !overUi;
 
-                // Only start the drag-box when no pending command is waiting for a click.
                 if (!BottomBar.SuppressSelectionDrag && !overUi)
                 {
                     _boxActive = true;
@@ -118,7 +189,6 @@ namespace InsectWars.RTS
 
                 if (_boxActive)
                 {
-                    // Normal flow: drag box was active.
                     _boxActive = false;
                     if (dist < 12f)
                         ClickSelect(_dragStart);
@@ -127,8 +197,6 @@ namespace InsectWars.RTS
                 }
                 else if (_pressedOnWorld && dist < 12f && !BottomBar.SuppressSelectionDrag)
                 {
-                    // Fallback: box was suppressed (e.g., stale pending state at startup)
-                    // but the user did a short click on world space — still click-select.
                     ClickSelect(_dragStart);
                 }
 
@@ -141,8 +209,6 @@ namespace InsectWars.RTS
             if (_marqueeFill == null) return;
             var min = Vector2.Min(screenA, screenB);
             var max = Vector2.Max(screenA, screenB);
-            // With ConstantPixelSize and bottom-left anchor/pivot,
-            // anchoredPosition == bottom-left screen pixel and sizeDelta == pixel size.
             _marqueeFill.anchoredPosition = min;
             _marqueeFill.sizeDelta = new Vector2(
                 Mathf.Max(max.x - min.x, 2f),
@@ -156,7 +222,8 @@ namespace InsectWars.RTS
             _selected.Clear();
             _selectedHive = null;
             _selectedResource = null;
-            _selectedBuilding = null;
+            _selectedBuildings.Clear();
+            _activeBuildingType = null;
         }
 
         void ClickSelect(Vector2 screen)
@@ -203,7 +270,8 @@ namespace InsectWars.RTS
             if (building != null)
             {
                 ClearAll();
-                _selectedBuilding = building;
+                _selectedBuildings.Add(building);
+                _activeBuildingType = building.Type;
                 return;
             }
 
@@ -215,7 +283,6 @@ namespace InsectWars.RTS
                 return;
             }
 
-            // Nothing selectable hit — clear selection so clicking empty ground deselects.
             ClearAll();
         }
 
@@ -257,9 +324,13 @@ namespace InsectWars.RTS
                 var bp = _cam.WorldToScreenPoint(bld.transform.position);
                 if (bp.z > 0 && rect.Contains(new Vector2(bp.x, bp.y)))
                 {
-                    _selectedBuilding = bld;
-                    return;
+                    _selectedBuildings.Add(bld);
                 }
+            }
+            if (_selectedBuildings.Count > 0)
+            {
+                AutoSetActiveBuildingType();
+                return;
             }
 
             foreach (var node in RtsSimRegistry.FruitNodes)
@@ -292,7 +363,9 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>Replace the current selection with the given units (used by control groups).</summary>
+        // ──────────── Public API for Control Groups ────────────
+
+        /// <summary>Replace the current selection with the given units.</summary>
         public void SetSelection(IEnumerable<InsectUnit> units)
         {
             ClearAll();
@@ -304,12 +377,13 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>Add units to the current selection without clearing (used by control group Alt+Number).</summary>
+        /// <summary>Add units to the current selection without clearing.</summary>
         public void AddToSelection(IEnumerable<InsectUnit> units)
         {
             _selectedHive = null;
             _selectedResource = null;
-            _selectedBuilding = null;
+            _selectedBuildings.Clear();
+            _activeBuildingType = null;
             foreach (var u in units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
@@ -318,15 +392,28 @@ namespace InsectWars.RTS
             }
         }
 
-        /// <summary>Select a single production building (used by control groups).</summary>
+        /// <summary>Select a single production building.</summary>
         public void SelectBuilding(ProductionBuilding bld)
         {
             if (bld == null) return;
             ClearAll();
-            _selectedBuilding = bld;
+            _selectedBuildings.Add(bld);
+            _activeBuildingType = bld.Type;
         }
 
-        /// <summary>Select the player hive (used by control groups).</summary>
+        /// <summary>Select multiple production buildings with Tab-cycling support.</summary>
+        public void SelectBuildings(IEnumerable<ProductionBuilding> buildings)
+        {
+            ClearAll();
+            foreach (var b in buildings)
+            {
+                if (b == null || !b.IsAlive) continue;
+                _selectedBuildings.Add(b);
+            }
+            AutoSetActiveBuildingType();
+        }
+
+        /// <summary>Select the player hive.</summary>
         public void SelectHive(HiveDeposit hive)
         {
             if (hive == null) return;
@@ -355,6 +442,17 @@ namespace InsectWars.RTS
                 if (u.Definition != null && u.Definition.canGather) return true;
             }
             return false;
+        }
+
+        void AutoSetActiveBuildingType()
+        {
+            _activeBuildingType = null;
+            foreach (var b in _selectedBuildings)
+            {
+                if (b == null || !b.IsAlive) continue;
+                _activeBuildingType = b.Type;
+                break;
+            }
         }
     }
 }

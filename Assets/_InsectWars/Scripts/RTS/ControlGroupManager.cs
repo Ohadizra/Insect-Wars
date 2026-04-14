@@ -117,9 +117,11 @@ namespace InsectWars.RTS
             foreach (var u in sc.SelectedPlayerUnits())
                 _units[index].Add(u);
 
-            var bld = sc.SelectedBuilding;
-            if (bld != null && bld.Team == Team.Player && bld.IsAlive)
-                _buildings[index].Add(bld);
+            foreach (var b in sc.SelectedBuildings)
+            {
+                if (b != null && b.Team == Team.Player && b.IsAlive)
+                    _buildings[index].Add(b);
+            }
 
             var hive = sc.SelectedHive;
             if (hive != null && hive.Team == Team.Player && hive.IsAlive)
@@ -137,9 +139,11 @@ namespace InsectWars.RTS
             foreach (var u in sc.SelectedPlayerUnits())
                 _units[index].Add(u);
 
-            var bld = sc.SelectedBuilding;
-            if (bld != null && bld.Team == Team.Player && bld.IsAlive)
-                _buildings[index].Add(bld);
+            foreach (var b in sc.SelectedBuildings)
+            {
+                if (b != null && b.Team == Team.Player && b.IsAlive)
+                    _buildings[index].Add(b);
+            }
 
             var hive = sc.SelectedHive;
             if (hive != null && hive.Team == Team.Player && hive.IsAlive)
@@ -155,7 +159,7 @@ namespace InsectWars.RTS
             if (_units[index].Count > 0)
                 sc.AddToSelection(_units[index]);
             else if (_buildings[index].Count > 0)
-                sc.SelectBuilding(FirstAliveBuilding(index));
+                sc.SelectBuildings(_buildings[index]);
             else if (_hives[index] != null)
                 sc.SelectHive(_hives[index]);
 
@@ -175,23 +179,15 @@ namespace InsectWars.RTS
             _lastRecallTime[index] = now;
             ActiveGroup = index;
 
-            // Priority: units > buildings > hive (matching SC2 tab-group ordering)
             if (_units[index].Count > 0)
                 sc.SetSelection(_units[index]);
             else if (_buildings[index].Count > 0)
-                sc.SelectBuilding(FirstAliveBuilding(index));
+                sc.SelectBuildings(_buildings[index]);
             else if (_hives[index] != null)
                 sc.SelectHive(_hives[index]);
 
             if (doubleTap)
                 CenterCameraOnGroup(index);
-        }
-
-        ProductionBuilding FirstAliveBuilding(int index)
-        {
-            foreach (var b in _buildings[index])
-                if (b != null && b.IsAlive) return b;
-            return null;
         }
 
         void CenterCameraOnGroup(int index)

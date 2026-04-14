@@ -64,14 +64,16 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var selectedBuilding = SelectionController.Instance.SelectedBuilding;
-            if (selectedBuilding != null)
+            if (SelectionController.Instance.SelectedBuilding != null)
             {
                 var rallyFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
-                if (rallyFruit != null && !rallyFruit.Depleted)
-                    selectedBuilding.SetRallyGather(hit.point, rallyFruit);
-                else
-                    selectedBuilding.SetRallyPoint(hit.point);
+                foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                {
+                    if (rallyFruit != null && !rallyFruit.Depleted)
+                        b.SetRallyGather(hit.point, rallyFruit);
+                    else
+                        b.SetRallyPoint(hit.point);
+                }
                 return;
             }
 

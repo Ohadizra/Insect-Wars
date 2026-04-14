@@ -170,6 +170,15 @@ namespace InsectWars.RTS
         {
             if (Keyboard.current == null) return;
 
+            // Tab cycles building subgroups when multiple building types are selected
+            if (Keyboard.current.tabKey.wasPressedThisFrame &&
+                SelectionController.Instance != null &&
+                SelectionController.Instance.HasMultipleBuildingTypes)
+            {
+                SelectionController.Instance.CycleBuildingSubgroup();
+                return;
+            }
+
             if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 if (_buildMenuActive)
@@ -183,10 +192,19 @@ namespace InsectWars.RTS
                 }
                 else if (SelectionController.Instance != null)
                 {
-                    var selBld = SelectionController.Instance.SelectedBuilding;
-                    if (selBld != null && selBld.IsProducing)
+                    // Cancel production on first producing building of active type
+                    bool cancelled = false;
+                    foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
                     {
-                        selBld.CancelLast();
+                        if (b.IsProducing)
+                        {
+                            b.CancelLast();
+                            cancelled = true;
+                            break;
+                        }
+                    }
+                    if (cancelled)
+                    {
                         ForceRebuild();
                     }
                     else
@@ -222,11 +240,11 @@ namespace InsectWars.RTS
             {
                 var producible = selectedBuilding.ProducibleUnits;
                 if (Keyboard.current.qKey.wasPressedThisFrame && producible.Length > 0)
-                    ProduceFromBuilding(selectedBuilding, producible[0]);
+                    ProduceFromAllActiveBuildings(producible[0]);
                 if (Keyboard.current.wKey.wasPressedThisFrame && producible.Length > 1)
-                    ProduceFromBuilding(selectedBuilding, producible[1]);
+                    ProduceFromAllActiveBuildings(producible[1]);
                 if (Keyboard.current.rKey.wasPressedThisFrame)
-                    ClearBuildingRally(selectedBuilding);
+                    ClearAllActiveBuildingRallies();
                 return;
             }
 
@@ -300,8 +318,8 @@ namespace InsectWars.RTS
                 if (Instance._buildMenuActive) return true;
                 if (Pending != PendingCommand.None) return true;
                 if (SelectionController.Instance == null) return false;
-                var bld = SelectionController.Instance.SelectedBuilding;
-                if (bld != null && bld.IsProducing) return true;
+                foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                    if (b.IsProducing) return true;
                 var hive = SelectionController.Instance.SelectedHive;
                 if (hive != null && hive.IsProducing) return true;
                 return false;
@@ -343,8 +361,8 @@ namespace InsectWars.RTS
             int queueSnap = 0;
             if (newMode == BarMode.Building)
             {
-                var bld = sc.SelectedBuilding;
-                if (bld != null) queueSnap = bld.QueueCount;
+                foreach (var b in sc.SelectedBuildingsOfActiveType)
+                    queueSnap += b.QueueCount;
             }
             else if (newMode == BarMode.Hive)
             {
@@ -423,11 +441,14 @@ namespace InsectWars.RTS
                             {
                                 var arch = units[i];
                                 string hk = i < hotkeys.Length ? hotkeys[i] : "";
-                                AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromBuilding(bld, arch));
+                                AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromAllActiveBuildings(arch));
                             }
-                            if (bld.IsProducing)
-                                AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => bld.CancelLast());
-                            AddCmdButton(_cmdGridParent, "Clear Rally", "R", () => ClearBuildingRally(bld));
+                            bool anyProducing = false;
+                            foreach (var ab in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                                if (ab.IsProducing) { anyProducing = true; break; }
+                            if (anyProducing)
+                                AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => CancelFirstActiveProduction());
+                            AddCmdButton(_cmdGridParent, "Clear Rally", "R", ClearAllActiveBuildingRallies);
                         }
                     }
                     break;
@@ -934,6 +955,38 @@ namespace InsectWars.RTS
             if (bld != null) bld.QueueUnit(archetype);
         }
 
+        /// <summary>Queue one unit in each operational building of the active type.</summary>
+        void ProduceFromAllActiveBuildings(UnitArchetype archetype)
+        {
+            if (SelectionController.Instance == null) return;
+            foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+            {
+                if (b.IsOperational)
+                    b.QueueUnit(archetype);
+            }
+        }
+
+        void CancelFirstActiveProduction()
+        {
+            if (SelectionController.Instance == null) return;
+            foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+            {
+                if (b.IsProducing)
+                {
+                    b.CancelLast();
+                    ForceRebuild();
+                    return;
+                }
+            }
+        }
+
+        void ClearAllActiveBuildingRallies()
+        {
+            if (SelectionController.Instance == null) return;
+            foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                b.ClearRally();
+        }
+
         static void ClearBuildingRally(ProductionBuilding bld)
         {
             if (bld != null) bld.ClearRally();
@@ -948,66 +1001,21 @@ namespace InsectWars.RTS
         {
             DestroyGhost();
 
-            var lib = SkirmishDirector.ActiveVisualLibrary;
-            GameObject prefab = null;
-            if (lib != null)
+            _ghostPreview = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            _ghostPreview.name = "BuildingGhost";
+            Destroy(_ghostPreview.GetComponent<Collider>());
+
+            Vector3 scale = type switch
             {
-                prefab = type == BuildingType.AntNest ? lib.hivePrefab : lib.GetBuildingPrefab(type);
-            }
-
-            if (prefab != null)
-            {
-                var savedPlayerHive = HiveDeposit.PlayerHive;
-                var savedEnemyHive = HiveDeposit.EnemyHive;
-
-                _ghostPreview = Instantiate(prefab);
-                _ghostPreview.name = "BuildingGhost";
-
-                // Strip ALL MonoBehaviours (including missing scripts) immediately
-                foreach (var mb in _ghostPreview.GetComponentsInChildren<MonoBehaviour>(true))
-                {
-                    if (mb == null) continue;
-                    DestroyImmediate(mb);
-                }
-                foreach (var col in _ghostPreview.GetComponentsInChildren<Collider>(true))
-                    DestroyImmediate(col);
-                foreach (var obs in _ghostPreview.GetComponentsInChildren<UnityEngine.AI.NavMeshObstacle>(true))
-                    DestroyImmediate(obs);
-
-                HiveDeposit.SetMainPlayerHive(savedPlayerHive);
-                HiveDeposit.SetMainEnemyHive(savedEnemyHive);
-
-                Vector3 buildScale = type switch
-                {
-                    BuildingType.AntNest => Vector3.one * 2.7f,
-                    BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
-                    BuildingType.SkyTower => new Vector3(0.845f, 0.676f, 0.845f),
-                    BuildingType.RootCellar => new Vector3(0.5f, 0.5f, 0.5f),
-                    _ => Vector3.one
-                };
-                _ghostPreview.transform.localScale = Vector3.Scale(_ghostPreview.transform.localScale, buildScale);
-
-                var ghostMat = CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
-                foreach (var r in _ghostPreview.GetComponentsInChildren<Renderer>(true))
-                    r.sharedMaterial = ghostMat;
-            }
-            else
-            {
-                _ghostPreview = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                _ghostPreview.name = "BuildingGhost";
-                Destroy(_ghostPreview.GetComponent<Collider>());
-                Vector3 scale = type switch
-                {
-                    BuildingType.Underground => new Vector3(4f, 2f, 4f),
-                    BuildingType.AntNest => new Vector3(3.5f, 2f, 3.5f),
-                    BuildingType.SkyTower => new Vector3(4f, 2f, 4f),
-                    BuildingType.RootCellar => new Vector3(1.75f, 1f, 1.75f),
-                    _ => new Vector3(3f, 2f, 3f)
-                };
-                _ghostPreview.transform.localScale = scale;
-                _ghostPreview.GetComponent<Renderer>().sharedMaterial =
-                    CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
-            }
+                BuildingType.Underground => new Vector3(4f, 2f, 4f),
+                BuildingType.AntNest => new Vector3(3.5f, 2f, 3.5f),
+                BuildingType.SkyTower => new Vector3(4f, 2f, 4f),
+                BuildingType.RootCellar => new Vector3(1.75f, 1f, 1.75f),
+                _ => new Vector3(3f, 2f, 3f)
+            };
+            _ghostPreview.transform.localScale = scale;
+            _ghostPreview.GetComponent<Renderer>().sharedMaterial =
+                CreateGhostMaterial(new Color(0.5f, 0.5f, 0.5f, 0.4f));
         }
 
         static Material CreateGhostMaterial(Color color)
@@ -1110,10 +1118,15 @@ namespace InsectWars.RTS
 
             if (_currentBarMode == BarMode.Building)
             {
-                var bld = SelectionController.Instance.SelectedBuilding;
-                if (bld != null && bld.RallyPoint.HasValue &&
-                    _cmdButtonImages.TryGetValue("Clear Rally", out var rallyImg2))
-                    rallyImg2.color = CmdActive;
+                foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                {
+                    if (b.RallyPoint.HasValue &&
+                        _cmdButtonImages.TryGetValue("Clear Rally", out var rallyImg2))
+                    {
+                        rallyImg2.color = CmdActive;
+                        break;
+                    }
+                }
                 return;
             }
 
@@ -1154,14 +1167,21 @@ namespace InsectWars.RTS
                     label = builders > 0 ? $"Building... ({builders} worker{(builders > 1 ? "s" : "")})" : "Building... (no workers)";
                     barColor = new Color(0.95f, 0.75f, 0.2f);
                 }
-                else if (bld != null && bld.IsProducing)
+                else if (bld != null)
                 {
-                    progress = bld.ProductionProgress;
-                    var arch = bld.CurrentProducing;
-                    label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
-                    queueCount = bld.QueueCount;
+                    // Show production of the first producing building of the active type
+                    foreach (var ab in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                    {
+                        if (!ab.IsProducing) continue;
+                        progress = ab.ProductionProgress;
+                        var arch = ab.CurrentProducing;
+                        label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
+                        queueCount = ab.QueueCount;
+                        break;
+                    }
                 }
-                else
+
+                if (label == null)
                 {
                     var hive = SelectionController.Instance.SelectedHive;
                     if (hive != null && hive.IsProducing)
@@ -1252,14 +1272,50 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance.SelectedBuilding != null)
             {
-                var bld = SelectionController.Instance.SelectedBuilding;
-                _portraitLabel.text = bld.DisplayName;
-                _attributeLabel.text = bld.State == BuildingState.UnderConstruction
-                    ? $"Under Construction — {Mathf.RoundToInt(bld.ConstructionProgress * 100f)}%"
-                    : "Structure - Biological";
-                ShowHpDisplay(bld.CurrentHealth, bld.MaxHealth);
-                var cell0 = _selectionCells[0];
-                cell0.color = Color.white;
+                var sc = SelectionController.Instance;
+                int totalBld = 0;
+                float totalBldHp = 0f, totalBldMaxHp = 0f;
+                foreach (var b in sc.SelectedBuildings)
+                {
+                    if (b == null || !b.IsAlive) continue;
+                    totalBld++;
+                    totalBldHp += b.CurrentHealth;
+                    totalBldMaxHp += b.MaxHealth;
+                }
+
+                var primary = sc.SelectedBuilding;
+                if (totalBld <= 1)
+                {
+                    _portraitLabel.text = primary.DisplayName;
+                    _attributeLabel.text = primary.State == BuildingState.UnderConstruction
+                        ? $"Under Construction — {Mathf.RoundToInt(primary.ConstructionProgress * 100f)}%"
+                        : "Structure - Biological";
+                }
+                else
+                {
+                    _portraitLabel.text = $"{primary.DisplayName} ({totalBld})";
+                    string tabHint = sc.HasMultipleBuildingTypes ? " · Tab to cycle" : "";
+                    _attributeLabel.text = $"Structure - Biological{tabHint}";
+                }
+                ShowHpDisplay(totalBldHp, totalBldMaxHp);
+
+                var bldCounts = new Dictionary<BuildingType, int>();
+                foreach (var b in sc.SelectedBuildings)
+                {
+                    if (b == null || !b.IsAlive) continue;
+                    bldCounts.TryGetValue(b.Type, out var n);
+                    bldCounts[b.Type] = n + 1;
+                }
+                int cellIdx = 0;
+                foreach (var kvp in bldCounts)
+                {
+                    if (cellIdx >= _selectionCells.Length) break;
+                    var cell = _selectionCells[cellIdx];
+                    cell.color = Color.white;
+                    var tx = cell.GetComponentInChildren<Text>();
+                    if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
+                    cellIdx++;
+                }
                 return;
             }
 
