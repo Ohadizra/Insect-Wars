@@ -35,6 +35,9 @@ namespace InsectWars.Data
             if (completionVfxPrefab == null)
                 completionVfxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Prefabs/BuildingCompleteVFX.prefab");
+            if (constructionPrefab == null)
+                constructionPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Models/ConstructionCocoon.prefab");
             }
             #endif
 
@@ -50,6 +53,7 @@ namespace InsectWars.Data
             public GameObject skyTowerPrefab;
             public GameObject rootCellarPrefab;
             public GameObject completionVfxPrefab;
+            public GameObject constructionPrefab;
 
             [Header("Environment")]
         public GameObject rottingApplePrefab;

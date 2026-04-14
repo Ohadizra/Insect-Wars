@@ -286,8 +286,13 @@ namespace InsectWars.RTS
                 }
 
                 var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
-                if (shift && _selectedBuildings.Count > 0)
+                if (shift)
                 {
+                    // Clear non-building selection types so we switch to building mode
+                    foreach (var s in _selected) s.IsSelected = false;
+                    _selected.Clear();
+                    _selectedHive = null;
+                    _selectedResource = null;
                     _selectedBuildings.Add(building);
                     AutoSetActiveBuildingType();
                 }
@@ -318,20 +323,48 @@ namespace InsectWars.RTS
             var rect = new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
             if (Keyboard.current == null || !Keyboard.current.leftShiftKey.isPressed)
                 ClearAll();
+
+            // Collect units in the box
+            var boxUnits = new List<InsectUnit>();
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u.Team != Team.Player || !u.IsAlive) continue;
                 var p = _cam.WorldToScreenPoint(u.transform.position);
                 if (p.z < 0) continue;
-                if (!rect.Contains(new Vector2(p.x, p.y))) continue;
-                if (!_selected.Contains(u))
-                {
-                    _selected.Add(u);
-                    u.IsSelected = true;
-                }
+                if (rect.Contains(new Vector2(p.x, p.y)))
+                    boxUnits.Add(u);
             }
 
-            if (_selected.Count > 0) return;
+            // Collect player buildings in the box
+            var boxBuildings = new List<ProductionBuilding>();
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || bld.Team != Team.Player || !bld.IsAlive) continue;
+                var bp = _cam.WorldToScreenPoint(bld.transform.position);
+                if (bp.z > 0 && rect.Contains(new Vector2(bp.x, bp.y)))
+                    boxBuildings.Add(bld);
+            }
+
+            // Priority: if units found, select units only (SC2 behavior).
+            // If no units but buildings found, select buildings.
+            // If neither, try hive then resources.
+            if (boxUnits.Count > 0)
+            {
+                foreach (var u in boxUnits)
+                {
+                    if (_selected.Add(u))
+                        u.IsSelected = true;
+                }
+                return;
+            }
+
+            if (boxBuildings.Count > 0)
+            {
+                foreach (var bld in boxBuildings)
+                    _selectedBuildings.Add(bld);
+                AutoSetActiveBuildingType();
+                return;
+            }
 
             if (HiveDeposit.PlayerHive != null)
             {
@@ -341,21 +374,6 @@ namespace InsectWars.RTS
                     _selectedHive = HiveDeposit.PlayerHive;
                     return;
                 }
-            }
-
-            foreach (var bld in ProductionBuilding.All)
-            {
-                if (bld == null || bld.Team != Team.Player || !bld.IsAlive) continue;
-                var bp = _cam.WorldToScreenPoint(bld.transform.position);
-                if (bp.z > 0 && rect.Contains(new Vector2(bp.x, bp.y)))
-                {
-                    _selectedBuildings.Add(bld);
-                }
-            }
-            if (_selectedBuildings.Count > 0)
-            {
-                AutoSetActiveBuildingType();
-                return;
             }
 
             foreach (var node in RtsSimRegistry.FruitNodes)

@@ -591,31 +591,49 @@ namespace InsectWars.RTS
             go.transform.position = new Vector3(position.x, groundY, position.z);
             go.transform.localScale = scale;
 
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visual.name = "Visual";
-            visual.transform.SetParent(go.transform, false);
-            visual.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-            visual.transform.localScale = Vector3.one;
-            Destroy(visual.GetComponent<Collider>());
-            ApplyMat(visual, buildingColor);
+            GameObject visual;
+            if (lib != null && lib.constructionPrefab != null)
+            {
+                visual = Instantiate(lib.constructionPrefab, go.transform);
+                visual.name = "Visual";
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localScale = Vector3.one;
+                // Place on ground exactly
+                PlaceOnGround(visual, groundY);
+                // Shift local position so the bottom is at parent root
+                visual.transform.localPosition = new Vector3(0, visual.transform.localPosition.y - groundY, 0);
+            }
+            else
+            {
+                visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visual.name = "Visual";
+                visual.transform.SetParent(go.transform, false);
+                visual.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+                visual.transform.localScale = Vector3.one;
+                Destroy(visual.GetComponent<Collider>());
+                ApplyMat(visual, buildingColor);
+            }
             
-            // Straps for buildings
-            var strapColor = TeamPalette.GetTeamColor(team);
-            var strap1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            strap1.name = "Strap_Top";
-            strap1.transform.SetParent(go.transform, false);
-            strap1.transform.localPosition = new Vector3(0f, 1.02f, 0f);
-            strap1.transform.localScale = new Vector3(0.5f, 0.05f, 0.5f);
-            Destroy(strap1.GetComponent<Collider>());
-            ApplyMat(strap1, strapColor);
+            // Straps for buildings — only for primitive fallback
+            if (lib == null || lib.constructionPrefab == null)
+            {
+                var strapColor = TeamPalette.GetTeamColor(team);
+                var strap1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                strap1.name = "Strap_Top";
+                strap1.transform.SetParent(go.transform, false);
+                strap1.transform.localPosition = new Vector3(0f, 1.02f, 0f);
+                strap1.transform.localScale = new Vector3(0.5f, 0.05f, 0.5f);
+                Destroy(strap1.GetComponent<Collider>());
+                ApplyMat(strap1, strapColor);
 
-            var strap2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            strap2.name = "Strap_Side";
-            strap2.transform.SetParent(go.transform, false);
-            strap2.transform.localPosition = new Vector3(0.52f, 0.5f, 0f);
-            strap2.transform.localScale = new Vector3(0.05f, 0.4f, 0.15f);
-            Destroy(strap2.GetComponent<Collider>());
-            ApplyMat(strap2, strapColor);
+                var strap2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                strap2.name = "Strap_Side";
+                strap2.transform.SetParent(go.transform, false);
+                strap2.transform.localPosition = new Vector3(0.52f, 0.5f, 0f);
+                strap2.transform.localScale = new Vector3(0.05f, 0.4f, 0.15f);
+                Destroy(strap2.GetComponent<Collider>());
+                ApplyMat(strap2, strapColor);
+            }
 
             var col = go.AddComponent<BoxCollider>();
             col.center = new Vector3(0f, 0.5f, 0f);
