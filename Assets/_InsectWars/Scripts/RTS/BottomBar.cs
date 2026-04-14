@@ -98,6 +98,7 @@ namespace InsectWars.RTS
 
         enum BarMode { None, Units, WorkerUnits, Hive, Resource, BuildMenu, Building }
         BarMode _currentBarMode = (BarMode)(-1);
+        BuildingType? _lastActiveBuildingType;
 
         void Awake()
         {
@@ -370,10 +371,12 @@ namespace InsectWars.RTS
                 if (hive != null) queueSnap = hive.QueueCount;
             }
 
-            if (newMode != _currentBarMode || queueSnap != _lastQueueSnapshot)
+            var curBldType = sc.ActiveBuildingType;
+            if (newMode != _currentBarMode || queueSnap != _lastQueueSnapshot || curBldType != _lastActiveBuildingType)
             {
                 _currentBarMode = newMode;
                 _lastQueueSnapshot = queueSnap;
+                _lastActiveBuildingType = curBldType;
                 RebuildCommandButtons();
             }
         }
@@ -1273,18 +1276,18 @@ namespace InsectWars.RTS
             if (SelectionController.Instance.SelectedBuilding != null)
             {
                 var sc = SelectionController.Instance;
-                int totalBld = 0;
-                float totalBldHp = 0f, totalBldMaxHp = 0f;
-                foreach (var b in sc.SelectedBuildings)
+                var primary = sc.SelectedBuilding;
+
+                int activeCount = 0;
+                float activeHp = 0f, activeMaxHp = 0f;
+                foreach (var b in sc.SelectedBuildingsOfActiveType)
                 {
-                    if (b == null || !b.IsAlive) continue;
-                    totalBld++;
-                    totalBldHp += b.CurrentHealth;
-                    totalBldMaxHp += b.MaxHealth;
+                    activeCount++;
+                    activeHp += b.CurrentHealth;
+                    activeMaxHp += b.MaxHealth;
                 }
 
-                var primary = sc.SelectedBuilding;
-                if (totalBld <= 1)
+                if (activeCount <= 1)
                 {
                     _portraitLabel.text = primary.DisplayName;
                     _attributeLabel.text = primary.State == BuildingState.UnderConstruction
@@ -1293,11 +1296,16 @@ namespace InsectWars.RTS
                 }
                 else
                 {
-                    _portraitLabel.text = $"{primary.DisplayName} ({totalBld})";
-                    string tabHint = sc.HasMultipleBuildingTypes ? " · Tab to cycle" : "";
-                    _attributeLabel.text = $"Structure - Biological{tabHint}";
+                    _portraitLabel.text = $"{primary.DisplayName} (x{activeCount})";
+                    _attributeLabel.text = "Structure - Biological";
                 }
-                ShowHpDisplay(totalBldHp, totalBldMaxHp);
+
+                if (sc.HasMultipleBuildingTypes)
+                {
+                    _attributeLabel.text += " · Tab to cycle";
+                }
+
+                ShowHpDisplay(activeHp, activeMaxHp);
 
                 var bldCounts = new Dictionary<BuildingType, int>();
                 foreach (var b in sc.SelectedBuildings)
@@ -1311,7 +1319,8 @@ namespace InsectWars.RTS
                 {
                     if (cellIdx >= _selectionCells.Length) break;
                     var cell = _selectionCells[cellIdx];
-                    cell.color = Color.white;
+                    bool isActive = sc.ActiveBuildingType.HasValue && kvp.Key == sc.ActiveBuildingType.Value;
+                    cell.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
                     var tx = cell.GetComponentInChildren<Text>();
                     if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
                     cellIdx++;

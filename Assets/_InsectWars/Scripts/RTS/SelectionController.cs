@@ -24,6 +24,8 @@ namespace InsectWars.RTS
 
         float _lastClickTime;
         InsectUnit _lastClickedUnit;
+        ProductionBuilding _lastClickedBuilding;
+        float _lastBuildingClickTime;
         const float DoubleClickThreshold = 0.3f;
 
         public HiveDeposit SelectedHive => _selectedHive;
@@ -267,11 +269,34 @@ namespace InsectWars.RTS
             }
 
             var building = hit.collider.GetComponentInParent<ProductionBuilding>();
-            if (building != null)
+            if (building != null && building.Team == Team.Player)
             {
-                ClearAll();
-                _selectedBuildings.Add(building);
-                _activeBuildingType = building.Type;
+                float now = Time.unscaledTime;
+                bool isBldDoubleClick = _lastClickedBuilding != null
+                    && _lastClickedBuilding.Type == building.Type
+                    && (now - _lastBuildingClickTime) <= DoubleClickThreshold;
+
+                _lastBuildingClickTime = now;
+                _lastClickedBuilding = building;
+
+                if (isBldDoubleClick)
+                {
+                    SelectAllBuildingsOfTypeInView(building.Type);
+                    return;
+                }
+
+                var shift = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+                if (shift && _selectedBuildings.Count > 0)
+                {
+                    _selectedBuildings.Add(building);
+                    AutoSetActiveBuildingType();
+                }
+                else
+                {
+                    ClearAll();
+                    _selectedBuildings.Add(building);
+                    _activeBuildingType = building.Type;
+                }
                 return;
             }
 
@@ -320,7 +345,7 @@ namespace InsectWars.RTS
 
             foreach (var bld in ProductionBuilding.All)
             {
-                if (bld == null) continue;
+                if (bld == null || bld.Team != Team.Player || !bld.IsAlive) continue;
                 var bp = _cam.WorldToScreenPoint(bld.transform.position);
                 if (bp.z > 0 && rect.Contains(new Vector2(bp.x, bp.y)))
                 {
@@ -361,6 +386,20 @@ namespace InsectWars.RTS
                     u.IsSelected = true;
                 }
             }
+        }
+
+        void SelectAllBuildingsOfTypeInView(BuildingType type)
+        {
+            ClearAll();
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || bld.Team != Team.Player || !bld.IsAlive) continue;
+                if (bld.Type != type) continue;
+                var vp = _cam.WorldToViewportPoint(bld.transform.position);
+                if (vp.z <= 0 || vp.x < 0 || vp.x > 1 || vp.y < 0 || vp.y > 1) continue;
+                _selectedBuildings.Add(bld);
+            }
+            _activeBuildingType = type;
         }
 
         // ──────────── Public API for Control Groups ────────────
