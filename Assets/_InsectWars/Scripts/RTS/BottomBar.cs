@@ -958,15 +958,26 @@ namespace InsectWars.RTS
             if (bld != null) bld.QueueUnit(archetype);
         }
 
-        /// <summary>Queue one unit in each operational building of the active type.</summary>
+        /// <summary>
+        /// Queue one unit in the operational building of the active type that has the
+        /// shortest queue (SC2 smart-queue distribution). Press the hotkey multiple
+        /// times to fill queues across buildings round-robin style.
+        /// </summary>
         void ProduceFromAllActiveBuildings(UnitArchetype archetype)
         {
             if (SelectionController.Instance == null) return;
+            ProductionBuilding best = null;
+            int bestQueue = int.MaxValue;
             foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
             {
-                if (b.IsOperational)
-                    b.QueueUnit(archetype);
+                if (!b.IsOperational) continue;
+                if (b.QueueCount < bestQueue)
+                {
+                    bestQueue = b.QueueCount;
+                    best = b;
+                }
             }
+            if (best != null) best.QueueUnit(archetype);
         }
 
         void CancelFirstActiveProduction()
@@ -1172,16 +1183,22 @@ namespace InsectWars.RTS
                 }
                 else if (bld != null)
                 {
-                    // Show production of the first producing building of the active type
+                    int producingCount = 0;
+                    int totalQueued = 0;
                     foreach (var ab in SelectionController.Instance.SelectedBuildingsOfActiveType)
                     {
+                        totalQueued += ab.QueueCount;
                         if (!ab.IsProducing) continue;
-                        progress = ab.ProductionProgress;
-                        var arch = ab.CurrentProducing;
-                        label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
-                        queueCount = ab.QueueCount;
-                        break;
+                        producingCount++;
+                        if (label == null)
+                        {
+                            progress = ab.ProductionProgress;
+                            var arch = ab.CurrentProducing;
+                            label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
+                        }
                     }
+                    if (label != null)
+                        queueCount = totalQueued;
                 }
 
                 if (label == null)
