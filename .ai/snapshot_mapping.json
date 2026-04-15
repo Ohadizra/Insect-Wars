@@ -827,6 +827,12 @@
       "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
       "content": "was if fixed? if not , then continue",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "25271ba2-e0d7-41ca-9e5a-702dd6c32fdb",
+      "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
+      "content": "contunue",
+      "snapshot_message_type": 0
     }
   ]
 }

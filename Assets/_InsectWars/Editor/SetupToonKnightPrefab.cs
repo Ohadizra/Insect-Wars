@@ -287,9 +287,9 @@ namespace InsectWars.Editor
                 importer.isReadable = true;
                 dirty = true;
             }
-            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            if (Mathf.Abs(importer.globalScale - 0.5f) > 0.01f)
             {
-                importer.globalScale = 80f;
+                importer.globalScale = 0.5f;
                 dirty = true;
             }
             if (importer.animationType != ModelImporterAnimationType.Generic)
@@ -301,7 +301,7 @@ namespace InsectWars.Editor
             if (dirty)
             {
                 importer.SaveAndReimport();
-                Debug.Log("[Insect Wars] Fixed Hawk Moth FBX import settings (scale=80, generic rig).");
+                Debug.Log("[Insect Wars] Fixed Hawk Moth FBX import settings (scale=0.5, generic rig).");
             }
         }
 
