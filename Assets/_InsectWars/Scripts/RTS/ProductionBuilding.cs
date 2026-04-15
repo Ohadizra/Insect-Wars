@@ -93,6 +93,7 @@ namespace InsectWars.RTS
         {
             BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
+            BuildingType.SkyTower => new[] { UnitArchetype.HawkMoth },
             _ => System.Array.Empty<UnitArchetype>()
         };
 
@@ -101,6 +102,7 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => 100,
             UnitArchetype.BasicRanged => 100,
             UnitArchetype.BlackWidow => 250,
+            UnitArchetype.HawkMoth => 200,
             UnitArchetype.Worker => 50,
             _ => 50
         };
@@ -110,6 +112,7 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => "Mantis",
             UnitArchetype.BasicRanged => "Beetle",
             UnitArchetype.BlackWidow => "Black Widow",
+            UnitArchetype.HawkMoth => "Hawk Moth",
             UnitArchetype.Worker => "Worker",
             _ => "Unit"
         };
@@ -129,6 +132,7 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => 18f,
             UnitArchetype.BasicRanged => 22f,
             UnitArchetype.BlackWidow => 35f,
+            UnitArchetype.HawkMoth => 28f,
             _ => 15f
         };
 

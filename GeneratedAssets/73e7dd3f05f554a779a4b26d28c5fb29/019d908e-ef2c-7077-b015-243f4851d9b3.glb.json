@@ -1,0 +1,12 @@
+{
+    "asset": "73e7dd3f05f554a779a4b26d28c5fb29",
+    "fileName": "019d908e-ef2c-7077-b015-243f4851d9b3.glb",
+    "prompt": "A rigged 3D character of a Black Widow spider based on the reference image. MUST HAVE A SKELETON (ARMATURE) with 8 individual leg bones. Each leg must be able to move independently. Dark black body, red hourglass. Game-ready SkinnedMeshRenderer. High quality geometry.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "581d4395f6b7d71d515fb75508312829",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

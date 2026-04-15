@@ -271,7 +271,7 @@ namespace InsectWars.RTS
             else if (EnemyResources.Calories < 100) cadence *= 1.5f;
             _nextProduceTime = _matchTime + cadence * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
-            int workers = 0, fighters = 0, ranged = 0;
+            int workers = 0, fighters = 0, ranged = 0, moths = 0;
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
@@ -281,17 +281,20 @@ namespace InsectWars.RTS
                     case UnitArchetype.BasicFighter: fighters++; break;
                     case UnitArchetype.BasicRanged: ranged++; break;
                     case UnitArchetype.BlackWidow: fighters++; break;
+                    case UnitArchetype.HawkMoth: moths++; break;
                 }
             }
             int combat = fighters + ranged;
 
             var nests = new List<ProductionBuilding>(4);
             var undergrounds = new List<ProductionBuilding>(4);
+            var skyTowers = new List<ProductionBuilding>(4);
             foreach (var b in ProductionBuilding.All)
             {
                 if (b == null || b.Team != Team.Enemy) continue;
                 if (b.Type == BuildingType.AntNest) nests.Add(b);
                 else if (b.Type == BuildingType.Underground) undergrounds.Add(b);
+                else if (b.Type == BuildingType.SkyTower) skyTowers.Add(b);
             }
 
             // --- Workers from all AntNests ---
@@ -328,6 +331,17 @@ namespace InsectWars.RTS
 
                     if (!ColonyCapacity.CanAfford(Team.Enemy, arch)) break;
                     if (ug.ProduceUnit(arch) != null) combat++;
+                }
+            }
+
+            // --- Hawk Moths from Sky Towers (max 2 active) ---
+            if (moths < 2 && _matchTime > 40f && skyTowers.Count > 0)
+            {
+                foreach (var st in skyTowers)
+                {
+                    if (moths >= 2) break;
+                    if (!ColonyCapacity.CanAfford(Team.Enemy, UnitArchetype.HawkMoth)) break;
+                    if (st.ProduceUnit(UnitArchetype.HawkMoth) != null) moths++;
                 }
             }
         }

@@ -1,0 +1,12 @@
+{
+    "asset": "4f6160ba1797244e583ff70f4573dc53",
+    "fileName": "019d9091-f8af-7703-9788-aee87b22aaa2.glb",
+    "prompt": "A rigged 3D character of a Black Widow spider. MUST BE RIGGED WITH ARMATURE AND BONES for each of the 8 legs. Game-ready SkinnedMeshRenderer. High quality topology. Dark shiny black body, red hourglass. Based on the provided reference image.",
+    "negativePrompt": "",
+    "model": "05e5b649-f94c-4ec6-852c-2a9c4a0af3ab",
+    "modelName": "Hunyuan 3D 3.0 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "f9935f8d61dd74ee3f9116876695febf",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

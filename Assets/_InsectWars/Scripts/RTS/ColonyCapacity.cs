@@ -23,6 +23,7 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => 2,
             UnitArchetype.BasicRanged => 3,
             UnitArchetype.BlackWidow => 5,
+            UnitArchetype.HawkMoth => 4,
             _ => 1
         };
 

@@ -64,6 +64,13 @@ namespace InsectWars.RTS
         public Transform AttackTarget => _attackTarget;
         public float LastDamageTime { get; private set; } = -1f;
 
+        /// <summary>Set by MothStealth. When true the unit is invisible to the opposing team.</summary>
+        public bool IsCloaked { get; set; }
+        /// <summary>Set by MothStealth/flight components. Airborne units cannot be hit by melee attacks.</summary>
+        public bool IsAirborne { get; set; }
+        /// <summary>Set by HealingAura to prevent stacking. Reset each frame by the aura tick.</summary>
+        public int HealAuraFrame { get; set; }
+
         GameObject _selectionRing;
         static Mesh s_sharedRingMesh;
         static Material s_sharedRingMaterial;
@@ -286,6 +293,11 @@ namespace InsectWars.RTS
         public void OrderAttack(InsectUnit target, bool keepAttackMoveIntent = false)
         {
             if (!IsAlive || target == null || !target.IsAlive || target.team == team) return;
+            if (definition != null && definition.archetype == UnitArchetype.HawkMoth) return;
+            if (target.IsCloaked
+                && Vector3.Distance(transform.position, target.transform.position) > 8f) return;
+            if (target.IsAirborne && definition != null
+                && definition.archetype != UnitArchetype.BasicRanged) return;
             var keepAm = keepAttackMoveIntent && _wantsAttackMove;
             var keepDest = _attackMoveDest;
             ClearTargets();
@@ -301,6 +313,7 @@ namespace InsectWars.RTS
         public void OrderAttackBuilding(ProductionBuilding target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            if (definition != null && definition.archetype == UnitArchetype.HawkMoth) return;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -310,6 +323,7 @@ namespace InsectWars.RTS
         public void OrderAttackHive(HiveDeposit target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            if (definition != null && definition.archetype == UnitArchetype.HawkMoth) return;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -528,6 +542,9 @@ namespace InsectWars.RTS
                     var u = c.GetComponentInParent<InsectUnit>();
                     if (u == null || !u.IsAlive || u.team == team) continue;
                     var d = Vector3.Distance(transform.position, u.transform.position);
+                    if (u.IsCloaked && d > 8f) continue;
+                    if (u.IsAirborne && definition != null
+                        && definition.archetype != UnitArchetype.BasicRanged) continue;
                     if (d < bestD) { bestD = d; bestUnit = u; }
                 }
             }
@@ -730,9 +747,15 @@ namespace InsectWars.RTS
                 return;
             }
             var targetUnit = _attackTarget.GetComponent<InsectUnit>();
-            // Targets can be units or buildings (which might not have InsectUnit)
             bool targetAlive = targetUnit != null ? targetUnit.IsAlive : true; 
             if (!targetAlive)
+            {
+                ResumeAfterAttack();
+                return;
+            }
+
+            if (targetUnit != null && targetUnit.IsAirborne
+                && definition.archetype != UnitArchetype.BasicRanged)
             {
                 ResumeAfterAttack();
                 return;

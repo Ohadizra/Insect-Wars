@@ -65,6 +65,18 @@ namespace InsectWars.Editor
         const string WidowControllerPath = ControllerDir + "/BlackWidow.controller";
         const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
 
+        // --- Hawk Moth paths ---
+        const string MothModelPath = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_fbx/Meshy_AI_Nocturnal_Sentinel_0415071225_texture.fbx";
+        const string MothTexDir = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_fbx";
+        const string MothBaseTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture.png";
+        const string MothNormalTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_normal.png";
+        const string MothEmissionTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_emission.png";
+        const string MothRoughnessTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_roughness.png";
+        const string MothMetallicTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_metallic.png";
+        const string MothMaterialPath = PrefabDir + "/HawkMothMat.mat";
+        const string MothControllerPath = ControllerDir + "/HawkMoth.controller";
+        const string MothPrefabPath = PrefabDir + "/HawkMoth.prefab";
+
         // --- Ant Nest (Hive) paths ---
         const string NestModelPath = "Assets/Insects Art/Stractures/Ants nest/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture_fbx/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture.fbx";
         const string NestTexDir = "Assets/Insects Art/Stractures/Ants nest/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture_fbx";
@@ -86,6 +98,7 @@ namespace InsectWars.Editor
             SetupAntWorker();
             SetupBombardierBeetle();
             SetupBlackWidow();
+            SetupHawkMoth();
             SetupAntNest();
         }
 
@@ -225,6 +238,147 @@ namespace InsectWars.Editor
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Black Widow setup complete! " +
                       "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        [MenuItem("Insect Wars/Setup Hawk Moth")]
+        public static void SetupHawkMoth()
+        {
+            if (!ValidateAssets(MothModelPath))
+                return;
+
+            FixMothImportSettings();
+
+            var controller = BuildHawkMothController();
+            var mothMaterial = BuildMothMaterial();
+            var prefab = BuildPrefab(MothModelPath, MothPrefabPath, "HawkMoth",
+                controller, Vector3.one * 2f,
+                agentHeight: 0.75f, agentRadius: 0.35f, agentSpeed: 5.0f,
+                colCenter: new Vector3(0f, 0.4f, 0f), colRadius: 0.35f, colHeight: 0.8f,
+                overrideMaterial: mothMaterial,
+                visualRotation: new Vector3(-90f, 0f, 0f));
+
+            UpdateLibrary(hawkMothPrefab: prefab);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Insect Wars] Hawk Moth setup complete! " +
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        static void FixMothImportSettings()
+        {
+            var importer = AssetImporter.GetAtPath(MothModelPath) as ModelImporter;
+            if (importer == null) return;
+
+            bool dirty = false;
+
+            if (importer.materialImportMode != ModelImporterMaterialImportMode.None)
+            {
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                dirty = true;
+            }
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                dirty = true;
+            }
+            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            {
+                importer.globalScale = 80f;
+                dirty = true;
+            }
+            if (importer.animationType != ModelImporterAnimationType.Generic)
+            {
+                importer.animationType = ModelImporterAnimationType.Generic;
+                dirty = true;
+            }
+
+            if (dirty)
+            {
+                importer.SaveAndReimport();
+                Debug.Log("[Insect Wars] Fixed Hawk Moth FBX import settings (scale=80, generic rig).");
+            }
+        }
+
+        static Material BuildMothMaterial()
+        {
+            EnsureDirectory(PrefabDir);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null)
+            {
+                Debug.LogError("[Insect Wars] URP Lit shader not found.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(MothMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(sh);
+                AssetDatabase.CreateAsset(mat, MothMaterialPath);
+            }
+            else
+            {
+                mat.shader = sh;
+            }
+
+            var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothBaseTexPath);
+            if (baseTex != null)
+                mat.SetTexture("_BaseMap", baseTex);
+
+            var normalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothNormalTexPath);
+            if (normalTex != null)
+            {
+                mat.SetTexture("_BumpMap", normalTex);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+
+            var emissionTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothEmissionTexPath);
+            if (emissionTex != null)
+            {
+                mat.SetTexture("_EmissionMap", emissionTex);
+                mat.SetColor("_EmissionColor", Color.white * 0.4f);
+                mat.EnableKeyword("_EMISSION");
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
+
+            var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothRoughnessTexPath);
+            if (roughnessTex != null)
+                mat.SetFloat("_Smoothness", 0.45f);
+
+            var metallicTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothMetallicTexPath);
+            if (metallicTex != null)
+                mat.SetTexture("_MetallicGlossMap", metallicTex);
+
+            mat.SetFloat("_Metallic", 0.1f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static AnimatorController BuildHawkMothController()
+        {
+            EnsureDirectory(ControllerDir);
+            DeleteIfExists(MothControllerPath);
+
+            var c = AnimatorController.CreateAnimatorControllerAtPath(MothControllerPath);
+            AddStandardParameters(c);
+
+            var sm = c.layers[0].stateMachine;
+
+            var walkClip = ExtractClip(MothModelPath);
+
+            var idleState = sm.AddState("Idle");
+            idleState.motion = walkClip;
+            idleState.speed = 0f;
+            sm.defaultState = idleState;
+
+            var walkState = sm.AddState("Walk");
+            walkState.motion = walkClip;
+
+            AddLocomotionTransitions(idleState, walkState);
+
+            EditorUtility.SetDirty(c);
+            return c;
         }
 
         static void FixWidowImportSettings()
@@ -1120,7 +1274,7 @@ namespace InsectWars.Editor
 
         static void UpdateLibrary(GameObject workerPrefab = null, GameObject meleePrefab = null,
             GameObject rangedPrefab = null, GameObject hivePrefab = null,
-            GameObject blackWidowPrefab = null)
+            GameObject blackWidowPrefab = null, GameObject hawkMothPrefab = null)
         {
             EnsureDirectory(LibraryDir);
 
@@ -1136,6 +1290,7 @@ namespace InsectWars.Editor
             if (rangedPrefab != null) lib.rangedPrefab = rangedPrefab;
             if (hivePrefab != null) lib.hivePrefab = hivePrefab;
             if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
+            if (hawkMothPrefab != null) lib.hawkMothPrefab = hawkMothPrefab;
 
             EditorUtility.SetDirty(lib);
         }

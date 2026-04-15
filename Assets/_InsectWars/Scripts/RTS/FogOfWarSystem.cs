@@ -133,20 +133,38 @@ namespace InsectWars.RTS
                 }
 
                 bool show;
-                float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
-                if (concealment > 0f)
+                if (u.IsCloaked)
                 {
-                    show = false;
+                    bool proximityReveal = false;
                     foreach (var pu in RtsSimRegistry.Units)
                     {
                         if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
-                        if (Vector3.Distance(pu.transform.position, u.transform.position) <= concealment)
-                        { show = true; break; }
+                        if (Vector3.Distance(pu.transform.position, u.transform.position) <= 8f)
+                        { proximityReveal = true; break; }
                     }
+
+                    var stealth = u.GetComponent<MothStealth>();
+                    if (stealth != null) stealth.SetProximityReveal(proximityReveal);
+
+                    show = proximityReveal;
                 }
                 else
                 {
-                    show = IsInCurrentVision(u.transform.position);
+                    float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
+                    if (concealment > 0f)
+                    {
+                        show = false;
+                        foreach (var pu in RtsSimRegistry.Units)
+                        {
+                            if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
+                            if (Vector3.Distance(pu.transform.position, u.transform.position) <= concealment)
+                            { show = true; break; }
+                        }
+                    }
+                    else
+                    {
+                        show = IsInCurrentVision(u.transform.position);
+                    }
                 }
 
                 foreach (var r in renderers)

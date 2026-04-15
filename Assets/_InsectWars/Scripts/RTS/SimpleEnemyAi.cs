@@ -237,6 +237,7 @@ namespace InsectWars.RTS
                 if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
                 float d = Vector3.Distance(transform.position, u.transform.position);
                 if (d > vision * 2.5f) continue;
+                if (u.IsCloaked && d > 8f) continue;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
                 if (concealment > 0f && d > concealment) continue;
 

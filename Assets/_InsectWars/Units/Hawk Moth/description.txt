@@ -1,0 +1,138 @@
+========================================
+  HAWK MOTH
+========================================
+
+OVERVIEW
+--------
+Display Name:   Hawk Moth
+Archetype:      UnitArchetype.HawkMoth
+Role:           Support caster — cannot attack. Provides a passive
+                healing aura to nearby friendly units. Has an air/ground
+                mode system with stealth capabilities.
+
+ECONOMY
+-------
+Calorie Cost:       200
+Build Time:         28 seconds
+Colony Capacity:    4 (supply cost per unit)
+Produced At:        Sky Tower (BuildingType.SkyTower)
+
+COMBAT STATS
+------------
+Max HP:             30 (fragile support unit)
+Attack Damage:      0 (cannot attack)
+Attack Range:       0 (cannot attack)
+Attack Cooldown:    N/A
+Move Speed:         5.0 (fast — needs to reposition quickly)
+Vision Radius:      14 (good scouting range)
+Attack Type:        None — the Hawk Moth has no attack capability.
+                    Attack orders are ignored. Attack-move will move
+                    but never engage targets.
+
+AIR MODE (general system — applies to moth and future air units)
+----------------------------------------------------------------
+IsAirborne:         True while in Flying state.
+Melee Immunity:     Airborne units CANNOT be targeted or hit by melee
+                    attacks. Only ranged units (BasicRanged) can attack
+                    airborne targets.
+Implementation:     InsectUnit.IsAirborne property. OrderAttack rejects
+                    airborne targets for melee archetypes. TickAttack
+                    drops melee engagement if target becomes airborne.
+
+MOTH STATE MACHINE (MothStealth component)
+------------------------------------------
+State flow:  Flying → (idle 2s) → Landing → Grounded → (still 5s) → Cloaked
+
+Flying:         Default state when moving or after spawning.
+                IsAirborne = true (melee-immune).
+                Visual hovers at 1.2 units above ground.
+                Transitions to Landing after 2 seconds idle.
+
+Landing:        Brief 0.5s transition. Visual lerps down to ground.
+                IsAirborne still true during descent.
+                If moved or damaged → back to Flying.
+
+Grounded:       Moth is on the ground. IsAirborne = false.
+                Vulnerable to melee attacks.
+                Transitions to Cloaked after 5 seconds stationary.
+                If moved → back to Flying.
+                If damaged → panic flee (see below).
+
+Cloaked:        Invisible to the opposing team.
+                If moved → back to Flying (decloaks).
+                If damaged → panic flee + decloak → Flying.
+
+STEALTH / CLOAK
+---------------
+Cloak Delay:        5 seconds of standing completely still (grounded)
+Decloak:            Instantly when the moth moves or takes damage
+Visibility:         While cloaked, the unit is invisible to the
+                    opposing team — UNLESS an enemy unit is within
+                    8 unit radius (Bombardier Beetle attack range).
+Proximity Reveal:   When any enemy unit is within 8 units:
+                    - The moth becomes semi-transparent (alpha 0.45)
+                      to indicate "something cloaked is here"
+                    - Enemy units CAN target and attack it
+                    - When no enemy is close, fully invisible (alpha 0.25)
+Friendly View:      The owning team always sees a semi-transparent
+                    silhouette of their cloaked moth.
+Implementation:     MothStealth sets InsectUnit.IsCloaked = true.
+                    FogOfWarSystem checks IsCloaked and does a proximity
+                    scan. Calls MothStealth.SetProximityReveal() to
+                    adjust alpha. OrderAttack / AI scan skip cloaked
+                    targets unless within 8u.
+
+PANIC FLEE (on damage while Grounded or Cloaked)
+-------------------------------------------------
+Trigger:        Any damage received while in Grounded or Cloaked state.
+Reaction:       1) Immediately decloak (IsCloaked = false)
+                2) Enter Flying state (IsAirborne = true, melee-immune)
+                3) Auto-move 12 units in the OPPOSITE direction from
+                   the nearest enemy unit
+Behaviour:      The moth flees automatically — no player input needed.
+                After the flee move, the moth resumes normal idle flow
+                (will eventually land and cloak again if undisturbed).
+
+HEALING AURA (passive, always active in all states)
+---------------------------------------------------
+Heal Radius:        8 units
+Heal Per Second:    3.0 HP/s to each friendly unit in range
+Stacking:           Does NOT stack. If a unit is inside multiple
+                    Hawk Moth auras, it only receives healing from
+                    one (tracked via HealAuraFrame per frame).
+Self-Heal:          No — the Hawk Moth does not heal itself.
+Implementation:     HealingAura component on the Hawk Moth unit.
+                    Each frame, scans for nearby friendly InsectUnit
+                    instances and calls Heal() on them.
+
+VISUAL ASPECTS
+--------------
+Art Source:      Meshy AI model — "Nocturnal Sentinel"
+Prefab:         Assets/_InsectWars/Prefabs/HawkMoth.prefab
+Team Colors:    Team tint applied at spawn via MaterialPropertyBlock
+Visual Height:  Flying state: Visual root at Y=1.2 (hovering).
+                Landing: lerps from 1.2 to 0 over 0.5s.
+                Grounded/Cloaked: Visual at Y=0 (on ground).
+
+ANIMATIONS
+----------
+Idle (Flying):  Wings gently fluttering, hovering in place with
+                subtle up-down bob. Antennae twitch periodically.
+
+Idle (Grounded): Wings folded against body, resting pose.
+                 Slight antenna movement.
+
+Walk (Flying):  Wings beat in flight motion. Forward hovering
+                movement. Driven by "Speed" and "IsMoving" params.
+
+Landing:        Wings fold inward as moth descends. Legs extend
+                to touch ground. ~0.5 seconds.
+
+Takeoff:        Reverse of landing — wings spread, legs retract,
+                moth lifts off ground. ~0.5 seconds.
+
+Death:          Wings crumple and fold. Drops to ground and curls up.
+                Triggered via "Death" animator trigger. ~0.5 seconds.
+
+Animator Controller: Assets/_InsectWars/Animations/HawkMoth.controller
+States: Idle, Walk, Death (standard params: Speed, IsMoving, Death)
