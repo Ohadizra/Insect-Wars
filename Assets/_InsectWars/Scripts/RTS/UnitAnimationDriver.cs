@@ -384,9 +384,9 @@ namespace InsectWars.RTS
             var state = stealth.CurrentState;
             float cycle = _idleT;
 
-            // --- Updated Constants for 0.5 scale (ExtentY ~0.75) ---
-            const float H_Fly = 2.8f;    // Elevated flight height
-            const float H_Ground = 1.15f; // Hover above ground
+            // --- Updated Constants for 2.0 scale (ExtentY ~1.2) ---
+            const float H_Fly = 4.0f;    // Elevated flight height
+            const float H_Ground = 1.5f; // Hover above ground
 
             float wingFreq = 12f;
             float wingAmp = 35f; // Rotation angle (if wings found) or scale amp

@@ -256,9 +256,9 @@ namespace InsectWars.Editor
             var controller = BuildHawkMothController();
             var mothMaterial = BuildMothMaterial();
             var prefab = BuildPrefab(MothModelPath, MothPrefabPath, "HawkMoth",
-                controller, Vector3.one * 2f,
-                agentHeight: 0.75f, agentRadius: 0.35f, agentSpeed: 5.0f,
-                colCenter: new Vector3(0f, 0.4f, 0f), colRadius: 0.35f, colHeight: 0.8f,
+                controller, Vector3.one,
+                agentHeight: 1.5f, agentRadius: 0.8f, agentSpeed: 5.0f,
+                colCenter: new Vector3(0f, 0.75f, 0f), colRadius: 0.8f, colHeight: 1.5f,
                 overrideMaterial: mothMaterial,
                 visualRotation: new Vector3(-90f, 0f, 0f));
 
@@ -287,9 +287,9 @@ namespace InsectWars.Editor
                 importer.isReadable = true;
                 dirty = true;
             }
-            if (Mathf.Abs(importer.globalScale - 0.5f) > 0.01f)
+            if (Mathf.Abs(importer.globalScale - 2.0f) > 0.01f)
             {
-                importer.globalScale = 0.5f;
+                importer.globalScale = 2.0f;
                 dirty = true;
             }
             if (importer.animationType != ModelImporterAnimationType.Generic)
@@ -301,7 +301,7 @@ namespace InsectWars.Editor
             if (dirty)
             {
                 importer.SaveAndReimport();
-                Debug.Log("[Insect Wars] Fixed Hawk Moth FBX import settings (scale=0.5, generic rig).");
+                Debug.Log("[Insect Wars] Fixed Hawk Moth FBX import settings (scale=2.0, generic rig).");
             }
         }
 
@@ -329,14 +329,11 @@ namespace InsectWars.Editor
 
             mat.SetColor("_BaseColor", Color.white);
 
-            mat.SetFloat("_Surface", 1f);
-            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.SetFloat("_Surface", 0f);
+            mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
             mat.SetFloat("_Blend", 0f);
-            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            mat.SetFloat("_ZWrite", 0f);
-            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Geometry;
+            mat.SetOverrideTag("RenderType", "Opaque");
 
             var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothBaseTexPath);
             if (baseTex != null)
