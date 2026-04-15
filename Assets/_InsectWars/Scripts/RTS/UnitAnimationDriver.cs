@@ -388,9 +388,9 @@ namespace InsectWars.RTS
             var state = stealth.CurrentState;
             float cycle = _idleT;
 
-            // --- Constants derived from model bounds ---
-            const float H_Fly = 4.2f;    // Elevated flight height
-            const float H_Ground = 1.35f; // Stand firmly on ground
+            // --- Constants derived from model bounds (ExtentY=1.19) ---
+            const float H_Fly = 4.5f;    // Elevated flight height
+            const float H_Ground = 1.85f; // Stand high to avoid rock clipping
 
             // --- Shared parameters ---
             float wingFreq = 12f;
@@ -406,7 +406,7 @@ namespace InsectWars.RTS
                 _takeoffTimer -= dt;
                 float p = 1f - (_takeoffTimer / 0.5f);
                 float snap = Mathf.Sin(p * Mathf.PI) * 0.5f;
-                float launchBeat = Mathf.Sin(p * 30f) * 0.3f;
+                float launchBeat = Mathf.Sin(p * 30f) * 0.35f;
                 
                 modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
                 float ts = 1f + snap + launchBeat;
@@ -421,31 +421,28 @@ namespace InsectWars.RTS
                     targetBaseY = H_Fly;
                     if (moving)
                     {
-                        // WALK_FLY: High-intensity propulsive flight
-                        wingFreq = 56f; // ~9 Hz
-                        wingAmp = 0.75f; // Very aggressive flap
-                        bodyPitch = 25f; // Lean deep into flight
-                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.15f;
-                        // Synchronized rhythmic bank (fluttering)
-                        bodyRoll = Mathf.Sin(cycle * (wingFreq * 0.5f)) * 6f; 
+                        wingFreq = 62f; // High frequency for movement (~10 Hz)
+                        wingAmp = 0.85f; 
+                        bodyPitch = 28f; 
+                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.18f;
+                        bodyRoll = Mathf.Sin(cycle * (wingFreq * 0.5f)) * 8f; 
                     }
                     else
                     {
-                        // IDLE_FLY: Graceful hovering
-                        wingFreq = 42f; // ~6.5 Hz
-                        wingAmp = 0.65f; 
+                        wingFreq = 48f; // ~7.5 Hz hover
+                        wingAmp = 0.75f; 
                         bodyPitch = 12f;
-                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.08f;
-                        bodyRoll = Mathf.Sin(cycle * 3f) * 4f; // Slower scanning bank
+                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.1f;
+                        bodyRoll = Mathf.Sin(cycle * 2f) * 5f;
                     }
                     break;
 
                 case MothStealth.MothState.Landing:
                     targetBaseY = Mathf.Lerp(H_Fly, H_Ground, stealth.LandingProgress);
-                    wingFreq = 28f; 
-                    wingAmp = 0.4f;
+                    wingFreq = 32f; 
+                    wingAmp = 0.45f;
                     bodyPitch = Mathf.Lerp(12f, 0f, stealth.LandingProgress);
-                    bodyBob = Mathf.Sin(cycle * 8f) * 0.05f;
+                    bodyBob = Mathf.Sin(cycle * 8f) * 0.06f;
                     break;
 
                 case MothStealth.MothState.Grounded:
@@ -453,23 +450,23 @@ namespace InsectWars.RTS
                     targetBaseY = H_Ground;
                     if (moving)
                     {
-                        float walkCycle = cycle * 16f;
-                        bodyPitch = 14f;
-                        bodyBob = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.08f;
-                        bodyRoll = Mathf.Sin(walkCycle) * 8f;
-                        wingAmp = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.08f; // Passive bounce
+                        float walkCycle = cycle * 18f;
+                        bodyPitch = 15f;
+                        bodyBob = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.1f;
+                        bodyRoll = Mathf.Sin(walkCycle) * 10f;
+                        wingAmp = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.12f;
                         wingFreq = 0f;
                     }
                     else
                     {
-                        bodyPitch = 5f;
-                        breath = 1f + Mathf.Sin(cycle * 3f) * 0.04f;
-                        if (cycle % 4f > 2.5f && cycle % 4f < 2.75f)
-                            wingAmp = 0.18f;
+                        bodyPitch = 6f;
+                        breath = 1f + Mathf.Sin(cycle * 3.2f) * 0.05f;
+                        if (cycle % 4f > 2.5f && cycle % 4f < 2.8f)
+                            wingAmp = 0.25f;
                         else
                             wingAmp = 0f;
                         wingFreq = 0f;
-                        bodyRoll = Mathf.Sin(cycle * 0.8f) * 3.5f;
+                        bodyRoll = Mathf.Sin(cycle * 0.9f) * 4f;
                     }
                     break;
             }
@@ -477,25 +474,26 @@ namespace InsectWars.RTS
             // Apply rotations
             modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
 
-            // --- Advanced Wing "Swing" Simulation ---
-            // Real moth flight involves a "Clap-and-Fling" mechanism.
-            // We simulate the wings swinging wide (X-stretch) and clapping together (X-shrink).
-            float rawSine = Mathf.Sin(cycle * wingFreq);
+            // --- Realistic Flapping Simulation (Anisotropic silhouette) ---
+            // Local axes for mesh with -90X rotation:
+            // Local X: Wingspan (Spread wide vs Fold narrow)
+            // Local Y: Forward/Back (Length)
+            // Local Z: Up/Down (Thickness/Profile)
             
-            // "Wing Swing" Profile: 
-            // 1. Fast Downstroke: Wings spread wide rapidly (Width stretches, Height/Depth squashes)
-            // 2. Slow Recovery: Wings lift and fold (Width shrinks, Height stretches)
-            float stroke;
+            float rawSine = Mathf.Sin(cycle * wingFreq);
+            // Downstroke (rawSine > 0): Wide and thin (Wings spread)
+            // Upstroke (rawSine < 0): Narrow and tall (Wings V-shape)
+            float flap;
             if (rawSine > 0)
-                stroke = Mathf.Pow(rawSine, 0.4f); // Sharp, explosive expansion (spread)
+                flap = Mathf.Pow(rawSine, 0.35f); // Explosive downstroke
             else
-                stroke = rawSine * 0.5f; // Softer, slower contraction (fold)
+                flap = rawSine * 0.6f; // Slower, deeper upstroke
 
-            float sX = 1f + stroke * wingAmp; // Width expansion (the "swing")
-            float sY = 1f - stroke * (wingAmp * 0.8f); // Thickness/Body contraction
-            float sZ = 1f - stroke * (wingAmp * 0.4f); // Lengthwise compression
+            float sX = 1f + flap * wingAmp; // Width expansion
+            float sZ = 1f - flap * (wingAmp * 1.2f); // Height profile (inverse of width)
+            float sY = 1f - Mathf.Abs(flap) * (wingAmp * 0.3f); // Subtle lengthwise squash
 
-            // Apply complex scale harmonics
+            // Apply scale harmonics
             modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath * sX, breath * sY, breath * sZ));
 
             // Apply vertical height with bobbing
