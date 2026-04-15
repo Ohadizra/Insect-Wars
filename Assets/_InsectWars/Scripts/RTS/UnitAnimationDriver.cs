@@ -312,7 +312,7 @@ namespace InsectWars.RTS
                 float pitch = 14f + Mathf.Abs(groupA) * 5f;
 
                 // Vertical Bob (Y): Sharp impact when each group plants.
-                float plantImpact = Mathf.Pow(Mathf.Sin(cycle * 2f), 2.5f);
+                float plantImpact = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle * 2f)), 2.5f);
                 float walkBob = plantImpact * 0.045f;
 
                 modelRoot.localRotation *= Quaternion.Euler(pitch, yaw, roll);
@@ -320,8 +320,8 @@ namespace InsectWars.RTS
                 
                 // Squash and stretch to mimic muscle tension.
                 float stretch = 1f + (1f - plantImpact) * 0.03f;
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f / stretch, stretch, 1f / stretch));
-            }
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f / Mathf.Max(0.01f, stretch), stretch, 1f / Mathf.Max(0.01f, stretch)));
+                }
             else
             {
                 // Idle: Subtle rhythmic breathing and abdomen bob.

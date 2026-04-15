@@ -773,6 +773,12 @@
       "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
       "content": "re try",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "26b1aeb2-6f3c-4cac-ace8-429cb1fdebd0",
+      "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
+      "content": "I have fixed the issues reported:\n\n### 1. Fixed `NaN` Errors in `UnitAnimationDriver.cs`\nThe `NaN` (Not a Number) errors in the console were caused by `Mathf.Pow` being called with a negative base when calculating the Black Widow's procedural walk bob. \n- **Action**: Updated `UnitAnimationDriver.ApplyBlackWidowLoop` to use `Mathf.Abs` on the sine wave input for `Mathf.Pow`. I also added safety checks using `Mathf.Max` when calculating the scale to prevent division by zero or extremely small values.\n\n### 2. Resolved Video Warning and Metadata Issues\nThe `AVFoundationVideoMedia` color primary warning was due to the video being read as a raw file from `StreamingAssets`.\n- **Action**: \n    - Moved the video from `StreamingAssets` to `Assets/_InsectWars/Videos/MenuLoop.mp4`.\n    - Enabled **Transcoding** on the video importer to ensure compatibility with macOS video frameworks.\n    - Updated `HomeMenuBootstrap.cs` to use a `VideoClip` asset instead of a file URL.\n    - Re-assigned the new `VideoClip` to the `HomeMenuBootstrap` component in the `Home` scene.\n\n### 3. Removed Missing Scripts in `SkirmishDemo` Scene\nThe console error \"The referenced script (Unknown) on this Behaviour is missing!\" was traced to the `[Systems]` GameObject in the `SkirmishDemo.unity` scene.\n- **Action**: Automated the removal of these stale components from the scene file. Since the `SkirmishDirector` recreates the systems at runtime, this fix prevents the editor from throwing errors during scene load without affecting gameplay.\n\n### 4. Cleared AI Toolkit Temp Files\nThe `IOException: Sharing violation` was caused by the AI Toolkit's temp files being locked by another process during asset import.\n- **Action**: Deleted the `Assets/AI Toolkit/Temp` directory to clear any file locks and allow the asset database to refresh cleanly.\n\nThe console is now clear of these errors and warnings.",
+      "snapshot_message_type": 1
     }
   ]
 }

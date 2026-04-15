@@ -12,7 +12,7 @@ namespace InsectWars.UI
 {
     public class HomeMenuBootstrap : MonoBehaviour
     {
-        [SerializeField] string streamingVideoName = "MenuLoop.mp4";
+        [SerializeField] VideoClip backgroundClip;
         [SerializeField] UnitVisualLibrary visualLibrary;
 
         [Header("Steampunk Sketch Assets")]
@@ -49,14 +49,6 @@ namespace InsectWars.UI
             if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
             if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
             if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_WithTitle.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
 #endif
 
@@ -103,7 +95,6 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             if (asset != null)
             {
                 mod.actionsAsset = asset;
-                // Manually link the actions to ensure responsiveness if auto-link fails
                 var uiMap = asset.FindActionMap("UI");
                 if (uiMap != null)
                 {
@@ -128,7 +119,7 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             var go = new GameObject("MainMenuCanvas");
             _canvas = go.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _canvas.sortingOrder = 0; // Ensure it's behind anything else if needed, but Overlay is on top anyway
+            _canvas.sortingOrder = 0;
             var scaler = go.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
@@ -141,7 +132,7 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
         {
             var bg = new GameObject("VideoBackground");
             bg.transform.SetParent(_canvas.transform, false);
-            bg.transform.SetAsFirstSibling(); // Ensure it's behind all other UI
+            bg.transform.SetAsFirstSibling();
             Stretch(bg.AddComponent<RectTransform>());
 
             var raw = bg.AddComponent<RawImage>();
@@ -161,12 +152,11 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.targetTexture = vrt;
             vp.aspectRatio = VideoAspectRatio.FitInside;
-            vp.source = VideoSource.Url;
 
-            var path = System.IO.Path.Combine(Application.streamingAssetsPath, streamingVideoName);
-            if (System.IO.File.Exists(path))
+            if (backgroundClip != null)
             {
-                vp.url = "file://" + path;
+                vp.source = VideoSource.VideoClip;
+                vp.clip = backgroundClip;
                 vp.Prepare();
                 vp.prepareCompleted += (p) => { p.Play(); };
                 vp.loopPointReached += (p) => { p.Pause(); };
@@ -176,7 +166,7 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             }
             else
             {
-                Debug.LogWarning($"HomeMenu: Video file not found at {path}");
+                Debug.LogWarning("HomeMenu: Video clip is not assigned.");
                 vp.enabled = false;
             }
 
@@ -194,7 +184,7 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
             var box = DarkBox(_panelMain.transform, PanelW, 850f);
 
             var titleGo = new GameObject("TitleLogo");
-titleGo.transform.SetParent(box.transform, false);
+            titleGo.transform.SetParent(box.transform, false);
             var titleImg = titleGo.AddComponent<Image>();
             titleImg.sprite = logoSprite;
             titleImg.preserveAspect = true;
@@ -203,7 +193,7 @@ titleGo.transform.SetParent(box.transform, false);
 
             float y = -310f;
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
-DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
+            DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
@@ -234,7 +224,7 @@ DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
             var boxAb = DarkBox(_panelAbout.transform, 650, 500);
             PanelHeader(boxAb.transform, "LOGS", -50f);
             var body = Txt(boxAb.transform, "INSECT WAR\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
-AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
+            AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
             float yA = -380f;
             DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
 
@@ -260,7 +250,7 @@ AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200)
                     SceneLoader.LoadSkirmishDemo();
                 });
             }
-DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
+            DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
         }
 
         void BuildLearningPanel()
@@ -328,12 +318,11 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
             rt.sizeDelta = new Vector2(w, h);
-            // Image component removed to make the layout container transparent
             return go;
         }
 
-            void PanelHeader(Transform parent, string text, float y)
-            {
+        void PanelHeader(Transform parent, string text, float y)
+        {
             var t = Txt(parent, text, 36, ColTitle, TextAnchor.MiddleCenter);
             t.fontStyle = FontStyle.Bold;
             AnchorTopCenter(t.rectTransform, new Vector2(0, y), new Vector2(500, 50));
@@ -352,7 +341,7 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             var img = b.AddComponent<Image>();
             img.sprite = buttonSprite;
             img.color = ColWhite;
-            img.type = Image.Type.Sliced; // Use Sliced for better button quality
+            img.type = Image.Type.Sliced;
             
             var btn = b.AddComponent<Button>();
             var cols = btn.colors;
@@ -391,7 +380,7 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             outline.effectColor = new Color(0.1f, 0.08f, 0.06f, 0.8f);
             outline.effectDistance = new Vector2(1.5f, -1.5f);
             return t;
-            }
+        }
 
         static void Stretch(RectTransform rt) { rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; }
         static void AnchorTopCenter(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
