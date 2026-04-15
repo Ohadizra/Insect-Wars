@@ -211,8 +211,8 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            // Lift the model for Black Widow so legs aren't underground (0.48f height)
-            float heightOffset = IsBlackWidow() ? 0.48f : 0f;
+            // Lift the model for Black Widow so legs aren't underground (0.55f height)
+            float heightOffset = IsBlackWidow() ? 0.55f : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
 
             if (_attackAnimT > 0f)
@@ -256,33 +256,43 @@ namespace InsectWars.RTS
         {
             if (moving)
             {
-                // Walk: Alternating tetrapod gait mimicry via body sway
-                // One complete cycle in ~0.9 seconds
-                float cycleSpeed = 7.0f; 
+                // Walk: High-fidelity alternating tetrapod gait simulation.
+                // One complete cycle in ~0.85 seconds.
+                float cycleSpeed = 9.0f; 
                 float cycle = _idleT * cycleSpeed;
                 
-                // Body bob (5% of height)
-                float walkBob = Mathf.Sin(cycle * 2f) * 0.025f;
+                // Group A (L1, R2, L3, R4) vs Group B (R1, L2, R3, L4)
+                float groupA = Mathf.Sin(cycle);
                 
-                // Abdomen trails with subtle left-right sway
-                float abdomenSway = Mathf.Sin(cycle) * 6f;
+                // Body Roll (Z): Tilt away from the lifting legs.
+                // Aggressive snap tilt to show the weight shifting onto the planted group.
+                float roll = Mathf.Sign(groupA) * Mathf.Pow(Mathf.Abs(groupA), 0.6f) * 11.5f;
                 
-                // Cephalothorax stays level and forward, but we wobble the body slightly
-                float wobbleZ = Mathf.Cos(cycle) * 3f;
+                // Body Yaw (Y): Leading the step.
+                float yaw = Mathf.Cos(cycle) * 8.5f;
 
-                modelRoot.localRotation *= Quaternion.Euler(10f, abdomenSway, wobbleZ);
+                // Body Pitch (X): Predatory lunge.
+                float pitch = 14f + Mathf.Abs(groupA) * 5f;
+
+                // Vertical Bob (Y): Sharp impact when each group plants.
+                float plantImpact = Mathf.Pow(Mathf.Sin(cycle * 2f), 2.5f);
+                float walkBob = plantImpact * 0.045f;
+
+                modelRoot.localRotation *= Quaternion.Euler(pitch, yaw, roll);
                 modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
                 
-                // Subtle rhythmic compression to imply leg pushing
-                float squash = 1f + Mathf.Sin(cycle * 2f) * 0.03f;
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f, 1f / squash));
+                // Squash and stretch to mimic muscle tension.
+                float stretch = 1f + (1f - plantImpact) * 0.03f;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f / stretch, stretch, 1f / stretch));
             }
             else
             {
-                // Idle: Subtle body sway and breathing
-                float breath = 1f + Mathf.Sin(_idleT * 2f) * 0.02f;
-                float sway = Mathf.Sin(_idleT * 1.5f) * 3f;
-                modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
+                // Idle: Subtle rhythmic breathing and abdomen bob.
+                float breath = 1f + Mathf.Sin(_idleT * 2.2f) * 0.025f;
+                float sway = Mathf.Sin(_idleT * 1.4f) * 3.5f;
+                float rollSway = Mathf.Sin(_idleT * 0.8f) * 2.5f;
+                
+                modelRoot.localRotation *= Quaternion.Euler(sway, 0f, rollSway);
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }

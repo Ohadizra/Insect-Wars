@@ -58,8 +58,7 @@ namespace InsectWars.RTS
             bool tookDamage = _unit.LastDamageTime > _lastDamageTime;
             _lastDamageTime = _unit.LastDamageTime;
 
-            bool moved = (_unit.CurrentOrder == UnitOrder.Move
-                       || _unit.CurrentOrder == UnitOrder.AttackMove)
+            bool moved = _unit.CurrentOrder == UnitOrder.Move
                       && (transform.position - _lastPos).sqrMagnitude > 0.01f;
             _lastPos = transform.position;
 

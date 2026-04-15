@@ -1,0 +1,12 @@
+{
+    "asset": "7355a4343bc1d40e0a2aeca413d51b59",
+    "fileName": "019d9094-9cf0-7d0b-a45e-6b1ca2c1f392.glb",
+    "prompt": "A 3D character of a Black Widow spider. THE LEGS MUST BE SEPARATE GAME OBJECTS IN THE HIERARCHY. I need to be able to move each of the 8 legs independently. High quality dark black texture with red hourglass. Stylized but realistic proportions. The legs should be parented to the body but remain as distinct transform nodes.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "a8bc25ce10b2ecb4b1a319ee3b8b2d04",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
