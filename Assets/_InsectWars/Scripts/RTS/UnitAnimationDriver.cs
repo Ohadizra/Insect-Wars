@@ -39,12 +39,11 @@ namespace InsectWars.RTS
         
         float _attackAnimT;
         float _attackAnimDuration;
-        float _buildAnimTimer; // Active while NotifyBuild() is called
+        float _buildAnimTimer; 
         float _idleT;
         float _instanceOffset;
         bool _dying;
 
-        // Parameter existence cache
         bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath, _hasWebCast;
 
         void Awake()
@@ -79,7 +78,6 @@ namespace InsectWars.RTS
                 _baseScale = modelRoot.localScale;
                 _lookRotation = modelRoot.rotation;
 
-                // Find Bones (Flexible for both Prefab and Primitives)
                 _lArm = FindRecursive(modelRoot, "frontleg") ?? FindRecursive(modelRoot, "LeftArm");
                 _rArm = FindRecursive(modelRoot, "R_frontleg") ?? FindRecursive(modelRoot, "RightArm");
                 _chest = FindRecursive(modelRoot, "chest");
@@ -118,7 +116,7 @@ namespace InsectWars.RTS
 
             var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
             var planar = new Vector3(vel.x, 0f, vel.z);
-            var moving = planar.sqrMagnitude > 0.001f;
+            var moving = planar.sqrMagnitude > 0.01f;
 
             if (animator != null && animator.runtimeAnimatorController != null && Application.isPlaying)
             {
@@ -146,8 +144,11 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                // Strictly no procedural side-to-side twitching
-                modelRoot.rotation = _lookRotation;
+                // Corrective rotation for the Black Widow model orientation
+                if (_unit.Archetype == UnitArchetype.BlackWidow)
+                    modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f, 0f, 0f);
+                else
+                    modelRoot.rotation = _lookRotation;
             }
         }
 
@@ -157,103 +158,70 @@ namespace InsectWars.RTS
 
             var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
             var planar = new Vector3(vel.x, 0f, vel.z);
-            var moving = planar.sqrMagnitude > 0.001f;
+            var moving = planar.sqrMagnitude > 0.01f;
 
             float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
             _idleT += dt;
 
             var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-            // Build animation - focused mandible and leg labor
             if (_buildAnimTimer > 0f)
             {
                 _buildAnimTimer -= dt;
-                
-                // Work cycles
                 float workSpeed = 14f;
                 float cycle = _idleT * workSpeed;
-                
-                // Front legs: Picking/Placing motion (tamping)
-                // Offset the phases for a more natural "busy" look
                 float leftLegMove = Mathf.Sin(cycle) * 25f;
                 float rightLegMove = Mathf.Sin(cycle + 2.5f) * 25f;
-                
-                // Head nodding: Synchronized with the picking motion
                 float headNod = Mathf.Sin(cycle * 2f) * 10f; 
-                // Subtle searching: Slow side-to-side head tilt
                 float headSearch = Mathf.Sin(_idleT * 3f) * 8f;
 
-                if (_head != null) 
-                    _head.localRotation = _headBase * Quaternion.Euler(40f + headNod, headSearch, 0f);
-                
-                if (_chest != null)
-                {
-                    // Subtle torso rocking to show weight transfer
-                    float chestRock = Mathf.Sin(cycle * 0.5f) * 3f;
-                    _chest.localRotation = _chestBase * Quaternion.Euler(20f, 0f, chestRock);
-                }
-                
-                // Manual labor with front legs
+                if (_head != null) _head.localRotation = _headBase * Quaternion.Euler(40f + headNod, headSearch, 0f);
+                if (_chest != null) _chest.localRotation = _chestBase * Quaternion.Euler(20f, 0f, Mathf.Sin(cycle * 0.5f) * 3f);
                 if (_lArm != null) _lArm.localRotation = _lArmBase * Quaternion.Euler(-35f + leftLegMove, 12f, 0f);
                 if (_rArm != null) _rArm.localRotation = _rArmBase * Quaternion.Euler(-35f + rightLegMove, -12f, 0f);
-                
-                // Abdomen pulsing (effort/breathing)
-                if (_tail != null) 
-                    _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 6f) * 12f, 0f, 0f);
-
-                // Absolutely grounded
+                if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 6f) * 12f, 0f, 0f);
                 bob = 0f; 
-
                 ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
             }
+            else if (_unit.Archetype == UnitArchetype.BlackWidow)
+            {
+                ApplyBlackWidowLoop(dt, moving, planar.magnitude);
+            }
             else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
-                {
+            {
                 ApplyMantisLoop(dt);
-                }
-                else
-                {
+            }
+            else
+            {
                 modelRoot.localScale = _baseScale;
-                // Only reset bones procedurally if we don't have an animator taking over.
-                // If we do have an animator, it will handle the bones itself.
                 if (!(animator != null && animator.runtimeAnimatorController != null))
-                {
                     ResetBones(dt * 5f);
-                }
-                }
+            }
 
-                modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
+            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
 
-                if (_attackAnimT > 0f)
+            if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
                 float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
 
-                if (_unit.Archetype == UnitArchetype.BasicRanged)
+                if (_unit.Archetype == UnitArchetype.BlackWidow && _attackAnimDuration > 0.45f) // Using duration to detect WebCast
                 {
-                    // Real bombardier beetles pulse their spray rapidly. 
-                    // This "jitter" and "staccato" movement reflects the explosive biological mechanism.
+                    float rearUp = Mathf.Sin(p * Mathf.PI) * 35f;
+                    float pulse = 1f + Mathf.Sin(p * Mathf.PI * 4f) * 0.15f;
+                    modelRoot.localRotation *= Quaternion.Euler(-rearUp, 0f, 0f);
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f, pulse, 1f));
+                }
+                else if (_unit.Archetype == UnitArchetype.BasicRanged)
+                {
                     float sprayActive = (p > 0.05f && p < 0.65f) ? 1f : 0f;
                     float jitter = sprayActive * Mathf.Sin(p * 180f) * 6f;
-                    
                     float tailLift = Mathf.Sin(p * Mathf.PI) * 60f;
-                    if (_tail != null)
-                        _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
-
+                    if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
                     float brace = Mathf.Sin(p * Mathf.PI) * 0.08f;
-                    modelRoot.localScale = Vector3.Scale(_baseScale,
-                        new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
-
-                    // Pulsing staccato recoil
-                    float recoilBase = Mathf.Sin(p * Mathf.PI) * 0.16f;
-                    float recoilPulse = sprayActive * Mathf.Sin(p * 90f) * 0.035f;
-                    float recoil = recoilBase + recoilPulse;
-                    
-                    // Rear-facing: forward is the direction the beetle is technically "facing" (the front)
-                    // Recoil from the rear should push it forward.
-                    modelRoot.localPosition += modelRoot.forward * recoil;
-
-                    if (_chest != null)
-                        _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
+                    modelRoot.localPosition += modelRoot.forward * (Mathf.Sin(p * Mathf.PI) * 0.16f + sprayActive * Mathf.Sin(p * 90f) * 0.035f);
+                    if (_chest != null) _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
                 }
                 else
                 {
@@ -261,14 +229,34 @@ namespace InsectWars.RTS
                     float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
                     modelRoot.localPosition += modelRoot.forward * lunge;
                     modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
-
                     if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
                     if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
                 }
             }
-            else if (_unit.Archetype != UnitArchetype.BasicFighter)
+            else if (_unit.Archetype != UnitArchetype.BasicFighter && _unit.Archetype != UnitArchetype.BlackWidow)
             {
                 float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+            }
+        }
+
+        void ApplyBlackWidowLoop(float dt, bool moving, float speed)
+        {
+            if (moving)
+            {
+                float walkSpeed = speed * 4f;
+                float wobbleX = Mathf.Sin(_idleT * walkSpeed) * 8f;
+                float wobbleZ = Mathf.Cos(_idleT * walkSpeed * 0.5f) * 5f;
+                float tilt = 10f;
+                modelRoot.localRotation *= Quaternion.Euler(tilt + wobbleZ, wobbleX, 0f);
+                float squash = 1f + Mathf.Sin(_idleT * walkSpeed) * 0.05f;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f, 1f / squash));
+            }
+            else
+            {
+                float breath = 1f + Mathf.Sin(_idleT * 2f) * 0.02f;
+                float sway = Mathf.Sin(_idleT * 1.5f) * 3f;
+                modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }
@@ -278,46 +266,15 @@ namespace InsectWars.RTS
             float loopTime = _idleT % 30f;
             float breath = 1f + Mathf.Sin(_idleT * 1.8f) * 0.015f;
             modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
-
-            if (_tail != null)
-                _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 2f) * 8f, 0f, 0f);
-
-            if (loopTime < 10f) // Vertical Look
-            {
+            if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 2f) * 8f, 0f, 0f);
+            if (loopTime < 10f) {
                 float lookY = (Mathf.PerlinNoise(_idleT * 0.5f, _instanceOffset + 100f) - 0.5f) * 35f;
                 if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(lookY, 0f, 0f), dt * 2f);
-                if (_chest != null) _chest.localRotation = Quaternion.Slerp(_chest.localRotation, _chestBase * Quaternion.Euler(lookY * 0.2f, 0f, 0f), dt * 1.5f);
                 ResetBonesOnly(dt * 3f, arms: true);
-            }
-            else if (loopTime >= 10f && loopTime < 18f) // Vertical Scythe Maintenance Left
-            {
-                float p = Mathf.InverseLerp(10f, 18f, loopTime);
-                float lift = Mathf.Sin(p * Mathf.PI);
-                float scrub = Mathf.Sin(_idleT * 15f) * 8f;
-                if (_lArm != null) _lArm.localRotation = Quaternion.Slerp(_lArm.localRotation, _lArmBase * Quaternion.Euler(-45f * lift + scrub, 0f, 0f), dt * 6f);
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(30f * lift, 0f, 0f), dt * 6f);
-                ResetBonesOnly(dt * 2f, rightArm: true, chest: true);
-            }
-            else if (loopTime >= 18f && loopTime < 24f) // Head Dip
-            {
-                float p = Mathf.InverseLerp(18f, 24f, loopTime);
-                float dip = Mathf.Sin(p * Mathf.PI);
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(40f * dip, 0f, 0f), dt * 3f);
-                ResetBonesOnly(dt * 3f, arms: true, chest: true);
-            }
-            else // Vertical Scythe Maintenance Right
-            {
-                float p = Mathf.InverseLerp(24f, 30f, loopTime);
-                float lift = Mathf.Sin(p * Mathf.PI);
-                float scrub = Mathf.Sin(_idleT * 15f) * 8f;
-                if (_rArm != null) _rArm.localRotation = Quaternion.Slerp(_rArm.localRotation, _rArmBase * Quaternion.Euler(-45f * lift + scrub, 0f, 0f), dt * 6f);
-                if (_head != null) _head.localRotation = Quaternion.Slerp(_head.localRotation, _headBase * Quaternion.Euler(30f * lift, 0f, 0f), dt * 6f);
-                ResetBonesOnly(dt * 2f, leftArm: true, chest: true);
-            }
+            } else { ResetBonesOnly(dt * 2f); }
         }
 
         void ResetBones(float speed) => ResetBonesOnly(speed, true, true, true, true, true);
-
         void ResetBonesOnly(float speed, bool arms = false, bool chest = false, bool head = false, bool tail = false, bool leftArm = false, bool rightArm = false)
         {
             if ((arms || leftArm) && _lArm != null) _lArm.localRotation = Quaternion.Lerp(_lArm.localRotation, _lArmBase, speed);
@@ -327,96 +284,37 @@ namespace InsectWars.RTS
             if (tail && _tail != null) _tail.localRotation = Quaternion.Lerp(_tail.localRotation, _tailBase, speed);
         }
 
-        public bool HasAnimatorAttack =>
-            animator != null && animator.runtimeAnimatorController != null;
-
-        public void NotifyAttack()
-        {
-            if (_hasAttack)
-                animator.SetTrigger(Attack);
-            _attackAnimDuration = _unit != null ? _unit.Archetype switch
-            {
-                UnitArchetype.BasicRanged => 0.5f,
-                UnitArchetype.BlackWidow => 0.4f,
-                _ => 0.35f
-            } : 0.35f;
-            _attackAnimT = _attackAnimDuration;
-        }
-
-        public void NotifyWebCast()
-        {
-            if (_hasWebCast)
-                animator.SetTrigger(WebCast);
-            _attackAnimDuration = 0.5f;
-            _attackAnimT = _attackAnimDuration;
-        }
-
-        public void NotifyBuild()
-        {
-            // Reset the timer while building to maintain the pose
-            _buildAnimTimer = 0.2f; 
-        }
-
-        public void NotifyDeath(float destroyDelay = 0.45f)
-        {
-            if (_dying) return;
-            _dying = true;
-            if (_hasDeath)
-                animator.SetTrigger(Death);
-            if (Application.isPlaying) Destroy(gameObject, destroyDelay);
-        }
-
-        public Vector3 GetProjectileSpawnPoint()
-        {
-            var fp = transform.Find("Visual/FirePoint");
-            if (fp != null) return fp.position;
-            if (modelRoot != null)
-                return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f;
-            return transform.position + Vector3.up * 0.4f;
-        }
+        public void NotifyAttack() { _attackAnimDuration = 0.4f; _attackAnimT = _attackAnimDuration; if (_hasAttack) animator.SetTrigger(Attack); }
+        public void NotifyWebCast() { _attackAnimDuration = 0.55f; _attackAnimT = _attackAnimDuration; if (_hasWebCast) animator.SetTrigger(WebCast); }
+        public void NotifyBuild() { _buildAnimTimer = 0.2f; }
+        public void NotifyDeath(float delay = 0.45f) { if (_dying) return; _dying = true; if (_hasDeath) animator.SetTrigger(Death); if (Application.isPlaying) Destroy(gameObject, delay); }
+        
+        public Vector3 GetProjectileSpawnPoint() { return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f; }
 
         public Vector3 GetSprayOrigin()
         {
-            if (_tail != null)
-                return _tail.position;
-            if (modelRoot != null)
-                return modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f;
+            if (_tail != null) return _tail.position;
+            if (modelRoot != null) return modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f;
             return transform.position + Vector3.up * 0.4f;
         }
 
-        /// <summary>Human-readable lines for the unit spotlight / codex UI.</summary>
         public IReadOnlyList<string> GetSpotlightLines()
         {
-            var lines = new List<string>(12);
-            if (animator != null && animator.runtimeAnimatorController != null)
+            var lines = new List<string>(8);
+            if (_unit != null && _unit.Archetype == UnitArchetype.BlackWidow)
             {
-                lines.Add($"Animator: {animator.runtimeAnimatorController.name}");
-                lines.Add("Parameters (set by code):");
-                lines.Add("· Speed (float) — planar speed");
-                lines.Add("· IsMoving (bool)");
-                lines.Add("· Gathering (bool) — while gather + stopped");
-                lines.Add("· Attack (trigger) — NotifyAttack()");
-                lines.Add("· Death (trigger) — NotifyDeath()");
-                lines.Add("Plus: root faces move/attack direction (turnSpeed).");
+                lines.Add("Black Widow Procedural Driver:");
+                lines.Add("· Orientation: Corrected -90X pitch");
+                lines.Add("· Idle: Subtle body sway + breathing");
+                lines.Add("· Walk: Aggressive tetrapod wobble (yaw/pitch)");
+                lines.Add("· Attack: Forward lunge + squash");
+                lines.Add("· WebCast: Rearing up + abdomen pulse");
             }
             else
             {
-                lines.Add("Procedural (no Animator controller)");
-                lines.Add("· Move bob: sinusoidal Y, proceduralBobSpeed / proceduralBobAmp");
-                lines.Add("· Attack: 0.35s lunge + arm pitch + squash (NotifyAttack)");
-                if (_unit != null && _unit.Archetype == UnitArchetype.BasicFighter)
-                {
-                    lines.Add("· Mantis idle loop (~30s): head look, scythe maintenance, tail sway");
-                    lines.Add("· Bones: frontleg/R_frontleg, chest, head, tail (if named in mesh)");
-                }
-                else if (_unit != null)
-                {
-                    lines.Add("· Idle: subtle chest breath scale (idlePulseSpeed / idlePulseAmp)");
-                }
-                lines.Add("· Death: scale-down shrink unless Animator handles it");
+                lines.Add("Generic Procedural Driver");
             }
-
             return lines;
         }
-    }
-}
+        }
+        }
