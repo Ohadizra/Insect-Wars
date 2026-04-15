@@ -248,3 +248,225 @@ The runtime code searches for these exact bone names
 
 If the model uses different names, rename the bones in the FBX
 or add aliases to UnitAnimationDriver.Awake().
+
+
+========================================
+  PROMPT FOR AI ANIMATION TOOL
+  (Copy-paste this into Meshy / Anything World / Mixamo / etc.)
+========================================
+
+The sections below are self-contained prompts you can feed directly
+to an AI animation service. Each prompt describes the model, the
+desired animation, and the constraints. Pick the one you need.
+
+
+--- PROMPT A: IDLE HOVER (primary — generate this first) ---
+
+Subject:
+A large hawk moth / sphinx moth 3D model. It has two broad triangular
+wings attached to a fuzzy thorax, six small legs, two feathery antennae,
+and a tapered abdomen. The wings are the largest part of the body —
+each wing is roughly as long as the entire body.
+
+Animation requested — "Idle Hover" (looping, 1.5–2.0 seconds):
+The moth hovers in place, suspended in the air. The WINGS are the
+primary moving element — everything else is nearly still.
+
+Wing motion (CRITICAL — this is the whole point of the animation):
+- Both wings flap up and down in smooth, broad strokes.
+- The flap arc is approximately 50-70 degrees total (from above
+  horizontal to below horizontal).
+- Flap rate: about 4-6 full cycles per second (fast enough to look
+  like flight, slow enough that each beat is visible — NOT a blur).
+- The downstroke is slightly faster and more forceful than the upstroke.
+- Wings sweep forward slightly on the downstroke, back on the upstroke
+  (figure-8 tip path when viewed from the side).
+- Wings should NEVER clip through the body or each other.
+
+Body:
+- The thorax/body hangs stable beneath the wings. Almost no movement.
+- Allow only a very subtle vertical bob (2-3% of body height) synced
+  to the wing beats — body dips very slightly on the downstroke.
+- NO lateral sway. NO rotation. NO bouncing. The body is a stable
+  anchor while the wings do all the work.
+
+Legs: Tucked close to the body, dangling naturally. No movement.
+Antennae: Swept back gently. Optional: very subtle flutter.
+Abdomen: Hangs down from the thorax. Optional: tiny pendulum sway.
+
+Overall feel:
+Effortless, graceful hovering. The moth looks perfectly at home in
+the air. Think of a hummingbird hawk-moth hovering at a flower — 
+smooth, continuous wing beats with an almost-still body. The animation
+should NOT look like jumping, bouncing, or bobbing. The WINGS create
+the flight, not the body.
+
+Technical constraints:
+- Looping: The last frame must blend seamlessly back to the first.
+- No root translation: The moth stays in place (movement is handled
+  by game code). Do NOT animate the model moving up/down/sideways.
+- No root rotation: The moth faces forward the whole time.
+- Export format: FBX with embedded animation clip, or separate FBX
+  animation clip referencing this skeleton.
+
+
+--- PROMPT B: FORWARD FLIGHT (looping, 0.8–1.0 seconds) ---
+
+Same moth model as above.
+
+Animation requested — "Forward Flight" (looping, 0.8–1.0 seconds):
+The moth is flying forward with purpose and speed.
+
+Wings:
+- Flap harder and faster than hover — about 6-8 cycles per second.
+- Larger arc (~70-80 degrees). Stronger, more forceful downstroke.
+- Wings sweep forward more aggressively on the downstroke, creating
+  a propulsive stroke.
+
+Body:
+- Tilted forward 15-20 degrees (leaning into the flight direction).
+  This tilt is CONSTANT throughout the animation, not oscillating.
+- Minimal vertical bob — even less than hover. The body is streamlined.
+
+Legs: Pressed tight against the body, fully tucked.
+Antennae: Flat against the head, swept back by airflow.
+Abdomen: Extended straight back as a counterbalance.
+
+Overall feel:
+Fast, determined, purposeful flight. A moth on a mission. Think of
+a hawk moth darting between flowers at dusk — swift and direct.
+
+Technical constraints: Same as Prompt A (looping, no root motion).
+
+
+--- PROMPT C: COMBINED "MAKE MY MOTH FLY" (if the tool only takes one prompt) ---
+
+I have a 3D hawk moth model (large moth with broad wings, fuzzy body,
+six legs, feathery antennae). I need a flying/hovering animation.
+
+Please create an animation where:
+1. The wings flap up and down in smooth, broad strokes — about 50-70
+   degrees of arc, 4-6 beats per second.
+2. The downstroke is faster and more powerful than the upstroke.
+3. The body stays nearly still — just a tiny vertical bob synced to
+   the wing beats. NO bouncing, jumping, or swaying.
+4. Legs are tucked, antennae swept back, abdomen hangs down.
+5. The animation loops seamlessly (1.5-2.0 seconds per loop).
+6. No root motion — the moth stays in place. Game code handles
+   translation and rotation.
+
+The key visual: the WINGS do all the work. The body is a stable
+platform suspended beneath actively flapping wings. Think of a real
+hawk moth (sphinx moth) hovering at a flower.
+
+Do NOT make the moth bounce or bob its whole body. The flight should
+look effortless and graceful, driven entirely by wing motion.
+
+
+--- PROMPT D: ALTERNATIVE APPROACH — SEPARATE WINGS ---
+
+If the animation tool cannot make the wings flap on the existing
+single-mesh model, try this alternative approach:
+
+I need you to separate the wings from the body of my hawk moth model
+and rig them as independent bones. Then animate the wing bones
+flapping. Specifically:
+
+1. Identify the two large triangular wing surfaces on the model.
+2. Create two bones: one at the root/base of each wing where it
+   attaches to the thorax (the "shoulder" joint of each wing).
+3. Name them "L_wing" and "R_wing" (left and right).
+4. Skin/weight the wing mesh to these bones (each wing fully weighted
+   to its respective bone — no blending needed).
+5. Animate the bones rotating up and down:
+   - Rest pose: wings horizontal, spread out to the sides
+   - Downstroke: wings rotate ~35 degrees below horizontal
+   - Upstroke: wings rotate ~35 degrees above horizontal
+   - 4-6 full cycles per second, looping over 1.5-2.0 seconds
+   - Downstroke is faster than upstroke (asymmetric timing)
+6. Export as FBX with the skeleton and animation clip embedded.
+
+Bone naming is critical — the game code searches for bones named
+"L_wing" / "R_wing" (or "wing_L" / "wing_R", "LeftWing" / "RightWing").
+
+If the tool cannot do rigging, just separate the wing meshes into
+their own objects/groups named "L_wing" and "R_wing" so that I can
+rig and animate them manually in Unity/Blender.
+
+
+========================================
+  TROUBLESHOOTING — WHY WING FLAP FAILS
+========================================
+
+Common reasons AI animation tools fail to animate moth wings:
+
+1. SINGLE MESH / NO SKELETON
+   The Meshy "Nocturnal Sentinel" model is likely a single fused mesh
+   with no bones. Animation tools need separate bones or at least
+   separate mesh parts to move the wings independently.
+   → Solution: Ask the tool to add a skeleton first, or manually
+     split the wings in Blender before sending to the animation tool.
+
+2. TOOL DOESN'T UNDERSTAND "FLAP"
+   Many AI animation tools are trained primarily on bipedal/quadruped
+   walk cycles. Insect wing flapping is outside their training data.
+   → Solution: Use Prompt D (separate-wings approach) or describe
+     the motion as "arms waving up and down" if the tool understands
+     humanoid motions better.
+
+3. SCALE / ORIENTATION ISSUES
+   The FBX exports Z-up. If the tool expects Y-up, the moth may
+   appear lying on its back and the "flap" goes sideways.
+   → Solution: Specify "Y-up" orientation in the tool settings,
+     or rotate the model 90 degrees on X before sending it in.
+
+4. FALLBACK — PROCEDURAL ANIMATION IN UNITY
+   If no tool can produce a proper wing-flap clip, the game already
+   has a procedural fallback in UnitAnimationDriver.ApplyHawkMothLoop()
+   that simulates wing flaps by scaling the model (squash & stretch).
+   This looks acceptable from the RTS camera distance but is not
+   a true wing animation. To improve it:
+   - Open the moth FBX in Blender
+   - Separate the two wing meshes (select wing faces → P → Separate)
+   - Name the new objects "L_wing" and "R_wing"
+   - Add an Armature with two bones at the wing roots
+   - Parent the wing meshes to their respective bones
+   - Export as FBX
+   - UnitAnimationDriver will find the wing bones automatically
+     and can drive them procedurally with proper rotation
+
+========================================
+  BLENDER MANUAL WORKFLOW (LAST RESORT)
+========================================
+
+If all AI tools fail, here's a step-by-step for Blender:
+
+1. Import: File → Import → FBX → select the Meshy model
+2. Fix orientation: If Z-up, apply -90X rotation (Ctrl+A → Rotation)
+3. Enter Edit Mode on the mesh
+4. Select the LEFT wing faces (use L to select linked, or manual box select)
+5. Separate: P → Selection. Rename the new object "L_wing"
+6. Repeat for the RIGHT wing → name it "R_wing"
+7. Remaining body mesh → rename to "Body"
+8. Add Armature: Shift+A → Armature
+9. In Edit Mode on the armature, create 3 bones:
+   - "Root" at the center of the thorax
+   - "L_wing" starting at the left wing root, extending into the wing
+   - "R_wing" starting at the right wing root, extending into the wing
+   - Parent both wing bones to Root
+10. Parent each wing mesh to its bone: select mesh, then bone,
+    Ctrl+P → Bone (keep offset)
+11. Animate:
+    - Frame 1: Wings horizontal (rest pose). Insert keyframe (I → Rotation)
+    - Frame 4: Wings rotated -35° on local X (downstroke). Keyframe.
+    - Frame 10: Wings rotated +35° on local X (upstroke). Keyframe.
+    - Frame 12: Back to rest. Keyframe.
+    - This gives ~12 frames per beat. At 24fps = 2 beats/sec.
+      At 60fps, use 10-15 frames per beat for 4-6 beats/sec.
+    - Set interpolation to sinusoidal (Graph Editor → T → Sinusoidal)
+12. Set frame range, mark as looping (Shift+E → Make Cyclic)
+13. Export: File → Export → FBX
+    - Check "Armature" and "Mesh" in export filter
+    - Animation: check "Baked Animation" and "NLA Strips"
+    - Apply Transform: checked
+    - Forward: -Z Forward, Up: Y Up (Unity convention)
