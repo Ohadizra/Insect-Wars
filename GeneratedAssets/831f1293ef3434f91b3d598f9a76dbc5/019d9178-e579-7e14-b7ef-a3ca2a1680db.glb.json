@@ -1,0 +1,12 @@
+{
+    "asset": "831f1293ef3434f91b3d598f9a76dbc5",
+    "fileName": "019d9178-e579-7e14-b7ef-a3ca2a1680db.glb",
+    "prompt": "A production-ready rigged 3D model of a hawk moth. Use recursive part-based decomposition to ensure the wings are separate meshes from the body (thorax). The 6 legs should also be separate articulable parts. Steampunk aesthetic with brass and gear details on the thorax and wings. Large clock-face wings. The model must have separate GameObjects for the wings in the prefab hierarchy. Facing +Z. high detail. clean geometry. production ready. material included. final prefab saved to Assets/_InsectWars/Units/Hawk Moth/HawkMoth_Editable.prefab.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "8163145f36cfc1714ae8589f86fd50f8",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

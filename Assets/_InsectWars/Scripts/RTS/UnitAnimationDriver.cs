@@ -388,12 +388,12 @@ namespace InsectWars.RTS
             var state = stealth.CurrentState;
             float cycle = _idleT;
 
-            // --- Constants derived from model bounds (extentY=1.19) ---
-            const float H_Fly = 3.8f;    // Elevated flight height
-            const float H_Ground = 1.25f; // Just above ground level
+            // --- Constants derived from model bounds ---
+            const float H_Fly = 4.2f;    // Elevated flight height
+            const float H_Ground = 1.35f; // Stand firmly on ground
 
             // --- Shared parameters ---
-            float wingSpeed = 12f;
+            float wingFreq = 12f;
             float wingAmp = 0.15f; 
             float bodyPitch = 0f;
             float bodyRoll = 0f;
@@ -405,11 +405,10 @@ namespace InsectWars.RTS
             {
                 _takeoffTimer -= dt;
                 float p = 1f - (_takeoffTimer / 0.5f);
-                // TAKEOFF (Explosive launch)
-                float snap = Mathf.Sin(p * Mathf.PI) * 0.45f;
-                float launchBeat = Mathf.Sin(p * 25f) * 0.25f;
+                float snap = Mathf.Sin(p * Mathf.PI) * 0.5f;
+                float launchBeat = Mathf.Sin(p * 30f) * 0.3f;
                 
-                modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 12f, p), 0f, 0f);
+                modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
                 float ts = 1f + snap + launchBeat;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(ts, 1f / Mathf.Max(0.1f, ts), ts));
                 modelRoot.localPosition = _baseLocalPos + new Vector3(0f, Mathf.Lerp(H_Ground, H_Fly, p), 0f);
@@ -422,28 +421,31 @@ namespace InsectWars.RTS
                     targetBaseY = H_Fly;
                     if (moving)
                     {
-                        wingSpeed = 52f; // ~8 Hz
-                        wingAmp = 0.65f; // High amplitude for move
-                        bodyPitch = 22f; 
-                        bodyBob = Mathf.Sin(cycle * wingSpeed) * 0.1f;
-                        bodyRoll = Mathf.Sin(cycle * 3f) * 3.5f; 
+                        // WALK_FLY: High-intensity propulsive flight
+                        wingFreq = 56f; // ~9 Hz
+                        wingAmp = 0.75f; // Very aggressive flap
+                        bodyPitch = 25f; // Lean deep into flight
+                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.15f;
+                        // Synchronized rhythmic bank (fluttering)
+                        bodyRoll = Mathf.Sin(cycle * (wingFreq * 0.5f)) * 6f; 
                     }
                     else
                     {
-                        wingSpeed = 38f; // ~6 Hz
-                        wingAmp = 0.55f; // High amplitude for hover visibility
-                        bodyPitch = 10f;
-                        bodyBob = Mathf.Sin(cycle * wingSpeed) * 0.06f;
-                        bodyRoll = Mathf.Sin(cycle * 1.5f) * 2.5f;
+                        // IDLE_FLY: Graceful hovering
+                        wingFreq = 42f; // ~6.5 Hz
+                        wingAmp = 0.65f; 
+                        bodyPitch = 12f;
+                        bodyBob = Mathf.Sin(cycle * wingFreq) * 0.08f;
+                        bodyRoll = Mathf.Sin(cycle * 3f) * 4f; // Slower scanning bank
                     }
                     break;
 
                 case MothStealth.MothState.Landing:
                     targetBaseY = Mathf.Lerp(H_Fly, H_Ground, stealth.LandingProgress);
-                    wingSpeed = 24f; 
-                    wingAmp = 0.35f;
-                    bodyPitch = Mathf.Lerp(10f, 0f, stealth.LandingProgress);
-                    bodyBob = Mathf.Sin(cycle * 6f) * 0.04f;
+                    wingFreq = 28f; 
+                    wingAmp = 0.4f;
+                    bodyPitch = Mathf.Lerp(12f, 0f, stealth.LandingProgress);
+                    bodyBob = Mathf.Sin(cycle * 8f) * 0.05f;
                     break;
 
                 case MothStealth.MothState.Grounded:
@@ -451,23 +453,23 @@ namespace InsectWars.RTS
                     targetBaseY = H_Ground;
                     if (moving)
                     {
-                        float walkCycle = cycle * 14f;
-                        bodyPitch = 12f;
-                        bodyBob = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.06f;
-                        bodyRoll = Mathf.Sin(walkCycle) * 6f;
-                        wingAmp = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.05f;
-                        wingSpeed = 0f;
+                        float walkCycle = cycle * 16f;
+                        bodyPitch = 14f;
+                        bodyBob = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.08f;
+                        bodyRoll = Mathf.Sin(walkCycle) * 8f;
+                        wingAmp = Mathf.Abs(Mathf.Sin(walkCycle)) * 0.08f; // Passive bounce
+                        wingFreq = 0f;
                     }
                     else
                     {
-                        bodyPitch = 4f;
-                        breath = 1f + Mathf.Sin(cycle * 2.8f) * 0.035f;
-                        if (cycle % 4f > 2.5f && cycle % 4f < 2.7f)
-                            wingAmp = 0.15f;
+                        bodyPitch = 5f;
+                        breath = 1f + Mathf.Sin(cycle * 3f) * 0.04f;
+                        if (cycle % 4f > 2.5f && cycle % 4f < 2.75f)
+                            wingAmp = 0.18f;
                         else
                             wingAmp = 0f;
-                        wingSpeed = 0f;
-                        bodyRoll = Mathf.Sin(cycle * 0.7f) * 3f;
+                        wingFreq = 0f;
+                        bodyRoll = Mathf.Sin(cycle * 0.8f) * 3.5f;
                     }
                     break;
             }
@@ -475,18 +477,28 @@ namespace InsectWars.RTS
             // Apply rotations
             modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
 
-            // Asymmetric wing beat rhythm (Fast Down, Slow Up)
-            float rawSine = Mathf.Sin(cycle * wingSpeed);
-            // Downstroke (rawSine > 0) is snappy, Upstroke (rawSine < 0) is slower/weaker
-            float pulse = rawSine > 0 ? Mathf.Pow(rawSine, 0.5f) : rawSine * 0.4f;
-            float s = 1f + pulse * wingAmp;
-            if (wingSpeed == 0 && wingAmp > 0) s = 1f + wingAmp; 
+            // --- Advanced Wing "Swing" Simulation ---
+            // Real moth flight involves a "Clap-and-Fling" mechanism.
+            // We simulate the wings swinging wide (X-stretch) and clapping together (X-shrink).
+            float rawSine = Mathf.Sin(cycle * wingFreq);
             
-            // Apply scale pulses (Width vs Height)
-            // Scaling width (X) and shrinking height (Y) to simulate wing movement
-            modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath * s, breath / Mathf.Max(0.1f, s), breath));
+            // "Wing Swing" Profile: 
+            // 1. Fast Downstroke: Wings spread wide rapidly (Width stretches, Height/Depth squashes)
+            // 2. Slow Recovery: Wings lift and fold (Width shrinks, Height stretches)
+            float stroke;
+            if (rawSine > 0)
+                stroke = Mathf.Pow(rawSine, 0.4f); // Sharp, explosive expansion (spread)
+            else
+                stroke = rawSine * 0.5f; // Softer, slower contraction (fold)
 
-            // Apply vertical height
+            float sX = 1f + stroke * wingAmp; // Width expansion (the "swing")
+            float sY = 1f - stroke * (wingAmp * 0.8f); // Thickness/Body contraction
+            float sZ = 1f - stroke * (wingAmp * 0.4f); // Lengthwise compression
+
+            // Apply complex scale harmonics
+            modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath * sX, breath * sY, breath * sZ));
+
+            // Apply vertical height with bobbing
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, targetBaseY + bodyBob, 0f);
         }
 
