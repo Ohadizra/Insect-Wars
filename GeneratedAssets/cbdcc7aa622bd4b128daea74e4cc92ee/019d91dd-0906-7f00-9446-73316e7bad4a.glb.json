@@ -1,0 +1,12 @@
+{
+    "asset": "cbdcc7aa622bd4b128daea74e4cc92ee",
+    "fileName": "019d91dd-0906-7f00-9446-73316e7bad4a.glb",
+    "prompt": "A high-fidelity Hawk Moth 3D model, fully rigged for skeletal animation. The wings MUST be separate child objects or bones named 'L_wing' and 'R_wing' to allow flapping. Stylized blue and black patterns. Six legs. High quality topology and textures. Rigged. Separate parts. Project style matching. Moth body, six legs, four wings (two pairs). Broad wings. Separate bones for each wing. Rigged for animation in Unity. Body is separate from wings. Wings are child transforms. Skeleton included.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "67a057be823929b9f3677f63beffcbb9",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
