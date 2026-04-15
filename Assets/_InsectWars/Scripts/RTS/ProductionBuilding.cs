@@ -167,7 +167,7 @@ namespace InsectWars.RTS
         {
             BuildingType.Underground => "Military barracks dug beneath the surface. Produces Mantis fighters and Beetle ranged units.",
             BuildingType.AntNest => "Expands the colony. Produces Worker ants and provides supply capacity.",
-            BuildingType.SkyTower => "Tall observation structure. Provides extended vision range.",
+            BuildingType.SkyTower => "Elevated hive tower. Produces Hawk Moths — support healers with stealth and air capabilities.",
             BuildingType.RootCellar => "Storage burrow. Provides additional supply capacity for the colony.",
             _ => ""
         };

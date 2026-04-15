@@ -16,7 +16,7 @@ namespace InsectWars.Data
                     "Assets/_InsectWars/Prefabs/UndergroundBuilding.prefab");
             if (skyTowerPrefab == null)
                 skyTowerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
-                    "Assets/_InsectWars/Buildings/Meshy_AI_Citadel_of_the_Hexed__0409154908_texture.fbx");
+                    "Assets/_InsectWars/Prefabs/SkyTower.prefab");
             if (calorieChunkPrefab == null)
                 calorieChunkPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Models/CalorieChunk 4.prefab");

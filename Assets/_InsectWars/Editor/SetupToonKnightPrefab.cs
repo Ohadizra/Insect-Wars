@@ -79,6 +79,17 @@ namespace InsectWars.Editor
         const string NestMaterialPath = PrefabDir + "/AntNestMat.mat";
         const string NestPrefabPath = PrefabDir + "/AntNest.prefab";
 
+        // --- Sky Tower paths ---
+        const string SkyTowerModelPath = "Assets/_InsectWars/Buildings/SkyTree/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture.fbx";
+        const string SkyTowerTexDir = "Assets/_InsectWars/Buildings/SkyTree";
+        const string SkyTowerBaseTexPath = SkyTowerTexDir + "/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture.png";
+        const string SkyTowerNormalTexPath = SkyTowerTexDir + "/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture_normal.png";
+        const string SkyTowerEmissionTexPath = SkyTowerTexDir + "/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture_emission.png";
+        const string SkyTowerMetallicTexPath = SkyTowerTexDir + "/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture_metallic.png";
+        const string SkyTowerRoughnessTexPath = SkyTowerTexDir + "/Meshy_AI_Citadel_of_the_Hexed__0409195524_texture_roughness.png";
+        const string SkyTowerMaterialPath = PrefabDir + "/SkyTowerMat.mat";
+        const string SkyTowerPrefabPath = PrefabDir + "/SkyTower.prefab";
+
         // ----------------------------------------------------------------
         // Menu items
         // ----------------------------------------------------------------
@@ -92,6 +103,7 @@ namespace InsectWars.Editor
             SetupBlackWidow();
             SetupHawkMoth();
             SetupAntNest();
+            SetupSkyTower();
         }
 
         [MenuItem("Insect Wars/Setup Ant Worker")]
@@ -184,6 +196,27 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Ant nest setup complete! " +
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        [MenuItem("Insect Wars/Setup Sky Tower")]
+        public static void SetupSkyTower()
+        {
+            if (!ValidateAssets(SkyTowerModelPath))
+                return;
+
+            FixSkyTowerImportSettings();
+
+            var skyTowerMaterial = BuildSkyTowerMaterial();
+            var prefab = BuildHivePrefab(SkyTowerModelPath, SkyTowerPrefabPath, "SkyTower",
+                Vector3.one * 4f, skyTowerMaterial,
+                colCenter: new Vector3(0f, 2.5f, 0f), colSize: new Vector3(4f, 5f, 4f));
+
+            UpdateLibrary(skyTowerPrefab: prefab);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Insect Wars] Sky Tower setup complete! " +
                       "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
@@ -572,6 +605,93 @@ namespace InsectWars.Editor
                 mat.SetTexture("_MetallicGlossMap", metallicTex);
 
             var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(NestRoughnessTexPath);
+            if (roughnessTex != null)
+                mat.SetFloat("_Smoothness", 0.5f);
+
+            mat.SetFloat("_Metallic", 0.2f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static void FixSkyTowerImportSettings()
+        {
+            var importer = AssetImporter.GetAtPath(SkyTowerModelPath) as ModelImporter;
+            if (importer == null) return;
+
+            bool dirty = false;
+
+            if (importer.materialImportMode != ModelImporterMaterialImportMode.None)
+            {
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                dirty = true;
+            }
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                dirty = true;
+            }
+            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            {
+                importer.globalScale = 80f;
+                dirty = true;
+            }
+            if (importer.animationType != ModelImporterAnimationType.None)
+            {
+                importer.animationType = ModelImporterAnimationType.None;
+                dirty = true;
+            }
+
+            if (dirty)
+            {
+                importer.SaveAndReimport();
+                Debug.Log("[Insect Wars] Fixed Sky Tower FBX import settings (scale=80, no rig).");
+            }
+        }
+
+        static Material BuildSkyTowerMaterial()
+        {
+            EnsureDirectory(PrefabDir);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null)
+            {
+                Debug.LogError("[Insect Wars] URP Lit shader not found.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(SkyTowerMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(sh);
+                AssetDatabase.CreateAsset(mat, SkyTowerMaterialPath);
+            }
+            else
+            {
+                mat.shader = sh;
+            }
+
+            mat.SetColor("_BaseColor", Color.white);
+
+            var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(SkyTowerBaseTexPath);
+            if (baseTex != null)
+                mat.SetTexture("_BaseMap", baseTex);
+
+            var normalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(SkyTowerNormalTexPath);
+            if (normalTex != null)
+            {
+                mat.SetTexture("_BumpMap", normalTex);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+
+            mat.SetTexture("_EmissionMap", null);
+            mat.SetColor("_EmissionColor", Color.black);
+            mat.DisableKeyword("_EMISSION");
+
+            var metallicTex = AssetDatabase.LoadAssetAtPath<Texture2D>(SkyTowerMetallicTexPath);
+            if (metallicTex != null)
+                mat.SetTexture("_MetallicGlossMap", metallicTex);
+
+            var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(SkyTowerRoughnessTexPath);
             if (roughnessTex != null)
                 mat.SetFloat("_Smoothness", 0.5f);
 
@@ -1213,7 +1333,8 @@ namespace InsectWars.Editor
 
         static void UpdateLibrary(GameObject workerPrefab = null, GameObject meleePrefab = null,
             GameObject rangedPrefab = null, GameObject hivePrefab = null,
-            GameObject blackWidowPrefab = null, GameObject hawkMothPrefab = null)
+            GameObject blackWidowPrefab = null, GameObject hawkMothPrefab = null,
+            GameObject skyTowerPrefab = null)
         {
             EnsureDirectory(LibraryDir);
 
@@ -1230,6 +1351,7 @@ namespace InsectWars.Editor
             if (hivePrefab != null) lib.hivePrefab = hivePrefab;
             if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
             if (hawkMothPrefab != null) lib.hawkMothPrefab = hawkMothPrefab;
+            if (skyTowerPrefab != null) lib.skyTowerPrefab = skyTowerPrefab;
 
             EditorUtility.SetDirty(lib);
         }

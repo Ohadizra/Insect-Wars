@@ -761,6 +761,12 @@
       "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
       "content": "open moth's unit description and make the animations based on the requirments. remmber that its a flying insect and the animation has to take its anatomy in mind",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "0189f166-f4a9-43fe-8843-b8ceb3b6ce72",
+      "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
+      "content": "I will verify the bone structure of the newly generated rigged model and then use the \"Text to Motion\" model to create the specific flight, ground, and transition animations as per your requirements.\n\nWould you like me to continue with this plan?",
+      "snapshot_message_type": 1
     }
   ]
 }

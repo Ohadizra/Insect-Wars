@@ -1,0 +1,27 @@
+{
+    "asset": "483c7d7e968744b1cb0d36a0e33bf6b1",
+    "fileName": "019d90f2-4632-745d-a6c0-5f011d84f63e.png",
+    "prompt": "A full-body concept image of a hawk moth character named 'Nocturnal Sentinel'. Steampunk aesthetic with brass gears and clockwork elements on its thorax. Large, beautiful wings with clockwork patterns. 6 insect legs. Character faces +Z. White background. 3D render style matching the project's art. High resolution.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "9c621be34a1a4ffef7297a7a0b55a36f",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
