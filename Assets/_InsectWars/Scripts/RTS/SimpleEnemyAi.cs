@@ -74,6 +74,9 @@ namespace InsectWars.RTS
                 return;
             }
 
+            if (_self.Definition != null && !_self.Definition.canAttack)
+                return;
+
             TickCombat();
         }
 

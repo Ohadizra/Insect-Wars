@@ -293,6 +293,7 @@ namespace InsectWars.RTS
         public void OrderAttack(InsectUnit target, bool keepAttackMoveIntent = false)
         {
             if (!IsAlive || target == null || !target.IsAlive || target.team == team) return;
+            if (definition != null && !definition.canAttack) return;
             if (target.IsCloaked
                 && Vector3.Distance(transform.position, target.transform.position) > 8f) return;
             if (target.IsAirborne && definition != null
@@ -312,6 +313,7 @@ namespace InsectWars.RTS
         public void OrderAttackBuilding(ProductionBuilding target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            if (definition != null && !definition.canAttack) return;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -321,6 +323,7 @@ namespace InsectWars.RTS
         public void OrderAttackHive(HiveDeposit target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            if (definition != null && !definition.canAttack) return;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -525,6 +528,7 @@ namespace InsectWars.RTS
         void TickAttackMoveScan()
         {
             if (!_wantsAttackMove || _order != UnitOrder.Move) return;
+            if (definition != null && !definition.canAttack) return;
             var scan = definition != null ? definition.visionRadius : 12f;
 
             InsectUnit bestUnit = null;

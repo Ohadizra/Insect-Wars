@@ -616,7 +616,18 @@ namespace InsectWars.Data
 
             map.passiveScatterSeed = 55555;
 
-            map.highGrounds = System.Array.Empty<HighGroundPlaced>();
+            map.highGrounds = new[]
+            {
+                // Test plateau — near player start, ramp faces SW so only climbers can reach the top from other sides
+                new HighGroundPlaced
+                {
+                    uv = new Vector2(0.72f, 0.72f),  // NE quadrant of the 70m map → world ~(15, 15)
+                    radius = 0.12f,
+                    rampWidth = 0.04f,
+                    heightFraction = 0.12f,
+                    rotation = 225f  // ramp faces SW toward player base
+                },
+            };
             map.clay = System.Array.Empty<ClayPlaced>();
             map.terrainFeatures = System.Array.Empty<TerrainFeaturePlaced>();
             map.decorativePrefabs = System.Array.Empty<DecorativePrefabPlaced>();

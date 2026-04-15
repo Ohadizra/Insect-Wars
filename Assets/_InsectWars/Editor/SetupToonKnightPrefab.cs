@@ -57,6 +57,18 @@ namespace InsectWars.Editor
         const string WidowControllerPath = ControllerDir + "/BlackWidow.controller";
         const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
 
+        // --- Stick Spy paths ---
+        const string StickModelPath = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture.fbx";
+        const string StickTexDir = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx";
+        const string StickBaseTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture.png";
+        const string StickNormalTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_normal.png";
+        const string StickEmissionTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_emission.png";
+        const string StickMetallicTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_metallic.png";
+        const string StickRoughnessTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_roughness.png";
+        const string StickMaterialPath = PrefabDir + "/StickSpyMat.mat";
+        const string StickControllerPath = ControllerDir + "/StickSpy.controller";
+        const string StickPrefabPath = PrefabDir + "/StickSpy.prefab";
+
         // --- Hawk Moth paths ---
         const string MothModelPath = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx/Meshy_AI_Nocturnal_Sentinel_0415165643_texture.fbx";
         const string MothTexDir = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx";
@@ -101,6 +113,7 @@ namespace InsectWars.Editor
             SetupAntWorker();
             SetupBombardierBeetle();
             SetupBlackWidow();
+            SetupStickSpy();
             SetupAntNest();
             SetupSkyTower();
         }
@@ -264,6 +277,189 @@ namespace InsectWars.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Hawk Moth setup complete (art only, not in game).");
+        }
+
+        [MenuItem("Insect Wars/Setup Stick Spy")]
+        public static void SetupStickSpy()
+        {
+            if (!ValidateAssets(StickModelPath))
+                return;
+
+            FixStickImportSettings();
+
+            var controller = BuildStickSpyController();
+            var stickMaterial = BuildStickMaterial();
+            // 1.5x mantis visual scale (mantis = 2.5)
+            var prefab = BuildPrefab(StickModelPath, StickPrefabPath, "StickSpy",
+                controller, Vector3.one * 3.75f,
+                agentHeight: 3.0f, agentRadius: 0.6f, agentSpeed: 3.8f,
+                colCenter: new Vector3(0f, 1.5f, 0f), colRadius: 0.5f, colHeight: 3.0f,
+                overrideMaterial: stickMaterial,
+                visualRotation: new Vector3(-90f, 0f, 0f));
+
+            UpdateLibrary(stickSpyPrefab: prefab);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Insect Wars] Stick Spy setup complete! " +
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        static void FixStickImportSettings()
+        {
+            var importer = AssetImporter.GetAtPath(StickModelPath) as ModelImporter;
+            if (importer == null) return;
+
+            bool dirty = false;
+
+            if (importer.materialImportMode != ModelImporterMaterialImportMode.None)
+            {
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                dirty = true;
+            }
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                dirty = true;
+            }
+            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            {
+                importer.globalScale = 80f;
+                dirty = true;
+            }
+            if (importer.animationType != ModelImporterAnimationType.Generic)
+            {
+                importer.animationType = ModelImporterAnimationType.Generic;
+                dirty = true;
+            }
+            if (importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel)
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                dirty = true;
+            }
+
+            var clips = importer.clipAnimations;
+            if (clips == null || clips.Length == 0)
+            {
+                var defaultClips = importer.defaultClipAnimations;
+                if (defaultClips.Length > 0)
+                {
+                    foreach (var c in defaultClips)
+                    {
+                        c.loopTime = true;
+                        c.loopPose = true;
+                    }
+                    importer.clipAnimations = defaultClips;
+                    dirty = true;
+                }
+            }
+            else
+            {
+                bool clipsChanged = false;
+                foreach (var c in clips)
+                {
+                    if (!c.loopTime) { c.loopTime = true; clipsChanged = true; }
+                    if (!c.loopPose) { c.loopPose = true; clipsChanged = true; }
+                }
+                if (clipsChanged)
+                {
+                    importer.clipAnimations = clips;
+                    dirty = true;
+                }
+            }
+
+            if (dirty)
+            {
+                importer.SaveAndReimport();
+                Debug.Log("[Insect Wars] Fixed Stick Spy FBX import settings (scale=80, Generic rig, avatar, looping clips).");
+            }
+        }
+
+        static AnimatorController BuildStickSpyController()
+        {
+            EnsureDirectory(ControllerDir);
+            DeleteIfExists(StickControllerPath);
+
+            var c = AnimatorController.CreateAnimatorControllerAtPath(StickControllerPath);
+            AddStandardParameters(c);
+
+            var sm = c.layers[0].stateMachine;
+
+            var walkClip = ExtractClip(StickModelPath);
+
+            var idleState = sm.AddState("Idle");
+            idleState.motion = walkClip;
+            idleState.speed = 0f;
+            sm.defaultState = idleState;
+
+            var walkState = sm.AddState("Walk");
+            walkState.motion = walkClip;
+
+            AddLocomotionTransitions(idleState, walkState);
+
+            EditorUtility.SetDirty(c);
+            return c;
+        }
+
+        static Material BuildStickMaterial()
+        {
+            EnsureDirectory(PrefabDir);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null)
+            {
+                Debug.LogError("[Insect Wars] URP Lit shader not found.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(StickMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(sh);
+                AssetDatabase.CreateAsset(mat, StickMaterialPath);
+            }
+            else
+            {
+                mat.shader = sh;
+            }
+
+            var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StickBaseTexPath);
+            if (baseTex != null)
+                mat.SetTexture("_BaseMap", baseTex);
+
+            var normalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StickNormalTexPath);
+            if (normalTex != null)
+            {
+                mat.SetTexture("_BumpMap", normalTex);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+
+            var emissionTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StickEmissionTexPath);
+            if (emissionTex != null)
+            {
+                mat.SetTexture("_EmissionMap", emissionTex);
+                mat.SetColor("_EmissionColor", Color.white * 0.3f);
+                mat.EnableKeyword("_EMISSION");
+            }
+            else
+            {
+                mat.SetTexture("_EmissionMap", null);
+                mat.SetColor("_EmissionColor", Color.black);
+                mat.DisableKeyword("_EMISSION");
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
+
+            var metallicTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StickMetallicTexPath);
+            if (metallicTex != null)
+                mat.SetTexture("_MetallicGlossMap", metallicTex);
+
+            var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StickRoughnessTexPath);
+            if (roughnessTex != null)
+                mat.SetFloat("_Smoothness", 0.4f);
+
+            mat.SetFloat("_Metallic", 0.15f);
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         static void FixMothImportSettings()
@@ -1381,7 +1577,8 @@ namespace InsectWars.Editor
         static void UpdateLibrary(GameObject workerPrefab = null, GameObject meleePrefab = null,
             GameObject rangedPrefab = null, GameObject hivePrefab = null,
             GameObject blackWidowPrefab = null,
-            GameObject skyTowerPrefab = null)
+            GameObject skyTowerPrefab = null,
+            GameObject stickSpyPrefab = null)
         {
             EnsureDirectory(LibraryDir);
 
@@ -1398,6 +1595,7 @@ namespace InsectWars.Editor
             if (hivePrefab != null) lib.hivePrefab = hivePrefab;
             if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
             if (skyTowerPrefab != null) lib.skyTowerPrefab = skyTowerPrefab;
+            if (stickSpyPrefab != null) lib.stickSpyPrefab = stickSpyPrefab;
 
             EditorUtility.SetDirty(lib);
         }

@@ -281,6 +281,7 @@ namespace InsectWars.RTS
                     case UnitArchetype.BasicFighter: fighters++; break;
                     case UnitArchetype.BasicRanged: ranged++; break;
                     case UnitArchetype.BlackWidow: fighters++; break;
+                    case UnitArchetype.StickSpy: break;
                 }
             }
             int combat = fighters + ranged;

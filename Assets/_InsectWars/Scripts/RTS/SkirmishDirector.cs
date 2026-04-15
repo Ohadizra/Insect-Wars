@@ -64,6 +64,9 @@ namespace InsectWars.RTS
         /// <summary>Used by units for projectile settings when not using a prefab-only pipeline.</summary>
         public static UnitVisualLibrary ActiveVisualLibrary { get; private set; }
 
+        /// <summary>NavMesh agent type ID for units that can climb high grounds (StickSpy).</summary>
+        public static int ClimberAgentTypeID { get; private set; }
+
         static Material s_lit;
         static readonly Dictionary<int, Material> s_tintCache = new();
 
@@ -173,6 +176,7 @@ namespace InsectWars.RTS
             SpawnUnit(hiveXZ + new Vector3(6f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SpawnUnit(hiveXZ + new Vector3(0f, 0f, 6f), Team.Player, UnitArchetype.BasicRanged);
             SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 0f), Team.Player, UnitArchetype.BlackWidow);
+            SpawnUnit(hiveXZ + new Vector3(0f, 0f, -6f), Team.Player, UnitArchetype.StickSpy);
 
             var dummyPos = hiveXZ + new Vector3(20f, 0f, 20f);
             var dummyGo = SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
@@ -246,6 +250,8 @@ namespace InsectWars.RTS
 
             surface.BuildNavMesh();
 
+            BuildClimberNavMesh(world);
+
             var systems = GameObject.Find("Systems");
             DestroyObject(systems);
             systems = new GameObject("Systems");
@@ -273,6 +279,7 @@ namespace InsectWars.RTS
             var hiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
             ProductionBuilding.Place(hiveXZ + new Vector3(-12f, 0f, 4f), BuildingType.Underground, Team.Player, startBuilt: true);
             ProductionBuilding.Place(hiveXZ + new Vector3(4f, 0f, -12f), BuildingType.RootCellar, Team.Player, startBuilt: true);
+            ProductionBuilding.Place(hiveXZ + new Vector3(12f, 0f, 4f), BuildingType.SkyTower, Team.Player, startBuilt: true);
         }
 
         void RegisterBuildZones()
@@ -473,6 +480,37 @@ namespace InsectWars.RTS
                 Quaternion.Euler(0f, 0f, 20f), accent);
             AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.2f, 0.55f, 0.1f), new Vector3(0.1f, 0.05f, 0.3f),
                 Quaternion.Euler(0f, 0f, -20f), accent);
+        }
+
+        static void BuildStickSpyVisual(Transform root, Color body, Team team)
+        {
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+            var bark = new Color(0.38f, 0.28f, 0.16f);
+
+            // Tall elongated body — biggest insect (1.5x mantis)
+            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.75f, 0f),
+                new Vector3(0.15f, 0.75f, 0.15f), Quaternion.identity, bark);
+
+            // Head
+            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 1.5f, 0f),
+                Vector3.one * 0.21f, Quaternion.identity, Color.Lerp(bark, skin, 0.3f));
+
+            // Long thin legs (x4)
+            for (int i = 0; i < 4; i++)
+            {
+                float angle = (i * 90f + 45f) * Mathf.Deg2Rad;
+                float cx = Mathf.Cos(angle) * 0.18f;
+                float cz = Mathf.Sin(angle) * 0.18f;
+                AddPrimitivePart(root, PrimitiveType.Capsule,
+                    new Vector3(cx, 0.3f, cz),
+                    new Vector3(0.06f, 0.33f, 0.06f),
+                    Quaternion.Euler(0f, 0f, i < 2 ? 25f : -25f), bark * 0.85f);
+            }
+
+            // Accent band — team identifier
+            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.975f, 0f),
+                new Vector3(0.21f, 0.045f, 0.21f), Quaternion.identity, accent);
         }
 
         static void BuildRangedVisual(Transform root, Color body, Team team)
@@ -1234,6 +1272,22 @@ namespace InsectWars.RTS
             }
         }
 
+        static void BuildClimberNavMesh(GameObject worldRoot)
+        {
+            var settings = NavMesh.CreateSettings();
+            settings.agentSlope = 75f;
+            settings.agentClimb = 2f;
+            settings.agentRadius = 0.3f;
+            settings.agentHeight = 0.9f;
+            ClimberAgentTypeID = settings.agentTypeID;
+
+            var climberSurface = worldRoot.AddComponent<NavMeshSurface>();
+            climberSurface.agentTypeID = settings.agentTypeID;
+            climberSurface.collectObjects = CollectObjects.Children;
+            climberSurface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
+            climberSurface.BuildNavMesh();
+        }
+
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
         {
             var lib = ActiveVisualLibrary;
@@ -1285,6 +1339,13 @@ namespace InsectWars.RTS
                     go.AddComponent<UnitAnimationDriver>();
                 if (arch == UnitArchetype.BlackWidow && go.GetComponent<WebNetAbility>() == null)
                     go.AddComponent<WebNetAbility>();
+                if (arch == UnitArchetype.StickSpy)
+                {
+                    if (go.GetComponent<StickStealth>() == null)
+                        go.AddComponent<StickStealth>();
+                    if (agent != null)
+                        agent.agentTypeID = ClimberAgentTypeID;
+                }
                 if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                     go.AddComponent<SimpleEnemyAi>();
                 return unit;
@@ -1312,6 +1373,9 @@ namespace InsectWars.RTS
                 case UnitArchetype.BlackWidow:
                     BuildFighterVisual(visualRoot.transform, body2, team);
                     break;
+                case UnitArchetype.StickSpy:
+                    BuildStickSpyVisual(visualRoot.transform, body2, team);
+                    break;
             }
 
             var col = go2.AddComponent<CapsuleCollider>();
@@ -1331,6 +1395,11 @@ namespace InsectWars.RTS
                     col.center = new Vector3(0f, 0.25f, 0f);
                     col.radius = 0.4f;
                     col.height = 0.6f;
+                    break;
+                case UnitArchetype.StickSpy:
+                    col.center = new Vector3(0f, 0.825f, 0f);
+                    col.radius = 0.18f;
+                    col.height = 1.8f;
                     break;
                 default:
                     col.center = new Vector3(0f, 0.55f, 0f);
@@ -1359,6 +1428,10 @@ namespace InsectWars.RTS
                     agent2.height = 0.55f;
                     agent2.radius = 0.38f;
                     break;
+                case UnitArchetype.StickSpy:
+                    agent2.height = 1.35f;
+                    agent2.radius = 0.18f;
+                    break;
                 default:
                     agent2.height = 1.12f;
                     agent2.radius = 0.27f;
@@ -1376,6 +1449,11 @@ namespace InsectWars.RTS
             go2.AddComponent<UnitAnimationDriver>();
             if (arch == UnitArchetype.BlackWidow)
                 go2.AddComponent<WebNetAbility>();
+            if (arch == UnitArchetype.StickSpy)
+            {
+                go2.AddComponent<StickStealth>();
+                agent2.agentTypeID = ClimberAgentTypeID;
+            }
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;
