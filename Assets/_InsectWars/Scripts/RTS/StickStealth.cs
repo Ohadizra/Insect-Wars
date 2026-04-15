@@ -15,7 +15,7 @@ namespace InsectWars.RTS
 
         const float CloakDelay = 5f;
         const float PanicFleeDistance = 10f;
-        const float CloakedAlpha = 0.25f;
+        const float CloakedAlpha = 0.5f;
 
         static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
         static readonly int ColorID = Shader.PropertyToID("_Color");
@@ -82,7 +82,9 @@ namespace InsectWars.RTS
             bool tookDamage = _unit.LastDamageTime > _lastDamageTime;
             _lastDamageTime = _unit.LastDamageTime;
 
-            bool moved = (transform.position - _lastPos).sqrMagnitude > 0.01f;
+            bool moved = (transform.position - _lastPos).sqrMagnitude > 0.01f
+                      || _unit.CurrentOrder == UnitOrder.Move
+                      || _unit.CurrentOrder == UnitOrder.AttackMove;
             _lastPos = transform.position;
 
             switch (_state)
