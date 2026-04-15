@@ -713,6 +713,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "I have fully implemented the **Procedural Animation Driver** for the Black Widow. \n\n### What's Changed:\n1.  **Fixed \"Heads Down\" Orientation**: The spider's base `-90` degree pitch is now correctly preserved. Whether moving or standing, it will remain upright on its legs.\n2.  **Procedural Idle**: The body now has a slow, rhythmic \"breathing\" sway and scale pulse, making the unit feel alive even when stationary.\n3.  **Procedural Walk**: Replaced the broken \"human\" walk with a specialized \"Spider Wobble\" that simulates the momentum and weight transfer of an eight-legged tetrapod gait by rapidly tilting the body's yaw and pitch as it moves.\n4.  **Special Abilities**:\n    *   **Melee Attack**: A sharp forward lunge that squashes the model's scale to show the force of the bite.\n    *   **Web Cast**: The spider now \"rears up\" by tilting its front body upward while its abdomen pulses rapidly to simulate expelling silk, exactly as described in your prompts.\n\nThe Black Widow will now feel significantly more thematic and stable in its movements!",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "29843b5b-3a58-4e71-a071-946f6dea3cfa",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "tested on the test map- just untill i firstly move the unit the spider is 90 degrease backwordse so head looks at the sky, but is deep in the ground, legs point forward.  when i give the first commend the unit is behaving properly and standing right, but the legs are undeerground level, so the arts needs to be lifted up so the unit will not be in the ground",
+      "snapshot_message_type": 0
     }
   ]
 }
