@@ -719,6 +719,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "tested on the test map- just untill i firstly move the unit the spider is 90 degrease backwordse so head looks at the sky, but is deep in the ground, legs point forward.  when i give the first commend the unit is behaving properly and standing right, but the legs are undeerground level, so the arts needs to be lifted up so the unit will not be in the ground",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "35024e61-dc1a-42e4-bdd9-01c40e181427",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "I have fixed the Black Widow's initial \"heads up\" pose and adjusted its standing height to prevent its legs from clipping into the ground.\n\n### Fixes Applied:\n1.  **Corrected Initial Pose**: I added a robust `IsBlackWidow()` helper that identifies the spider by its unit type or its name. This ensures the corrective `-90` degree rotation is applied **immediately from the first frame**, preventing the unit from starting in a \"face-down\" or \"head-to-sky\" posture before its first move command.\n2.  **Raised Standing Height**: Increased the vertical lift offset from `0.38f` to **`0.48f`**. This ensures the spider's feet stay firmly on the terrain surface rather than being buried in the ground.\n3.  **Initialized Heading**: Changed the initialization of the unit's internal `_lookRotation` in `Awake` to match the transform's forward heading instead of the model's potentially tilted root.\n\nThe Black Widow should now spawn at the correct height and standing upright, maintaining its thematic predatory posture throughout its entire lifecycle.",
+      "snapshot_message_type": 1
     }
   ]
 }

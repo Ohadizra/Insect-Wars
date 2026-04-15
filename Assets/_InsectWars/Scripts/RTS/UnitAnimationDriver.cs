@@ -76,7 +76,9 @@ namespace InsectWars.RTS
             {
                 _baseLocalPos = modelRoot.localPosition;
                 _baseScale = modelRoot.localScale;
-                _lookRotation = modelRoot.rotation;
+                
+                // FIX: Initialize _lookRotation to the transform's heading, NOT the tilted model root's rotation.
+                _lookRotation = transform.rotation;
 
                 _lArm = FindRecursive(modelRoot, "frontleg") ?? FindRecursive(modelRoot, "LeftArm");
                 _rArm = FindRecursive(modelRoot, "R_frontleg") ?? FindRecursive(modelRoot, "RightArm");
@@ -103,6 +105,12 @@ namespace InsectWars.RTS
                 if (found != null) return found;
             }
             return null;
+        }
+
+        bool IsBlackWidow()
+        {
+            if (_unit != null && _unit.Archetype == UnitArchetype.BlackWidow) return true;
+            return name.Contains("BlackWidow");
         }
 
         void Update()
@@ -145,7 +153,7 @@ namespace InsectWars.RTS
                 }
 
                 // Corrective rotation for the Black Widow model orientation
-                if (_unit.Archetype == UnitArchetype.BlackWidow)
+                if (IsBlackWidow())
                     modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f, 0f, 0f);
                 else
                     modelRoot.rotation = _lookRotation;
@@ -183,7 +191,7 @@ namespace InsectWars.RTS
                 bob = 0f; 
                 ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
             }
-            else if (_unit.Archetype == UnitArchetype.BlackWidow)
+            else if (IsBlackWidow())
             {
                 ApplyBlackWidowLoop(dt, moving, planar.magnitude);
             }
@@ -198,14 +206,16 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob, 0f);
+            // FIX: Lift the model for Black Widow so legs aren't underground
+            float heightOffset = IsBlackWidow() ? 0.48f : 0f;
+            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
 
             if (_attackAnimT > 0f)
             {
                 _attackAnimT -= dt;
                 float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
 
-                if (_unit.Archetype == UnitArchetype.BlackWidow && _attackAnimDuration > 0.45f) // Using duration to detect WebCast
+                if (IsBlackWidow() && _attackAnimDuration > 0.45f) // Using duration to detect WebCast
                 {
                     float rearUp = Mathf.Sin(p * Mathf.PI) * 35f;
                     float pulse = 1f + Mathf.Sin(p * Mathf.PI * 4f) * 0.15f;
