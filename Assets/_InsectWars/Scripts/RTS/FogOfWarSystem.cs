@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InsectWars.Data;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -13,6 +14,7 @@ namespace InsectWars.RTS
         public static FogOfWarSystem Instance { get; private set; }
 
         const int TexRes = 256;
+        const float HighGroundThreshold = 0.5f;
         public static readonly int FogTexId = Shader.PropertyToID("_IW_FogWarTex");
         static readonly int FogBoundsId = Shader.PropertyToID("_IW_FogBounds");
         static readonly int FogActiveId = Shader.PropertyToID("_IW_FogActive");
@@ -86,16 +88,21 @@ namespace InsectWars.RTS
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 var r = u.Definition != null ? u.Definition.visionRadius : 12f;
                 float visMult = TerrainFeatureRegistry.GetVisionMultiplier(u.transform.position);
-                StampVision(u.transform.position, r * visMult);
+                bool canSeeHighGround = u.Archetype == UnitArchetype.StickSpy || IsOnHighGround(u.transform.position);
+                StampVision(u.transform.position, r * visMult, canSeeHighGround);
             }
 
             if (HiveDeposit.PlayerHive != null)
-                StampVision(HiveDeposit.PlayerHive.transform.position, hiveVisionRadius);
+            {
+                bool hiveOnHigh = IsOnHighGround(HiveDeposit.PlayerHive.transform.position);
+                StampVision(HiveDeposit.PlayerHive.transform.position, hiveVisionRadius, hiveOnHigh);
+            }
 
             foreach (var bld in ProductionBuilding.All)
             {
                 if (bld == null || !bld.IsAlive || bld.Team != Team.Player) continue;
-                StampVision(bld.transform.position, buildingVisionRadius);
+                bool bldOnHigh = IsOnHighGround(bld.transform.position);
+                StampVision(bld.transform.position, buildingVisionRadius, bldOnHigh);
             }
 
             for (var i = 0; i < _pix.Length; i++)
@@ -103,6 +110,13 @@ namespace InsectWars.RTS
                 if (_pix[i].g > _pix[i].r)
                     _pix[i].r = _pix[i].g;
             }
+        }
+
+        static bool IsOnHighGround(Vector3 pos)
+        {
+            var t = Terrain.activeTerrain;
+            if (t == null) return false;
+            return t.SampleHeight(pos) > HighGroundThreshold;
         }
 
         void UpdateEnemyVisibility()
@@ -208,7 +222,7 @@ namespace InsectWars.RTS
             Shader.SetGlobalVector(FogBoundsId, new Vector4(-h, -h, inv, inv));
         }
 
-        void StampVision(Vector3 world, float radiusWorld)
+        void StampVision(Vector3 world, float radiusWorld, bool canSeeHighGround)
         {
             var h = SkirmishPlayArea.HalfExtent;
             var cx = (world.x + h) / (2f * h) * TexRes;
@@ -227,6 +241,7 @@ namespace InsectWars.RTS
             bool checkBlocking = TerrainFeatureRegistry.HasVisionBlockers;
             var unitXZ = new Vector2(world.x, world.z);
             float invTexToWorld = (2f * h) / TexRes;
+            var terrain = canSeeHighGround ? null : Terrain.activeTerrain;
 
             for (var zz = minZ; zz <= maxZ; zz++)
             {
@@ -237,10 +252,18 @@ namespace InsectWars.RTS
                     var d2 = dx * dx + dz * dz;
                     if (d2 > r2) continue;
 
+                    float twx = xx * invTexToWorld - h;
+                    float twz = zz * invTexToWorld - h;
+
+                    if (terrain != null)
+                    {
+                        float pixelHeight = terrain.SampleHeight(new Vector3(twx, 0f, twz));
+                        if (pixelHeight > HighGroundThreshold)
+                            continue;
+                    }
+
                     if (checkBlocking)
                     {
-                        float twx = xx * invTexToWorld - h;
-                        float twz = zz * invTexToWorld - h;
                         if (TerrainFeatureRegistry.IsVisionBlocked(unitXZ, new Vector2(twx, twz)))
                             continue;
                     }

@@ -187,18 +187,21 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                if (IsStickSpy())
-                    modelRoot.rotation = _lookRotation * _baseLocalRot;
-                else
-                    modelRoot.rotation = _lookRotation;
+                modelRoot.rotation = _lookRotation * _baseLocalRot;
                 }
                 }
 
                 void LateUpdate()
                 {
-                if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
+                    if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
 
-                var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
+                    if (IsStickSpy() || IsBlackWidow())
+                    {
+                        // Force orientation to win against Animator root rotation/FBX bad orientation
+                        modelRoot.rotation = _lookRotation * _baseLocalRot;
+                    }
+
+                    var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
                 var planar = new Vector3(vel.x, 0f, vel.z);
                 var moving = planar.sqrMagnitude > 0.01f;
 
@@ -231,7 +234,11 @@ namespace InsectWars.RTS
                 }
                 else if (IsStickSpy())
                 {
-                ApplyStickLoop(dt, moving, planar.magnitude);
+                    bool hasWalkClip = animator != null && animator.runtimeAnimatorController != null && _hasIsMoving;
+                    if (!hasWalkClip)
+                        ApplyStickLoop(dt, moving, planar.magnitude);
+                    else
+                        modelRoot.localScale = _baseScale;
                 }
                 else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
                 {
@@ -247,7 +254,7 @@ namespace InsectWars.RTS
                 {
                 float heightOffset = 0f;
                 if (IsBlackWidow()) heightOffset = 0.55f;
-                else if (IsStickSpy()) heightOffset = 1.55f;
+                else if (IsStickSpy()) heightOffset = 0.66f;
 
                 var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
                 if (!float.IsNaN(newPos.y))
