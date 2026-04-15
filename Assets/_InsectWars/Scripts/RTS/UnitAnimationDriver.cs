@@ -187,7 +187,10 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                modelRoot.rotation = _lookRotation * _baseLocalRot;
+                if (IsStickSpy())
+                    modelRoot.rotation = _lookRotation * _baseLocalRot;
+                else
+                    modelRoot.rotation = _lookRotation;
                 }
                 }
 
@@ -298,7 +301,7 @@ namespace InsectWars.RTS
                 float groupA = Mathf.Sin(cycle);
                 float roll = Mathf.Sign(groupA) * Mathf.Pow(Mathf.Abs(groupA), 0.6f) * 6.5f;
                 float yaw = Mathf.Cos(cycle) * 4.5f;
-                float pitch = Mathf.Abs(groupA) * 3.5f;
+                float pitch = 0f;
                 float plantImpact = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle * 2f)), 2.5f);
                 float walkBob = plantImpact * 0.045f;
 

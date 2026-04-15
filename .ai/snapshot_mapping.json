@@ -899,6 +899,12 @@
       "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
       "content": "I apologize, but I have searched through the entire project and haven't been able to find the walking animation file you added for the Stick unit.\n\nI've checked:\n- The `Assets/_InsectWars/Units/Stick` folder and its subdirectories.\n- All files project-wide with \"Walking\", \"Animation\", \"Sentinel\", or \"Rusty\" in their names.\n- Recently modified or created assets.\n- All `.anim` and `.fbx` files in the project.\n\nCould you please provide the **exact name** or **folder path** of the animation file? Once I have the correct asset, I can instantly wire it up to the Stick Spy unit and the animator.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "2aec7e55-43c8-44d1-bb61-37e644ec8b7a",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "I have corrected the orientation issue for the Black Widow while ensuring the Stick Spy unit remains correctly oriented.\n\n### Changes made:\n1.  **Selective Orientation Fix**: The `UnitAnimationDriver.cs` now distinguishes between the Stick Spy and other units. The Stick Spy model (which is natively Z-up and requires a -90° X-axis correction from its prefab) continues to use its `_baseLocalRot` offset. Other units, including the Black Widow, now use the standard world heading (`_lookRotation`).\n2.  **Flattened Walking Gait**: I have removed the procedural pitch (forward tilting) from the Black Widow's walking cycle in `ApplyBlackWidowLoop`. This ensures the body stays level with the ground as requested, preventing the abdomen from sticking up in the air during movement.\n3.  **Stability**: Reduced the intensity of the procedural bobbing and swaying slightly to give the spider a more solid, heavy feel.\n\nThe Black Widow should now be level with the ground, and the Stick Spy should maintain its corrected orientation.",
+      "snapshot_message_type": 1
     }
   ]
 }
