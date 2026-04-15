@@ -671,6 +671,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "The construction visual has been updated to match your team's color identity.\n\n### Changes Made:\n*   **Team Color Tinting**: Modified `UpdateConstructionVisual` to use the team's shell color (`TeamPalette.GetShellColor`) as the base tint for the construction phase. This replaces the generic light grey with the team's blue or red.\n*   **Material Translucency**: Updated the building initialization to force construction materials into a transparent render mode. This ensures the translucent \"silk\" look works correctly and allows the team color to blend smoothly.\n*   **Improved Initial Presence**: Slightly increased the starting brightness of the construction phase (`darkening` starts at `0.5f` instead of `0.2f`), making the new cocoon art more vibrant and recognizable from the start.\n\nYour construction sites will now clearly show which team is building, using the same colors as your final insect hives and military structures.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "4165deb5-9700-4759-885e-49a32b665381",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "I have fixed the compilation error in `SkirmishDirector.cs` and resolved the compiler warning in `InsectUnit.cs`.\n\n### Summary of fixes:\n1.  **SkirmishDirector.cs**: Fixed a `CS1061` error where `AddComponent` was being called on an `InsectUnit` component instance instead of its `GameObject`. Changed the call to `dummyUnit.gameObject.AddComponent<TrainingDummy>()`.\n2.  **InsectUnit.cs**: Resolved a `CS0414` warning where the `_holdPosition` field was assigned but never used. It is now used in `TickIdleAutoGather()` to prevent units from auto-gathering when they are set to \"Hold Position\".\n\nBoth files now compile without errors or the specified warning.",
+      "snapshot_message_type": 1
     }
   ]
 }

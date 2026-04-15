@@ -184,8 +184,8 @@ namespace InsectWars.RTS
                 def.maxHealth = 100000f;
                 dummyUnit.Configure(Team.Enemy, def);
             }
-            dummyGo.AddComponent<TrainingDummy>();
-        }
+            dummyUnit.gameObject.AddComponent<TrainingDummy>();
+            }
 
         public void BuildWorldPreview()
         {

@@ -712,7 +712,7 @@ namespace InsectWars.RTS
 
         void TickIdleAutoGather()
         {
-            if (definition == null || !definition.canGather) return;
+            if (definition == null || !definition.canGather || _holdPosition) return;
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
