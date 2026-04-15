@@ -1268,11 +1268,8 @@ namespace InsectWars.RTS
                 unit.Configure(team, def);
                 
                 var block = new MaterialPropertyBlock();
-                bool markerOnly = arch == UnitArchetype.BlackWidow;
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
-                    if (markerOnly && renderer.gameObject.name != "TeamMarker")
-                        continue;
                     renderer.GetPropertyBlock(block);
                     if (renderer.sharedMaterial != null)
                     {

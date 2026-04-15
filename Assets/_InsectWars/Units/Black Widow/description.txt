@@ -79,8 +79,8 @@ Art Source:      Meshy AI model — "Crimson Widow"
 Reference:      gemini-2.5-flash-image concept art (dark theme, realistic)
 Prefab:         To be created at Assets/_InsectWars/Prefabs/BlackWidow.prefab
                 (referenced by DefaultVisualLibrary.blackWidowPrefab)
-Team Colors:    Neutral/white base color. Team tint applied at spawn via
-                MaterialPropertyBlock (_BaseColor / _Color on all renderers).
+Team Colors:    Team tint applied at spawn via MaterialPropertyBlock
+                (_BaseColor / _Color on all renderers), same as other units.
 Materials:      1-2 URP/Lit materials per model.
 
 ANIMATIONS

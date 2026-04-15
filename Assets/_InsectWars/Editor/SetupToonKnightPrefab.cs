@@ -219,55 +219,12 @@ namespace InsectWars.Editor
                 overrideMaterial: widowMaterial,
                 visualRotation: new Vector3(-90f, 0f, 0f));
 
-            AddTeamColorMarker(prefab);
-
             UpdateLibrary(blackWidowPrefab: prefab);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Black Widow setup complete! " +
                       "Make sure DefaultVisualLibrary is assigned on MapDirector.");
-        }
-
-        static void AddTeamColorMarker(GameObject prefab)
-        {
-            var contents = PrefabUtility.LoadPrefabContents(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefab));
-            var visual = contents.transform.Find("Visual");
-            if (visual == null) visual = contents.transform;
-
-            var existing = visual.Find("TeamMarker");
-            if (existing != null) Object.DestroyImmediate(existing.gameObject);
-
-            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            marker.name = "TeamMarker";
-            Object.DestroyImmediate(marker.GetComponent<Collider>());
-            marker.transform.SetParent(visual, false);
-            marker.transform.localPosition = new Vector3(0f, 0.35f, -0.15f);
-            marker.transform.localScale = new Vector3(0.25f, 0.15f, 0.25f);
-
-            var sh = Shader.Find("Universal Render Pipeline/Lit");
-            if (sh == null) sh = Shader.Find("Standard");
-            var mat = new Material(sh);
-            mat.name = "TeamMarkerMat";
-            mat.color = Color.white;
-            if (mat.HasProperty("_BaseColor"))
-                mat.SetColor("_BaseColor", Color.white);
-            if (mat.HasProperty("_Smoothness"))
-                mat.SetFloat("_Smoothness", 0.8f);
-            if (mat.HasProperty("_Metallic"))
-                mat.SetFloat("_Metallic", 0.3f);
-
-            var emissionColor = new Color(0.5f, 0.5f, 0.5f);
-            if (mat.HasProperty("_EmissionColor"))
-            {
-                mat.SetColor("_EmissionColor", emissionColor);
-                mat.EnableKeyword("_EMISSION");
-            }
-
-            marker.GetComponent<Renderer>().sharedMaterial = mat;
-
-            PrefabUtility.SaveAsPrefabAsset(contents, WidowPrefabPath);
-            PrefabUtility.UnloadPrefabContents(contents);
         }
 
         static void FixWidowImportSettings()

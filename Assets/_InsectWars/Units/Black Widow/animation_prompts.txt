@@ -1,0 +1,160 @@
+========================================
+  BLACK WIDOW — UNITY AI ANIMATION PROMPTS
+========================================
+
+Model: Meshy AI "Crimson Widow" — a dark, realistic black widow spider
+       with eight legs, compact thorax, bulbous abdomen, and prominent fangs.
+       The model is oriented with -Z forward (rotated -90 X in the prefab).
+
+Target: Unity 6 Muse Animate or equivalent AI animation tool.
+        Each animation should be exported as a separate .anim clip and
+        referenced by the BlackWidow.controller animator.
+
+Animator Parameters:
+  - Speed     (float)  — planar velocity magnitude
+  - IsMoving  (bool)   — true when speed > 0.1
+  - Attack    (trigger) — melee bite
+  - WebCast   (trigger) — web net ability
+  - Death     (trigger) — unit killed
+
+
+─────────────────────────────────────
+1. IDLE  (looping)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider standing still in a neutral idle pose. Subtle,
+   looping body sway — the abdomen gently bobs up and down by a few
+   millimeters. The front pair of legs occasionally lift and reposition
+   slightly, as if feeling the ground. All eight legs planted with a
+   wide, stable stance. The cephalothorax tilts forward very slightly
+   in a predatory ready posture. Slow, breathing-like rhythm. Loop
+   duration approximately 2-3 seconds."
+
+Clip name: BlackWidow_Idle
+Loop: Yes
+Duration: ~2.5 seconds
+
+
+─────────────────────────────────────
+2. WALK  (looping)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider walking forward with a smooth, deliberate
+   eight-legged gait. Legs move in an alternating tetrapod pattern —
+   four legs lift while the other four stay grounded, then they swap.
+   The body stays low and level, gliding forward with minimal vertical
+   bounce. The abdomen sways slightly side to side with each step
+   cycle. Movement feels purposeful and predatory, not frantic.
+   Medium walking speed. Loop duration approximately 1 second for
+   one full step cycle."
+
+Clip name: BlackWidow_Walk
+Loop: Yes
+Duration: ~1.0 second (one full step cycle)
+Speed parameter: Playback rate scaled by the Speed animator float.
+
+
+─────────────────────────────────────
+3. ATTACK — Melee Bite  (one-shot)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider performing a fast, venomous melee bite attack.
+   The spider lunges its cephalothorax forward and downward. The front
+   two legs spread apart to grab the target. The fangs (chelicerae)
+   open wide and snap shut in a piercing bite motion. The body recoils
+   back to its original position after the strike. The movement should
+   feel sharp and aggressive — a quick lunge-bite-retract sequence.
+   Total duration approximately 0.4 seconds. The abdomen stays mostly
+   stable during the lunge."
+
+Clip name: BlackWidow_Attack
+Loop: No
+Duration: ~0.40 seconds
+Trigger: "Attack" animator trigger
+Notes: Plays each time the unit deals melee damage (every 1.1s cooldown).
+       The unit is position-locked and facing the target during this clip.
+
+
+─────────────────────────────────────
+4. WEB CAST — Web Net Ability  (one-shot)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider casting a web net forward. The spider rears its
+   front body upward slightly — the first two pairs of legs lift off
+   the ground while the rear four legs anchor it. The abdomen tilts
+   forward and upward, pointing the spinnerets toward the front. A
+   quick pulsing motion of the abdomen suggests silk being expelled
+   (the actual particle VFX is handled separately). The front legs
+   then sweep outward in a spreading gesture, as if directing the
+   web in a cone shape. The spider then settles back to its idle
+   stance. Total duration approximately 0.5 seconds."
+
+Clip name: BlackWidow_WebCast
+Loop: No
+Duration: ~0.50 seconds
+Trigger: "WebCast" animator trigger
+Notes: Auto-cast every 10 seconds during combat. Plays independently
+       from the melee attack cycle. A particle VFX cone is spawned
+       at the same time by the WebNetAbility component.
+
+
+─────────────────────────────────────
+5. DEATH  (one-shot)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider dying. The spider's legs buckle and curl inward
+   toward the body — the classic real-world spider death curl. The body
+   tips slightly to one side and collapses to the ground. All eight
+   legs fold underneath and contract. The abdomen settles flat on the
+   ground. The movement should feel like the life draining out — not
+   an explosion or violent ragdoll, but a gradual curling collapse.
+   Total duration approximately 0.5 seconds. The final pose holds
+   with all legs curled tightly against the body."
+
+Clip name: BlackWidow_Death
+Loop: No
+Duration: ~0.50 seconds
+Trigger: "Death" animator trigger
+Notes: After the clip ends, the GameObject is destroyed after a short delay.
+       The final curled pose should be the last keyframe (hold pose).
+
+
+─────────────────────────────────────
+6. POISON HIT REACTION (optional, one-shot)
+─────────────────────────────────────
+Prompt:
+  "A black widow spider performing a subtle hit reaction, as if
+   something stung it. A quick flinch — the body jerks slightly
+   backward, two front legs raise defensively, then immediately
+   return to normal stance. Very fast, almost a twitch. This plays
+   on the TARGET unit being poisoned, not on the Black Widow itself.
+   Duration approximately 0.15 seconds."
+
+Clip name: BlackWidow_HitReact (or shared HitReact clip)
+Loop: No
+Duration: ~0.15 seconds
+Notes: Optional. This would play on any unit receiving poison damage ticks.
+       Can be shared across all unit types, not specific to Black Widow.
+
+
+========================================
+  ANIMATOR CONTROLLER STRUCTURE
+========================================
+
+Controller: Assets/_InsectWars/Animations/BlackWidow.controller
+
+States:
+  - Idle      (default state, plays BlackWidow_Idle, looping)
+  - Walk      (plays BlackWidow_Walk, looping)
+  - Attack    (plays BlackWidow_Attack, returns to Idle/Walk)
+  - WebCast   (plays BlackWidow_WebCast, returns to Idle/Walk)
+  - Death     (plays BlackWidow_Death, no exit)
+
+Transitions:
+  Idle -> Walk:     IsMoving == true
+  Walk -> Idle:     IsMoving == false
+  Any  -> Attack:   Attack trigger
+  Any  -> WebCast:  WebCast trigger
+  Any  -> Death:    Death trigger (no exit transition)
+  Attack -> Idle:   Has Exit Time (clip end)
+  WebCast -> Idle:  Has Exit Time (clip end)

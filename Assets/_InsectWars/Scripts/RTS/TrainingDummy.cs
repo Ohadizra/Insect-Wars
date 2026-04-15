@@ -4,9 +4,10 @@ namespace InsectWars.RTS
 {
     /// <summary>
     /// Attached to an InsectUnit to make it an indestructible training target.
-    /// The dummy stands still, never attacks, and regenerates health when not
-    /// hit for a few seconds.
+    /// The dummy stands still, never attacks back, and regenerates health when
+    /// not hit for a few seconds.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class TrainingDummy : MonoBehaviour
     {
         const float RegenDelay = 3f;
@@ -21,9 +22,12 @@ namespace InsectWars.RTS
             _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         }
 
-        void LateUpdate()
+        void Update()
         {
             if (_unit == null || !_unit.IsAlive) return;
+
+            if (_unit.CurrentOrder != UnitOrder.Idle)
+                _unit.OrderStop();
 
             if (_agent != null)
             {
