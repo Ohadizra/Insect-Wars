@@ -809,6 +809,12 @@
       "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
       "content": "contunue, fix flight animation with rigs properly set and wing flap properly",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "b9df6692-e872-431a-a593-8cdfae6e2cd2",
+      "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
+      "content": "",
+      "snapshot_message_type": 1
     }
   ]
 }
