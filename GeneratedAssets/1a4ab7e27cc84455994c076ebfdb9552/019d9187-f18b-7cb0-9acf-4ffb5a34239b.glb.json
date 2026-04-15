@@ -1,0 +1,12 @@
+{
+    "asset": "1a4ab7e27cc84455994c076ebfdb9552",
+    "fileName": "019d9187-f18b-7cb0-9acf-4ffb5a34239b.glb",
+    "prompt": "A high-fidelity, production-ready rigged 3D skeletal mesh of a hawk moth (Nocturnal Sentinel). The mesh must be fully skinned to a skeletal rig. Skeleton hierarchy: Thorax (Root), 2 bones per wing (Upper Wing, Lower Wing), 3 bones per leg (Coxa, Femur, Tarsus), Head, Abdomen. Mechanical steampunk aesthetic with brass clockwork wings. The prefab must contain a SkinnedMeshRenderer. Facing +Z. Scale 1.0. Unity Generic Rig compatible. Save to Assets/_InsectWars/Units/Hawk Moth/HawkMoth_Skinned.prefab. high detail. clean geometry. material included. reference image used for style consistency. ready for animation. skeletal mesh is mandatory. no static mesh. must have bones. skin weights must be clean. articulated appendages. support unit. nocturnal coloring. clockwork details. industrial aesthetic. sentinel theme. moth anatomy. large wings. mechanical joints. brass and copper colors. clear background. production quality. final asset is a Unity Prefab with Animator and SkinnedMeshRenderer. thank you.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "a71273bd14695278c63792a99d8caf29",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

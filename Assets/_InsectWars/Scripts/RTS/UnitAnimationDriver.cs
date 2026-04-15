@@ -257,11 +257,7 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            if (IsHawkMoth())
-            {
-                // Position handled within ApplyHawkMothLoop absolutely
-            }
-            else
+            if (!IsHawkMoth())
             {
                 float heightOffset = IsBlackWidow() ? 0.55f : 0f;
                 var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
@@ -411,7 +407,8 @@ namespace InsectWars.RTS
                 modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
                 float ts = 1f + snap + launchBeat;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(ts, 1f / Mathf.Max(0.1f, ts), ts));
-                modelRoot.localPosition = _baseLocalPos + new Vector3(0f, Mathf.Lerp(H_Ground, H_Fly, p), 0f);
+                // Set absolute position for takeoff
+                modelRoot.localPosition = new Vector3(_baseLocalPos.x, Mathf.Lerp(H_Ground, H_Fly, p), _baseLocalPos.z);
                 return;
             }
 
@@ -474,30 +471,18 @@ namespace InsectWars.RTS
             // Apply rotations
             modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
 
-            // --- Realistic Flapping Simulation (Anisotropic silhouette) ---
-            // Local axes for mesh with -90X rotation:
-            // Local X: Wingspan (Spread wide vs Fold narrow)
-            // Local Y: Forward/Back (Length)
-            // Local Z: Up/Down (Thickness/Profile)
-            
+            // Realistic Flapping Simulation (Anisotropic silhouette)
             float rawSine = Mathf.Sin(cycle * wingFreq);
-            // Downstroke (rawSine > 0): Wide and thin (Wings spread)
-            // Upstroke (rawSine < 0): Narrow and tall (Wings V-shape)
-            float flap;
-            if (rawSine > 0)
-                flap = Mathf.Pow(rawSine, 0.35f); // Explosive downstroke
-            else
-                flap = rawSine * 0.6f; // Slower, deeper upstroke
+            float flap = rawSine > 0 ? Mathf.Pow(rawSine, 0.35f) : rawSine * 0.6f;
 
-            float sX = 1f + flap * wingAmp; // Width expansion
-            float sZ = 1f - flap * (wingAmp * 1.2f); // Height profile (inverse of width)
-            float sY = 1f - Mathf.Abs(flap) * (wingAmp * 0.3f); // Subtle lengthwise squash
+            float sX = 1f + flap * wingAmp; 
+            float sZ = 1f - flap * (wingAmp * 1.2f); 
+            float sY = 1f - Mathf.Abs(flap) * (wingAmp * 0.3f); 
 
-            // Apply scale harmonics
             modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath * sX, breath * sY, breath * sZ));
 
-            // Apply vertical height with bobbing
-            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, targetBaseY + bodyBob, 0f);
+            // Absolute position for Hawk Moth to prevent underground issues.
+            modelRoot.localPosition = new Vector3(_baseLocalPos.x, targetBaseY + bodyBob, _baseLocalPos.z);
         }
 
         void ApplyMantisLoop(float dt)

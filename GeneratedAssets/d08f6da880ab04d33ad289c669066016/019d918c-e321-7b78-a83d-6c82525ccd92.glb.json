@@ -1,0 +1,12 @@
+{
+    "asset": "d08f6da880ab04d33ad289c669066016",
+    "fileName": "019d918c-e321-7b78-a83d-6c82525ccd92.glb",
+    "prompt": "Rigged 3D skeletal mesh of a hawk moth. Must include a full skeleton with bone hierarchy for wings and 6 legs. Skinned mesh renderer is required. Industrial steampunk aesthetic. Brass clockwork wings. Facing +Z. Scale 1.0. High resolution textures. PBR materials. Save to Assets/_InsectWars/Units/Hawk Moth/HawkMoth_Rigged_Final.prefab. skeletal structure is mandatory for animation. ready for unity animator. mechanical joint details. wings are articulating parts. legs are articulated. thorax is the root bone. thank you.",
+    "negativePrompt": "",
+    "model": "05e5b649-f94c-4ec6-852c-2a9c4a0af3ab",
+    "modelName": "Hunyuan 3D 3.0 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "47bfc610b01937ca2cbb9c2f41ee41d5",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
