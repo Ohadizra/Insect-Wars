@@ -1,0 +1,12 @@
+{
+    "asset": "a4b6cc60853434777b28e406ba5af32c",
+    "fileName": "019d9033-135e-71f6-9344-aded4aab183d.pose.json",
+    "prompt": "Create a melee bite attack animation for a black widow spider. Starting from an upright idle stance: The front two pairs of legs (L1, R1, L2, R2) lift slightly and spread apart. The cephalothorax tips downward toward the target. Then the entire front body LUNGES forward sharply. The fangs open wide and snap shut. The front legs slam down around the target point in a grabbing motion. Finally, the spider pulls back to its upright stance. The strike should feel FAST and violent. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1565205147,
+    "w3CTraceId": "62dfc8165b50f735f0e81143b1f2a6f0",
+    "feedback": 0,
+    "isTrimmed": false
+}

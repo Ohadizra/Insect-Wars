@@ -1,0 +1,12 @@
+{
+    "asset": "e15b58d0e83c84f47a54c454ee855e70",
+    "fileName": "019d9033-0cc1-7cac-a83b-ff8f601b331e.pose.json",
+    "prompt": "Create a looping idle animation for a black widow spider model. The spider must be standing upright on all eight legs in a wide, stable stance — NOT collapsed, NOT face-down, NOT in a T-pose. The legs should be bent at the joints with feet planted on the ground plane, body raised above the ground. Subtle idle motion: the entire body gently rises and falls by about 2-3% of body height, like slow breathing. The front pair of legs (L1, R1) slightly lift and tap back down in an alternating rhythm, as if sensing the environment. The abdomen has a very gentle side-to-side sway. All motion is subtle and slow — the spider is alert and waiting, not twitching. The default standing height should place the body center roughly at 1/3 of the total leg span above the ground. Legs should be angled outward like a real spider's resting stance. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 146958042,
+    "w3CTraceId": "8ad396a95fa428012dc5c61ef58eba27",
+    "feedback": 0,
+    "isTrimmed": false
+}

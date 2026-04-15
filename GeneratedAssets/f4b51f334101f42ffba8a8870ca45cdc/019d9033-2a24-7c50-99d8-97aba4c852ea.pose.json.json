@@ -1,0 +1,12 @@
+{
+    "asset": "f4b51f334101f42ffba8a8870ca45cdc",
+    "fileName": "019d9033-2a24-7c50-99d8-97aba4c852ea.pose.json",
+    "prompt": "A quick flinch/hit reaction for a spider. The body jerks backward a small amount, two front legs raise defensively, then everything snaps back to idle stance. Very fast — a single twitch. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 927434427,
+    "w3CTraceId": "f3942587f9341c5b6057b8e340e8df07",
+    "feedback": 0,
+    "isTrimmed": false
+}

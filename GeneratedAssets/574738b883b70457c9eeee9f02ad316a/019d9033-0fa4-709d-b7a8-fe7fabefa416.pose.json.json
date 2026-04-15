@@ -1,0 +1,12 @@
+{
+    "asset": "574738b883b70457c9eeee9f02ad316a",
+    "fileName": "019d9033-0fa4-709d-b7a8-fe7fabefa416.pose.json",
+    "prompt": "Create a web-casting animation for a black widow spider. Starting from an upright idle stance: The spider lifts its front body upward. Front legs (L1, R1, L2, R2) raise off the ground and spread wide. The rear legs push the body up and backward slightly, tilting the abdomen forward and upward. The abdomen PULSES forward with two rapid contractions. The spinnerets at the tip of the abdomen point toward the front. The front legs make a wide sweeping motion outward from center, as if spreading and directing strands of web into a net shape. The legs move like they are pulling and stretching sticky silk threads apart. The spider then drops back to all eight legs. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1084969069,
+    "w3CTraceId": "426f2d9687d5b80e41ccf5dc74b3787a",
+    "feedback": 0,
+    "isTrimmed": false
+}

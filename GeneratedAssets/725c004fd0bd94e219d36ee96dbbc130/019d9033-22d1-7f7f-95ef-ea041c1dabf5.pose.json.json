@@ -1,0 +1,12 @@
+{
+    "asset": "725c004fd0bd94e219d36ee96dbbc130",
+    "fileName": "019d9033-22d1-7f7f-95ef-ea041c1dabf5.pose.json",
+    "prompt": "Create a death animation for a black widow spider. Starting from an upright idle stance: The legs lose strength. The body drops toward the ground as leg joints buckle. The spider tips to one side. All eight legs slowly curl inward toward the body center (death curl). The legs fold UNDERNEATH the body, joints bending so the leg tips point inward and upward. The abdomen rolls to rest on the ground. Motion should feel like life draining out. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1348181543,
+    "w3CTraceId": "21fcc9fe3eef677f8413c1ba0c30a0b4",
+    "feedback": 0,
+    "isTrimmed": false
+}

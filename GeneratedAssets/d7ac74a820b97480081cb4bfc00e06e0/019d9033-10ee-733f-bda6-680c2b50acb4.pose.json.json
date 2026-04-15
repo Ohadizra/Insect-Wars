@@ -1,0 +1,12 @@
+{
+    "asset": "d7ac74a820b97480081cb4bfc00e06e0",
+    "fileName": "019d9033-10ee-733f-bda6-680c2b50acb4.pose.json",
+    "prompt": "Create a looping walk cycle for a black widow spider model. The spider walks forward using a real spider's alternating tetrapod gait: legs move in two groups of four. Group A (moves together): L1, R2, L3, R4. Group B (moves together): R1, L2, R3, L4. While Group A steps forward, Group B stays planted, and vice versa. Each leg lifts, swings forward in an arc, then plants down. The body glides forward smoothly with very little vertical bounce. The body must remain upright and elevated on the legs throughout the entire cycle — the spider should NEVER collapse or sag to the ground during the walk. Authored in model space (belly to +Y).",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 82942022,
+    "w3CTraceId": "33c534c6a7b591e03f83cd74c20fac32",
+    "feedback": 0,
+    "isTrimmed": false
+}
