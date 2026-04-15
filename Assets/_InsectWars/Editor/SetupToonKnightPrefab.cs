@@ -69,6 +69,17 @@ namespace InsectWars.Editor
         const string StickControllerPath = ControllerDir + "/StickSpy.controller";
         const string StickPrefabPath = PrefabDir + "/StickSpy.prefab";
 
+        // --- Giant Stag Beetle paths ---
+        const string StagModelPath = "Assets/_InsectWars/Units/Giant Stag Beetle/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped_model_Animation_Walking_withSkin.fbx";
+        const string StagTexDir = "Assets/_InsectWars/Units/Giant Stag Beetle/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped";
+        const string StagBaseTexPath = StagTexDir + "/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped_texture_0.png";
+        const string StagNormalTexPath = StagTexDir + "/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped_texture_0_normal.png";
+        const string StagMetallicTexPath = StagTexDir + "/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped_texture_0_metallic.png";
+        const string StagRoughnessTexPath = StagTexDir + "/Meshy_AI_Rusty_Stag_in_the_Jun_quadruped_texture_0_roughness.png";
+        const string StagMaterialPath = PrefabDir + "/GiantStagBeetleMat.mat";
+        const string StagControllerPath = ControllerDir + "/GiantStagBeetle.controller";
+        const string StagPrefabPath = PrefabDir + "/GiantStagBeetle.prefab";
+
         // --- Hawk Moth paths ---
         const string MothModelPath = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx/Meshy_AI_Nocturnal_Sentinel_0415165643_texture.fbx";
         const string MothTexDir = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx";
@@ -114,6 +125,7 @@ namespace InsectWars.Editor
             SetupBombardierBeetle();
             SetupBlackWidow();
             SetupStickSpy();
+            SetupGiantStagBeetle();
             SetupAntNest();
             SetupSkyTower();
         }
@@ -305,6 +317,31 @@ namespace InsectWars.Editor
                       "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
+        [MenuItem("Insect Wars/Setup Giant Stag Beetle")]
+        public static void SetupGiantStagBeetle()
+        {
+            if (!ValidateAssets(StagModelPath))
+                return;
+
+            FixStagImportSettings();
+
+            var controller = BuildStagBeetleController();
+            var stagMaterial = BuildStagMaterial();
+            var prefab = BuildPrefab(StagModelPath, StagPrefabPath, "GiantStagBeetle",
+                controller, Vector3.one * 3f,
+                agentHeight: 1.2f, agentRadius: 0.7f, agentSpeed: 2.8f,
+                colCenter: new Vector3(0f, 0.6f, 0f), colRadius: 0.7f, colHeight: 1.2f,
+                overrideMaterial: stagMaterial,
+                visualRotation: new Vector3(-90f, 0f, 0f));
+
+            UpdateLibrary(giantStagBeetlePrefab: prefab);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Insect Wars] Giant Stag Beetle setup complete! " +
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
         static void FixStickImportSettings()
         {
             var importer = AssetImporter.GetAtPath(StickModelPath) as ModelImporter;
@@ -480,6 +517,135 @@ namespace InsectWars.Editor
                 mat.SetFloat("_Smoothness", 0.4f);
 
             mat.SetFloat("_Metallic", 0.15f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static void FixStagImportSettings()
+        {
+            var importer = AssetImporter.GetAtPath(StagModelPath) as ModelImporter;
+            if (importer == null) return;
+
+            bool dirty = false;
+
+            if (importer.materialImportMode != ModelImporterMaterialImportMode.None)
+            { importer.materialImportMode = ModelImporterMaterialImportMode.None; dirty = true; }
+            if (!importer.isReadable)
+            { importer.isReadable = true; dirty = true; }
+            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            { importer.globalScale = 80f; dirty = true; }
+            if (importer.animationType != ModelImporterAnimationType.Generic)
+            { importer.animationType = ModelImporterAnimationType.Generic; dirty = true; }
+            if (importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel)
+            { importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel; dirty = true; }
+
+            var clips = importer.clipAnimations;
+            if (clips == null || clips.Length == 0)
+            {
+                var defaultClips = importer.defaultClipAnimations;
+                if (defaultClips.Length > 0)
+                {
+                    foreach (var c in defaultClips)
+                    { c.loopTime = true; c.loopPose = true; }
+                    importer.clipAnimations = defaultClips;
+                    dirty = true;
+                }
+            }
+            else
+            {
+                bool clipsChanged = false;
+                foreach (var c in clips)
+                {
+                    if (!c.loopTime) { c.loopTime = true; clipsChanged = true; }
+                    if (!c.loopPose) { c.loopPose = true; clipsChanged = true; }
+                }
+                if (clipsChanged) { importer.clipAnimations = clips; dirty = true; }
+            }
+
+            if (dirty) importer.SaveAndReimport();
+        }
+
+        static AnimatorController BuildStagBeetleController()
+        {
+            EnsureDirectory(ControllerDir);
+
+            var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(StagControllerPath);
+            if (existing != null)
+            {
+                bool hasClips = false;
+                foreach (var layer in existing.layers)
+                    foreach (var state in layer.stateMachine.states)
+                        if (state.state.motion != null) { hasClips = true; break; }
+                if (hasClips)
+                {
+                    Debug.Log("[Insect Wars] Preserving existing GiantStagBeetle controller.");
+                    return existing;
+                }
+                DeleteIfExists(StagControllerPath);
+            }
+
+            var c = AnimatorController.CreateAnimatorControllerAtPath(StagControllerPath);
+            AddStandardParameters(c);
+
+            var sm = c.layers[0].stateMachine;
+            var walkClip = ExtractClip(StagModelPath);
+
+            var idleState = sm.AddState("Idle");
+            idleState.motion = walkClip;
+            idleState.speed = 0f;
+            sm.defaultState = idleState;
+
+            var walkState = sm.AddState("Walk");
+            walkState.motion = walkClip;
+
+            AddLocomotionTransitions(idleState, walkState);
+
+            EditorUtility.SetDirty(c);
+            return c;
+        }
+
+        static Material BuildStagMaterial()
+        {
+            EnsureDirectory(PrefabDir);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null)
+            {
+                Debug.LogError("[Insect Wars] URP Lit shader not found.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(StagMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(sh);
+                AssetDatabase.CreateAsset(mat, StagMaterialPath);
+            }
+            else
+            {
+                mat.shader = sh;
+            }
+
+            var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StagBaseTexPath);
+            if (baseTex != null)
+                mat.SetTexture("_BaseMap", baseTex);
+
+            var normalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StagNormalTexPath);
+            if (normalTex != null)
+            {
+                mat.SetTexture("_BumpMap", normalTex);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+
+            var metallicTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StagMetallicTexPath);
+            if (metallicTex != null)
+                mat.SetTexture("_MetallicGlossMap", metallicTex);
+
+            var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(StagRoughnessTexPath);
+            if (roughnessTex != null)
+                mat.SetFloat("_Smoothness", 0.35f);
+
+            mat.SetFloat("_Metallic", 0.4f);
             EditorUtility.SetDirty(mat);
             return mat;
         }
@@ -1600,7 +1766,8 @@ namespace InsectWars.Editor
             GameObject rangedPrefab = null, GameObject hivePrefab = null,
             GameObject blackWidowPrefab = null,
             GameObject skyTowerPrefab = null,
-            GameObject stickSpyPrefab = null)
+            GameObject stickSpyPrefab = null,
+            GameObject giantStagBeetlePrefab = null)
         {
             EnsureDirectory(LibraryDir);
 
@@ -1618,6 +1785,7 @@ namespace InsectWars.Editor
             if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
             if (skyTowerPrefab != null) lib.skyTowerPrefab = skyTowerPrefab;
             if (stickSpyPrefab != null) lib.stickSpyPrefab = stickSpyPrefab;
+            if (giantStagBeetlePrefab != null) lib.giantStagBeetlePrefab = giantStagBeetlePrefab;
 
             EditorUtility.SetDirty(lib);
         }

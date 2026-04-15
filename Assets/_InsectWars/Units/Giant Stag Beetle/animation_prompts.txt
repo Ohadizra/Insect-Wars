@@ -1,0 +1,186 @@
+========================================
+  GIANT STAG BEETLE — ANIMATION PROMPTS
+  For Unity AI Animation Generation
+========================================
+
+MODEL INFO
+----------
+Model:          Meshy AI "Rusty Stag in the Jungle" (FBX, quadruped rig)
+Rig:            Generic
+Scale:          80 (import), prefab visual scale 3x
+Orientation:    FBX exports Z-up; runtime applies -90X correction
+Unit Role:      Heavy tank / frontline bruiser — slow, powerful melee with AoE ground stomp
+Movement:       Ground only, slowest unit in the game (speed 2.8)
+Walking Anim:   Already provided (Walking_withSkin.fbx) — looping walk cycle
+
+CRITICAL REQUIREMENTS
+---------------------
+1. The stag beetle is MASSIVE and HEAVY. Every motion must convey weight
+   and power. No quick, nimble movements — everything is deliberate.
+2. The large mandibles (antler-like pincers) are the primary attack weapon
+   and should be the focal point of the Attack animation.
+3. The Ground Stomp is the signature ability — it must feel like an
+   earthquake-causing impact that shakes the ground.
+4. Six legs on the model — leg animations should feel heavy and planted,
+   gripping the ground firmly.
+5. The armored carapace barely flexes — most expression comes from legs,
+   mandibles, and head movement.
+6. Team color tinting is applied via MaterialPropertyBlock at runtime.
+   The model's base material should remain neutral for proper tinting.
+
+IMPORTANT NOTES FOR ALL ANIMATIONS
+-----------------------------------
+- The model faces +Z in its local space (after -90X correction at runtime).
+- All animations must loop seamlessly EXCEPT Death.
+- Root motion is NOT used — the NavMeshAgent drives translation.
+- Keep all animation on the skeleton; do NOT bake root translation.
+- The beetle has thick, spiky legs and a wide, low stance. It is the
+  heaviest creature on the battlefield.
+- Mandibles are the large curved pincers extending from the head.
+- The carapace (back shell) should have minimal deformation.
+
+========================================
+ATTACK ANIMATION
+  ** PRIORITY: Generate this FIRST **
+========================================
+
+--- ATTACK ---
+Clip Name:      Attack
+Duration:       1.2-1.5 seconds (looping)
+Loop:           Yes
+
+Prompt:
+"A giant armored stag beetle performing a powerful melee bite attack.
+ The beetle rears its head up slightly, opening its massive mandibles wide
+ apart (0.3s anticipation). Then it lunges its head forward and DOWN,
+ snapping the mandibles shut with tremendous force — like a bear trap
+ slamming closed (0.4s strike). The front legs brace and dig into the
+ ground during the lunge. The whole body shifts forward slightly with the
+ attack's momentum, then settles back to neutral stance (0.5s recovery).
+ The mandibles open only partially during recovery, ready for the next bite.
+ All six legs stay planted — only the front pair shifts slightly.
+ The movement is HEAVY and BRUTAL — this is a creature that crushes,
+ not slashes. Think of a hydraulic press closing, not a sword swing."
+
+Key Bones:
+- Head: Rears up 15-20 degrees, then lunges forward and down 25 degrees
+- Mandibles (L/R): Open 40-50 degrees apart, snap shut to 5-degree gap
+- Front legs (pair 1): Brace outward, claws dig in during strike
+- Middle legs (pair 2): Slight shift for balance
+- Rear legs (pair 3): Nearly stationary, anchor point
+- Body/thorax: Subtle forward lean during strike, ~5 degrees
+- Carapace: Minimal movement, maybe 2-3 degree tilt forward
+
+Timing:
+- 0.00-0.30s: Anticipation — head rises, mandibles open wide
+- 0.30-0.70s: Strike — head lunges forward+down, mandibles SNAP shut
+- 0.70-1.20s: Recovery — head returns to neutral, mandibles relax open
+- Easing: Slow ease-in on anticipation, SHARP snap on mandible close,
+  slow ease-out on recovery
+
+========================================
+GROUND STOMP ANIMATION
+  ** PRIORITY: Generate this SECOND **
+========================================
+
+--- GROUND_STOMP ---
+Clip Name:      GroundStomp
+Duration:       1.5-2.0 seconds (single play, not looping)
+Loop:           No
+
+Prompt:
+"A massive stag beetle performing a powerful ground stomp that shakes the
+ earth. The beetle first rears up, lifting its front two legs off the ground
+ while the rear four legs brace (0.5s wind-up). The front body rises about
+ 20-25 degrees. Mandibles spread wide threateningly. Then the beetle SLAMS
+ its front body and legs down into the ground with enormous force (0.3s
+ impact). On impact, the whole body compresses down — the carapace dips,
+ all six legs bend and absorb the shockwave. The ground impact should feel
+ like a small earthquake. After impact, the body slowly rises back to
+ standing height with a heavy, labored recovery (0.7s recovery).
+
+ The stomp is the beetle's signature move — it should look like it could
+ crack stone. The anticipation (rearing up) is dramatic, the impact is
+ sudden and violent, and the recovery is slow and heavy. Think of a
+ sumo wrestler stomping — raw mass and power."
+
+Key Bones:
+- Front legs (pair 1): Lift completely off ground during wind-up,
+  then SLAM down hard. Claws splay on impact.
+- Middle legs (pair 2): Brace wider during wind-up, compress on impact
+- Rear legs (pair 3): Act as pivot point, barely lift. Brace outward.
+- Head: Tilts UP during wind-up, then drives DOWN with the slam
+- Mandibles: Spread wide during wind-up, snap partially on impact
+  (like a war cry into a focused blow)
+- Body/thorax: Rises 20-25 degrees, then crashes down past neutral
+  by 5-10 degrees (compression), then returns to neutral
+- Carapace: Subtle compression ripple on impact
+
+Timing:
+- 0.00-0.50s: Wind-up — front rises, legs lift, mandibles spread
+- 0.50-0.80s: SLAM — everything crashes down, maximum impact
+- 0.80-0.90s: Compression — body dips below neutral, absorbing shock
+- 0.90-1.70s: Recovery — slow rise back to neutral standing pose
+- Easing: Slow dramatic wind-up, INSTANT acceleration into slam,
+  sharp stop on impact, slow ease-out recovery
+
+========================================
+IDLE ANIMATION (optional, lower priority)
+========================================
+
+--- IDLE ---
+Clip Name:      Idle
+Duration:       4.0-5.0 seconds (looping)
+Loop:           Yes
+
+Prompt:
+"A giant stag beetle standing still, breathing heavily. The massive
+ armored body barely moves — just a slow, rhythmic rise and fall of the
+ thorax (like heavy breathing). The mandibles open and close very slightly
+ in a slow, idle rhythm — about once every 2 seconds, only a 5-10 degree
+ gap. The head makes tiny scanning movements left and right (10 degrees
+ total arc, very slow). The front legs occasionally shift weight — one
+ lifts slightly and replants. The beetle looks like a living tank
+ idling — immense, patient, and dangerous. All motion is MINIMAL and SLOW.
+ This creature conserves energy until it needs to unleash devastation."
+
+Key Bones:
+- Body/thorax: 2-3 degree vertical bob, 4-5 second cycle (breathing)
+- Head: Slow 5-degree left-right scan, 3 second cycle
+- Mandibles: 5-10 degree open/close, 2 second cycle, subtle
+- Front legs: One shifts weight at ~2.5s mark, other at ~4.0s
+- Middle/rear legs: Nearly motionless, planted firmly
+
+========================================
+DEATH ANIMATION (optional)
+========================================
+
+--- DEATH ---
+Clip Name:      Death
+Duration:       2.0-2.5 seconds (one-shot, no loop)
+Loop:           No
+
+Prompt:
+"A giant stag beetle collapsing from fatal damage. The legs on one side
+ buckle first (right side), causing the heavy body to list to that side.
+ The mandibles go slack, falling open. The remaining legs try to
+ compensate but give out one by one. The beetle rolls onto its side
+ with a heavy, final crash — the armored carapace hitting the ground
+ with visible weight. Legs curl inward (death curl, like real beetles).
+ The mandibles give one last weak open-close, then go still. The whole
+ death is HEAVY and SLOW — like a tank being disabled, not a creature
+ being swatted. It takes time for this much mass to fall."
+
+Key Bones:
+- Right legs (3): Buckle sequentially, 0.3s apart
+- Left legs (3): Compensate, then fold 0.5s after right side
+- Body: List right 30 degrees, then roll to 80-90 degrees (on side)
+- Head: Drops, follows body roll
+- Mandibles: Fall slack open, one weak closure at 1.5s
+- Carapace: Follows body rotation, hits ground
+
+Timing:
+- 0.00-0.40s: Right legs buckle, body starts listing
+- 0.40-0.80s: Left legs fail, body rolling
+- 0.80-1.40s: Full collapse onto side, ground impact
+- 1.40-2.00s: Last mandible twitch, legs curl inward, stillness
