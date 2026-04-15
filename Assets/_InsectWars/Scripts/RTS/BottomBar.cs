@@ -66,7 +66,6 @@ namespace InsectWars.RTS
         [SerializeField] Sprite portraitFighter;
         [SerializeField] Sprite portraitRanged;
         [SerializeField] Sprite portraitBlackWidow;
-        [SerializeField] Sprite portraitHawkMoth;
 
         static readonly Color ColTitle = new(0.96f, 0.90f, 0.78f);
         static readonly Color ColSub   = new(0.83f, 0.69f, 0.44f);
@@ -832,9 +831,9 @@ namespace InsectWars.RTS
 
             var units = type switch
             {
-                BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow },
+                BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
                 BuildingType.AntNest => new[] { UnitArchetype.Worker },
-                BuildingType.SkyTower => new[] { UnitArchetype.HawkMoth },
+                BuildingType.SkyTower => new[] { UnitArchetype.BlackWidow },
                 _ => System.Array.Empty<UnitArchetype>()
             };
             if (units.Length > 0)
@@ -895,7 +894,6 @@ namespace InsectWars.RTS
             if (cmdName.Contains("Mantis")) return iconFighter;
             if (cmdName.Contains("Beetle")) return iconRanged;
             if (cmdName.Contains("Black Widow")) return portraitBlackWidow;
-            if (cmdName.Contains("Hawk Moth")) return portraitHawkMoth;
             if (cmdName.Contains("Underground")) return iconUnderground;
             if (cmdName.Contains("Sky Tower")) return iconSkyTower;
             if (cmdName.Contains("Ant's Nest")) return iconAntNest;
@@ -1374,7 +1372,7 @@ namespace InsectWars.RTS
                 unitCounts.TryGetValue(u.Archetype, out var n);
                 unitCounts[u.Archetype] = n + 1;
             }
-            var unitOrder = new[] { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow, UnitArchetype.HawkMoth };
+            var unitOrder = new[] { UnitArchetype.Worker, UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow };
             bool unitsAreActive = !hasActiveType && unitCounts.Count > 0;
             foreach (var arch in unitOrder)
             {
@@ -1414,7 +1412,6 @@ namespace InsectWars.RTS
             if (u.Archetype == UnitArchetype.BasicFighter) return "Armored - Biological - Fighter";
             if (u.Archetype == UnitArchetype.BasicRanged) return "Light - Biological - Ranged";
             if (u.Archetype == UnitArchetype.BlackWidow) return "Armored - Biological - Assassin";
-            if (u.Archetype == UnitArchetype.HawkMoth) return "Light - Biological - Support";
             return "Biological";
         }
 
@@ -1426,7 +1423,6 @@ namespace InsectWars.RTS
                 UnitArchetype.BasicFighter => portraitFighter,
                 UnitArchetype.BasicRanged => portraitRanged,
                 UnitArchetype.BlackWidow => portraitBlackWidow,
-                UnitArchetype.HawkMoth => portraitHawkMoth,
                 _ => null
             };
         }

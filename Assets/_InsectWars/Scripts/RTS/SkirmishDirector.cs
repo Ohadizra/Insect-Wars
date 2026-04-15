@@ -173,7 +173,6 @@ namespace InsectWars.RTS
             SpawnUnit(hiveXZ + new Vector3(6f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SpawnUnit(hiveXZ + new Vector3(0f, 0f, 6f), Team.Player, UnitArchetype.BasicRanged);
             SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 0f), Team.Player, UnitArchetype.BlackWidow);
-            SpawnUnit(hiveXZ + new Vector3(0f, 0f, -6f), Team.Player, UnitArchetype.HawkMoth);
 
             var dummyPos = hiveXZ + new Vector3(20f, 0f, 20f);
             var dummyGo = SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
@@ -1286,11 +1285,6 @@ namespace InsectWars.RTS
                     go.AddComponent<UnitAnimationDriver>();
                 if (arch == UnitArchetype.BlackWidow && go.GetComponent<WebNetAbility>() == null)
                     go.AddComponent<WebNetAbility>();
-                if (arch == UnitArchetype.HawkMoth)
-                {
-                    if (go.GetComponent<MothStealth>() == null) go.AddComponent<MothStealth>();
-                    if (go.GetComponent<HealingAura>() == null) go.AddComponent<HealingAura>();
-                }
                 if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                     go.AddComponent<SimpleEnemyAi>();
                 return unit;
@@ -1318,9 +1312,6 @@ namespace InsectWars.RTS
                 case UnitArchetype.BlackWidow:
                     BuildFighterVisual(visualRoot.transform, body2, team);
                     break;
-                case UnitArchetype.HawkMoth:
-                    BuildWorkerVisual(visualRoot.transform, body2, team);
-                    break;
             }
 
             var col = go2.AddComponent<CapsuleCollider>();
@@ -1340,11 +1331,6 @@ namespace InsectWars.RTS
                     col.center = new Vector3(0f, 0.25f, 0f);
                     col.radius = 0.4f;
                     col.height = 0.6f;
-                    break;
-                case UnitArchetype.HawkMoth:
-                    col.center = new Vector3(0f, 0.4f, 0f);
-                    col.radius = 0.3f;
-                    col.height = 0.8f;
                     break;
                 default:
                     col.center = new Vector3(0f, 0.55f, 0f);
@@ -1373,10 +1359,6 @@ namespace InsectWars.RTS
                     agent2.height = 0.55f;
                     agent2.radius = 0.38f;
                     break;
-                case UnitArchetype.HawkMoth:
-                    agent2.height = 0.75f;
-                    agent2.radius = 0.28f;
-                    break;
                 default:
                     agent2.height = 1.12f;
                     agent2.radius = 0.27f;
@@ -1394,11 +1376,6 @@ namespace InsectWars.RTS
             go2.AddComponent<UnitAnimationDriver>();
             if (arch == UnitArchetype.BlackWidow)
                 go2.AddComponent<WebNetAbility>();
-            if (arch == UnitArchetype.HawkMoth)
-            {
-                go2.AddComponent<MothStealth>();
-                go2.AddComponent<HealingAura>();
-            }
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;

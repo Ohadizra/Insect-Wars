@@ -7,8 +7,7 @@ namespace InsectWars.Data
         Worker = 0,
         BasicFighter = 1,
         BasicRanged = 2,
-        BlackWidow = 3,
-        HawkMoth = 4
+        BlackWidow = 3
     }
 
     [CreateAssetMenu(fileName = "UnitDefinition", menuName = "Insect Wars/Unit Definition")]
@@ -35,7 +34,6 @@ namespace InsectWars.Data
                 UnitArchetype.BasicFighter => "Fighter",
                 UnitArchetype.BasicRanged => "Bombardier",
                 UnitArchetype.BlackWidow => "Black Widow",
-                UnitArchetype.HawkMoth => "Hawk Moth",
                 _ => type.ToString()
             };
             d.unitColor = bodyColor;
@@ -46,7 +44,6 @@ namespace InsectWars.Data
                 UnitArchetype.BasicFighter => 5.4f,
                 UnitArchetype.BasicRanged => 4.2f,
                 UnitArchetype.BlackWidow => 4.8f,
-                UnitArchetype.HawkMoth => 5.0f,
                 _ => 4.5f
             };
             d.maxHealth = type switch
@@ -55,7 +52,6 @@ namespace InsectWars.Data
                 UnitArchetype.BasicFighter => 38f,
                 UnitArchetype.BasicRanged => 42f,
                 UnitArchetype.BlackWidow => 55f,
-                UnitArchetype.HawkMoth => 30f,
                 _ => 40f
             };
             d.attackDamage = type switch
@@ -63,13 +59,11 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => 7f,
                 UnitArchetype.BasicFighter => 9f,
                 UnitArchetype.BlackWidow => 6f,
-                UnitArchetype.HawkMoth => 0f,
                 _ => 4f
             };
             d.attackRange = type switch
             {
                 UnitArchetype.BasicRanged => 8f,
-                UnitArchetype.HawkMoth => 0f,
                 _ => 1.55f
             };
             d.attackCooldown = type switch
@@ -78,7 +72,7 @@ namespace InsectWars.Data
                 UnitArchetype.BlackWidow => 1.1f,
                 _ => 0.95f
             };
-            d.visionRadius = type == UnitArchetype.HawkMoth ? 14f : 12f;
+            d.visionRadius = 12f;
             return d;
         }
     }

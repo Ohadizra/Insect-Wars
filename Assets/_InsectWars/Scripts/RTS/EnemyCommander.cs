@@ -271,7 +271,7 @@ namespace InsectWars.RTS
             else if (EnemyResources.Calories < 100) cadence *= 1.5f;
             _nextProduceTime = _matchTime + cadence * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
-            int workers = 0, fighters = 0, ranged = 0, moths = 0;
+            int workers = 0, fighters = 0, ranged = 0;
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
@@ -281,7 +281,6 @@ namespace InsectWars.RTS
                     case UnitArchetype.BasicFighter: fighters++; break;
                     case UnitArchetype.BasicRanged: ranged++; break;
                     case UnitArchetype.BlackWidow: fighters++; break;
-                    case UnitArchetype.HawkMoth: moths++; break;
                 }
             }
             int combat = fighters + ranged;
@@ -321,9 +320,7 @@ namespace InsectWars.RTS
                     if (combat >= MaxCombat) break;
 
                     UnitArchetype arch;
-                    if (_rangedToggle % 7 == 6 && EnemyResources.Calories >= 250)
-                        arch = UnitArchetype.BlackWidow;
-                    else if ((_rangedToggle % 5) >= 3)
+                    if ((_rangedToggle % 5) >= 3)
                         arch = UnitArchetype.BasicRanged;
                     else
                         arch = UnitArchetype.BasicFighter;
@@ -334,14 +331,15 @@ namespace InsectWars.RTS
                 }
             }
 
-            // --- Hawk Moths from Sky Towers (max 2 active) ---
-            if (moths < 2 && _matchTime > 40f && skyTowers.Count > 0)
+            // --- Black Widows from Sky Towers (max 2 active) ---
+            if (_matchTime > 40f && skyTowers.Count > 0)
             {
                 foreach (var st in skyTowers)
                 {
-                    if (moths >= 2) break;
-                    if (!ColonyCapacity.CanAfford(Team.Enemy, UnitArchetype.HawkMoth)) break;
-                    if (st.ProduceUnit(UnitArchetype.HawkMoth) != null) moths++;
+                    if (combat >= MaxCombat) break;
+                    if (!ColonyCapacity.CanAfford(Team.Enemy, UnitArchetype.BlackWidow)) break;
+                    if (EnemyResources.Calories < 250) break;
+                    if (st.ProduceUnit(UnitArchetype.BlackWidow) != null) combat++;
                 }
             }
         }

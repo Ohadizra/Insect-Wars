@@ -50,7 +50,6 @@ namespace InsectWars.RTS
         float _buildAnimTimer; 
         float _idleT;
         float _instanceOffset;
-        float _takeoffTimer;
         bool _dying;
 
         bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath, _hasWebCast;
@@ -134,13 +133,7 @@ namespace InsectWars.RTS
             return name.Contains("BlackWidow");
         }
 
-        bool IsHawkMoth()
-        {
-            if (_unit != null && _unit.Archetype == UnitArchetype.HawkMoth) return true;
-            return name.Contains("HawkMoth");
-        }
-
-        bool NeedsPitchCorrection() => IsBlackWidow() || IsHawkMoth();
+        bool NeedsPitchCorrection() => IsBlackWidow();
 
         void Update()
         {
@@ -148,24 +141,7 @@ namespace InsectWars.RTS
             {
                 if (Application.isPlaying && modelRoot != null && _dying)
                 {
-                    if (IsHawkMoth())
-                    {
-                        // MOTH DEATH SEQUENCE (0.6s total per requirements)
-                        float p = Mathf.Clamp01(_idleT / 0.6f);
-                        _idleT += Time.unscaledDeltaTime;
-
-                        float spasm = Mathf.Sin(p * 50f) * (1f - p) * 15f;
-                        float roll = p * 75f;
-                        float pitch = p * 20f;
-                        modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + pitch + spasm, spasm * 0.5f, roll);
-
-                        float crumple = 1f - Mathf.Pow(p, 2f);
-                        modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(crumple, crumple, crumple));
-                    }
-                    else
-                    {
-                        modelRoot.localScale = Vector3.Lerp(modelRoot.localScale, Vector3.zero, Time.unscaledDeltaTime * 5f);
-                    }
+                    modelRoot.localScale = Vector3.Lerp(modelRoot.localScale, Vector3.zero, Time.unscaledDeltaTime * 5f);
                 }
                 return;
             }
@@ -242,10 +218,6 @@ namespace InsectWars.RTS
             {
                 ApplyBlackWidowLoop(dt, moving, planar.magnitude);
             }
-            else if (IsHawkMoth())
-            {
-                ApplyHawkMothLoop(dt, moving);
-            }
             else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
             {
                 ApplyMantisLoop(dt);
@@ -257,7 +229,6 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            if (!IsHawkMoth())
             {
                 float heightOffset = IsBlackWidow() ? 0.55f : 0f;
                 var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
@@ -376,98 +347,6 @@ namespace InsectWars.RTS
             }
         }
 
-        void ApplyHawkMothLoop(float dt, bool moving)
-        {
-            var stealth = GetComponent<MothStealth>();
-            if (stealth == null) return;
-
-            var state = stealth.CurrentState;
-            float cycle = _idleT;
-
-            // --- Updated Constants for NEW FBX (scale 150) ---
-            const float H_Fly = 4.5f;    
-            const float H_Ground = 2.2f; // Hover higher to ensure no ground clipping
-
-            float wingFreq = 5f;  // 5 beats per second (per user prompt)
-            float wingAmp = 0.45f; 
-            float bodyPitch = 0f;
-            float bodyRoll = 0f;
-            float targetBaseY = H_Ground;
-
-            if (_takeoffTimer > 0f)
-            {
-                _takeoffTimer -= dt;
-                float p = 1f - (_takeoffTimer / 0.5f);
-                modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
-                modelRoot.localPosition = new Vector3(_baseLocalPos.x, Mathf.Lerp(H_Ground, H_Fly, p), _baseLocalPos.z);
-                return;
-            }
-
-            switch (state)
-            {
-                case MothStealth.MothState.Flying:
-                    targetBaseY = H_Fly;
-                    if (moving)
-                    {
-                        wingFreq = 7f; // Faster determined flight
-                        wingAmp = 0.55f;
-                        bodyPitch = 20f; // Lean into flight
-                        bodyRoll = Mathf.Sin(cycle * 7f * 0.5f) * 6f; // Slight roll sway
-                    }
-                    else
-                    {
-                        wingFreq = 5f; // Steady hover
-                        wingAmp = 0.45f;
-                        bodyPitch = 8f;
-                        bodyRoll = Mathf.Sin(cycle * 2f) * 3f;
-                    }
-                    break;
-                case MothStealth.MothState.Landing:
-                    targetBaseY = Mathf.Lerp(H_Fly, H_Ground, stealth.LandingProgress);
-                    wingFreq = Mathf.Lerp(5f, 2f, stealth.LandingProgress);
-                    wingAmp = 0.3f;
-                    bodyPitch = Mathf.Lerp(8f, 0f, stealth.LandingProgress);
-                    break;
-                case MothStealth.MothState.Grounded:
-                case MothStealth.MothState.Cloaked:
-                    targetBaseY = H_Ground;
-                    wingFreq = 0f;
-                    wingAmp = 0f;
-                    bodyPitch = 5f;
-                    break;
-            }
-
-            // Apply orientation
-            modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
-            
-            // Absolute height positioning - NO vertical bobbing to prevent "jumping"
-            modelRoot.localPosition = new Vector3(_baseLocalPos.x, targetBaseY, _baseLocalPos.z);
-
-            // Procedural Flapping (Scale-based simulation of Prompt A)
-            if (wingFreq > 0.1f)
-            {
-                // Sine-based cycle
-                float s = Mathf.Sin(cycle * wingFreq * 2f * Mathf.PI);
-                
-                // Prompt A: "Downstroke is faster and more powerful than upstroke"
-                // We shape the sine wave: sharpen the peaks (downstroke) and round the troughs
-                float flap = s > 0 ? Mathf.Pow(s, 0.5f) : s * 0.7f;
-                
-                // Prompt A: "Wings spread wide on downstroke, fold slightly on upstroke"
-                float sX = 1f + flap * wingAmp; // Width expands/contracts
-                float sZ = 1f - Mathf.Abs(flap) * (wingAmp * 0.4f); // Depth narrows slightly
-                float sY = 1f - flap * (wingAmp * 0.2f); // Body height pulses in opposition
-                
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(sX, sY, sZ));
-            }
-            else
-            {
-                // Breathing idle while grounded
-                float breath = 1f + Mathf.Sin(cycle * 2.5f) * 0.025f;
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
-            }
-        }
-
         void ApplyMantisLoop(float dt)
         {
             float loopTime = _idleT % 30f;
@@ -494,17 +373,11 @@ namespace InsectWars.RTS
         public void NotifyAttack() { _attackAnimDuration = 0.4f; _attackAnimT = _attackAnimDuration; if (_hasAttack) animator.SetTrigger(Attack); }
         public void NotifyWebCast() { _attackAnimDuration = 0.55f; _attackAnimT = _attackAnimDuration; if (_hasWebCast) animator.SetTrigger(WebCast); }
         public void NotifyBuild() { _buildAnimTimer = 0.2f; }
-        public void NotifyTakeoff() { if (IsHawkMoth()) _takeoffTimer = 0.5f; }
+        public void NotifyTakeoff() { }
         public void NotifyDeath(float delay = 0.45f) 
         { 
             if (_dying) return; 
             _dying = true; 
-            
-            if (IsHawkMoth())
-            {
-                _idleT = 0f; 
-            }
-
             if (_hasDeath) animator.SetTrigger(Death); 
             if (Application.isPlaying) Destroy(gameObject, delay); 
         }

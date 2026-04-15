@@ -47,12 +47,12 @@ namespace InsectWars.Editor
         const string BeetlePrefabPath = PrefabDir + "/BombardierBeetle.prefab";
 
         // --- Black Widow paths ---
-        const string WidowModelPath = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_0415065353_texture_fbx/Meshy_AI_Crimson_Widow_0415065353_texture.fbx";
-        const string WidowTexDir = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_0415065353_texture_fbx";
-        const string WidowBaseTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture.png";
-        const string WidowNormalTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_normal.png";
-        const string WidowEmissionTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_emission.png";
-        const string WidowRoughnessTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_roughness.png";
+        const string WidowModelPath = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_quadruped/Meshy_AI_Crimson_Widow_quadruped_model_Animation_Walking_withSkin.fbx";
+        const string WidowTexDir = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_quadruped";
+        const string WidowBaseTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_quadruped_texture_0.png";
+        const string WidowNormalTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_quadruped_texture_0_normal.png";
+        const string WidowMetallicTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_quadruped_texture_0_metallic.png";
+        const string WidowRoughnessTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_quadruped_texture_0_roughness.png";
         const string WidowMaterialPath = PrefabDir + "/BlackWidowMat.mat";
         const string WidowControllerPath = ControllerDir + "/BlackWidow.controller";
         const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
@@ -101,7 +101,6 @@ namespace InsectWars.Editor
             SetupAntWorker();
             SetupBombardierBeetle();
             SetupBlackWidow();
-            SetupHawkMoth();
             SetupAntNest();
             SetupSkyTower();
         }
@@ -262,12 +261,9 @@ namespace InsectWars.Editor
                 overrideMaterial: mothMaterial,
                 visualRotation: new Vector3(-90f, 0f, 0f));
 
-            UpdateLibrary(hawkMothPrefab: prefab);
-
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[Insect Wars] Hawk Moth setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+            Debug.Log("[Insect Wars] Hawk Moth setup complete (art only, not in game).");
         }
 
         static void FixMothImportSettings()
@@ -493,14 +489,14 @@ namespace InsectWars.Editor
                 mat.EnableKeyword("_NORMALMAP");
             }
 
-            var emissionTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowEmissionTexPath);
-            if (emissionTex != null)
-            {
-                mat.SetTexture("_EmissionMap", emissionTex);
-                mat.SetColor("_EmissionColor", Color.white * 0.5f);
-                mat.EnableKeyword("_EMISSION");
-                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-            }
+            mat.SetTexture("_EmissionMap", null);
+            mat.SetColor("_EmissionColor", Color.black);
+            mat.DisableKeyword("_EMISSION");
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+
+            var metallicTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowMetallicTexPath);
+            if (metallicTex != null)
+                mat.SetTexture("_MetallicGlossMap", metallicTex);
 
             var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowRoughnessTexPath);
             if (roughnessTex != null)
@@ -1384,7 +1380,7 @@ namespace InsectWars.Editor
 
         static void UpdateLibrary(GameObject workerPrefab = null, GameObject meleePrefab = null,
             GameObject rangedPrefab = null, GameObject hivePrefab = null,
-            GameObject blackWidowPrefab = null, GameObject hawkMothPrefab = null,
+            GameObject blackWidowPrefab = null,
             GameObject skyTowerPrefab = null)
         {
             EnsureDirectory(LibraryDir);
@@ -1401,7 +1397,6 @@ namespace InsectWars.Editor
             if (rangedPrefab != null) lib.rangedPrefab = rangedPrefab;
             if (hivePrefab != null) lib.hivePrefab = hivePrefab;
             if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
-            if (hawkMothPrefab != null) lib.hawkMothPrefab = hawkMothPrefab;
             if (skyTowerPrefab != null) lib.skyTowerPrefab = skyTowerPrefab;
 
             EditorUtility.SetDirty(lib);

@@ -91,9 +91,9 @@ namespace InsectWars.RTS
 
         public UnitArchetype[] ProducibleUnits => _type switch
         {
-            BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow },
+            BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
-            BuildingType.SkyTower => new[] { UnitArchetype.HawkMoth },
+            BuildingType.SkyTower => new[] { UnitArchetype.BlackWidow },
             _ => System.Array.Empty<UnitArchetype>()
         };
 
@@ -102,7 +102,6 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => 100,
             UnitArchetype.BasicRanged => 100,
             UnitArchetype.BlackWidow => 250,
-            UnitArchetype.HawkMoth => 200,
             UnitArchetype.Worker => 50,
             _ => 50
         };
@@ -112,7 +111,6 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => "Mantis",
             UnitArchetype.BasicRanged => "Beetle",
             UnitArchetype.BlackWidow => "Black Widow",
-            UnitArchetype.HawkMoth => "Hawk Moth",
             UnitArchetype.Worker => "Worker",
             _ => "Unit"
         };
@@ -132,7 +130,6 @@ namespace InsectWars.RTS
             UnitArchetype.BasicFighter => 18f,
             UnitArchetype.BasicRanged => 22f,
             UnitArchetype.BlackWidow => 35f,
-            UnitArchetype.HawkMoth => 28f,
             _ => 15f
         };
 
@@ -167,7 +164,7 @@ namespace InsectWars.RTS
         {
             BuildingType.Underground => "Military barracks dug beneath the surface. Produces Mantis fighters and Beetle ranged units.",
             BuildingType.AntNest => "Expands the colony. Produces Worker ants and provides supply capacity.",
-            BuildingType.SkyTower => "Elevated hive tower. Produces Hawk Moths — support healers with stealth and air capabilities.",
+            BuildingType.SkyTower => "Elevated hive tower. Produces Black Widows — elite assassins with poison and web net.",
             BuildingType.RootCellar => "Storage burrow. Provides additional supply capacity for the colony.",
             _ => ""
         };

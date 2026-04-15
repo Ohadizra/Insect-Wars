@@ -284,7 +284,8 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
                 "  Spend Calories to train units or construct buildings.\n\n" +
                 "<b>BUILDINGS</b>\n" +
                 "  Ant Nest — trains Workers and provides supply.\n" +
-                "  Underground — trains Fighters, Beetles, and Black Widows.\n" +
+                "  Underground — trains Fighters and Beetles.\n" +
+                "  Sky Tower — trains Black Widows.\n" +
                 "  Root Cellar — provides additional supply capacity.\n\n" +
                 "<b>COMBAT</b>\n" +
                 "  Fighters (Mantis) — fast melee attackers.\n" +

@@ -143,9 +143,6 @@ namespace InsectWars.RTS
                         { proximityReveal = true; break; }
                     }
 
-                    var stealth = u.GetComponent<MothStealth>();
-                    if (stealth != null) stealth.SetProximityReveal(proximityReveal);
-
                     show = proximityReveal;
                 }
                 else
