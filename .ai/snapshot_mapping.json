@@ -743,6 +743,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "I have performed a deep overhaul of the Black Widow's animation system to achieve a \"perfectly accurate\" spider walk despite the technical limitation of the current model (which is a static mesh without a skeletal rig).\n\n### Key Improvements:\n\n#### 1. High-Fidelity Tetrapod Gait Simulation\nSince I cannot move the 8 legs individually without bones, I have mathematically simulated the **weight transfer** and **impact** of a spider's alternating tetrapod gait (where 4 legs lift while 4 push).\n*   **Snap Weight-Shift (Roll)**: Implemented a non-linear \"Snap Roll\" that tilts the body aggressively (11.5°) toward the planted leg group. This mimics the sudden shift in center-of-mass when a large predator like a tarantula takes a step.\n*   **Leading Yaw**: Added a rhythmic yaw (8.5°) that \"swings\" the body toward the leading front leg of each cycle.\n*   **Sharp Impact Bob**: Changed the vertical bounce to use a high-order power function (`plantImpact ^ 2.5`), resulting in a sharp \"pop\" and heavy settling motion every time a leg group plants on the ground.\n*   **Predatory Lunge (Pitch)**: The spider now leans forward more aggressively during movement, increasing its predatory silhouette.\n\n#### 2. Model Height & Clipping Fix\n*   **Raised Ground Clearance**: Increased the vertical height offset from `0.48f` to **`0.55f`**. This ensures that the legs, which were previously buried, now sit firmly on top of the terrain surface.\n\n#### 3. Initial Rotation Fix\n*   **Instant Correction**: Refined the `IsBlackWidow()` detection logic to work immediately upon spawning. This ensures the corrective `-90°` pitch is applied from the very first frame, preventing the \"head-to-sky\" posture that occurred before the first movement command.\n\n#### 4. Fixed Secondary Bug\n*   Resolved a compilation error in `MothStealth.cs` where it was referencing a non-existent `UnitOrder.AttackMove` state.\n\nThe Black Widow should now feel like a heavy, powerful, and realistically moving predator from the moment it spawns until it spawns until it spawns until its final strike.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "34e72bde-e175-48a3-8bf3-47d602fc8401",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "fix this error paterns",
+      "snapshot_message_type": 0
     }
   ]
 }
