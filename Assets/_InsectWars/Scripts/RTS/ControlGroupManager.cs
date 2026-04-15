@@ -217,8 +217,12 @@ namespace InsectWars.RTS
         {
             for (int i = 0; i < GroupCount; i++)
             {
-                _units[i].RemoveWhere(u => u == null || !u.IsAlive);
-                _buildings[i].RemoveWhere(b => b == null || !b.IsAlive);
+                if (_units[i] != null)
+                    _units[i].RemoveWhere(u => u == null || !u.IsAlive);
+                
+                if (_buildings[i] != null)
+                    _buildings[i].RemoveWhere(b => b == null || !b.IsAlive);
+
                 if (_hives[i] != null && (_hives[i] == null || !_hives[i].IsAlive))
                     _hives[i] = null;
             }
