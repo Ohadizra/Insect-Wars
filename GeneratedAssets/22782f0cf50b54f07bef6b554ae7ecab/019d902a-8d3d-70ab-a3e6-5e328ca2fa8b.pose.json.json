@@ -1,0 +1,12 @@
+{
+    "asset": "22782f0cf50b54f07bef6b554ae7ecab",
+    "fileName": "019d902a-8d3d-70ab-a3e6-5e328ca2fa8b.pose.json",
+    "prompt": "A black widow spider performing a subtle hit reaction, as if something stung it. A quick flinch — the body jerks slightly backward, two front legs raise defensively, then immediately return to normal stance. Very fast, almost a twitch. Duration approximately 0.15 seconds.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1321289226,
+    "w3CTraceId": "7d51bda83d0e3450b599e7a2e14f04eb",
+    "feedback": 0,
+    "isTrimmed": false
+}

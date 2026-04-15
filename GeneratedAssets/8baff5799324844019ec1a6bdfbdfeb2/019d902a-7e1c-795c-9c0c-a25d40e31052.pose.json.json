@@ -1,0 +1,12 @@
+{
+    "asset": "8baff5799324844019ec1a6bdfbdfeb2",
+    "fileName": "019d902a-7e1c-795c-9c0c-a25d40e31052.pose.json",
+    "prompt": "A black widow spider dying. The spider's legs buckle and curl inward toward the body — the classic real-world spider death curl. The body tips slightly to one side and collapses to the ground. All eight legs fold underneath and contract. The abdomen settles flat on the ground. The movement should feel like the life draining out — not an explosion or violent ragdoll, but a gradual curling collapse. Total duration approximately 0.5 seconds. The final pose holds with all legs curled tightly against the body.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1266264057,
+    "w3CTraceId": "1f55399dd22db50b377a917d76628b33",
+    "feedback": 0,
+    "isTrimmed": false
+}

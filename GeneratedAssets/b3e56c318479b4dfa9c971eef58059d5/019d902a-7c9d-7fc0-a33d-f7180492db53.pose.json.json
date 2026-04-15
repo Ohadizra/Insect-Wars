@@ -1,0 +1,12 @@
+{
+    "asset": "b3e56c318479b4dfa9c971eef58059d5",
+    "fileName": "019d902a-7c9d-7fc0-a33d-f7180492db53.pose.json",
+    "prompt": "A black widow spider casting a web net forward. The spider rears its front body upward slightly — the first two pairs of legs lift off the ground while the rear four legs anchor it. The abdomen tilts forward and upward, pointing the spinnerets toward the front. A quick pulsing motion of the abdomen suggests silk being expelled. The front legs then sweep outward in a spreading gesture, as if directing the web in a cone shape. The spider then settles back to its idle stance. Total duration approximately 0.5 seconds.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 355329777,
+    "w3CTraceId": "53c70a394a619c8fd862c258c73e0f83",
+    "feedback": 0,
+    "isTrimmed": false
+}

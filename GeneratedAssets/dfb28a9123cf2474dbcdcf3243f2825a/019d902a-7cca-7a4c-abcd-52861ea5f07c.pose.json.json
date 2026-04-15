@@ -1,0 +1,12 @@
+{
+    "asset": "dfb28a9123cf2474dbcdcf3243f2825a",
+    "fileName": "019d902a-7cca-7a4c-abcd-52861ea5f07c.pose.json",
+    "prompt": "A black widow spider performing a fast, venomous melee bite attack. The spider lunges its cephalothorax forward and downward. The front two legs spread apart to grab the target. The fangs (chelicerae) open wide and snap shut in a piercing bite motion. The body recoils back to its original position after the strike. The movement should feel sharp and aggressive — a quick lunge-bite-retract sequence. Total duration approximately 0.4 seconds. The abdomen stays mostly stable during the lunge.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1624321507,
+    "w3CTraceId": "5dc449543852df85084a6e8466fb265c",
+    "feedback": 0,
+    "isTrimmed": false
+}

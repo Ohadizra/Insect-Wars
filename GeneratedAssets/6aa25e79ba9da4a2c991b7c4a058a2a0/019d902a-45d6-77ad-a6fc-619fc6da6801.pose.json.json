@@ -1,0 +1,12 @@
+{
+    "asset": "6aa25e79ba9da4a2c991b7c4a058a2a0",
+    "fileName": "019d902a-45d6-77ad-a6fc-619fc6da6801.pose.json",
+    "prompt": "A black widow spider standing still in a neutral idle pose. Subtle, looping body sway — the abdomen gently bobs up and down by a few millimeters. The front pair of legs occasionally lift and reposition slightly, as if feeling the ground. All eight legs planted with a wide, stable stance. The cephalothorax tilts forward very slightly in a predatory ready posture. Slow, breathing-like rhythm. Loop duration approximately 2-3 seconds.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 1429165611,
+    "w3CTraceId": "ec05aa1b05a54e27bb4b4125f52d8af9",
+    "feedback": 0,
+    "isTrimmed": false
+}

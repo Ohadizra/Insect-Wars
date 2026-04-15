@@ -1,0 +1,12 @@
+{
+    "asset": "c4f8d58645eb441e6ad09557eb7d6532",
+    "fileName": "019d902a-7a81-743a-8659-d1583f2a2923.pose.json",
+    "prompt": "A black widow spider walking forward with a smooth, deliberate eight-legged gait. Legs move in an alternating tetrapod pattern — four legs lift while the other four stay grounded, then they swap. The body stays low and level, gliding forward with minimal vertical bounce. The abdomen sways slightly side to side with each step cycle. Movement feels purposeful and predatory, not frantic. Medium walking speed. Loop duration approximately 1 second for one full step cycle.",
+    "negativePrompt": "",
+    "model": "9e46c009-67d8-4254-a3a0-32e3168247ee",
+    "modelName": "Text to Motion",
+    "customSeed": 38729975,
+    "w3CTraceId": "4bce10fdc77dbc9d0bd81136fde6df04",
+    "feedback": 0,
+    "isTrimmed": false
+}
