@@ -17,8 +17,6 @@ namespace InsectWars.RTS
         const float CloakDelay = 5f;
         const float PanicFleeDistance = 12f;
         const float LandingDuration = 0.5f;
-        const float FlyHeight = 1.2f;
-        const float GroundClearance = 0.5f;
         const float ProximityRevealRange = 8f;
         const float CloakedAlpha = 0.25f;
         const float PartialAlpha = 0.45f;
@@ -39,6 +37,7 @@ namespace InsectWars.RTS
         float _landingT;
 
         public MothState CurrentState => _state;
+        public float LandingProgress => _landingT;
 
         void Awake()
         {
@@ -101,8 +100,6 @@ namespace InsectWars.RTS
                     UpdateCloaked(moved, tookDamage);
                     break;
             }
-
-            UpdateVisualHeight();
         }
 
         // ───────────── State: Flying ─────────────
@@ -240,30 +237,6 @@ namespace InsectWars.RTS
                 if (d < bestD) { bestD = d; best = u; }
             }
             return best;
-        }
-
-        // ───────────── Visual height (flying vs grounded) ─────────────
-        void UpdateVisualHeight()
-        {
-            if (_visual == null) return;
-
-            float targetY;
-            switch (_state)
-            {
-                case MothState.Flying:
-                    targetY = FlyHeight + GroundClearance;
-                    break;
-                case MothState.Landing:
-                    targetY = Mathf.Lerp(FlyHeight + GroundClearance, GroundClearance, _landingT);
-                    break;
-                default:
-                    targetY = GroundClearance;
-                    break;
-            }
-
-            var lp = _visual.localPosition;
-            lp.y = Mathf.Lerp(lp.y, targetY, Time.deltaTime * 6f);
-            _visual.localPosition = lp;
         }
 
         // ───────────── Renderer alpha ─────────────
