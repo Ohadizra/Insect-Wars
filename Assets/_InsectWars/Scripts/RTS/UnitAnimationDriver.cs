@@ -176,12 +176,9 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                if (NeedsPitchCorrection())
-                    modelRoot.rotation = _lookRotation;
-                else
-                    modelRoot.rotation = _lookRotation;
-            }
-        }
+                modelRoot.rotation = _lookRotation;
+                }
+                }
 
         void LateUpdate()
         {
@@ -281,9 +278,9 @@ namespace InsectWars.RTS
                 float cycleSpeed = 9.0f; 
                 float cycle = _idleT * cycleSpeed;
                 float groupA = Mathf.Sin(cycle);
-                float roll = Mathf.Sign(groupA) * Mathf.Pow(Mathf.Abs(groupA), 0.6f) * 11.5f;
-                float yaw = Mathf.Cos(cycle) * 8.5f;
-                float pitch = 14f + Mathf.Abs(groupA) * 5f;
+                float roll = Mathf.Sign(groupA) * Mathf.Pow(Mathf.Abs(groupA), 0.6f) * 6.5f;
+                float yaw = Mathf.Cos(cycle) * 4.5f;
+                float pitch = Mathf.Abs(groupA) * 3.5f;
                 float plantImpact = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle * 2f)), 2.5f);
                 float walkBob = plantImpact * 0.045f;
 
@@ -397,8 +394,8 @@ namespace InsectWars.RTS
             if (_unit != null && _unit.Archetype == UnitArchetype.BlackWidow)
             {
                 lines.Add("Black Widow Procedural Driver:");
-                lines.Add("· Orientation: Fixed -90X pitch");
-                lines.Add("· Height: +0.48 Ground Clear");
+                lines.Add("· Orientation: Flat to Ground");
+                lines.Add("· Height: +0.55 Ground Clear");
                 lines.Add("· Walk: Realistic body sway + bob");
                 lines.Add("· Bite: 3-phase rear/strike/retract");
                 lines.Add("· Web: Abdomen forward + pumping");

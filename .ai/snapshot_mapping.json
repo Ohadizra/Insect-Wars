@@ -875,6 +875,12 @@
       "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
       "content": "when spider is walking the back of its body is up in the air, the body shuld stay flat while moving",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "3b8e3e01-3da5-48ba-acad-8ea6ee47a860",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "I have corrected the Black Widow's walking posture in `UnitAnimationDriver.cs`. \n\nThe issue was caused by a constant **14-degree forward pitch** applied during the procedural walking gait, which tilted the spider's nose down and pushed the back of its body into the air. \n\n### Changes made:\n- **Removed the constant 14-degree tilt** from the `ApplyBlackWidowLoop` method.\n- **Reduced the amplitude** of the procedural swaying (roll, yaw, and bobbing) to make the movement feel more stable and \"flat\" as requested.\n- **Simplified the rotation logic** in the `Update` loop to ensure the model remains aligned with its direction of travel without redundant checks.\n- **Updated the internal documentation** in `GetSpotlightLines` to reflect the new \"Flat to Ground\" orientation and the actual height offset used (0.55).\n\nThe spider should now move with its body staying level with the ground while maintaining a subtle, realistic walking bob.",
+      "snapshot_message_type": 1
     }
   ]
 }
