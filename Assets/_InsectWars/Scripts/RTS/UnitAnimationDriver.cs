@@ -384,9 +384,9 @@ namespace InsectWars.RTS
             var state = stealth.CurrentState;
             float cycle = _idleT;
 
-            // --- Updated Constants for 2.0 scale (ExtentY ~1.2) ---
+            // --- Updated Constants for 100.0 scale (ExtentY ~0.75m) ---
             const float H_Fly = 4.0f;    // Elevated flight height
-            const float H_Ground = 1.5f; // Hover above ground
+            const float H_Ground = 1.25f; // Hover above ground to avoid clipping
 
             float wingFreq = 12f;
             float wingAmp = 35f; // Rotation angle (if wings found) or scale amp
@@ -399,7 +399,7 @@ namespace InsectWars.RTS
             {
                 _takeoffTimer -= dt;
                 float p = 1f - (_takeoffTimer / 0.5f);
-                modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
+                modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f + Mathf.Lerp(0f, 15f, p), 0f, 0f);
                 modelRoot.localPosition = new Vector3(_baseLocalPos.x, Mathf.Lerp(H_Ground, H_Fly, p), _baseLocalPos.z);
                 return;
             }
@@ -440,7 +440,7 @@ namespace InsectWars.RTS
                     break;
             }
 
-            modelRoot.localRotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
+            modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
             modelRoot.localPosition = new Vector3(_baseLocalPos.x, targetBaseY + bodyBob, _baseLocalPos.z);
 
             // Procedural Flapping
