@@ -1,0 +1,12 @@
+{
+    "asset": "4bed8dcd2812d433db4ad41d7d9fde4e",
+    "fileName": "019d921f-466f-7267-9b12-a84ddb3db7c4.glb",
+    "prompt": "A rigged 3D character model of a Hawk Moth. CRITICAL: The wings MUST be separate child objects or bones named 'L_wing' and 'R_wing' to allow flapping. The model should have a fuzzy thorax, six legs, and feathery antennae. Each wing should be roughly as long as the entire body. Rigged for skeletal animation in Unity. Decomposed part-based assembly. High quality geometry and textures. Matching the blue and black stylized patterns of the reference image. No root translation in the rig. Facing +Z.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "4d3937f4c8f6cbdb66ec7ee372184bc0",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
