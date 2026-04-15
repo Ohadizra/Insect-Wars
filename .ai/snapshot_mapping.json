@@ -659,6 +659,18 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "I've generated a new, thematic 3D asset for the construction visual and updated your project to use it.\n\n### Changes Made:\n*   **New 3D Model**: Generated an \"Organic Insect Construction Cocoon\" that looks like an ant-hill mound of dirt and sticks held together by silken webbing. This fits the \"Insect Wars\" theme much better than the previous art.\n*   **Asset Replacement**: Moved the new asset to `Assets/_InsectWars/Models/ConstructionCocoon.prefab` and backed up the old one as `ConstructionCocoon_Old.prefab`.\n*   **Library Update**: Updated the `DefaultVisualLibrary.asset` to point to the new prefab, ensuring all new buildings constructed in your skirmish will use this art.\n\nYour ants will now build within a much more immersive, organic-looking structure!",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_3",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "looks very good, can you give it the color of the team's buildings instead of the light color?",
+      "snapshot_message_type": 0
+    },
+    {
+      "message_id": "2c9d8309-2004-43f1-b827-431f987338f9",
+      "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
+      "content": "The construction visual has been updated to match your team's color identity.\n\n### Changes Made:\n*   **Team Color Tinting**: Modified `UpdateConstructionVisual` to use the team's shell color (`TeamPalette.GetShellColor`) as the base tint for the construction phase. This replaces the generic light grey with the team's blue or red.\n*   **Material Translucency**: Updated the building initialization to force construction materials into a transparent render mode. This ensures the translucent \"silk\" look works correctly and allows the team color to blend smoothly.\n*   **Improved Initial Presence**: Slightly increased the starting brightness of the construction phase (`darkening` starts at `0.5f` instead of `0.2f`), making the new cocoon art more vibrant and recognizable from the start.\n\nYour construction sites will now clearly show which team is building, using the same colors as your final insect hives and military structures.",
+      "snapshot_message_type": 1
     }
   ]
 }

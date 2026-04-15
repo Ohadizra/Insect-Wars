@@ -229,6 +229,13 @@ namespace InsectWars.RTS
                 foreach (var r in GetComponentsInChildren<Renderer>(true))
                 {
                     if (r.material == null) continue;
+                    
+                    // Ensure the material is transparent for the construction effect
+                    if (r.material.HasProperty("_Surface")) r.material.SetFloat("_Surface", 1); // Transparent
+                    if (r.material.HasProperty("_Blend")) r.material.SetFloat("_Blend", 0); // Alpha
+                    if (r.material.HasProperty("_ZWrite")) r.material.SetFloat("_ZWrite", 0);
+                    r.material.renderQueue = 3000; // Transparent queue
+
                     _originalColors[r] = r.material.HasProperty("_BaseColor")
                         ? r.material.GetColor("_BaseColor")
                         : r.material.color;
@@ -291,14 +298,15 @@ namespace InsectWars.RTS
                 float alpha = progress < 0.2f
                     ? Mathf.Lerp(0.45f, 0.65f, progress / 0.2f)
                     : Mathf.Lerp(0.65f, 1.0f, (progress - 0.2f) / 0.8f);
-                float darkening = Mathf.Lerp(0.2f, 1f, progress);
-                Color constructionTint = new Color(0.85f, 0.85f, 0.85f);
+                float darkening = Mathf.Lerp(0.5f, 1f, progress);
+                Color constructionTint = TeamPalette.GetShellColor(_team);
 
                 foreach (var kvp in _originalColors)
                 {
                     if (kvp.Key == null || kvp.Key.material == null) continue;
                     var orig = kvp.Value;
-                    Color targetBase = Color.Lerp(constructionTint * darkening, orig, Mathf.Clamp01((progress - 0.4f) / 0.6f));
+                    // Mix the team color with the prefab's original color (mostly white) for the construction phase
+                    Color targetBase = Color.Lerp(constructionTint * darkening, orig * constructionTint, Mathf.Clamp01((progress - 0.4f) / 0.6f));
                     Color finalColor = new Color(targetBase.r, targetBase.g, targetBase.b, alpha);
 
                     if (kvp.Key.material.HasProperty("_BaseColor"))
