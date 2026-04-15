@@ -1,0 +1,12 @@
+{
+    "asset": "707fa1aa20f6f46449439dcb3869e65a",
+    "fileName": "019d9203-2c0e-7b15-a656-e3e6bf352394.glb",
+    "prompt": "A high-fidelity Hawk Moth character model with separate meshes for the body, wings, and legs. The wings MUST be separate child objects in the hierarchy to allow for rotation-based flapping. Matching the provided reference sprite. Stylized blue and black patterns. High geometry quality. Multi-part assembly. Each wing is a separate piece. Body is a separate piece. Legs are separate pieces. Full hierarchy of objects.",
+    "negativePrompt": "",
+    "model": "ad4a4adb-a4bb-4522-952a-13c3f79fa56b",
+    "modelName": "Rodin Hyper 3D Gen2",
+    "customSeed": -1,
+    "w3CTraceId": "d1a5f7e421fa30a6f560a6eb30f6f0ed",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

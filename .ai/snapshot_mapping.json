@@ -833,6 +833,12 @@
       "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
       "content": "contunue",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "7cba768e-380f-44a9-9c9c-1f86d9857616",
+      "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
+      "content": "The Hawk Moth fly animation and ground clipping issues have been fixed through a combination of model scale adjustments and an improved procedural animation system.\n\n### Key Fixes:\n1.  **Above Ground Fix**: \n    *   Reduced the Hawk Moth FBX import scale from **80.0** to **0.5**. The previous scale was causing the model to be massive and intersect deeply with the ground.\n    *   Adjusted the height constants in `UnitAnimationDriver.cs` (`H_Fly` and `H_Ground`) to ensure the moth stays at a natural hovering height regardless of its state.\n2.  **Proper Flapping Animation**:\n    *   Since the available 3D models were single meshes without internal skeletal rigs, I implemented a **procedural non-uniform scale flapping** system in `UnitAnimationDriver.cs`.\n    *   The new logic simulates wing beats by dynamically scaling the width (X) and height (Y) of the model in opposing phases (wings spreading while the body compresses), creating a much more realistic flapping silhouette.\n3.  **Prefab Regeneration**:\n    *   Updated the `SetupToonKnightPrefab.cs` editor script with the new scale settings.\n    *   Ran the `Setup Hawk Moth` utility to regenerate the `HawkMoth.prefab` with the corrected import settings and component configurations.\n\nThe moth should now float gracefully above the terrain with a convincing wing-beat animation.",
+      "snapshot_message_type": 1
     }
   ]
 }
