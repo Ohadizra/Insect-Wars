@@ -613,10 +613,14 @@ namespace InsectWars.RTS
                 visual.name = "Visual";
                 visual.transform.localPosition = Vector3.zero;
                 visual.transform.localScale = Vector3.one;
-                // Place on ground exactly
                 PlaceOnGround(visual, groundY);
-                // The local position now correctly offsets the mesh from groundY.
-                }
+                var lp = visual.transform.localPosition;
+                if (float.IsNaN(lp.x) || float.IsNaN(lp.y) || float.IsNaN(lp.z))
+                    visual.transform.localPosition = Vector3.zero;
+                var ls = visual.transform.localScale;
+                if (float.IsNaN(ls.x) || float.IsNaN(ls.y) || float.IsNaN(ls.z))
+                    visual.transform.localScale = Vector3.one;
+            }
             else
             {
                 visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -723,7 +727,7 @@ namespace InsectWars.RTS
             Vector3 scale = type switch
             {
                 BuildingType.Underground => new Vector3(0.845f, 0.676f, 0.845f),
-                BuildingType.SkyTower => new Vector3(0.845f, 0.676f, 0.845f),
+                BuildingType.SkyTower => new Vector3(1.0f, 1.3f, 1.0f),
                 BuildingType.RootCellar => new Vector3(0.5f, 0.5f, 0.5f),
                 _ => Vector3.one
             };

@@ -18,14 +18,19 @@ namespace InsectWars.RTS
         const float PanicFleeDistance = 12f;
         const float LandingDuration = 0.5f;
         const float FlyHeight = 1.2f;
+        const float GroundClearance = 0.5f;
         const float ProximityRevealRange = 8f;
         const float CloakedAlpha = 0.25f;
         const float PartialAlpha = 0.45f;
+
+        static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
+        static readonly int ColorID = Shader.PropertyToID("_Color");
 
         InsectUnit _unit;
         NavMeshAgent _agent;
         Transform _visual;
         Renderer[] _renderers;
+        Color[] _teamColors;
 
         MothState _state = MothState.Flying;
         float _stateTimer;
@@ -48,7 +53,26 @@ namespace InsectWars.RTS
             _renderers = GetComponentsInChildren<Renderer>(true);
             _visual = transform.Find("Visual");
 
+            CaptureTeamColors();
             EnterFlying();
+        }
+
+        void CaptureTeamColors()
+        {
+            _teamColors = new Color[_renderers.Length];
+            var block = new MaterialPropertyBlock();
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] == null) { _teamColors[i] = Color.white; continue; }
+                _renderers[i].GetPropertyBlock(block);
+                var c = block.GetColor(BaseColorID);
+                if (c.a < 0.01f)
+                    c = _renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor")
+                        ? _renderers[i].sharedMaterial.GetColor("_BaseColor")
+                        : Color.white;
+                c.a = 1f;
+                _teamColors[i] = c;
+            }
         }
 
         void Update()
@@ -224,13 +248,13 @@ namespace InsectWars.RTS
             switch (_state)
             {
                 case MothState.Flying:
-                    targetY = FlyHeight;
+                    targetY = FlyHeight + GroundClearance;
                     break;
                 case MothState.Landing:
-                    targetY = Mathf.Lerp(FlyHeight, 0f, _landingT);
+                    targetY = Mathf.Lerp(FlyHeight + GroundClearance, GroundClearance, _landingT);
                     break;
                 default:
-                    targetY = 0f;
+                    targetY = GroundClearance;
                     break;
             }
 
@@ -253,25 +277,25 @@ namespace InsectWars.RTS
 
         void ApplyAlpha(float alpha)
         {
-            if (_renderers == null) return;
+            if (_renderers == null || _teamColors == null) return;
             var block = new MaterialPropertyBlock();
-            foreach (var r in _renderers)
+            for (int i = 0; i < _renderers.Length; i++)
             {
+                var r = _renderers[i];
                 if (r == null) continue;
                 r.GetPropertyBlock(block);
-                block.SetFloat("_Alpha", alpha);
-                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_BaseColor"))
-                {
-                    var c = r.sharedMaterial.GetColor("_BaseColor");
-                    c.a = alpha;
-                    block.SetColor("_BaseColor", c);
-                }
+
+                var c = _teamColors[i];
+                c.a = alpha;
+                block.SetColor("_BaseColor", c);
+
                 if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color"))
                 {
-                    var c = r.sharedMaterial.GetColor("_Color");
-                    c.a = alpha;
-                    block.SetColor("_Color", c);
+                    var c2 = _teamColors[i];
+                    c2.a = alpha;
+                    block.SetColor("_Color", c2);
                 }
+
                 r.SetPropertyBlock(block);
             }
         }

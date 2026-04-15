@@ -42,6 +42,9 @@ namespace InsectWars.RTS
         Transform _lArm, _rArm, _chest, _head, _tail;
         Quaternion _lArmBase, _rArmBase, _chestBase, _headBase, _tailBase;
         
+        Transform _lWing, _rWing;
+        Quaternion _lWingBase, _rWingBase;
+        
         float _attackAnimT;
         float _attackAnimDuration;
         float _buildAnimTimer; 
@@ -81,6 +84,11 @@ namespace InsectWars.RTS
             {
                 _baseLocalPos = modelRoot.localPosition;
                 _baseScale = modelRoot.localScale;
+                if (float.IsNaN(_baseLocalPos.x) || float.IsNaN(_baseLocalPos.y) || float.IsNaN(_baseLocalPos.z))
+                    _baseLocalPos = Vector3.zero;
+                if (float.IsNaN(_baseScale.x) || float.IsNaN(_baseScale.y) || float.IsNaN(_baseScale.z)
+                    || _baseScale == Vector3.zero)
+                    _baseScale = Vector3.one;
                 
                 // Initialize _lookRotation to the transform's heading
                 _lookRotation = transform.rotation;
@@ -96,6 +104,13 @@ namespace InsectWars.RTS
                 if (_chest != null) _chestBase = _chest.localRotation;
                 if (_head != null) _headBase = _head.localRotation;
                 if (_tail != null) _tailBase = _tail.localRotation;
+
+                _lWing = FindRecursive(modelRoot, "L_wing") ?? FindRecursive(modelRoot, "wing_L")
+                    ?? FindRecursive(modelRoot, "LeftWing") ?? FindRecursive(modelRoot, "Wing_L");
+                _rWing = FindRecursive(modelRoot, "R_wing") ?? FindRecursive(modelRoot, "wing_R")
+                    ?? FindRecursive(modelRoot, "RightWing") ?? FindRecursive(modelRoot, "Wing_R");
+                if (_lWing != null) _lWingBase = _lWing.localRotation;
+                if (_rWing != null) _rWingBase = _rWing.localRotation;
             }
             _instanceOffset = Random.value * 100f;
             _idleT = _instanceOffset;
@@ -207,6 +222,10 @@ namespace InsectWars.RTS
             {
                 ApplyBlackWidowLoop(dt, moving, planar.magnitude);
             }
+            else if (IsHawkMoth())
+            {
+                ApplyHawkMothLoop(dt, moving);
+            }
             else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
             {
                 ApplyMantisLoop(dt);
@@ -218,8 +237,20 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            float heightOffset = IsBlackWidow() ? 0.55f : IsHawkMoth() ? 0.4f : 0f;
-            modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
+            if (IsHawkMoth())
+            {
+                float mothY = modelRoot.localPosition.y;
+                var newPos = new Vector3(_baseLocalPos.x, mothY, _baseLocalPos.z);
+                if (!float.IsNaN(newPos.y))
+                    modelRoot.localPosition = newPos;
+            }
+            else
+            {
+                float heightOffset = IsBlackWidow() ? 0.55f : 0f;
+                var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
+                if (!float.IsNaN(newPos.y))
+                    modelRoot.localPosition = newPos;
+            }
 
             if (_attackAnimT > 0f)
             {
@@ -354,6 +385,53 @@ namespace InsectWars.RTS
                 modelRoot.localRotation *= Quaternion.Euler(angle, 0f, 0f);
                 modelRoot.localPosition += modelRoot.forward * lunge;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+            }
+        }
+
+        void ApplyHawkMothLoop(float dt, bool moving)
+        {
+            var stealth = GetComponent<MothStealth>();
+            bool airborne = stealth != null
+                && (stealth.CurrentState == MothStealth.MothState.Flying
+                 || stealth.CurrentState == MothStealth.MothState.Landing);
+
+            float wingSpeed = moving ? 16f : 12f;
+            float wingAngle = moving ? 40f : 30f;
+            float wingCycle = Mathf.Sin(_idleT * wingSpeed);
+
+            if (_lWing != null)
+                _lWing.localRotation = _lWingBase * Quaternion.Euler(0f, 0f, wingCycle * wingAngle);
+            if (_rWing != null)
+                _rWing.localRotation = _rWingBase * Quaternion.Euler(0f, 0f, -wingCycle * wingAngle);
+
+            bool hasWings = _lWing != null || _rWing != null;
+
+            if (airborne || moving)
+            {
+                float bank = Mathf.Sin(_idleT * 2f) * 3f;
+                float pitch = Mathf.Sin(_idleT * 1.5f) * 2f;
+                modelRoot.localRotation *= Quaternion.Euler(pitch, 0f, bank);
+
+                if (!hasWings)
+                {
+                    float wingBeat = 1f + Mathf.Abs(wingCycle) * 0.04f;
+                    modelRoot.localScale = Vector3.Scale(_baseScale,
+                        new Vector3(wingBeat, 1f / Mathf.Sqrt(wingBeat), wingBeat));
+                }
+                else
+                {
+                    modelRoot.localScale = _baseScale;
+                }
+            }
+            else
+            {
+                float breath = 1f + Mathf.Sin(_idleT * 2f) * 0.012f;
+                float sway = Mathf.Sin(_idleT * 1.2f) * 1.5f;
+                modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+
+                if (_lWing != null) _lWing.localRotation = _lWingBase;
+                if (_rWing != null) _rWing.localRotation = _rWingBase;
             }
         }
 

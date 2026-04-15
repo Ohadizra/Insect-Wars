@@ -208,7 +208,7 @@ namespace InsectWars.Editor
             FixSkyTowerImportSettings();
 
             var skyTowerMaterial = BuildSkyTowerMaterial();
-            var prefab = BuildHivePrefab(SkyTowerModelPath, SkyTowerPrefabPath, "SkyTower",
+            var prefab = BuildBuildingPrefab(SkyTowerModelPath, SkyTowerPrefabPath, "SkyTower",
                 Vector3.one * 4f, skyTowerMaterial,
                 colCenter: new Vector3(0f, 2.5f, 0f), colSize: new Vector3(4f, 5f, 4f));
 
@@ -328,6 +328,15 @@ namespace InsectWars.Editor
             }
 
             mat.SetColor("_BaseColor", Color.white);
+
+            mat.SetFloat("_Surface", 1f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            mat.SetOverrideTag("RenderType", "Transparent");
 
             var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothBaseTexPath);
             if (baseTex != null)
@@ -750,6 +759,51 @@ namespace InsectWars.Editor
                           $"material={(r.sharedMaterial != null ? r.sharedMaterial.name : "NULL")}");
             }
             Debug.Log($"[Insect Wars] Nest Visual localScale={visualGo.transform.localScale}");
+
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            Object.DestroyImmediate(root);
+
+            EditorUtility.SetDirty(prefab);
+            return prefab;
+        }
+
+        static GameObject BuildBuildingPrefab(string modelPath, string prefabPath, string rootName,
+            Vector3 visualScale, Material overrideMaterial,
+            Vector3 colCenter, Vector3 colSize)
+        {
+            EnsureDirectory(PrefabDir);
+
+            var modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
+            var root = new GameObject(rootName);
+
+            var visualGo = Object.Instantiate(modelAsset);
+            visualGo.name = "Visual";
+            visualGo.transform.SetParent(root.transform, false);
+            visualGo.transform.localScale = visualScale;
+
+            if (overrideMaterial != null)
+            {
+                foreach (var smr in visualGo.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    var mats = smr.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++) mats[i] = overrideMaterial;
+                    smr.sharedMaterials = mats;
+                }
+                foreach (var mr in visualGo.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    var mats = mr.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++) mats[i] = overrideMaterial;
+                    mr.sharedMaterials = mats;
+                }
+            }
+
+            var col = root.AddComponent<BoxCollider>();
+            col.center = colCenter;
+            col.size = colSize;
+            col.isTrigger = true;
+
+            var modifier = root.AddComponent<NavMeshModifier>();
+            modifier.ignoreFromBuild = true;
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);

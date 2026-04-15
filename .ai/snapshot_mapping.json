@@ -767,6 +767,12 @@
       "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
       "content": "I will verify the bone structure of the newly generated rigged model and then use the \"Text to Motion\" model to create the specific flight, ground, and transition animations as per your requirements.\n\nWould you like me to continue with this plan?",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "be9fc493-c0be-4cfa-858c-173da263450a",
+      "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
+      "content": "re try",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -12,16 +12,82 @@ Orientation:    FBX exports Z-up; runtime applies -90X correction
 Unit Role:      Support caster, healer — no attack animations needed
 Movement:       Has both ground and air modes (MothStealth state machine)
 
+CRITICAL REQUIREMENTS
+---------------------
+1. WING BONES MUST BE NAMED: "L_wing" / "R_wing" or "wing_L" / "wing_R"
+   (so the runtime procedural fallback can find them).
+2. The moth MUST look like it is FLYING, not jumping or bouncing.
+   Wing motion is the primary visual — wings must flap smoothly.
+3. Flying height is handled by code (MothStealth component). Animations
+   should NOT include vertical root translation.
+4. Team color tinting is applied via MaterialPropertyBlock at runtime.
+   The model's base material should remain neutral/white for proper tinting.
+
 IMPORTANT NOTES FOR ALL ANIMATIONS
 -----------------------------------
 - The model faces +Z in its local space (after -90X correction at runtime).
-- All animations must loop seamlessly EXCEPT Death.
+- All animations must loop seamlessly EXCEPT Death, Landing, Takeoff.
 - Root motion is NOT used — the NavMeshAgent drives translation.
 - Keep all animation on the skeleton; do NOT bake root translation.
 - Wing bones are the primary expressive element for this unit.
 - The moth is delicate and graceful — all motion should feel light and airy,
   never heavy or mechanical.
-- Legs should have 6 legs visible (3 pairs), typical of a moth/insect.
+- The moth has large, broad wings (like a hawk moth / sphinx moth).
+  Wing beats are NOT fast hummingbird flutters — they are broad, sweeping
+  strokes that you can actually SEE.
+
+========================================
+FLYING ANIMATIONS (wings active, airborne)
+  ** PRIORITY: Generate these FIRST **
+========================================
+
+--- IDLE_FLY ---
+Clip Name:      Idle_Fly
+Duration:       1.5-2.0 seconds (looping)
+Loop:           Yes
+
+Prompt:
+"A large hawk moth hovering in place. Broad wings beat in smooth, sweeping
+ up-and-down strokes at roughly 4-6 beats per second. Downstroke is faster
+ and more powerful than upstroke. Wings spread wide on downstroke, fold
+ slightly on upstroke. Body hangs still and stable beneath the wings with
+ only a very subtle vertical bob. Legs tucked close to body. Feathery
+ antennae swept back gently. Abdomen hangs down, slight sway.
+ The hovering looks effortless and graceful — a creature perfectly at home
+ in the air. Smooth and continuous, never jerky or bouncy."
+
+Key Bones:
+- L_wing / R_wing: ~60 degree arc, symmetric, figure-8 tip path
+- Body/thorax: near-still, <5% vertical bob relative to wing motion
+- Legs: tucked, occasional micro-twitch
+- Antennae: gentle flutter swept back
+- Abdomen: slight pendulum sway
+
+Feel: Effortless hovering. Ethereal and graceful. NOT bouncing/jumping.
+
+
+--- WALK_FLY (Move_Fly) ---
+Clip Name:      Walk_Fly
+Duration:       0.8-1.0 seconds (looping)
+Loop:           Yes
+
+Prompt:
+"A large hawk moth flying forward with purpose. Wings beat harder and faster
+ than hover — stronger downstroke with forward sweep. Body tilts forward
+ 15-20 degrees leaning into flight. Less vertical bob than hover — body is
+ streamlined. Legs fully tucked against body. Antennae swept back flat.
+ Abdomen extended back as counterbalance. The flight looks fast, determined,
+ and purposeful. Smooth continuous wing motion."
+
+Key Bones:
+- L_wing / R_wing: ~75 degree arc, faster beat, propulsive forward sweep
+- Body: 15-20 degree forward tilt
+- Legs: pressed tight to body
+- Antennae: flat against body
+- Abdomen: extended back, streamlined
+
+Feel: Purposeful forward flight. Fast and determined.
+
 
 ========================================
 GROUND ANIMATIONS (wings folded, on ground)
@@ -32,24 +98,22 @@ Clip Name:      Idle_Ground
 Duration:       3-4 seconds (looping)
 Loop:           Yes
 
-Description:
-The moth rests on the ground with wings folded flat against its body, covering
-the abdomen like a tent. The pose should resemble a real moth at rest.
+Prompt:
+"A large moth resting on the ground with wings folded flat against its body
+ like a tent over its abdomen. Very still. Feathery antennae sway gently
+ left-right. Subtle breathing — thorax expands and contracts slightly.
+ Occasional single wing twitch (very brief flutter then settle, once per loop).
+ Legs planted firmly, occasional micro-adjustment. Head turns slowly to look
+ around. Calm, alert, resting. Like a moth sitting on a wall at night."
 
-Key Motions:
-- Wings: Folded back, overlapping slightly, resting against the body.
-  Occasional very subtle wing twitch (once per loop, ~0.1s flutter then
-  settle back). This is NOT a full wing beat — just a micro-adjustment.
-- Antennae: Gentle swaying, feathery antennae drift left-right with slight
-  phase offset between the two. Speed ~0.8 Hz.
-- Body: Very subtle breathing — thorax expands/contracts at ~0.4 Hz.
-  Amplitude is tiny (1-2% scale pulse).
-- Legs: Planted firmly. Occasional single-leg micro-adjustment (shift weight)
-  once per loop cycle.
-- Abdomen: Slight rhythmic pulse synced with breathing.
-- Head: Occasional slow turn (look left, pause, look right) over 2 seconds.
+Key Bones:
+- L_wing / R_wing: folded flat, one brief twitch per cycle
+- Antennae: gentle swaying, phase offset between left/right
+- Body/thorax: subtle breathing pulse
+- Legs: planted, occasional weight shift
+- Head: slow left-right scanning
 
-Feel: Calm, alert, resting. Like a moth sitting on a wall at night.
+Feel: Calm, alert, resting.
 
 
 --- WALK_GROUND ---
@@ -57,81 +121,22 @@ Clip Name:      Walk_Ground
 Duration:       1.0-1.2 seconds (one full gait cycle, looping)
 Loop:           Yes
 
-Description:
-The moth walks on the ground using its six legs in a typical insect tripod
-gait. Wings remain folded. Movement is cautious and slightly awkward — moths
-are not natural walkers.
+Prompt:
+"A large moth walking on the ground using six legs in alternating tripod gait.
+ Wings remain folded against body, slightly bouncing with each step.
+ Movement is cautious and slightly awkward — moths are not natural walkers.
+ Forward lean about 10 degrees. Gentle vertical bob synced with leg plants.
+ Antennae point forward probing ahead. Abdomen drags slightly behind,
+ swaying with steps."
 
-Key Motions:
-- Legs: Alternating tripod gait (L1+R2+L3 then R1+L2+R3). Each leg lifts,
-  reaches forward, plants. Step height ~15% of body height. The gait should
-  feel tentative, not confident like an ant.
-- Wings: Folded against body, slightly bouncing with each step. NOT beating.
-  Very slight wing separation on each footfall impact.
-- Body: Forward lean ~10 degrees. Gentle vertical bob synced with leg plants
-  (~2 bobs per cycle). Slight lateral sway as weight shifts between tripod
-  groups.
-- Antennae: Pointing forward and slightly down, probing ahead. More active
-  than idle — faster oscillation.
-- Abdomen: Drags slightly behind the thorax, swaying with each step.
+Key Bones:
+- Legs: alternating tripod gait (L1+R2+L3 then R1+L2+R3)
+- L_wing / R_wing: folded, slight bounce on footfalls
+- Body: 10 degree forward lean, vertical bob with steps
+- Antennae: forward, active probing
+- Abdomen: trailing sway
 
 Feel: Awkward but functional. A flying creature forced to walk.
-
-
-========================================
-FLYING ANIMATIONS (wings active, airborne)
-========================================
-
---- IDLE_FLY ---
-Clip Name:      Idle_Fly
-Duration:       1.5-2.0 seconds (looping)
-Loop:           Yes
-
-Description:
-The moth hovers in place. Wings beat at a moderate frequency, sustaining
-altitude. The body hangs slightly below the wing plane, legs tucked.
-This is the moth's default state — it should feel natural and effortless.
-
-Key Motions:
-- Wings: Continuous beating at ~6-8 Hz (full up-down stroke cycle).
-  Downstroke is faster and more powerful than upstroke. Wing tips trace
-  a figure-8 pattern when viewed from the side. Full spread on downstroke,
-  slight fold on upstroke. Amplitude: ~60 degrees total arc.
-- Body: Gentle vertical bob synced with wingbeats but dampened — the body
-  bobs ~5% of wing amplitude. Slight forward tilt (~5 degrees).
-- Legs: Tucked close to body, dangling slightly. Occasional micro-twitch.
-  NOT extended like landing gear.
-- Antennae: Swept back slightly by airflow. Gentle flutter.
-- Abdomen: Hangs down slightly, subtle sway.
-- Head: Stable, looking forward. Occasional slow scan left/right.
-
-Feel: Effortless hovering. Graceful and ethereal. A creature in its element.
-
-
---- WALK_FLY (Move_Fly) ---
-Clip Name:      Walk_Fly
-Duration:       0.8-1.0 seconds (looping)
-Loop:           Yes
-
-Description:
-The moth flies forward with purpose. Wings beat harder and faster than hover.
-The body tilts forward into the direction of travel. This animation plays
-when the moth is moving while airborne.
-
-Key Motions:
-- Wings: Faster beat than Idle_Fly (~10-12 Hz). Stronger downstroke with
-  more pronounced forward sweep on the recovery. Wing amplitude increases
-  to ~75 degrees. The wingbeat has a more aggressive, propulsive quality.
-- Body: Tilted forward ~15-20 degrees (leaning into flight). Less vertical
-  bob than hover — the body is more streamlined.
-- Legs: Fully tucked and pressed against body. No dangling.
-- Antennae: Swept back along the body by airflow. Minimal movement.
-- Abdomen: Extended back, acting as a counterbalance. Slight streamlined
-  posture.
-- Head: Pointed forward, stable. No scanning — focused on destination.
-
-Feel: Purposeful forward flight. Fast and determined. The body language says
-"I'm going somewhere."
 
 
 ========================================
@@ -143,22 +148,16 @@ Clip Name:      Landing
 Duration:       0.5 seconds (one-shot, NOT looping)
 Loop:           No
 
-Description:
-The moth transitions from flight to ground. Wings fold, legs extend, body
-rotates from flight tilt to upright ground stance.
+Prompt:
+"A moth transitioning from flight to ground. Wings slow their beating and
+ spread wide for braking. Legs extend downward from tucked position. Body
+ rotates from flight tilt to upright. Wings fold down against body. Legs
+ plant with gentle bend on contact. Gentle settling motion like a leaf."
 
-Key Motions (in sequence):
-- 0.0-0.15s: Wings begin slowing beat frequency. Legs start extending
-  downward from tucked position. Body begins rotating from flight tilt
-  to upright.
-- 0.15-0.35s: Wings transition from beating to spreading wide (braking).
-  Legs fully extended below, reaching for ground. Body nearly upright.
-  Antennae shift from swept-back to forward-facing.
-- 0.35-0.50s: Wings fold down against body into resting position. Legs
-  plant on ground (slight bend on contact). Body settles into ground
-  idle posture. Gentle bounce on landing impact.
-
-Feel: Gentle descent. Like a leaf settling, not a bird landing.
+Sequence:
+- 0.0-0.15s: Wings slow beat, legs extend, body uprights
+- 0.15-0.35s: Wings spread wide (braking), legs reach for ground
+- 0.35-0.50s: Wings fold to rest, legs plant, body settles
 
 
 --- TAKEOFF ---
@@ -166,26 +165,20 @@ Clip Name:      Takeoff
 Duration:       0.5 seconds (one-shot, NOT looping)
 Loop:           No
 
-Description:
-Reverse of landing. The moth launches from ground into flight.
+Prompt:
+"A moth launching from the ground into flight. Wings snap open from folded
+ position. Legs push off and tuck. First wingbeat is extra large and powerful.
+ Body pitches forward into flight angle. Quick burst of energy that settles
+ into smooth hovering."
 
-Key Motions (in sequence):
-- 0.0-0.15s: Wings snap open from folded position. Legs tense and push
-  off ground. Body crouches slightly (pre-jump compression). Antennae
-  flick forward.
-- 0.15-0.30s: Powerful first wingbeat (extra large amplitude). Legs lift
-  off ground and begin tucking. Body pitches forward into flight angle.
-  Visible upward thrust.
-- 0.30-0.50s: Wing beat stabilizes to normal hover frequency. Legs fully
-  tucked. Body settles into hover tilt. Transition complete — blends
-  into Idle_Fly.
-
-Feel: Explosive but graceful. A burst of energy that quickly settles into
-the moth's natural flight rhythm.
+Sequence:
+- 0.0-0.15s: Wings snap open, legs tense, body crouches
+- 0.15-0.30s: Powerful first wingbeat, legs lift and tuck, body pitches forward
+- 0.30-0.50s: Wing beat stabilizes, legs tucked, blends to Idle_Fly
 
 
 ========================================
-OTHER ANIMATIONS
+DEATH ANIMATION
 ========================================
 
 --- DEATH ---
@@ -193,23 +186,15 @@ Clip Name:      Death
 Duration:       0.5 seconds (one-shot, NOT looping)
 Loop:           No
 
-Description:
-The moth dies and falls. Wings crumple, body goes limp, curls up on impact.
-Should work from both flying and grounded states (the MothStealth system
-handles the height transition; this animation handles the body collapse).
+Prompt:
+"A moth dying and falling. Wings jolt and freeze, then crumple asymmetrically.
+ Body stiffens then curls. Legs contract inward. Classic dead insect pose —
+ curled up on its side with legs pulled in and wings crumpled."
 
-Key Motions (in sequence):
-- 0.0-0.10s: Wings jolt and freeze mid-position (sudden loss of control).
-  Body stiffens momentarily. Antennae splay outward.
-- 0.10-0.30s: Wings crumple and fold irregularly (NOT symmetrically —
-  one wing folds faster than the other). Body begins to curl, legs
-  contract inward. Head drops.
-- 0.30-0.50s: Full collapse. Body curls into fetal-like position on its
-  side. Wings crumpled against body. Legs curled under. Classic dead
-  insect pose — on its back or side with legs pulled in.
-
-Feel: Sudden and tragic. A graceful creature losing all its elegance in
-an instant.
+Sequence:
+- 0.0-0.10s: Wings jolt and freeze, body stiffens
+- 0.10-0.30s: Wings crumple (one faster than other), body curls, legs pull in
+- 0.30-0.50s: Full collapse, dead insect pose
 
 
 ========================================
@@ -221,25 +206,45 @@ Controller: Assets/_InsectWars/Animations/HawkMoth.controller
 Parameters:
 - Speed (Float)       — planar velocity magnitude
 - IsMoving (Bool)     — true when unit has movement orders
-- IsFlying (Bool)     — true when MothStealth state is Flying
+- IsFlying (Bool)     — true when MothStealth state is Flying/Landing
 - Death (Trigger)     — triggers death animation
 
 State Machine:
-  Default → Idle_Ground
+  Default → Idle_Fly  (moth spawns airborne)
 
-  Idle_Ground → Walk_Ground:  IsMoving == true, IsFlying == false
-  Walk_Ground → Idle_Ground:  IsMoving == false, IsFlying == false
-
-  Idle_Ground → Takeoff:      IsFlying == true
-  Takeoff → Idle_Fly:         (has exit time = true, exitTime = 0.9)
-
-  Idle_Fly → Walk_Fly:        IsMoving == true, IsFlying == true
-  Walk_Fly → Idle_Fly:        IsMoving == false, IsFlying == true
+  Idle_Fly → Walk_Fly:        IsMoving == true
+  Walk_Fly → Idle_Fly:        IsMoving == false
 
   Idle_Fly → Landing:         IsFlying == false
   Landing → Idle_Ground:      (has exit time = true, exitTime = 0.9)
+
+  Idle_Ground → Walk_Ground:  IsMoving == true, IsFlying == false
+  Walk_Ground → Idle_Ground:  IsMoving == false
+
+  Idle_Ground → Takeoff:      IsFlying == true
+  Takeoff → Idle_Fly:         (has exit time = true, exitTime = 0.9)
 
   Any State → Death:          Death trigger (has exit time = false)
 
 Transition durations: 0.1-0.15s for locomotion blends.
 Takeoff/Landing are one-shot states with exit time.
+
+========================================
+BONE NAMING CONVENTION (REQUIRED)
+========================================
+
+The runtime code searches for these exact bone names
+(UnitAnimationDriver.FindRecursive):
+
+  Wings:  "L_wing"  / "R_wing"
+          "wing_L"  / "wing_R"
+          "LeftWing" / "RightWing"
+          "Wing_L"  / "Wing_R"
+
+  Head:   "head"
+  Chest:  "chest"
+  Tail:   "tail"
+  Legs:   "frontleg" / "R_frontleg"
+
+If the model uses different names, rename the bones in the FBX
+or add aliases to UnitAnimationDriver.Awake().
