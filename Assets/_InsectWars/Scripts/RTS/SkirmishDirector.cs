@@ -1272,6 +1272,8 @@ namespace InsectWars.RTS
             }
         }
 
+        static NavMeshData s_climberNavData;
+
         static void BuildClimberNavMesh(GameObject worldRoot)
         {
             var settings = NavMesh.CreateSettings();
@@ -1281,13 +1283,29 @@ namespace InsectWars.RTS
             settings.agentHeight = 0.8f;
             ClimberAgentTypeID = settings.agentTypeID;
 
-            var climberSurface = worldRoot.AddComponent<NavMeshSurface>();
-            climberSurface.agentTypeID = settings.agentTypeID;
-            climberSurface.collectObjects = CollectObjects.Children;
-            climberSurface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            climberSurface.BuildNavMesh();
+            var sources = new List<NavMeshBuildSource>();
+            var markups = new List<NavMeshBuildMarkup>();
+            NavMeshBuilder.CollectSources(
+                worldRoot.transform, ~0,
+                NavMeshCollectGeometry.PhysicsColliders,
+                0, markups, sources);
 
-            Debug.Log($"[Insect Wars] Climber NavMesh baked — agentTypeID={settings.agentTypeID}, slope=85°");
+            var bounds = new Bounds(Vector3.zero, Vector3.one * 500f);
+
+            s_climberNavData = NavMeshBuilder.BuildNavMeshData(
+                settings, sources, bounds,
+                worldRoot.transform.position, worldRoot.transform.rotation);
+
+            if (s_climberNavData != null)
+            {
+                s_climberNavData.name = "ClimberNavMesh";
+                NavMesh.AddNavMeshData(s_climberNavData);
+                Debug.Log($"[Insect Wars] Climber NavMesh baked — agentTypeID={settings.agentTypeID}, slope=85°, sources={sources.Count}");
+            }
+            else
+            {
+                Debug.LogError("[Insect Wars] Failed to build climber NavMesh!");
+            }
         }
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
