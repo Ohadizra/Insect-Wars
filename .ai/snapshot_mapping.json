@@ -887,6 +887,12 @@
       "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
       "content": "I have fixed the disorientation and animation issues for the Stick Spy unit.\n\n### Problems identified:\n1.  **Disorientation**: The `UnitAnimationDriver` was overriding the model's base orientation with a world heading, which caused the Stick model (which requires a -90° X-axis fix) to point vertically into the ground.\n2.  **No Animation**: The Stick Spy FBX model from the Meshy AI generation contains no actual `AnimationClip`s (Clip Count: 0). The current system was attempting to play a non-existent animation, leaving the unit static.\n\n### Changes made to `UnitAnimationDriver.cs`:\n- **Orientation Fix**: The script now stores the `_baseLocalRot` (which includes the -90° X fix from the prefab) and applies it to the world heading in the `Update` loop. This ensures the stick unit remains flat and oriented correctly relative to its movement direction.\n- **Procedural Walking Gait**: Since the FBX has no built-in animations, I implemented a custom `ApplyStickLoop` procedural gait. This creates a realistic \"stick insect\" motion using:\n    - **Pitch and Yaw swaying**: Subtle wiggling of the body as it moves.\n    - **Rhythmic Bobbing**: A vertical cycle to simulate steps.\n    - **Breathing/Swaying Idle**: A slow, natural swaying motion while standing still.\n- **Ground Clearance**: Added a `1.55m` height offset for the Stick unit (which is 3m tall with a center-pivot) to prevent its lower half from clipping into the terrain.\n\nThe unit should now look correctly oriented and exhibit a procedural walking animation while moving.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "c23785ae-c675-49fe-afdf-0de78f43e724",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "I will search for the newly added animation clip or FBX file, update the **StickSpy.controller** to use this clip in its Walk state, and then modify the **UnitAnimationDriver** to prioritize the animator over the procedural walking gait.\n\nWould you like me to continue with this?",
+      "snapshot_message_type": 1
     }
   ]
 }

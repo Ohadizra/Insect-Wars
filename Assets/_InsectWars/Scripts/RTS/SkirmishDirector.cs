@@ -722,7 +722,7 @@ namespace InsectWars.RTS
         void BuildTerrain(Transform parent, float mapHalfExtent)
         {
             float size = mapHalfExtent * 2f;
-            int resolution = 128;
+            int resolution = 256;
 
             TerrainData terrainData = new TerrainData();
             terrainData.heightmapResolution = resolution + 1;
@@ -788,12 +788,12 @@ namespace InsectWars.RTS
                             }
                             else
                             {
-                                // Steep impassable cliff
-                                const float cliffWidth = 0.008f;
+                                // Steep cliff — climbable only by high-slope agents (StickSpy)
+                                const float cliffWidth = 0.025f;
                                 if (dist < hg.radius + cliffWidth)
                                 {
                                     float t = (dist - hg.radius) / cliffWidth;
-                                    maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, Mathf.Pow(t, 4)));
+                                    maxH = Mathf.Max(maxH, Mathf.Lerp(hg.heightFraction, 0f, Mathf.Pow(t, 2)));
                                 }
                             }
                         }
@@ -1275,17 +1275,19 @@ namespace InsectWars.RTS
         static void BuildClimberNavMesh(GameObject worldRoot)
         {
             var settings = NavMesh.CreateSettings();
-            settings.agentSlope = 75f;
-            settings.agentClimb = 2f;
-            settings.agentRadius = 0.3f;
-            settings.agentHeight = 0.9f;
+            settings.agentSlope = 85f;
+            settings.agentClimb = 2.5f;
+            settings.agentRadius = 0.25f;
+            settings.agentHeight = 0.8f;
             ClimberAgentTypeID = settings.agentTypeID;
 
             var climberSurface = worldRoot.AddComponent<NavMeshSurface>();
             climberSurface.agentTypeID = settings.agentTypeID;
             climberSurface.collectObjects = CollectObjects.Children;
-            climberSurface.useGeometry = NavMeshCollectGeometry.RenderMeshes;
+            climberSurface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
             climberSurface.BuildNavMesh();
+
+            Debug.Log($"[Insect Wars] Climber NavMesh baked — agentTypeID={settings.agentTypeID}, slope=85°");
         }
 
         public static InsectUnit SpawnUnit(Vector3 pos, Team team, UnitArchetype arch)
