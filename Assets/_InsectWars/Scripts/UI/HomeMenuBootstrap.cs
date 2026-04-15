@@ -33,7 +33,7 @@ namespace InsectWars.UI
 
         Canvas _canvas;
         Font _font;
-        GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelSettings, _panelAbout;
+        GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelLearning, _panelSettings, _panelAbout;
         Text _volValueLabel, _diffLabelInMapSelect;
 
         void Awake()
@@ -203,7 +203,7 @@ titleGo.transform.SetParent(box.transform, false);
 
             float y = -310f;
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
-DarkButton(box.transform, "CODEX", ref y, () => ShowHow());
+DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
@@ -239,7 +239,8 @@ AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200)
             DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
 
             BuildMapSelectPanel();
-            _panelHow = MakePanel("HowPanel");
+            BuildLearningPanel();
+            BuildHowToPlayPanel();
         }
 
         void BuildMapSelectPanel()
@@ -254,11 +255,59 @@ AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200)
             {
                 var mapName = m.displayName;
                 DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
+                    GameSession.SetLearningMode(false);
                     GameSession.SetSelectedMap(m);
                     SceneLoader.LoadSkirmishDemo();
                 });
             }
 DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
+        }
+
+        void BuildLearningPanel()
+        {
+            _panelLearning = MakePanel("LearningPanel");
+            var box = DarkBox(_panelLearning.transform, 550, 550);
+            PanelHeader(box.transform, "LEARNING", -50f);
+            float y = -150f;
+            DarkButton(box.transform, "HOW TO PLAY", ref y, () => ShowHow());
+            DarkButton(box.transform, "LEARNING MAP", ref y, () =>
+            {
+                GameSession.SetLearningMode(true);
+                GameSession.SetSelectedMap(SkirmishMapPresets.GetLearningMap());
+                SceneLoader.LoadSkirmishDemo();
+            });
+            DarkButton(box.transform, "BACK", ref y, () => ShowMain());
+        }
+
+        void BuildHowToPlayPanel()
+        {
+            _panelHow = MakePanel("HowPanel");
+            var box = DarkBox(_panelHow.transform, 700, 750);
+            PanelHeader(box.transform, "HOW TO PLAY", -30f);
+
+            const string howText =
+                "<b>CONTROLS</b>\n" +
+                "  Left-click to select units.  Right-click to move or attack.\n" +
+                "  Drag to box-select.  Ctrl+# to assign control groups.\n\n" +
+                "<b>ECONOMY</b>\n" +
+                "  Workers gather Calories from apple deposits.\n" +
+                "  Spend Calories to train units or construct buildings.\n\n" +
+                "<b>BUILDINGS</b>\n" +
+                "  Ant Nest — trains Workers and provides supply.\n" +
+                "  Underground — trains Fighters, Beetles, and Black Widows.\n" +
+                "  Root Cellar — provides additional supply capacity.\n\n" +
+                "<b>COMBAT</b>\n" +
+                "  Fighters (Mantis) — fast melee attackers.\n" +
+                "  Beetles (Bombardier) — ranged acid sprayers.\n" +
+                "  Black Widow — elite melee assassin with poison and web net.\n\n" +
+                "<b>VICTORY</b>\n" +
+                "  Destroy all enemy buildings and their hive to win.";
+
+            var body = Txt(box.transform, howText, 18, ColTitle, TextAnchor.UpperLeft);
+            AnchorTopCenter(body.rectTransform, new Vector2(0, -100f), new Vector2(600, 500));
+
+            float y = -650f;
+            DarkButton(box.transform, "BACK", ref y, () => ShowLearning());
         }
 
         // ── Helpers ──
@@ -350,6 +399,7 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
         void ShowMain() => SetActivePanels(_panelMain);
         void ShowPlay() => SetActivePanels(_panelPlay);
         void ShowHow() => SetActivePanels(_panelHow);
+        void ShowLearning() => SetActivePanels(_panelLearning);
         void ShowSettings() => SetActivePanels(_panelSettings);
         void ShowAbout() => SetActivePanels(_panelAbout);
         void ShowMapSelect() => SetActivePanels(_panelMapSelect);
@@ -360,6 +410,7 @@ DarkButton(box.transform, "BACK", ref y, () => ShowPlay());
             if (_panelPlay) _panelPlay.SetActive(_panelPlay == on);
             if (_panelMapSelect) _panelMapSelect.SetActive(_panelMapSelect == on);
             if (_panelHow) _panelHow.SetActive(_panelHow == on);
+            if (_panelLearning) _panelLearning.SetActive(_panelLearning == on);
             if (_panelSettings) _panelSettings.SetActive(_panelSettings == on);
             if (_panelAbout) _panelAbout.SetActive(_panelAbout == on);
         }

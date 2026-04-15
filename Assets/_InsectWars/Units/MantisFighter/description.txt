@@ -1,0 +1,79 @@
+========================================
+  MANTIS FIGHTER
+========================================
+
+OVERVIEW
+--------
+Display Name:   Mantis
+Archetype:      UnitArchetype.BasicFighter
+Role:           Fast melee assault unit. Closes distance quickly and
+                locks onto enemies in close combat. The primary frontline
+                fighter of the colony.
+
+ECONOMY
+-------
+Calorie Cost:       100
+Build Time:         18 seconds
+Colony Capacity:    2 (supply cost per unit)
+Produced At:        Underground (BuildingType.Underground)
+
+COMBAT STATS
+------------
+Max HP:             38
+Attack Damage:      9
+Attack Range:       1.55 (melee)
+Attack Cooldown:    0.95 seconds
+Move Speed:         5.4 (fastest unit)
+Vision Radius:      12
+Attack Type:        Melee — locks NavMesh agent position during attack
+                    (agent.updatePosition = false). Faces target and
+                    applies full damage to a single enemy per hit.
+                    Unlocks movement when target moves beyond leash
+                    distance (range x 1.25).
+
+SPECIAL ABILITIES
+-----------------
+- Melee Lock:       When attacking, the Mantis stops its NavMesh agent
+                    and locks in place to deliver consistent melee hits.
+                    This prevents jittering during close-range combat.
+- High Speed:       At 5.4 move speed, the Mantis is the fastest unit
+                    in the game, able to chase down fleeing enemies or
+                    rapidly reposition.
+- No Gathering:     Cannot gather resources (canGather = false).
+
+VISUAL ASPECTS
+--------------
+Art Source:      Meshy AI model — "Ironclad Mantis Automaton"
+                Assets/_InsectWars/Units/MantisFighter/Art/
+                Meshy_AI_Ironclad_Mantis_Autom_quadruped/
+Prefab:         Assets/_InsectWars/Prefabs/MantisFighter.prefab
+                (referenced by DefaultVisualLibrary.meleePrefab)
+Team Colors:    Neutral/white base color. Team tint applied at spawn via
+                MaterialPropertyBlock (_BaseColor / _Color on all renderers).
+Materials:      1-2 URP/Lit materials per model.
+
+ANIMATIONS
+----------
+Idle:       Default standing pose with an extended procedural idle loop.
+            The Mantis has a longer procedural idle animation compared
+            to other units, giving it a distinctive resting posture
+            when stationary and not in combat.
+
+Walk:       Quadruped locomotion cycle. Embedded in the source FBX as
+            "Walking_withSkin". Driven by the "Speed" (float) and
+            "IsMoving" (bool) animator parameters. Blends based on the
+            unit's current planar velocity. At 5.4 speed, the walk
+            cycle plays noticeably faster than other units.
+
+Attack:     Triggered via the "Attack" animator trigger. Melee attack
+            duration is 0.35 seconds. The Mantis faces its target and
+            performs a rapid striking slash. Damage (9) is applied once
+            per cooldown cycle (0.95s). During attack, the unit locks
+            its position and rotates to face the target.
+
+Death:      Triggered via the "Death" animator trigger when the unit
+            is killed. Plays a collapse/fall animation before the
+            GameObject is destroyed.
+
+Animator Controller: Assets/_InsectWars/Animations/MantisFighter.controller
+States: Idle, Walk (Attack/Death driven by parameters/triggers)

@@ -22,6 +22,7 @@ namespace InsectWars.RTS
         {
             if (_state != MatchState.Playing) return;
             if (PauseController.IsPaused) return;
+            if (Core.GameSession.IsLearningMode) return;
 
             if (_graceTimer > 0f)
             {

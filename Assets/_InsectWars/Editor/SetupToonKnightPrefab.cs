@@ -54,6 +54,17 @@ namespace InsectWars.Editor
         const string BeetleControllerPath = ControllerDir + "/BombardierBeetle.controller";
         const string BeetlePrefabPath = PrefabDir + "/BombardierBeetle.prefab";
 
+        // --- Black Widow paths ---
+        const string WidowModelPath = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_0415065353_texture_fbx/Meshy_AI_Crimson_Widow_0415065353_texture.fbx";
+        const string WidowTexDir = "Assets/_InsectWars/Units/Black Widow/Meshy_AI_Crimson_Widow_0415065353_texture_fbx";
+        const string WidowBaseTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture.png";
+        const string WidowNormalTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_normal.png";
+        const string WidowEmissionTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_emission.png";
+        const string WidowRoughnessTexPath = WidowTexDir + "/Meshy_AI_Crimson_Widow_0415065353_texture_roughness.png";
+        const string WidowMaterialPath = PrefabDir + "/BlackWidowMat.mat";
+        const string WidowControllerPath = ControllerDir + "/BlackWidow.controller";
+        const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
+
         // --- Ant Nest (Hive) paths ---
         const string NestModelPath = "Assets/Insects Art/Stractures/Ants nest/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture_fbx/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture.fbx";
         const string NestTexDir = "Assets/Insects Art/Stractures/Ants nest/Meshy_AI_ant_s_nest_rts_buildi_0404152548_texture_fbx";
@@ -74,6 +85,7 @@ namespace InsectWars.Editor
             SetupMantisFighter();
             SetupAntWorker();
             SetupBombardierBeetle();
+            SetupBlackWidow();
             SetupAntNest();
         }
 
@@ -188,6 +200,222 @@ namespace InsectWars.Editor
             AssetDatabase.Refresh();
             Debug.Log("[Insect Wars] Ant nest setup complete! " +
                       "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        [MenuItem("Insect Wars/Setup Black Widow")]
+        public static void SetupBlackWidow()
+        {
+            if (!ValidateAssets(WidowModelPath))
+                return;
+
+            FixWidowImportSettings();
+
+            var controller = BuildBlackWidowController();
+            var widowMaterial = BuildWidowMaterial();
+            var prefab = BuildPrefab(WidowModelPath, WidowPrefabPath, "BlackWidow",
+                controller, Vector3.one * 2f,
+                agentHeight: 0.7f, agentRadius: 0.5f, agentSpeed: 4.8f,
+                colCenter: new Vector3(0f, 0.35f, 0f), colRadius: 0.5f, colHeight: 0.7f,
+                overrideMaterial: widowMaterial,
+                visualRotation: new Vector3(-90f, 0f, 0f));
+
+            AddTeamColorMarker(prefab);
+
+            UpdateLibrary(blackWidowPrefab: prefab);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Insect Wars] Black Widow setup complete! " +
+                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
+        }
+
+        static void AddTeamColorMarker(GameObject prefab)
+        {
+            var contents = PrefabUtility.LoadPrefabContents(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefab));
+            var visual = contents.transform.Find("Visual");
+            if (visual == null) visual = contents.transform;
+
+            var existing = visual.Find("TeamMarker");
+            if (existing != null) Object.DestroyImmediate(existing.gameObject);
+
+            var marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = "TeamMarker";
+            Object.DestroyImmediate(marker.GetComponent<Collider>());
+            marker.transform.SetParent(visual, false);
+            marker.transform.localPosition = new Vector3(0f, 0.35f, -0.15f);
+            marker.transform.localScale = new Vector3(0.25f, 0.15f, 0.25f);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null) sh = Shader.Find("Standard");
+            var mat = new Material(sh);
+            mat.name = "TeamMarkerMat";
+            mat.color = Color.white;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", Color.white);
+            if (mat.HasProperty("_Smoothness"))
+                mat.SetFloat("_Smoothness", 0.8f);
+            if (mat.HasProperty("_Metallic"))
+                mat.SetFloat("_Metallic", 0.3f);
+
+            var emissionColor = new Color(0.5f, 0.5f, 0.5f);
+            if (mat.HasProperty("_EmissionColor"))
+            {
+                mat.SetColor("_EmissionColor", emissionColor);
+                mat.EnableKeyword("_EMISSION");
+            }
+
+            marker.GetComponent<Renderer>().sharedMaterial = mat;
+
+            PrefabUtility.SaveAsPrefabAsset(contents, WidowPrefabPath);
+            PrefabUtility.UnloadPrefabContents(contents);
+        }
+
+        static void FixWidowImportSettings()
+        {
+            var importer = AssetImporter.GetAtPath(WidowModelPath) as ModelImporter;
+            if (importer == null) return;
+
+            bool dirty = false;
+
+            if (importer.materialImportMode != ModelImporterMaterialImportMode.None)
+            {
+                importer.materialImportMode = ModelImporterMaterialImportMode.None;
+                dirty = true;
+            }
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
+                dirty = true;
+            }
+            if (Mathf.Abs(importer.globalScale - 80f) > 0.01f)
+            {
+                importer.globalScale = 80f;
+                dirty = true;
+            }
+            if (importer.animationType != ModelImporterAnimationType.Generic)
+            {
+                importer.animationType = ModelImporterAnimationType.Generic;
+                dirty = true;
+            }
+            if (importer.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel)
+            {
+                importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+                dirty = true;
+            }
+
+            var clips = importer.clipAnimations;
+            if (clips == null || clips.Length == 0)
+            {
+                var defaultClips = importer.defaultClipAnimations;
+                if (defaultClips.Length > 0)
+                {
+                    foreach (var c in defaultClips)
+                    {
+                        c.loopTime = true;
+                        c.loopPose = true;
+                    }
+                    importer.clipAnimations = defaultClips;
+                    dirty = true;
+                }
+            }
+            else
+            {
+                bool clipsChanged = false;
+                foreach (var c in clips)
+                {
+                    if (!c.loopTime) { c.loopTime = true; clipsChanged = true; }
+                    if (!c.loopPose) { c.loopPose = true; clipsChanged = true; }
+                }
+                if (clipsChanged)
+                {
+                    importer.clipAnimations = clips;
+                    dirty = true;
+                }
+            }
+
+            if (dirty)
+            {
+                importer.SaveAndReimport();
+                Debug.Log("[Insect Wars] Fixed Black Widow FBX import settings (scale=80, Generic rig, avatar, looping clips).");
+            }
+        }
+
+        static Material BuildWidowMaterial()
+        {
+            EnsureDirectory(PrefabDir);
+
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null)
+            {
+                Debug.LogError("[Insect Wars] URP Lit shader not found.");
+                return null;
+            }
+
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(WidowMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(sh);
+                AssetDatabase.CreateAsset(mat, WidowMaterialPath);
+            }
+            else
+            {
+                mat.shader = sh;
+            }
+
+            var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowBaseTexPath);
+            if (baseTex != null)
+                mat.SetTexture("_BaseMap", baseTex);
+
+            var normalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowNormalTexPath);
+            if (normalTex != null)
+            {
+                mat.SetTexture("_BumpMap", normalTex);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+
+            var emissionTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowEmissionTexPath);
+            if (emissionTex != null)
+            {
+                mat.SetTexture("_EmissionMap", emissionTex);
+                mat.SetColor("_EmissionColor", Color.white * 0.5f);
+                mat.EnableKeyword("_EMISSION");
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
+
+            var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(WidowRoughnessTexPath);
+            if (roughnessTex != null)
+                mat.SetFloat("_Smoothness", 0.4f);
+
+            mat.SetFloat("_Metallic", 0.15f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static AnimatorController BuildBlackWidowController()
+        {
+            EnsureDirectory(ControllerDir);
+            DeleteIfExists(WidowControllerPath);
+
+            var c = AnimatorController.CreateAnimatorControllerAtPath(WidowControllerPath);
+            AddStandardParameters(c);
+            c.AddParameter("WebCast", AnimatorControllerParameterType.Trigger);
+
+            var sm = c.layers[0].stateMachine;
+
+            var walkClip = ExtractClip(WidowModelPath);
+
+            var idleState = sm.AddState("Idle");
+            idleState.motion = walkClip;
+            idleState.speed = 0f;
+            sm.defaultState = idleState;
+
+            var walkState = sm.AddState("Walk");
+            walkState.motion = walkClip;
+
+            AddLocomotionTransitions(idleState, walkState);
+
+            EditorUtility.SetDirty(c);
+            return c;
         }
 
         static void FixNestImportSettings()
@@ -792,7 +1020,7 @@ namespace InsectWars.Editor
             AnimatorController controller, Vector3 visualScale,
             float agentHeight, float agentRadius, float agentSpeed,
             Vector3 colCenter, float colRadius, float colHeight,
-            Material overrideMaterial = null)
+            Material overrideMaterial = null, Vector3? visualRotation = null)
         {
             EnsureDirectory(PrefabDir);
 
@@ -803,6 +1031,8 @@ namespace InsectWars.Editor
             visualGo.name = "Visual";
             visualGo.transform.SetParent(root.transform, false);
             visualGo.transform.localScale = visualScale;
+            if (visualRotation.HasValue)
+                visualGo.transform.localEulerAngles = visualRotation.Value;
 
             var anim = visualGo.GetComponent<Animator>();
             if (anim == null) anim = visualGo.AddComponent<Animator>();
@@ -932,7 +1162,8 @@ namespace InsectWars.Editor
         }
 
         static void UpdateLibrary(GameObject workerPrefab = null, GameObject meleePrefab = null,
-            GameObject rangedPrefab = null, GameObject hivePrefab = null)
+            GameObject rangedPrefab = null, GameObject hivePrefab = null,
+            GameObject blackWidowPrefab = null)
         {
             EnsureDirectory(LibraryDir);
 
@@ -947,6 +1178,7 @@ namespace InsectWars.Editor
             if (meleePrefab != null) lib.meleePrefab = meleePrefab;
             if (rangedPrefab != null) lib.rangedPrefab = rangedPrefab;
             if (hivePrefab != null) lib.hivePrefab = hivePrefab;
+            if (blackWidowPrefab != null) lib.blackWidowPrefab = blackWidowPrefab;
 
             EditorUtility.SetDirty(lib);
         }

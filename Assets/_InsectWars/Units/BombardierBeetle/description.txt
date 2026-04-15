@@ -1,0 +1,98 @@
+========================================
+  BOMBARDIER BEETLE
+========================================
+
+OVERVIEW
+--------
+Display Name:   Beetle / Bombardier
+Archetype:      UnitArchetype.BasicRanged
+Role:           Ranged area-of-effect attacker. Sprays a damaging cone
+                from its rear, hitting multiple enemies at once. The
+                tankiest unit with the highest HP, but slower than the
+                Mantis and more expensive to produce.
+
+ECONOMY
+-------
+Calorie Cost:       100
+Build Time:         22 seconds
+Colony Capacity:    3 (supply cost per unit)
+Produced At:        Underground (BuildingType.Underground)
+
+COMBAT STATS
+------------
+Max HP:             42 (highest of all units)
+Attack Damage:      7 (base, per target hit in cone)
+Attack Range:       8.0 (ranged)
+Attack Cooldown:    0.82 seconds (fastest attack speed)
+Move Speed:         4.2
+Vision Radius:      12
+NavMesh Stop Dist:  6.8 (attackRange x 0.85)
+Attack Type:        Cone spray — fires a 35-degree half-angle cone from
+                    the spray origin (tail/rear). Damages ALL enemy units
+                    within the cone area. Damage falls off with distance:
+                    100% at origin, 60% at max range (linear interpolation).
+                    Uses OverlapSphere (radius = attackRange) then filters
+                    by cone angle and team.
+
+SPRAY ATTACK DETAILS
+--------------------
+Cone Half-Angle:    35 degrees
+Damage Falloff:     Lerp(1.0, 0.6, distance/range)
+                    - Point blank: 7 damage (full)
+                    - Max range (8 units): 4.2 damage (60%)
+Particle Burst:     50 particles (5 bursts of 10, spaced 0.05s apart)
+Particle Lifetime:  0.45 seconds (0.9x - 1.4x variation)
+Particle Speed:     9 (0.9x - 1.5x variation)
+Particle Cone:      26.25 degrees (visual cone = 35 x 0.75)
+VFX Duration:       1.2 seconds (auto-destroy)
+vs Buildings:       Does NOT use spray cone — applies direct single-target
+                    damage (attackDamage) per hit, same as melee units.
+
+SPECIAL ABILITIES
+-----------------
+- Area Damage:      The spray cone can hit multiple enemies simultaneously,
+                    making the Bombardier effective against clustered groups.
+- Rear Weapon:      The spray originates from the tail bone (or model rear).
+                    During attack, the Bombardier faces AWAY from the target
+                    to aim its rear weapon, unlike melee units which face
+                    toward the target.
+- Highest HP:       At 42 HP, can absorb more punishment than other units.
+- No Gathering:     Cannot gather resources (canGather = false).
+
+VISUAL ASPECTS
+--------------
+Art Source:      Meshy AI model — "Bombardier Beetle"
+                Assets/_InsectWars/Units/BombardierBeetle/Art/
+                Meshy_AI_Bombardier_Beetles_quadruped/
+Prefab:         Assets/_InsectWars/Prefabs/BombardierBeetle.prefab
+                (referenced by DefaultVisualLibrary.rangedPrefab)
+Team Colors:    Neutral/white base color. Team tint applied at spawn via
+                MaterialPropertyBlock (_BaseColor / _Color on all renderers).
+Materials:      1-2 URP/Lit materials per model.
+Spray VFX:      Procedurally generated ParticleSystem at spray origin.
+                Cone-shaped emission matching the attack direction.
+
+ANIMATIONS
+----------
+Idle:       Default standing pose. The unit plays a looping idle animation
+            when stationary and not performing any action.
+
+Walk:       Quadruped locomotion cycle. Embedded in the source FBX as
+            "Walking_withSkin". Driven by the "Speed" (float) and
+            "IsMoving" (bool) animator parameters. Blends based on the
+            unit's current planar velocity.
+
+Attack:     Triggered via the "Attack" animator trigger. Spray attack
+            duration is 0.50 seconds (longer than melee's 0.35s). The
+            Bombardier rotates to face AWAY from the target, aiming its
+            rear toward the enemy. The spray origin is determined by
+            finding the tail bone; if no tail bone exists, it falls back
+            to an offset behind the model root. A burst of 50 particles
+            fires in a cone while area damage is applied.
+
+Death:      Triggered via the "Death" animator trigger when the unit
+            is killed. Plays a collapse/fall animation before the
+            GameObject is destroyed.
+
+Animator Controller: Assets/_InsectWars/Animations/BombardierBeetle.controller
+States: Idle, Walk (Attack/Death driven by parameters/triggers)

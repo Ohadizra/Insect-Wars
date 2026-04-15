@@ -1,0 +1,87 @@
+========================================
+  ANT WORKER
+========================================
+
+OVERVIEW
+--------
+Display Name:   Worker
+Archetype:      UnitArchetype.Worker
+Role:           Economic backbone of the colony. Gathers calories from
+                rotting fruit nodes, deposits them at the hive or ant nests,
+                and constructs new buildings. Weak in combat.
+
+ECONOMY
+-------
+Calorie Cost:       50
+Build Time:         10 seconds
+Colony Capacity:    1 (supply cost per unit)
+Produced At:        Hive (HiveDeposit) or Ant Nest (BuildingType.AntNest)
+
+COMBAT STATS
+------------
+Max HP:             35
+Attack Damage:      4
+Attack Range:       1.55 (melee)
+Attack Cooldown:    0.95 seconds
+Move Speed:         4.0
+Vision Radius:      12
+Attack Type:        Melee — locks NavMesh agent position during attack,
+                    faces target, applies single-target damage per hit.
+                    Weakest combat unit; should avoid fights.
+
+SPECIAL ABILITIES
+-----------------
+- Gathering:    Harvests 10 calories per tick (every 5 seconds) from
+                RottingFruitNode. Must be within gather range (fruit visual
+                radius + 1.5 units). Cargo stored in WorkerInventory,
+                then deposited at hive or nearest operational ant nest.
+- Auto-gather:  Idle workers scan every 0.5s for fruit within 30 units.
+                After completing a move order, workers scan within 6 units
+                and auto-gather if fruit is nearby.
+- Construction: Can be ordered to build structures. Walks to build site
+                and ticks construction progress on the target building.
+- Deposit:      Returns gathered calories to the nearest valid deposit
+                point (player hive or operational AntNest).
+
+VISUAL ASPECTS
+--------------
+Art Source:      Meshy AI model — "Iron Ant Vanguard"
+                Assets/_InsectWars/Units/AntWorker/Art/
+                Meshy_AI_Iron_Ant_Vanguard_0404124845_texture_fbx 1/
+Prefab:         Assets/_InsectWars/Prefabs/AntWorker.prefab
+                (referenced by DefaultVisualLibrary.workerPrefab)
+Team Colors:    Neutral/white base color. Team tint applied at spawn via
+                MaterialPropertyBlock (_BaseColor / _Color on all renderers).
+Materials:      1-2 URP/Lit materials per model.
+
+ANIMATIONS
+----------
+Idle:       Default standing pose. The unit plays a looping idle animation
+            when stationary and not performing any action.
+
+Walk:       Quadruped locomotion cycle. Embedded in the source FBX as
+            "Walking_withSkin". Driven by the "Speed" (float) and
+            "IsMoving" (bool) animator parameters. Blends based on the
+            unit's current planar velocity.
+
+Attack:     Triggered via the "Attack" animator trigger. Melee attack
+            duration is 0.35 seconds. The unit faces the target and
+            performs a short striking motion. Damage is applied once
+            per cooldown cycle (0.95s).
+
+Gathering:  Controlled by the "Gathering" (bool) animator parameter.
+            Set to true when the worker is actively harvesting at a
+            fruit node and the NavMesh agent has stopped. The worker
+            performs a repetitive harvesting motion at the fruit.
+
+Build:      Intended "Build" (bool) animator parameter. Activated when
+            the worker is constructing a building. Currently defined in
+            UnitAnimationDriver but not yet wired into the animator
+            controller states.
+
+Death:      Triggered via the "Death" animator trigger when the unit
+            is killed. Plays a collapse/fall animation before the
+            GameObject is destroyed.
+
+Animator Controller: Assets/_InsectWars/Animations/AntWorker.controller
+States: Idle, Walk (Attack/Gathering/Death driven by parameters/triggers)

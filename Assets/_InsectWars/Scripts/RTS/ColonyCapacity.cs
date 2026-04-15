@@ -22,12 +22,15 @@ namespace InsectWars.RTS
             UnitArchetype.Worker => 1,
             UnitArchetype.BasicFighter => 2,
             UnitArchetype.BasicRanged => 3,
+            UnitArchetype.BlackWidow => 5,
             _ => 1
         };
 
         /// <summary>Total CC provided by alive hive + operational buildings for a team.</summary>
         public static int GetCap(Team team)
         {
+            if (team == Team.Player && Core.GameSession.IsLearningMode) return MaxCap;
+
             int cap = 0;
 
             // Main hive always provides base CC

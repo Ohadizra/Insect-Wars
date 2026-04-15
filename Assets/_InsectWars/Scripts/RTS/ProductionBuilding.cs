@@ -91,7 +91,7 @@ namespace InsectWars.RTS
 
         public UnitArchetype[] ProducibleUnits => _type switch
         {
-            BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged },
+            BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.BlackWidow },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
             _ => System.Array.Empty<UnitArchetype>()
         };
@@ -100,6 +100,7 @@ namespace InsectWars.RTS
         {
             UnitArchetype.BasicFighter => 100,
             UnitArchetype.BasicRanged => 100,
+            UnitArchetype.BlackWidow => 250,
             UnitArchetype.Worker => 50,
             _ => 50
         };
@@ -108,6 +109,7 @@ namespace InsectWars.RTS
         {
             UnitArchetype.BasicFighter => "Mantis",
             UnitArchetype.BasicRanged => "Beetle",
+            UnitArchetype.BlackWidow => "Black Widow",
             UnitArchetype.Worker => "Worker",
             _ => "Unit"
         };
@@ -126,6 +128,7 @@ namespace InsectWars.RTS
             UnitArchetype.Worker => 10f,
             UnitArchetype.BasicFighter => 18f,
             UnitArchetype.BasicRanged => 22f,
+            UnitArchetype.BlackWidow => 35f,
             _ => 15f
         };
 

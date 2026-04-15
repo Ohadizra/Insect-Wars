@@ -15,6 +15,7 @@ namespace InsectWars.RTS
         static readonly int Gathering = Animator.StringToHash("Gathering");
         static readonly int Build = Animator.StringToHash("Build");
         static readonly int Death = Animator.StringToHash("Death");
+        static readonly int WebCast = Animator.StringToHash("WebCast");
 
         [SerializeField] Transform modelRoot;
         [SerializeField] Animator animator;
@@ -44,7 +45,7 @@ namespace InsectWars.RTS
         bool _dying;
 
         // Parameter existence cache
-        bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath;
+        bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath, _hasWebCast;
 
         void Awake()
         {
@@ -68,6 +69,7 @@ namespace InsectWars.RTS
                     if (p.nameHash == Build) _hasBuild = true;
                     if (p.nameHash == Attack) _hasAttack = true;
                     if (p.nameHash == Death) _hasDeath = true;
+                    if (p.nameHash == WebCast) _hasWebCast = true;
                 }
             }
 
@@ -332,8 +334,20 @@ namespace InsectWars.RTS
         {
             if (_hasAttack)
                 animator.SetTrigger(Attack);
-            bool isSpray = _unit != null && _unit.Archetype == UnitArchetype.BasicRanged;
-            _attackAnimDuration = isSpray ? 0.5f : 0.35f;
+            _attackAnimDuration = _unit != null ? _unit.Archetype switch
+            {
+                UnitArchetype.BasicRanged => 0.5f,
+                UnitArchetype.BlackWidow => 0.4f,
+                _ => 0.35f
+            } : 0.35f;
+            _attackAnimT = _attackAnimDuration;
+        }
+
+        public void NotifyWebCast()
+        {
+            if (_hasWebCast)
+                animator.SetTrigger(WebCast);
+            _attackAnimDuration = 0.5f;
             _attackAnimT = _attackAnimDuration;
         }
 

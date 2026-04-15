@@ -45,6 +45,7 @@ namespace InsectWars.Data
             public GameObject workerPrefab;
             public GameObject meleePrefab;
             public GameObject rangedPrefab;
+            public GameObject blackWidowPrefab;
 
             [Header("Buildings")]
             public GameObject hivePrefab;
@@ -95,6 +96,7 @@ namespace InsectWars.Data
                 UnitArchetype.Worker => workerPrefab,
                 UnitArchetype.BasicFighter => meleePrefab,
                 UnitArchetype.BasicRanged => rangedPrefab,
+                UnitArchetype.BlackWidow => blackWidowPrefab,
                 _ => null
             };
         }

@@ -116,7 +116,22 @@ namespace InsectWars.RTS
             EnemyResources.Reset();
             BuildWorldPreview();
 
-            // Workers spawn in a close ring around the hive building
+            if (GameSession.IsLearningMode)
+            {
+                SpawnLearningModeUnits();
+            }
+            else
+            {
+                SpawnNormalModeUnits();
+            }
+
+            var camCtrl = FindFirstObjectByType<RTSCameraController>();
+            if (camCtrl != null)
+                camCtrl.FocusWorldPosition(_camFocus);
+        }
+
+        void SpawnNormalModeUnits()
+        {
             const float WorkerSpawnRadius = 5f;
             const float CombatSpawnRadius = 10f;
             var playerHiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
@@ -126,7 +141,6 @@ namespace InsectWars.RTS
                 var offset = new Vector3(Mathf.Cos(angle) * WorkerSpawnRadius, 0f, Mathf.Sin(angle) * WorkerSpawnRadius);
                 SpawnUnit(playerHiveXZ + offset, Team.Player, UnitArchetype.Worker);
             }
-            // Combat units in a wider ring so they don't crowd the workers
             SpawnUnit(playerHiveXZ + new Vector3(CombatSpawnRadius, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
             SpawnUnit(playerHiveXZ + new Vector3(-CombatSpawnRadius, 0, 0f), Team.Player, UnitArchetype.BasicFighter);
             SpawnUnit(playerHiveXZ + new Vector3(0f, 0, CombatSpawnRadius), Team.Player, UnitArchetype.BasicRanged);
@@ -149,10 +163,28 @@ namespace InsectWars.RTS
                 var arch = archCycle[Mathf.Min(i, archCycle.Length - 1)];
                 SpawnUnit(enemyHiveXZ + offset, Team.Enemy, arch);
             }
+        }
 
-            var camCtrl = FindFirstObjectByType<RTSCameraController>();
-            if (camCtrl != null)
-                camCtrl.FocusWorldPosition(_camFocus);
+        void SpawnLearningModeUnits()
+        {
+            var hiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
+
+            SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
+            SpawnUnit(hiveXZ + new Vector3(6f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
+            SpawnUnit(hiveXZ + new Vector3(0f, 0f, 6f), Team.Player, UnitArchetype.BasicRanged);
+            SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 0f), Team.Player, UnitArchetype.BlackWidow);
+
+            var dummyPos = hiveXZ + new Vector3(20f, 0f, 20f);
+            var dummyGo = SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
+            var dummyUnit = dummyGo.GetComponent<InsectUnit>();
+            if (dummyUnit != null)
+            {
+                var def = UnitDefinition.CreateRuntimeDefault(UnitArchetype.BasicFighter,
+                    TeamPalette.UnitBody(Team.Enemy, UnitArchetype.BasicFighter));
+                def.maxHealth = 100000f;
+                dummyUnit.Configure(Team.Enemy, def);
+            }
+            dummyGo.AddComponent<TrainingDummy>();
         }
 
         public void BuildWorldPreview()
@@ -178,10 +210,12 @@ namespace InsectWars.RTS
                 AddClay(world.transform, c.position, c.scale, _clayColor, c.variant);
 
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
-            BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
+            if (!GameSession.IsLearningMode)
+                BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
 
             AddRottingApple(world.transform, _applePos);
-            AddRottingApple(world.transform, _enemyApplePos);
+            if (!GameSession.IsLearningMode)
+                AddRottingApple(world.transform, _enemyApplePos);
 
             foreach (var f in _fruitLayout)
                 AddFruit(world.transform, f);
@@ -223,7 +257,8 @@ namespace InsectWars.RTS
             systems.AddComponent<Minimap>();
             systems.AddComponent<FogOfWarSystem>();
             systems.AddComponent<MatchDirector>();
-            systems.AddComponent<EnemyCommander>();
+            if (!GameSession.IsLearningMode)
+                systems.AddComponent<EnemyCommander>();
             systems.AddComponent<PauseController>();
             systems.AddComponent<GameAudio>();
             systems.AddComponent<ControlGroupManager>();
@@ -233,6 +268,11 @@ namespace InsectWars.RTS
 
         void PlaceStarterPlayerBuildings(Transform worldRoot)
         {
+            if (!GameSession.IsLearningMode) return;
+
+            var hiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
+            ProductionBuilding.Place(hiveXZ + new Vector3(-12f, 0f, 4f), BuildingType.Underground, Team.Player, startBuilt: true);
+            ProductionBuilding.Place(hiveXZ + new Vector3(4f, 0f, -12f), BuildingType.RootCellar, Team.Player, startBuilt: true);
         }
 
         void RegisterBuildZones()
@@ -1228,8 +1268,11 @@ namespace InsectWars.RTS
                 unit.Configure(team, def);
                 
                 var block = new MaterialPropertyBlock();
+                bool markerOnly = arch == UnitArchetype.BlackWidow;
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
+                    if (markerOnly && renderer.gameObject.name != "TeamMarker")
+                        continue;
                     renderer.GetPropertyBlock(block);
                     if (renderer.sharedMaterial != null)
                     {
@@ -1243,6 +1286,8 @@ namespace InsectWars.RTS
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)
                     go.AddComponent<UnitAnimationDriver>();
+                if (arch == UnitArchetype.BlackWidow && go.GetComponent<WebNetAbility>() == null)
+                    go.AddComponent<WebNetAbility>();
                 if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                     go.AddComponent<SimpleEnemyAi>();
                 return unit;
@@ -1267,6 +1312,9 @@ namespace InsectWars.RTS
                 case UnitArchetype.BasicRanged:
                     BuildRangedVisual(visualRoot.transform, body2, team);
                     break;
+                case UnitArchetype.BlackWidow:
+                    BuildFighterVisual(visualRoot.transform, body2, team);
+                    break;
             }
 
             var col = go2.AddComponent<CapsuleCollider>();
@@ -1281,6 +1329,11 @@ namespace InsectWars.RTS
                     col.center = new Vector3(0f, 0.22f, 0f);
                     col.radius = 0.38f;
                     col.height = 0.55f;
+                    break;
+                case UnitArchetype.BlackWidow:
+                    col.center = new Vector3(0f, 0.25f, 0f);
+                    col.radius = 0.4f;
+                    col.height = 0.6f;
                     break;
                 default:
                     col.center = new Vector3(0f, 0.55f, 0f);
@@ -1305,6 +1358,10 @@ namespace InsectWars.RTS
                     agent2.height = 0.5f;
                     agent2.radius = 0.42f;
                     break;
+                case UnitArchetype.BlackWidow:
+                    agent2.height = 0.55f;
+                    agent2.radius = 0.38f;
+                    break;
                 default:
                     agent2.height = 1.12f;
                     agent2.radius = 0.27f;
@@ -1320,6 +1377,8 @@ namespace InsectWars.RTS
             var def2 = UnitDefinition.CreateRuntimeDefault(arch, body2);
             unit2.Configure(team, def2);
             go2.AddComponent<UnitAnimationDriver>();
+            if (arch == UnitArchetype.BlackWidow)
+                go2.AddComponent<WebNetAbility>();
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;

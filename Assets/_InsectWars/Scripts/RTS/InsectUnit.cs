@@ -761,6 +761,13 @@ namespace InsectWars.RTS
                         if (targetUnit != null)
                         {
                             targetUnit.ApplyDamage(definition.attackDamage);
+                            if (definition.archetype == UnitArchetype.BlackWidow)
+                            {
+                                var poison = targetUnit.GetComponent<PoisonDebuff>();
+                                if (poison == null)
+                                    poison = targetUnit.gameObject.AddComponent<PoisonDebuff>();
+                                poison.Apply(PoisonDebuff.DefaultDuration, PoisonDebuff.DefaultDps);
+                            }
                         }
                         GetComponent<UnitAnimationDriver>()?.NotifyAttack();
                         _attackCooldown = definition.attackCooldown;
@@ -934,6 +941,12 @@ return;
                 else
                     Destroy(gameObject, 0.15f);
             }
+        }
+
+        public void Heal(float amount)
+        {
+            if (_health <= 0f) return;
+            _health = Mathf.Min(_health + amount, MaxHealth);
         }
     }
 

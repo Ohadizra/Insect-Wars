@@ -6,7 +6,8 @@ namespace InsectWars.Data
     {
         Worker = 0,
         BasicFighter = 1,
-        BasicRanged = 2
+        BasicRanged = 2,
+        BlackWidow = 3
     }
 
     [CreateAssetMenu(fileName = "UnitDefinition", menuName = "Insect Wars/Unit Definition")]
@@ -32,6 +33,7 @@ namespace InsectWars.Data
                 UnitArchetype.Worker => "Worker",
                 UnitArchetype.BasicFighter => "Fighter",
                 UnitArchetype.BasicRanged => "Bombardier",
+                UnitArchetype.BlackWidow => "Black Widow",
                 _ => type.ToString()
             };
             d.unitColor = bodyColor;
@@ -41,6 +43,7 @@ namespace InsectWars.Data
                 UnitArchetype.Worker => 4f,
                 UnitArchetype.BasicFighter => 5.4f,
                 UnitArchetype.BasicRanged => 4.2f,
+                UnitArchetype.BlackWidow => 4.8f,
                 _ => 4.5f
             };
             d.maxHealth = type switch
@@ -48,16 +51,23 @@ namespace InsectWars.Data
                 UnitArchetype.Worker => 35f,
                 UnitArchetype.BasicFighter => 38f,
                 UnitArchetype.BasicRanged => 42f,
+                UnitArchetype.BlackWidow => 55f,
                 _ => 40f
             };
             d.attackDamage = type switch
             {
                 UnitArchetype.BasicRanged => 7f,
                 UnitArchetype.BasicFighter => 9f,
+                UnitArchetype.BlackWidow => 6f,
                 _ => 4f
             };
             d.attackRange = type == UnitArchetype.BasicRanged ? 8f : 1.55f;
-            d.attackCooldown = type == UnitArchetype.BasicRanged ? 0.82f : 0.95f;
+            d.attackCooldown = type switch
+            {
+                UnitArchetype.BasicRanged => 0.82f,
+                UnitArchetype.BlackWidow => 1.1f,
+                _ => 0.95f
+            };
             d.visionRadius = 12f;
             return d;
         }

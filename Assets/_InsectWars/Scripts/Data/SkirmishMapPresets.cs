@@ -585,6 +585,49 @@ namespace InsectWars.Data
 
             return map;
             }
+
+        // ────────────────────── Learning / Sandbox ──────────────────────
+
+        static SkirmishMapDefinition s_learningMap;
+
+        public static SkirmishMapDefinition GetLearningMap()
+        {
+            if (s_learningMap != null) return s_learningMap;
+            s_learningMap = CreateLearningMap();
+            return s_learningMap;
+        }
+
+        static SkirmishMapDefinition CreateLearningMap()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "LearningMap";
+            map.displayName = "Training Grounds";
+            map.description = "A flat sandbox for learning the basics.\nNo enemy AI — practice building, gathering, and combat on a training dummy.";
+
+            map.mapHalfExtent = 35f;
+
+            map.playerHivePosition    = new Vector3(-10f, 1f, -10f);
+            map.enemyHivePosition     = new Vector3(100f, 1f, 100f);
+            map.playerArmyStart       = new Vector3(-10f, 0f, -10f);
+            map.enemyArmyStart        = new Vector3(100f, 0f, 100f);
+            map.cameraFocusWorld      = new Vector3(-6f, 0f, -6f);
+            map.bigApplePosition      = new Vector3(-5f, 1.5f, 5f);
+            map.enemyBigApplePosition = new Vector3(100f, 1.5f, 100f);
+
+            map.passiveScatterSeed = 55555;
+
+            map.highGrounds = System.Array.Empty<HighGroundPlaced>();
+            map.clay = System.Array.Empty<ClayPlaced>();
+            map.terrainFeatures = System.Array.Empty<TerrainFeaturePlaced>();
+            map.decorativePrefabs = System.Array.Empty<DecorativePrefabPlaced>();
+
+            map.fruits = new[]
+            {
+                new FruitPlaced { position = new Vector3(-5f, 0.6f, 5f), calories = 10000, gatherPerTick = 10, gatherSeconds = 5f },
+            };
+
+            return map;
+        }
     }
 }
 

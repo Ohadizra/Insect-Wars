@@ -24,6 +24,11 @@ namespace InsectWars.RTS
 
         void Start()
         {
+            if (GameSession.IsLearningMode)
+            {
+                AddCalories(10000);
+                return;
+            }
             var start = Mathf.RoundToInt(startingCalories * GameSession.DifficultyStartingCaloriesMultiplier);
             if (start > 0)
                 AddCalories(start);

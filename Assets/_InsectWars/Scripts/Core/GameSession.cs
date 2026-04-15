@@ -25,9 +25,17 @@ namespace InsectWars.Core
         /// <summary>Map selected from the skirmish lobby. Null falls back to SkirmishDirector's serialized field.</summary>
         public static SkirmishMapDefinition SelectedMap { get; private set; }
 
+        /// <summary>When true the match runs as a sandbox with no enemy AI, pre-built buildings, and a training dummy.</summary>
+        public static bool IsLearningMode { get; private set; }
+
         public static void SetSelectedMap(SkirmishMapDefinition map)
         {
             SelectedMap = map;
+        }
+
+        public static void SetLearningMode(bool on)
+        {
+            IsLearningMode = on;
         }
 
         public static float DifficultyEnemyHpMultiplier => Difficulty switch

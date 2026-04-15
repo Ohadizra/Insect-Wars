@@ -280,6 +280,7 @@ namespace InsectWars.RTS
                     case UnitArchetype.Worker: workers++; break;
                     case UnitArchetype.BasicFighter: fighters++; break;
                     case UnitArchetype.BasicRanged: ranged++; break;
+                    case UnitArchetype.BlackWidow: fighters++; break;
                 }
             }
             int combat = fighters + ranged;
@@ -316,9 +317,14 @@ namespace InsectWars.RTS
                 {
                     if (combat >= MaxCombat) break;
 
-                    bool produceRanged = (_rangedToggle % 5) >= 3;
+                    UnitArchetype arch;
+                    if (_rangedToggle % 7 == 6 && EnemyResources.Calories >= 250)
+                        arch = UnitArchetype.BlackWidow;
+                    else if ((_rangedToggle % 5) >= 3)
+                        arch = UnitArchetype.BasicRanged;
+                    else
+                        arch = UnitArchetype.BasicFighter;
                     _rangedToggle++;
-                    var arch = produceRanged ? UnitArchetype.BasicRanged : UnitArchetype.BasicFighter;
 
                     if (!ColonyCapacity.CanAfford(Team.Enemy, arch)) break;
                     if (ug.ProduceUnit(arch) != null) combat++;

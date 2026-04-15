@@ -1,0 +1,112 @@
+========================================
+  BLACK WIDOW
+========================================
+
+OVERVIEW
+--------
+Display Name:   Black Widow
+Archetype:      UnitArchetype.BlackWidow
+Role:           Elite melee assassin with debuff abilities. Delivers
+                venomous bites that poison enemies over time and
+                periodically casts a web net that slows groups of
+                enemies. Expensive but devastating in prolonged fights.
+
+ECONOMY
+-------
+Calorie Cost:       250
+Build Time:         35 seconds
+Colony Capacity:    5 (supply cost per unit)
+Produced At:        Underground (BuildingType.Underground)
+
+COMBAT STATS
+------------
+Max HP:             55 (tankiest unit in the game)
+Attack Damage:      6 (direct melee damage per hit)
+Attack Range:       1.55 (melee)
+Attack Cooldown:    1.1 seconds
+Move Speed:         4.8
+Vision Radius:      12
+Attack Type:        Melee — locks NavMesh agent position during attack,
+                    faces target, applies single-target damage per hit.
+                    Each hit also applies a poison debuff to the target.
+
+POISON BITE (passive, on every melee hit)
+-----------------------------------------
+Damage Per Second:  2.0
+Duration:           15 seconds
+Total Poison Dmg:   30 (over full duration)
+Stacking:           Does NOT stack — re-hitting refreshes the duration.
+                    Only one poison instance per target at a time.
+Application:        Automatically applied via PoisonDebuff component
+                    added to the target on melee hit.
+Visual:             Green-tinted damage ticks on the poisoned unit.
+
+WEB NET (auto-cast ability, every 10 seconds)
+----------------------------------------------
+Cooldown:           10 seconds
+Range:              5 units (short cone in front)
+Cone Half-Angle:    45 degrees
+Slow Amount:        50% movement speed reduction
+Slow Duration:      8 seconds
+Stacking:           Does NOT stack — re-application refreshes duration.
+Targeting:          Auto-casts when enemies are in the forward cone.
+                    Only fires during combat (unit must have an attack
+                    target). Fires automatically, not player-triggered.
+Visual:             Web/silk particle burst in a cone area.
+Implementation:     WebNetAbility component on the Black Widow unit.
+                    Applies a speed multiplier debuff tracked on each
+                    affected InsectUnit.
+
+SPECIAL ABILITIES
+-----------------
+- Poison Bite:      Every melee attack applies 2 DPS poison for 15s.
+                    Combined with 6 direct damage per 1.1s cooldown,
+                    effective DPS is ~7.45 (direct) + 2 (poison) while
+                    poison is active.
+- Web Net:          Auto-cast AoE slow — devastating against groups.
+                    Slowed enemies can't escape or kite effectively.
+- Highest HP:       At 55 HP, the tankiest unit in the game.
+- Premium Cost:     At 250 calories and 5 CC, she's a late-game
+                    investment that pays off in extended engagements.
+- No Gathering:     Cannot gather resources (canGather = false).
+
+VISUAL ASPECTS
+--------------
+Art Source:      Meshy AI model — "Crimson Widow"
+                Assets/_InsectWars/Units/Black Widow/
+                Meshy_AI_Crimson_Widow_0415065353_texture_fbx/
+                (FBX with base color, emission, normal, roughness maps)
+Reference:      gemini-2.5-flash-image concept art (dark theme, realistic)
+Prefab:         To be created at Assets/_InsectWars/Prefabs/BlackWidow.prefab
+                (referenced by DefaultVisualLibrary.blackWidowPrefab)
+Team Colors:    Neutral/white base color. Team tint applied at spawn via
+                MaterialPropertyBlock (_BaseColor / _Color on all renderers).
+Materials:      1-2 URP/Lit materials per model.
+
+ANIMATIONS
+----------
+Idle:       Default standing pose. The unit plays a looping idle
+            animation when stationary. Subtle body sway and leg
+            adjustments conveying a predatory readiness.
+
+Walk:       Eight-legged locomotion cycle. Smooth, deliberate spider
+            gait. Driven by the "Speed" (float) and "IsMoving" (bool)
+            animator parameters. Blends based on planar velocity.
+
+Attack:     Triggered via the "Attack" animator trigger. Melee bite
+            duration is 0.40 seconds (slightly longer than Mantis to
+            convey the venomous bite). The Black Widow lunges forward,
+            fangs strike the target. Faces toward target like other
+            melee units.
+
+WebCast:    Triggered via the "WebCast" animator trigger. The Black
+            Widow rears back slightly and projects silk forward in a
+            short cone. Duration ~0.5 seconds. Plays independently
+            of the attack cycle (auto-cast on cooldown).
+
+Death:      Triggered via the "Death" animator trigger when the unit
+            is killed. Legs curl inward as the body collapses — the
+            classic spider death pose.
+
+Animator Controller: Assets/_InsectWars/Animations/BlackWidow.controller
+States: Idle, Walk (Attack/WebCast/Death driven by parameters/triggers)
