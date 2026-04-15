@@ -384,12 +384,12 @@ namespace InsectWars.RTS
             var state = stealth.CurrentState;
             float cycle = _idleT;
 
-            // --- Updated Constants for 100.0 scale (ExtentY ~0.75m) ---
-            const float H_Fly = 4.0f;    // Elevated flight height
-            const float H_Ground = 1.25f; // Hover above ground to avoid clipping
+            // --- Updated Constants for NEW FBX ---
+            const float H_Fly = 4.5f;    // Elevated flight height
+            const float H_Ground = 1.5f; // Hover above ground
 
-            float wingFreq = 12f;
-            float wingAmp = 35f; // Rotation angle (if wings found) or scale amp
+            float wingFreq = 8f; 
+            float wingAmp = 0.4f; 
             float bodyPitch = 0f;
             float bodyRoll = 0f;
             float bodyBob = 0f;
@@ -410,25 +410,25 @@ namespace InsectWars.RTS
                     targetBaseY = H_Fly;
                     if (moving)
                     {
-                        wingFreq = 16f; // Faster beat for movement
-                        wingAmp = 45f;
+                        wingFreq = 12f;
+                        wingAmp = 0.55f;
                         bodyPitch = 25f;
-                        bodyBob = Mathf.Sin(cycle * 16f) * 0.15f;
-                        bodyRoll = Mathf.Sin(cycle * 8f) * 10f;
+                        bodyBob = Mathf.Sin(cycle * 12f) * 0.04f; // Very small bob
+                        bodyRoll = Mathf.Sin(cycle * 6f) * 8f;
                     }
                     else
                     {
-                        wingFreq = 12f; // Hover beat
-                        wingAmp = 35f;
+                        wingFreq = 8f;
+                        wingAmp = 0.45f;
                         bodyPitch = 12f;
-                        bodyBob = Mathf.Sin(cycle * 12f) * 0.1f;
-                        bodyRoll = Mathf.Sin(cycle * 4f) * 5f;
+                        bodyBob = Mathf.Sin(cycle * 8f) * 0.02f; // Minimal bob
+                        bodyRoll = Mathf.Sin(cycle * 4f) * 4f;
                     }
                     break;
                 case MothStealth.MothState.Landing:
                     targetBaseY = Mathf.Lerp(H_Fly, H_Ground, stealth.LandingProgress);
-                    wingFreq = 8f;
-                    wingAmp = 20f;
+                    wingFreq = 6f;
+                    wingAmp = 0.25f;
                     bodyPitch = Mathf.Lerp(12f, 0f, stealth.LandingProgress);
                     break;
                 case MothStealth.MothState.Grounded:
@@ -436,28 +436,31 @@ namespace InsectWars.RTS
                     targetBaseY = H_Ground;
                     wingFreq = 0f;
                     wingAmp = 0f;
-                    bodyPitch = 5f; // Slight tilt up while grounded
+                    bodyPitch = 5f;
                     break;
             }
 
             modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f + bodyPitch, 0f, bodyRoll);
             modelRoot.localPosition = new Vector3(_baseLocalPos.x, targetBaseY + bodyBob, _baseLocalPos.z);
 
-            // Procedural Flapping
-            if (_lWing != null && _rWing != null)
+            // Snappy Flapping Simulation
+            if (wingFreq > 0.1f)
             {
-                float flap = Mathf.Sin(cycle * wingFreq * 2f * Mathf.PI);
-                _lWing.localRotation = _lWingBase * Quaternion.Euler(0f, 0f, flap * wingAmp);
-                _rWing.localRotation = _rWingBase * Quaternion.Euler(0f, 0f, -flap * wingAmp);
-                modelRoot.localScale = _baseScale;
+                float s = Mathf.Sin(cycle * wingFreq * 2f * Mathf.PI);
+                // Sharpen the peaks for a more 'snappy' wing snap
+                float flap = s > 0 ? Mathf.Pow(s, 0.4f) : -Mathf.Pow(-s, 0.4f);
+                
+                float sX = 1f + flap * wingAmp; // Wings spread wide
+                float sY = 1f - Mathf.Abs(flap) * (wingAmp * 0.3f); // Flatten slightly
+                float sZ = 1f - flap * (wingAmp * 0.2f); // Body length pulse
+                
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(sX, sY, sZ));
             }
             else
             {
-                // Better fallback: Non-uniform scale to simulate wing beat
-                float flap = Mathf.Sin(cycle * wingFreq * 2f * Mathf.PI);
-                float sX = 1f + flap * 0.25f; // Wings spreading
-                float sY = 1f - flap * 0.15f; // Body compressing
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(sX, sY, 1f));
+                // Breathing idle
+                float breath = 1f + Mathf.Sin(cycle * 2.5f) * 0.03f;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
         }
 

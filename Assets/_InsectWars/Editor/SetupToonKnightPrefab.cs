@@ -58,13 +58,13 @@ namespace InsectWars.Editor
         const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
 
         // --- Hawk Moth paths ---
-        const string MothModelPath = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_fbx/Meshy_AI_Nocturnal_Sentinel_0415071225_texture.fbx";
-        const string MothTexDir = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_fbx";
-        const string MothBaseTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture.png";
-        const string MothNormalTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_normal.png";
-        const string MothEmissionTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_emission.png";
-        const string MothRoughnessTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_roughness.png";
-        const string MothMetallicTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415071225_texture_metallic.png";
+        const string MothModelPath = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx/Meshy_AI_Nocturnal_Sentinel_0415165643_texture.fbx";
+        const string MothTexDir = "Assets/_InsectWars/Units/Hawk Moth/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_fbx";
+        const string MothBaseTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415165643_texture.png";
+        const string MothNormalTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_normal.png";
+        const string MothEmissionTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_emit.png";
+        const string MothRoughnessTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_roughness.png";
+        const string MothMetallicTexPath = MothTexDir + "/Meshy_AI_Nocturnal_Sentinel_0415165643_texture_metallic.png";
         const string MothMaterialPath = PrefabDir + "/HawkMothMat.mat";
         const string MothControllerPath = ControllerDir + "/HawkMoth.controller";
         const string MothPrefabPath = PrefabDir + "/HawkMoth.prefab";
@@ -287,9 +287,9 @@ namespace InsectWars.Editor
                 importer.isReadable = true;
                 dirty = true;
             }
-            if (Mathf.Abs(importer.globalScale - 100.0f) > 0.01f)
+            if (Mathf.Abs(importer.globalScale - 150.0f) > 0.01f)
             {
-                importer.globalScale = 100.0f;
+                importer.globalScale = 150.0f;
                 dirty = true;
             }
             if (importer.animationType != ModelImporterAnimationType.Generic)
