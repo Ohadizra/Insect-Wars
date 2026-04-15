@@ -47,6 +47,7 @@ namespace InsectWars.Data
             public GameObject rangedPrefab;
             public GameObject blackWidowPrefab;
             public GameObject stickSpyPrefab;
+            public GameObject giantStagBeetlePrefab;
 
             [Header("Buildings")]
             public GameObject hivePrefab;
@@ -99,6 +100,7 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => rangedPrefab,
                 UnitArchetype.BlackWidow => blackWidowPrefab,
                 UnitArchetype.StickSpy => stickSpyPrefab,
+                UnitArchetype.GiantStagBeetle => giantStagBeetlePrefab,
                 _ => null
             };
         }

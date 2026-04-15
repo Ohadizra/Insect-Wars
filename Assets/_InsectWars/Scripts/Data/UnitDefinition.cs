@@ -8,7 +8,8 @@ namespace InsectWars.Data
         BasicFighter = 1,
         BasicRanged = 2,
         BlackWidow = 3,
-        StickSpy = 4
+        StickSpy = 4,
+        GiantStagBeetle = 5
     }
 
     [CreateAssetMenu(fileName = "UnitDefinition", menuName = "Insect Wars/Unit Definition")]
@@ -37,6 +38,7 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => "Bombardier",
                 UnitArchetype.BlackWidow => "Black Widow",
                 UnitArchetype.StickSpy => "Stick",
+                UnitArchetype.GiantStagBeetle => "Giant Stag Beetle",
                 _ => type.ToString()
             };
             d.unitColor = bodyColor;
@@ -49,6 +51,7 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => 4.2f,
                 UnitArchetype.BlackWidow => 4.8f,
                 UnitArchetype.StickSpy => 3.8f,
+                UnitArchetype.GiantStagBeetle => 2.8f,
                 _ => 4.5f
             };
             d.maxHealth = type switch
@@ -58,6 +61,7 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => 42f,
                 UnitArchetype.BlackWidow => 55f,
                 UnitArchetype.StickSpy => 25f,
+                UnitArchetype.GiantStagBeetle => 120f,
                 _ => 40f
             };
             d.attackDamage = type switch
@@ -66,12 +70,14 @@ namespace InsectWars.Data
                 UnitArchetype.BasicFighter => 9f,
                 UnitArchetype.BlackWidow => 6f,
                 UnitArchetype.StickSpy => 0f,
+                UnitArchetype.GiantStagBeetle => 14f,
                 _ => 4f
             };
             d.attackRange = type switch
             {
                 UnitArchetype.BasicRanged => 8f,
                 UnitArchetype.StickSpy => 0f,
+                UnitArchetype.GiantStagBeetle => 1.8f,
                 _ => 1.55f
             };
             d.attackCooldown = type switch
@@ -79,6 +85,7 @@ namespace InsectWars.Data
                 UnitArchetype.BasicRanged => 0.82f,
                 UnitArchetype.BlackWidow => 1.1f,
                 UnitArchetype.StickSpy => 0f,
+                UnitArchetype.GiantStagBeetle => 1.6f,
                 _ => 0.95f
             };
             d.visionRadius = type == UnitArchetype.StickSpy ? 18f : 12f;

@@ -14,8 +14,9 @@ namespace InsectWars.RTS
         Gather,
         ReturnDeposit,
         Patrol,
-        Build
-    }
+        Build,
+        AttackMove
+        }
 
     public enum CargoType
     {
@@ -234,7 +235,9 @@ namespace InsectWars.RTS
         void Update()
         {
             if (!IsAlive) return;
-            _attackCooldown -= Time.deltaTime;
+            var stompSlow = GetComponent<StompSlow>();
+            float atkMult = stompSlow != null ? stompSlow.AttackSpeedMultiplier : 1f;
+            _attackCooldown -= Time.deltaTime * atkMult;
             TickTerrainEffects();
             switch (_order)
             {

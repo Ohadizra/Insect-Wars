@@ -193,15 +193,15 @@ namespace InsectWars.RTS
 
                 void LateUpdate()
                 {
-                    if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
+                if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
 
-                    if (IsStickSpy() || IsBlackWidow())
-                    {
-                        // Force orientation to win against Animator root rotation/FBX bad orientation
-                        modelRoot.rotation = _lookRotation * _baseLocalRot;
-                    }
+                if (IsStickSpy() || IsBlackWidow())
+                {
+                // Force orientation to win against Animator root rotation/FBX bad orientation
+                modelRoot.rotation = _lookRotation * _baseLocalRot;
+                }
 
-                    var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
+                var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
                 var planar = new Vector3(vel.x, 0f, vel.z);
                 var moving = planar.sqrMagnitude > 0.01f;
 
@@ -253,7 +253,7 @@ namespace InsectWars.RTS
 
                 {
                 float heightOffset = 0f;
-                if (IsBlackWidow()) heightOffset = 0.55f;
+                if (IsBlackWidow()) heightOffset = 0.35f;
                 else if (IsStickSpy()) heightOffset = 0.66f;
 
                 var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
@@ -448,7 +448,7 @@ namespace InsectWars.RTS
             {
                 lines.Add("Black Widow Procedural Driver:");
                 lines.Add("· Orientation: Flat to Ground");
-                lines.Add("· Height: +0.55 Ground Clear");
+                lines.Add("· Height: +0.35 Ground Clear");
                 lines.Add("· Walk: Realistic body sway + bob");
                 lines.Add("· Bite: 3-phase rear/strike/retract");
                 lines.Add("· Web: Abdomen forward + pumping");

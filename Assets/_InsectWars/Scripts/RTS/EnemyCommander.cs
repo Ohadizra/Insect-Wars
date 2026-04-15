@@ -281,6 +281,7 @@ namespace InsectWars.RTS
                     case UnitArchetype.BasicFighter: fighters++; break;
                     case UnitArchetype.BasicRanged: ranged++; break;
                     case UnitArchetype.BlackWidow: fighters++; break;
+                    case UnitArchetype.GiantStagBeetle: fighters++; break;
                     case UnitArchetype.StickSpy: break;
                 }
             }
@@ -313,7 +314,7 @@ namespace InsectWars.RTS
                 }
             }
 
-            // --- Combat units from all Undergrounds (mixed fighter / ranged) ---
+            // --- Combat units from all Undergrounds (mixed fighter / ranged / stag beetle) ---
             if (combat < MaxCombat && _matchTime > 20f)
             {
                 foreach (var ug in undergrounds)
@@ -321,7 +322,9 @@ namespace InsectWars.RTS
                     if (combat >= MaxCombat) break;
 
                     UnitArchetype arch;
-                    if ((_rangedToggle % 5) >= 3)
+                    if (_rangedToggle % 8 == 7 && _matchTime > 60f && EnemyResources.Calories >= 350)
+                        arch = UnitArchetype.GiantStagBeetle;
+                    else if ((_rangedToggle % 5) >= 3)
                         arch = UnitArchetype.BasicRanged;
                     else
                         arch = UnitArchetype.BasicFighter;

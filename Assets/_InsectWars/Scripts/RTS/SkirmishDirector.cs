@@ -177,6 +177,7 @@ namespace InsectWars.RTS
             SpawnUnit(hiveXZ + new Vector3(0f, 0f, 6f), Team.Player, UnitArchetype.BasicRanged);
             SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 0f), Team.Player, UnitArchetype.BlackWidow);
             SpawnUnit(hiveXZ + new Vector3(0f, 0f, -6f), Team.Player, UnitArchetype.StickSpy);
+            SpawnUnit(hiveXZ + new Vector3(-6f, 0f, -6f), Team.Player, UnitArchetype.GiantStagBeetle);
 
             var dummyPos = hiveXZ + new Vector3(20f, 0f, 20f);
             var dummyGo = SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
@@ -511,6 +512,48 @@ namespace InsectWars.RTS
             // Accent band — team identifier
             AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.975f, 0f),
                 new Vector3(0.21f, 0.045f, 0.21f), Quaternion.identity, accent);
+        }
+
+        static void BuildStagBeetleVisual(Transform root, Color body, Team team)
+        {
+            var skin = TeamPalette.GetShellColor(team);
+            var accent = TeamPalette.GetTeamColor(team);
+            var chitin = new Color(0.25f, 0.18f, 0.10f);
+
+            // Wide, low, heavily-armored carapace
+            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0f, 0.35f, 0f),
+                new Vector3(0.7f, 0.4f, 0.55f), Quaternion.Euler(10f, 0f, 0f), skin);
+
+            // Head (front-facing, slightly lower)
+            AddPrimitivePart(root, PrimitiveType.Sphere, new Vector3(0f, 0.55f, 0.3f),
+                Vector3.one * 0.35f, Quaternion.identity, Color.Lerp(skin, chitin, 0.4f));
+
+            // Giant mandibles / antlers (left + right)
+            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(-0.15f, 0.6f, 0.55f),
+                new Vector3(0.08f, 0.25f, 0.08f), Quaternion.Euler(50f, 20f, 0f), chitin);
+            AddPrimitivePart(root, PrimitiveType.Capsule, new Vector3(0.15f, 0.6f, 0.55f),
+                new Vector3(0.08f, 0.25f, 0.08f), Quaternion.Euler(50f, -20f, 0f), chitin);
+
+            // Thick legs (x6)
+            for (int i = 0; i < 6; i++)
+            {
+                float side = (i % 2 == 0) ? -1f : 1f;
+                float zOff = (i / 2 - 1) * 0.25f;
+                AddPrimitivePart(root, PrimitiveType.Capsule,
+                    new Vector3(side * 0.45f, 0.12f, zOff),
+                    new Vector3(0.1f, 0.18f, 0.1f),
+                    Quaternion.Euler(0f, 0f, side * 35f), chitin * 0.9f);
+            }
+
+            // Accent straps — heavy pauldrons on each side
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(-0.4f, 0.45f, 0f),
+                new Vector3(0.15f, 0.12f, 0.35f), Quaternion.Euler(0f, 0f, 15f), accent);
+            AddPrimitivePart(root, PrimitiveType.Cube, new Vector3(0.4f, 0.45f, 0f),
+                new Vector3(0.15f, 0.12f, 0.35f), Quaternion.Euler(0f, 0f, -15f), accent);
+
+            // Top accent ring
+            AddPrimitivePart(root, PrimitiveType.Cylinder, new Vector3(0f, 0.55f, 0f),
+                new Vector3(0.6f, 0.04f, 0.6f), Quaternion.identity, accent);
         }
 
         static void BuildRangedVisual(Transform root, Color body, Team team)
@@ -1366,6 +1409,8 @@ namespace InsectWars.RTS
                     if (agent != null)
                         agent.agentTypeID = ClimberAgentTypeID;
                 }
+                if (arch == UnitArchetype.GiantStagBeetle && go.GetComponent<GroundStomp>() == null)
+                    go.AddComponent<GroundStomp>();
                 if (team == Team.Enemy && go.GetComponent<SimpleEnemyAi>() == null)
                     go.AddComponent<SimpleEnemyAi>();
                 return unit;
@@ -1396,6 +1441,9 @@ namespace InsectWars.RTS
                 case UnitArchetype.StickSpy:
                     BuildStickSpyVisual(visualRoot.transform, body2, team);
                     break;
+                case UnitArchetype.GiantStagBeetle:
+                    BuildFighterVisual(visualRoot.transform, body2, team);
+                    break;
             }
 
             var col = go2.AddComponent<CapsuleCollider>();
@@ -1420,6 +1468,11 @@ namespace InsectWars.RTS
                     col.center = new Vector3(0f, 0.825f, 0f);
                     col.radius = 0.18f;
                     col.height = 1.8f;
+                    break;
+                case UnitArchetype.GiantStagBeetle:
+                    col.center = new Vector3(0f, 0.45f, 0f);
+                    col.radius = 0.55f;
+                    col.height = 1.0f;
                     break;
                 default:
                     col.center = new Vector3(0f, 0.55f, 0f);
@@ -1452,6 +1505,10 @@ namespace InsectWars.RTS
                     agent2.height = 1.35f;
                     agent2.radius = 0.18f;
                     break;
+                case UnitArchetype.GiantStagBeetle:
+                    agent2.height = 0.9f;
+                    agent2.radius = 0.5f;
+                    break;
                 default:
                     agent2.height = 1.12f;
                     agent2.radius = 0.27f;
@@ -1474,6 +1531,8 @@ namespace InsectWars.RTS
                 go2.AddComponent<StickStealth>();
                 agent2.agentTypeID = ClimberAgentTypeID;
             }
+            if (arch == UnitArchetype.GiantStagBeetle)
+                go2.AddComponent<GroundStomp>();
             if (team == Team.Enemy && go2.GetComponent<SimpleEnemyAi>() == null)
                 go2.AddComponent<SimpleEnemyAi>();
             return unit2;

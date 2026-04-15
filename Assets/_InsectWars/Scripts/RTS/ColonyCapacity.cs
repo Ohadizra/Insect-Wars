@@ -24,6 +24,7 @@ namespace InsectWars.RTS
             UnitArchetype.BasicRanged => 3,
             UnitArchetype.BlackWidow => 5,
             UnitArchetype.StickSpy => 2,
+            UnitArchetype.GiantStagBeetle => 6,
             _ => 1
         };
 
