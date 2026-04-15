@@ -86,41 +86,43 @@ namespace InsectWars.RTS
             go.transform.position = origin;
             go.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
 
+            // --- Main strands: thin stretched particles that look like silk threads ---
             var ps = go.AddComponent<ParticleSystem>();
             ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = ps.main;
-            main.duration = 0.3f;
+            main.duration = 0.15f;
             main.playOnAwake = false;
             main.loop = false;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.0f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(4f, 7f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.35f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.4f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(5f, 8f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.05f);
             main.startColor = new ParticleSystem.MinMaxGradient(
-                new Color(0.9f, 0.9f, 0.95f, 0.8f),
-                new Color(0.8f, 0.8f, 0.85f, 0.6f));
-            main.gravityModifier = 0.3f;
+                new Color(0.95f, 0.95f, 1f, 0.9f),
+                new Color(0.85f, 0.85f, 0.9f, 0.7f));
+            main.gravityModifier = 0.05f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 40;
-            main.stopAction = ParticleSystemStopAction.Destroy;
+            main.maxParticles = 60;
+            main.stopAction = ParticleSystemStopAction.None;
 
             var emission = ps.emission;
             emission.rateOverTime = 0f;
             emission.SetBursts(new[]
             {
-                new ParticleSystem.Burst(0f, 20),
-                new ParticleSystem.Burst(0.1f, 15)
+                new ParticleSystem.Burst(0f, 18),
+                new ParticleSystem.Burst(0.05f, 12),
+                new ParticleSystem.Burst(0.1f, 8)
             });
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle = ConeHalfAngle * 0.6f;
-            shape.radius = 0.1f;
+            shape.angle = ConeHalfAngle * 0.5f;
+            shape.radius = 0.05f;
 
             var sizeOverLifetime = ps.sizeOverLifetime;
             sizeOverLifetime.enabled = true;
             sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
-                AnimationCurve.Linear(0f, 0.5f, 1f, 2f));
+                AnimationCurve.Linear(0f, 1f, 1f, 0.3f));
 
             var colorOverLifetime = ps.colorOverLifetime;
             colorOverLifetime.enabled = true;
@@ -128,23 +130,68 @@ namespace InsectWars.RTS
             grad.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.95f, 0.95f, 1f), 0f),
-                    new GradientColorKey(new Color(0.7f, 0.7f, 0.75f), 1f)
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(new Color(0.9f, 0.9f, 0.95f), 0.5f),
+                    new GradientColorKey(new Color(0.8f, 0.8f, 0.85f), 1f)
                 },
                 new[]
                 {
-                    new GradientAlphaKey(0f, 0f),
-                    new GradientAlphaKey(0.7f, 0.15f),
-                    new GradientAlphaKey(0.4f, 0.6f),
+                    new GradientAlphaKey(0.9f, 0f),
+                    new GradientAlphaKey(0.7f, 0.4f),
+                    new GradientAlphaKey(0.15f, 0.85f),
                     new GradientAlphaKey(0f, 1f)
                 });
             colorOverLifetime.color = grad;
 
-            var renderer = go.GetComponent<ParticleSystemRenderer>();
-            renderer.renderMode = ParticleSystemRenderMode.Billboard;
-            renderer.material = GetWebMaterial();
+            var strandRenderer = go.GetComponent<ParticleSystemRenderer>();
+            strandRenderer.renderMode = ParticleSystemRenderMode.Stretch;
+            strandRenderer.lengthScale = 4f;
+            strandRenderer.velocityScale = 0.1f;
+            strandRenderer.material = GetWebMaterial();
+
+            // --- Cross threads: a second emitter for lateral strands connecting the main ones ---
+            var crossGo = new GameObject("CrossStrands");
+            crossGo.transform.SetParent(go.transform, false);
+            var crossPs = crossGo.AddComponent<ParticleSystem>();
+            crossPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var crossMain = crossPs.main;
+            crossMain.duration = 0.1f;
+            crossMain.playOnAwake = false;
+            crossMain.loop = false;
+            crossMain.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.0f);
+            crossMain.startSpeed = new ParticleSystem.MinMaxCurve(1f, 3f);
+            crossMain.startSize = new ParticleSystem.MinMaxCurve(0.015f, 0.035f);
+            crossMain.startColor = new Color(0.92f, 0.92f, 0.97f, 0.6f);
+            crossMain.gravityModifier = 0.08f;
+            crossMain.simulationSpace = ParticleSystemSimulationSpace.World;
+            crossMain.maxParticles = 30;
+
+            var crossEmission = crossPs.emission;
+            crossEmission.rateOverTime = 0f;
+            crossEmission.SetBursts(new[] { new ParticleSystem.Burst(0.05f, 15) });
+
+            var crossShape = crossPs.shape;
+            crossShape.shapeType = ParticleSystemShapeType.Cone;
+            crossShape.angle = ConeHalfAngle * 0.9f;
+            crossShape.radius = 0.3f;
+
+            var crossColor = crossPs.colorOverLifetime;
+            crossColor.enabled = true;
+            var cGrad = new Gradient();
+            cGrad.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.85f, 0.85f, 0.9f), 1f) },
+                new[] { new GradientAlphaKey(0.5f, 0f), new GradientAlphaKey(0.3f, 0.5f), new GradientAlphaKey(0f, 1f) });
+            crossColor.color = cGrad;
+
+            var crossRenderer = crossGo.GetComponent<ParticleSystemRenderer>();
+            crossRenderer.renderMode = ParticleSystemRenderMode.Stretch;
+            crossRenderer.lengthScale = 2.5f;
+            crossRenderer.velocityScale = 0.15f;
+            crossRenderer.material = GetWebMaterial();
 
             ps.Play();
+            crossPs.Play();
             Object.Destroy(go, VfxAutoDestroy);
         }
 

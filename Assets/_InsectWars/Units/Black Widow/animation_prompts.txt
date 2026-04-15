@@ -1,5 +1,6 @@
 ========================================
   BLACK WIDOW — UNITY AI ANIMATION PROMPTS
+  (Improvement pass — idle is good, keep it)
 ========================================
 
 CRITICAL MODEL NOTES — READ BEFORE ANIMATING:
@@ -14,11 +15,6 @@ CRITICAL MODEL NOTES — READ BEFORE ANIMATING:
   and a large rear section (abdomen). Legs are numbered L1-L4
   and R1-R4 from front to back.
 
-  If the generated animation produces a face-down or collapsed
-  pose, the bind pose is wrong — the spider must stand upright
-  on all eight legs in its rest/idle pose FIRST before any
-  motion is applied.
-
 Target: Unity 6 Muse Animate or equivalent AI animation tool.
         Each animation should be exported as a separate .anim clip.
 
@@ -30,185 +26,212 @@ Animator Parameters:
   - Death     (trigger) — unit killed
 
 
+STATUS FROM PREVIOUS PASS:
+  Idle  — GOOD, keep as-is. No changes needed.
+  Walk  — NEEDS FIX: legs barely move, not using all 8 legs.
+  Attack — NEEDS FIX: does not look like a spider attack.
+  WebCast — NEEDS FIX: looks like smoke/magic, not spider web.
+  Death — OK, minor polish only.
+
+
 ─────────────────────────────────────
-1. IDLE  (looping)
+1. IDLE  (looping) — KEEP, NO CHANGES
 ─────────────────────────────────────
-Prompt:
-  "Create a looping idle animation for a black widow spider model.
-   The spider must be standing upright on all eight legs in a wide,
-   stable stance — NOT collapsed, NOT face-down, NOT in a T-pose.
-   The legs should be bent at the joints with feet planted on the
-   ground plane, body raised above the ground.
-
-   Subtle idle motion: the entire body gently rises and falls by
-   about 2-3% of body height, like slow breathing. The front pair
-   of legs (L1, R1) slightly lift and tap back down in an
-   alternating rhythm, as if sensing the environment. The abdomen
-   has a very gentle side-to-side sway. All motion is subtle and
-   slow — the spider is alert and waiting, not twitching.
-
-   The default standing height should place the body center roughly
-   at 1/3 of the total leg span above the ground. Legs should be
-   angled outward like a real spider's resting stance."
-
 Clip name: BlackWidow_Idle
-Loop: Yes
-Duration: ~2.5 seconds
-IMPORTANT: This is the default state. If this pose is wrong (face-down,
-           collapsed), every other animation will be broken. Get the
-           standing pose right first.
+Status: Working well. The idle breathing and leg sensing look good.
 
 
 ─────────────────────────────────────
-2. WALK  (looping)
+2. WALK  (looping) — FIX REQUIRED
 ─────────────────────────────────────
-Prompt:
-  "Create a looping walk cycle for a black widow spider model.
-   The spider walks forward using a real spider's alternating
-   tetrapod gait: legs move in two groups of four.
+PROBLEM: The current walk animation does not use all 8 legs. The legs
+barely move or only the body translates without proper leg cycling.
+It looks like the spider is sliding/gliding rather than walking.
 
-   Group A (moves together): L1, R2, L3, R4
-   Group B (moves together): R1, L2, R3, L4
-   While Group A steps forward, Group B stays planted, and vice
-   versa. Each leg lifts, swings forward in an arc, then plants
-   down. The swing height is about half the body height.
+FIX PROMPT:
+  "Fix the walk cycle for this 8-legged spider model. The current
+   animation fails to move all 8 legs — this must be corrected.
 
-   The body glides forward smoothly with very little vertical
-   bounce (no more than 5% of body height). The abdomen trails
-   behind with a very slight lateral wobble. The cephalothorax
-   stays level and pointed forward.
+   EVERY leg must visibly lift, swing forward, and plant down during
+   the walk cycle. No leg should remain static or frozen.
 
-   The body must remain upright and elevated on the legs throughout
-   the entire cycle — the spider should NEVER collapse or sag to
-   the ground during the walk. One full left-right step cycle in
-   approximately 0.8 seconds at normal speed."
+   Use a real spider's ALTERNATING TETRAPOD gait pattern:
+
+   PHASE 1 (first half of cycle):
+     LIFTING group: L1 (front-left), R2 (mid-right), L3 (mid-left),
+     R4 (rear-right) — these four legs lift up, swing forward through
+     the air, and plant down ahead of their starting position.
+     PLANTED group: R1, L2, R3, L4 — these four stay on the ground
+     and push the body forward.
+
+   PHASE 2 (second half of cycle):
+     LIFTING group: R1, L2, R3, L4 — now these four lift and swing.
+     PLANTED group: L1, R2, L3, R4 — now these push.
+
+   Each individual leg motion has three parts:
+     1. LIFT — the leg pulls up off the ground, knee bending upward.
+        Lift height is about 30-40% of the body's standing height.
+     2. SWING — the leg reaches forward in a smooth arc while airborne.
+        The foot tip traces a half-oval path through the air.
+     3. PLANT — the leg extends down and forward, foot touches the
+        ground ahead of where it started. The leg then pushes backward
+        as the body moves over it.
+
+   Body motion during walk:
+     - Very slight up-down bob (about 5% of body height) as weight
+       shifts between leg groups.
+     - The abdomen trails with a subtle left-right sway, lagging
+       slightly behind the cephalothorax direction.
+     - The cephalothorax stays level and faces forward.
+     - The body center maintains consistent height — no sagging or
+       collapsing at any point in the cycle.
+
+   The overall feel should be: a large, heavy spider moving with
+   deliberate, methodical steps. Each leg placement is precise.
+   Think of a tarantula walking — not a frantic small spider, but
+   a large predator that places each foot carefully.
+
+   Loop seamlessly. One complete cycle (all 8 legs have stepped once)
+   in approximately 0.8-1.0 seconds."
 
 Clip name: BlackWidow_Walk
 Loop: Yes
-Duration: ~0.8 seconds (one full step cycle)
-Speed parameter: Playback rate scaled by the Speed animator float.
-IMPORTANT: The spider must stay upright. If legs clip through the ground
-           or the body drops, adjust leg joint angles.
+Duration: ~0.8-1.0 seconds
 
 
 ─────────────────────────────────────
-3. ATTACK — Melee Bite  (one-shot)
+3. ATTACK — Venomous Bite  (one-shot) — FIX REQUIRED
 ─────────────────────────────────────
-Prompt:
-  "Create a melee bite attack animation for a black widow spider.
-   Starting from the upright idle stance:
+PROBLEM: The current attack does not look like a spider biting. It
+looks like a generic melee swing rather than a spider striking with
+its fangs.
 
-   Frames 0-4 (windup, ~0.1s): The front two pairs of legs (L1, R1,
-   L2, R2) lift slightly and spread apart. The cephalothorax tips
-   downward toward the target.
+FIX PROMPT:
+  "Fix the attack animation for this spider model. It must look like
+   a real black widow biting its prey — not a generic melee swing.
 
-   Frames 4-8 (strike, ~0.15s): The entire front body LUNGES forward
-   sharply. The fangs open wide and snap shut. The front legs slam
-   down around the target point in a grabbing motion.
+   A spider bite works like this: the two CHELICERAE (fang appendages
+   at the front of the head) spread apart, then stab downward and
+   inward into the prey, injecting venom.
 
-   Frames 8-12 (retract, ~0.15s): The spider pulls back to its
-   upright stance. The fangs close. All legs return to their idle
-   positions.
+   Animation breakdown:
 
-   The strike should feel FAST and violent — a predator biting prey.
-   The abdomen barely moves during the attack, only the front half
-   of the body drives forward. Keep the rear legs firmly planted
-   as anchors throughout."
+   PHASE 1 — Rear up (0.00s to 0.08s):
+     The spider raises its front body upward by about 20-30 degrees.
+     The front two pairs of legs (L1, R1, L2, R2) lift off the ground
+     and spread wide apart, making room for the fangs. The rear legs
+     (L3, R3, L4, R4) dig in and push the front body upward. The
+     chelicerae (fangs) begin to spread open.
+
+   PHASE 2 — Strike down (0.08s to 0.20s):
+     The front body SLAMS downward onto the target. The chelicerae
+     snap shut — the two fangs stab inward and downward like pincers
+     closing on prey. The front legs (L1, R1) grab and wrap around
+     the target point. L2 and R2 press down for leverage. This is
+     the moment of venom injection — the whole front body drives
+     the fangs in.
+
+   PHASE 3 — Release and retract (0.20s to 0.40s):
+     The fangs pull out. The front legs release their grip. The
+     spider pulls its front body back to the upright idle stance.
+     All legs return to their resting positions. A slight wobble
+     in the abdomen as the body settles.
+
+   Key points:
+     - The FANGS are the weapon, not the legs. The legs GRAB and
+       HOLD, the fangs STAB.
+     - The rear half of the spider stays anchored and stable.
+     - The motion should feel PREDATORY — a calculated strike,
+       not a wild thrash."
 
 Clip name: BlackWidow_Attack
 Loop: No
 Duration: ~0.40 seconds
 Trigger: "Attack" animator trigger
-Notes: Plays each time the unit deals melee damage (every 1.1s cooldown).
-       The unit is position-locked and facing the target during this clip.
 
 
 ─────────────────────────────────────
-4. WEB CAST — Web Net Ability  (one-shot)
+4. WEB CAST — Web Net Ability  (one-shot) — FIX REQUIRED
 ─────────────────────────────────────
-Prompt:
-  "Create a web-casting animation for a black widow spider — the
-   spider is shooting a burst of sticky silk webbing from its
-   spinnerets toward enemies in front of it.
+PROBLEM: The current web animation looks like the spider is producing
+smoke or a magical blast. It needs to look like an actual spider
+producing and throwing a web — silk strands, not smoke clouds.
 
-   Starting from the upright idle stance:
+FIX PROMPT:
+  "Fix the web-casting animation for this spider model. The spider
+   is shooting a NET of sticky silk web strands forward at enemies.
+   It must look like REAL SPIDER SILK being produced and thrown —
+   NOT smoke, NOT a magical energy blast, NOT a puff of particles.
 
-   Frames 0-4 (rear up, ~0.1s): The spider lifts its front body
-   upward. Front legs (L1, R1, L2, R2) raise off the ground and
-   spread wide. The rear legs push the body up and backward
-   slightly, tilting the abdomen forward and upward.
+   How real spiders produce silk: the spinnerets are at the TIP of
+   the ABDOMEN (the rear end). Silk comes from the back, not the
+   front. The spider uses its LEGS to grab, pull, and direct the
+   silk strands.
 
-   Frames 4-10 (web release, ~0.2s): The abdomen PULSES forward
-   with two rapid contractions — like squeezing out silk. The
-   spinnerets at the tip of the abdomen point toward the front/
-   target direction. The front legs make a wide sweeping motion
-   outward from center, as if spreading and directing strands of
-   web into a net shape. The legs should move like they are
-   pulling and stretching sticky silk threads apart.
+   Animation breakdown:
 
-   Frames 10-15 (settle, ~0.2s): The spider drops back to all
-   eight legs. Front legs pull back in. Body returns to normal
-   upright idle height.
+   PHASE 1 — Spin up (0.00s to 0.12s):
+     The spider turns its abdomen to point the spinnerets forward
+     (or upward-forward). The rear legs (L3, R3, L4, R4) help
+     angle the abdomen. The front body lowers slightly as the
+     rear lifts.
 
-   The key visual feel: the spider is WEAVING — the front legs
-   actively manipulate invisible silk strands, spreading them
-   outward in a fan/cone. It should look like a spider doing
-   what spiders do — working with web. Not just a generic
-   magic cast pose."
+   PHASE 2 — Silk production (0.12s to 0.30s):
+     The abdomen makes two quick PUMPING contractions — squeezing
+     motions that push silk out. Each contraction is a visible
+     compression of the abdomen (it gets slightly shorter/fatter
+     then springs back).
+
+     Simultaneously, the front legs (L1, R1) reach up and back
+     toward the silk coming from the spinnerets, GRAB strands,
+     and PULL them forward and outward — spreading the silk into
+     a fan/net shape. The legs make a clear pulling-and-spreading
+     gesture: they start close together near the abdomen, then
+     sweep forward and apart in a wide arc.
+
+     L2 and R2 do a secondary spread motion slightly after L1/R1,
+     creating a layered web effect.
+
+   PHASE 3 — Release (0.30s to 0.50s):
+     The front legs flick forward, releasing the web net toward
+     the target direction. The abdomen relaxes back to its normal
+     position. All legs return to idle stance. The body settles.
+
+   Key points:
+     - The front legs are actively TOUCHING and MANIPULATING silk.
+       They pull, stretch, and throw it — like a fisherman casting
+       a net.
+     - The abdomen CONTRACTS to produce silk — visible squeezing.
+     - The silk comes from the REAR of the spider, the legs direct
+       it FORWARD. This is how spiders actually work.
+     - NO smoke. NO magic glow. It's physical silk strands being
+       woven and thrown."
 
 Clip name: BlackWidow_WebCast
 Loop: No
 Duration: ~0.50 seconds
 Trigger: "WebCast" animator trigger
-Notes: Auto-cast every 10 seconds during combat. A particle VFX cone
-       of white silk strands is spawned simultaneously by code.
+Notes: The actual VFX (white stretched particles resembling silk
+       strands in a cone pattern) is spawned by code simultaneously.
+       The animation just needs the spider's body/leg motion.
 
 
 ─────────────────────────────────────
-5. DEATH  (one-shot)
+5. DEATH  (one-shot) — KEEP, MINOR POLISH
 ─────────────────────────────────────
-Prompt:
-  "Create a death animation for a black widow spider.
-   Starting from the upright idle stance:
-
-   Frames 0-5 (collapse, ~0.2s): The legs lose strength. The body
-   drops toward the ground as leg joints buckle. The spider tips
-   to one side (e.g. slightly to the right).
-
-   Frames 5-15 (death curl, ~0.3s): All eight legs slowly curl
-   inward toward the body center — this is the classic real-world
-   spider death pose. The legs fold UNDERNEATH the body, joints
-   bending so the leg tips point inward and upward. The abdomen
-   rolls to rest on the ground. The cephalothorax tilts sideways.
-
-   The final resting pose: the spider is on its side or back with
-   all legs curled tightly against the body, motionless. Hold this
-   pose on the last keyframe.
-
-   The motion should feel like the life draining out — a gradual
-   crumple, not a violent ragdoll. Gravity pulls the body down
-   as the legs lose the ability to support it."
-
 Clip name: BlackWidow_Death
+Status: Working acceptably. The death curl reads well.
 Loop: No
 Duration: ~0.50 seconds
-Trigger: "Death" animator trigger
-Notes: After the clip ends, the GameObject is destroyed after a short
-       delay. The final curled pose must hold as the last keyframe.
 
 
 ─────────────────────────────────────
 6. POISON HIT REACTION (optional, one-shot)
 ─────────────────────────────────────
-Prompt:
-  "A quick flinch/hit reaction for a spider. The body jerks backward
-   a small amount, two front legs raise defensively, then everything
-   snaps back to idle stance. Very fast — a single twitch."
-
 Clip name: BlackWidow_HitReact
 Loop: No
 Duration: ~0.15 seconds
-Notes: Optional. Plays on poisoned units, not on the Black Widow itself.
+Notes: Optional. Quick flinch that plays on poisoned targets.
 
 
 ========================================
@@ -232,29 +255,3 @@ Transitions:
   Any  -> Death:    Death trigger (no exit transition)
   Attack -> Idle:   Has Exit Time (clip end)
   WebCast -> Idle:  Has Exit Time (clip end)
-
-
-========================================
-  TROUBLESHOOTING / FIX CHECKLIST
-========================================
-
-If the spider appears face-down or collapsed in-game:
-  1. Check that the Idle animation's first keyframe has the spider
-     standing upright on all 8 legs, NOT in the FBX bind/rest pose.
-  2. The prefab Visual root has localEulerAngles = (-90, 0, 0).
-     Animations must NOT fight this rotation — animate in model space.
-  3. If the FBX has no embedded clips, the Idle state falls back to
-     the Walk clip at speed=0 (frozen first frame). Make sure that
-     first frame is a valid standing pose.
-
-If the walk looks like sliding/moonwalking:
-  1. The Walk clip should have root motion disabled (handled by
-     NavMeshAgent). The legs animate in-place; the agent moves
-     the transform.
-  2. Check that "IsMoving" bool is being set by UnitAnimationDriver
-     — if it's never true, the Idle state plays forever.
-
-If the web cast looks like a generic magic cast:
-  1. The front legs must visibly SPREAD outward like pulling silk.
-  2. The abdomen must PULSE — two quick forward thrusts.
-  3. Think "spider weaving a net with its legs" not "wizard waving hands."
