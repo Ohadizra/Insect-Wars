@@ -1,0 +1,27 @@
+{
+    "asset": "7b2fad53cc04942a6b33bb6c3d86ae71",
+    "fileName": "019d91d3-952d-7de7-9bde-5c6bcc8aa6fa.jpg",
+    "prompt": "A high-fidelity Hawk Moth, spread wings, top-down view, transparent background, stylized insect art, match existing project style. Colorful blue and black wings. Large eyes. Stylized. Clear silhouette. Transparent background.",
+    "negativePrompt": "",
+    "model": "f722aea3-8760-4eb1-a516-e2fce6476303",
+    "modelName": "Seedream 4",
+    "customSeed": -1,
+    "w3CTraceId": "2793d51b2d5bb056835b1b4eb2e4d9be",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

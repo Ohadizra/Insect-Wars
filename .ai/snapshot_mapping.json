@@ -815,6 +815,12 @@
       "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
       "content": "",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "faf5889f-8d2f-499e-b723-3a67f915bd63",
+      "content": "fix the fly animation of the moth unit",
+      "snapshot_message_type": 0
     }
   ]
 }
