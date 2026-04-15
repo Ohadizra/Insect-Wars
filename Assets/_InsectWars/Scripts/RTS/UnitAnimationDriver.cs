@@ -36,6 +36,7 @@ namespace InsectWars.RTS
         InsectUnit _unit;
         Vector3 _baseLocalPos;
         Vector3 _baseScale;
+        Quaternion _baseLocalRot;
         Quaternion _lookRotation;
         
         // Universal bone references for procedural animation (if present)
@@ -84,11 +85,15 @@ namespace InsectWars.RTS
             {
                 _baseLocalPos = modelRoot.localPosition;
                 _baseScale = modelRoot.localScale;
+                _baseLocalRot = modelRoot.localRotation;
                 if (float.IsNaN(_baseLocalPos.x) || float.IsNaN(_baseLocalPos.y) || float.IsNaN(_baseLocalPos.z))
                     _baseLocalPos = Vector3.zero;
                 if (float.IsNaN(_baseScale.x) || float.IsNaN(_baseScale.y) || float.IsNaN(_baseScale.z)
                     || _baseScale == Vector3.zero)
                     _baseScale = Vector3.one;
+                if (float.IsNaN(_baseLocalRot.x) || float.IsNaN(_baseLocalRot.y) || float.IsNaN(_baseLocalRot.z)
+                    || _baseLocalRot == new Quaternion(0, 0, 0, 0))
+                    _baseLocalRot = Quaternion.identity;
                 
                 // Initialize _lookRotation to the transform's heading
                 _lookRotation = transform.rotation;
@@ -133,7 +138,13 @@ namespace InsectWars.RTS
             return name.Contains("BlackWidow");
         }
 
-        bool NeedsPitchCorrection() => IsBlackWidow();
+        bool IsStickSpy()
+        {
+            if (_unit != null && _unit.Archetype == UnitArchetype.StickSpy) return true;
+            return name.Contains("Stick") || name.Contains("Sentinel");
+        }
+
+        bool NeedsPitchCorrection() => IsBlackWidow() || IsStickSpy();
 
         void Update()
         {
@@ -176,25 +187,25 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                modelRoot.rotation = _lookRotation;
+                modelRoot.rotation = _lookRotation * _baseLocalRot;
                 }
                 }
 
-        void LateUpdate()
-        {
-            if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
+                void LateUpdate()
+                {
+                if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
 
-            var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
-            var planar = new Vector3(vel.x, 0f, vel.z);
-            var moving = planar.sqrMagnitude > 0.01f;
+                var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
+                var planar = new Vector3(vel.x, 0f, vel.z);
+                var moving = planar.sqrMagnitude > 0.01f;
 
-            float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
-            _idleT += dt;
+                float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
+                _idleT += dt;
 
-            var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
+                var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-            if (_buildAnimTimer > 0f)
-            {
+                if (_buildAnimTimer > 0f)
+                {
                 _buildAnimTimer -= dt;
                 float workSpeed = 14f;
                 float cycle = _idleT * workSpeed;
@@ -210,28 +221,35 @@ namespace InsectWars.RTS
                 if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 6f) * 12f, 0f, 0f);
                 bob = 0f; 
                 ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
-            }
-            else if (IsBlackWidow())
-            {
+                }
+                else if (IsBlackWidow())
+                {
                 ApplyBlackWidowLoop(dt, moving, planar.magnitude);
-            }
-            else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
-            {
+                }
+                else if (IsStickSpy())
+                {
+                ApplyStickLoop(dt, moving, planar.magnitude);
+                }
+                else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+                {
                 ApplyMantisLoop(dt);
-            }
-            else
-            {
+                }
+                else
+                {
                 modelRoot.localScale = _baseScale;
                 if (!(animator != null && animator.runtimeAnimatorController != null))
                     ResetBones(dt * 5f);
-            }
+                }
 
-            {
-                float heightOffset = IsBlackWidow() ? 0.55f : 0f;
+                {
+                float heightOffset = 0f;
+                if (IsBlackWidow()) heightOffset = 0.55f;
+                else if (IsStickSpy()) heightOffset = 1.55f;
+
                 var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
                 if (!float.IsNaN(newPos.y))
                     modelRoot.localPosition = newPos;
-            }
+                }
 
             if (_attackAnimT > 0f)
             {
@@ -299,9 +317,34 @@ namespace InsectWars.RTS
                 modelRoot.localRotation *= Quaternion.Euler(sway, 0f, rollSway);
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
-        }
+            }
 
-        void ApplyBlackWidowSpecial(float p, float duration)
+            void ApplyStickLoop(float dt, bool moving, float speed)
+            {
+                if (moving)
+                {
+                    // Animated gait for the stick body (procedural because FBX has no clips)
+                    float gaitSpeed = 12.0f;
+                    float cycle = _idleT * gaitSpeed;
+                    float groupA = Mathf.Sin(cycle);
+                
+                    float swayYaw = Mathf.Sin(cycle * 0.5f) * 6.5f;
+                    float swayPitch = Mathf.Abs(groupA) * 4.5f;
+                    float walkBob = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle)), 2f) * 0.12f;
+
+                    modelRoot.localRotation *= Quaternion.Euler(swayPitch, swayYaw, groupA * 3f);
+                    modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
+                }
+                else
+                {
+                    float breath = 1f + Mathf.Sin(_idleT * 1.8f) * 0.02f;
+                    float sway = Mathf.Sin(_idleT * 0.8f) * 2.5f;
+                    modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+                }
+            }
+
+            void ApplyBlackWidowSpecial(float p, float duration)
         {
             if (duration > 0.45f) // WebCast
             {
