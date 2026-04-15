@@ -5,6 +5,11 @@ using UnityEngine.AI;
 
 namespace InsectWars.RTS
 {
+    /// <summary>
+    /// Procedural and Animator-based driver for unit animations.
+    /// Handles the Black Widow's complex multi-phase motions through code
+    /// to compensate for the lack of skeletal rigging in the current model.
+    /// </summary>
     [DisallowMultipleComponent]
     [ExecuteAlways]
     public class UnitAnimationDriver : MonoBehaviour
@@ -33,7 +38,7 @@ namespace InsectWars.RTS
         Vector3 _baseScale;
         Quaternion _lookRotation;
         
-        // Universal bone references for procedural animation
+        // Universal bone references for procedural animation (if present)
         Transform _lArm, _rArm, _chest, _head, _tail;
         Quaternion _lArmBase, _rArmBase, _chestBase, _headBase, _tailBase;
         
@@ -77,7 +82,7 @@ namespace InsectWars.RTS
                 _baseLocalPos = modelRoot.localPosition;
                 _baseScale = modelRoot.localScale;
                 
-                // FIX: Initialize _lookRotation to the transform's heading, NOT the tilted model root's rotation.
+                // Initialize _lookRotation to the transform's heading
                 _lookRotation = transform.rotation;
 
                 _lArm = FindRecursive(modelRoot, "frontleg") ?? FindRecursive(modelRoot, "LeftArm");
@@ -152,7 +157,7 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                // Corrective rotation for the Black Widow model orientation
+                // Corrective rotation for the Black Widow model orientation (-90X pitch)
                 if (IsBlackWidow())
                     modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f, 0f, 0f);
                 else
@@ -206,7 +211,7 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            // FIX: Lift the model for Black Widow so legs aren't underground
+            // Lift the model for Black Widow so legs aren't underground (0.48f height)
             float heightOffset = IsBlackWidow() ? 0.48f : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
 
@@ -215,12 +220,9 @@ namespace InsectWars.RTS
                 _attackAnimT -= dt;
                 float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
 
-                if (IsBlackWidow() && _attackAnimDuration > 0.45f) // Using duration to detect WebCast
+                if (IsBlackWidow())
                 {
-                    float rearUp = Mathf.Sin(p * Mathf.PI) * 35f;
-                    float pulse = 1f + Mathf.Sin(p * Mathf.PI * 4f) * 0.15f;
-                    modelRoot.localRotation *= Quaternion.Euler(-rearUp, 0f, 0f);
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f, pulse, 1f));
+                    ApplyBlackWidowSpecial(p, _attackAnimDuration);
                 }
                 else if (_unit.Archetype == UnitArchetype.BasicRanged)
                 {
@@ -243,7 +245,7 @@ namespace InsectWars.RTS
                     if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
                 }
             }
-            else if (_unit.Archetype != UnitArchetype.BasicFighter && _unit.Archetype != UnitArchetype.BlackWidow)
+            else if (_unit.Archetype != UnitArchetype.BasicFighter && !IsBlackWidow())
             {
                 float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
@@ -254,20 +256,88 @@ namespace InsectWars.RTS
         {
             if (moving)
             {
-                float walkSpeed = speed * 4f;
-                float wobbleX = Mathf.Sin(_idleT * walkSpeed) * 8f;
-                float wobbleZ = Mathf.Cos(_idleT * walkSpeed * 0.5f) * 5f;
-                float tilt = 10f;
-                modelRoot.localRotation *= Quaternion.Euler(tilt + wobbleZ, wobbleX, 0f);
-                float squash = 1f + Mathf.Sin(_idleT * walkSpeed) * 0.05f;
+                // Walk: Alternating tetrapod gait mimicry via body sway
+                // One complete cycle in ~0.9 seconds
+                float cycleSpeed = 7.0f; 
+                float cycle = _idleT * cycleSpeed;
+                
+                // Body bob (5% of height)
+                float walkBob = Mathf.Sin(cycle * 2f) * 0.025f;
+                
+                // Abdomen trails with subtle left-right sway
+                float abdomenSway = Mathf.Sin(cycle) * 6f;
+                
+                // Cephalothorax stays level and forward, but we wobble the body slightly
+                float wobbleZ = Mathf.Cos(cycle) * 3f;
+
+                modelRoot.localRotation *= Quaternion.Euler(10f, abdomenSway, wobbleZ);
+                modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
+                
+                // Subtle rhythmic compression to imply leg pushing
+                float squash = 1f + Mathf.Sin(cycle * 2f) * 0.03f;
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f, 1f / squash));
             }
             else
             {
+                // Idle: Subtle body sway and breathing
                 float breath = 1f + Mathf.Sin(_idleT * 2f) * 0.02f;
                 float sway = Mathf.Sin(_idleT * 1.5f) * 3f;
                 modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+            }
+        }
+
+        void ApplyBlackWidowSpecial(float p, float duration)
+        {
+            if (duration > 0.45f) // WebCast
+            {
+                // PHASE 1: Spin up (0-0.24p) - angle abdomen forward
+                // PHASE 2: Silk production (0.24-0.6p) - two quick pumping contractions
+                // PHASE 3: Release (0.6-1.0p)
+                float spinUp = Mathf.Clamp01(p / 0.24f);
+                float production = Mathf.Clamp01((p - 0.24f) / 0.36f);
+                
+                // Abdomen tilt (simulated by whole body rotation)
+                float tilt = Mathf.Sin(spinUp * Mathf.PI * 0.5f) * -25f;
+                
+                // Abdomen pumping: two quick squeezes
+                float pump = 0f;
+                if (production > 0 && production < 1f)
+                    pump = Mathf.Sin(production * Mathf.PI * 2f) * 0.15f;
+
+                modelRoot.localRotation *= Quaternion.Euler(tilt, 0f, 0f);
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f + pump, 1f - pump, 1f + pump));
+            }
+            else // Venomous Bite
+            {
+                // PHASE 1: Rear up (0-0.2p)
+                // PHASE 2: Strike down (0.2-0.5p)
+                // PHASE 3: Release and retract (0.5-1.0p)
+                
+                float angle = 0f;
+                float lunge = 0f;
+                float squash = 1f;
+
+                if (p < 0.2f) 
+                {
+                    angle = (p / 0.2f) * -25f; // Rear up
+                }
+                else if (p < 0.5f) 
+                {
+                    float strikeP = (p - 0.2f) / 0.3f;
+                    angle = -25f + strikeP * 45f; // Strike down
+                    lunge = Mathf.Sin(strikeP * Mathf.PI) * 0.6f;
+                    squash = 1.15f;
+                }
+                else 
+                {
+                    float retractP = (p - 0.5f) / 0.5f;
+                    angle = 20f * (1f - retractP); // Retract
+                }
+
+                modelRoot.localRotation *= Quaternion.Euler(angle, 0f, 0f);
+                modelRoot.localPosition += modelRoot.forward * lunge;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
             }
         }
 
@@ -314,11 +384,11 @@ namespace InsectWars.RTS
             if (_unit != null && _unit.Archetype == UnitArchetype.BlackWidow)
             {
                 lines.Add("Black Widow Procedural Driver:");
-                lines.Add("· Orientation: Corrected -90X pitch");
-                lines.Add("· Idle: Subtle body sway + breathing");
-                lines.Add("· Walk: Aggressive tetrapod wobble (yaw/pitch)");
-                lines.Add("· Attack: Forward lunge + squash");
-                lines.Add("· WebCast: Rearing up + abdomen pulse");
+                lines.Add("· Orientation: Fixed -90X pitch");
+                lines.Add("· Height: +0.48 Ground Clear");
+                lines.Add("· Walk: Realistic body sway + bob");
+                lines.Add("· Bite: 3-phase rear/strike/retract");
+                lines.Add("· Web: Abdomen forward + pumping");
             }
             else
             {
@@ -326,5 +396,5 @@ namespace InsectWars.RTS
             }
             return lines;
         }
-        }
-        }
+    }
+}

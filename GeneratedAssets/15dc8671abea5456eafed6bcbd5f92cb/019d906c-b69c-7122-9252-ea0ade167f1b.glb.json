@@ -1,0 +1,12 @@
+{
+    "asset": "15dc8671abea5456eafed6bcbd5f92cb",
+    "fileName": "019d906c-b69c-7122-9252-ea0ade167f1b.glb",
+    "prompt": "A rigged, game-ready 3D model of a Black Widow spider. Eight legs clearly separated and parented to bones. Compact cephalothorax and large bulbous abdomen. Dark black shiny texture with a red hourglass marking on the belly. High quality topology suitable for skeletal animation. Rigged with bones for each leg (L1-L4, R1-R4) and the abdomen. Stylized but realistic proportions.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "cefbd244f09ed26225be30673bdb165e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
