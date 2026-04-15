@@ -114,6 +114,9 @@ namespace InsectWars.RTS
             _unit.IsCloaked = false;
             _landingT = 0f;
             ApplyAlpha(1f);
+
+            var driver = GetComponent<UnitAnimationDriver>();
+            if (driver != null) driver.NotifyTakeoff();
         }
 
         void UpdateFlying(bool moved, bool tookDamage)

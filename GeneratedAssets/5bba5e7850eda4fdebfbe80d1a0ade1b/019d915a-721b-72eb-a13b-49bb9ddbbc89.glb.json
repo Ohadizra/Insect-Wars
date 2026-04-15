@@ -1,0 +1,12 @@
+{
+    "asset": "5bba5e7850eda4fdebfbe80d1a0ade1b",
+    "fileName": "019d915a-721b-72eb-a13b-49bb9ddbbc89.glb",
+    "prompt": "Rigged steampunk clockwork moth (Nocturnal Sentinel). Brass gears, clock-face wings, piston legs. Bone hierarchy: Thorax (Root), Spine (2 bones), Abdomen (1 bone), Head, Antennae (2 bones each), Upper Wings (1 bone each), Lower Wings (1 bone each), 6 Legs (3 segments each). Skeletal mesh, Generic rig. Facing +Z. Style matches reference. High detail mechanical insect. Ready for animation. Wings should be separate bones. Legs should be separate bones. Clean weights. Unity ready prefab. Full skeletal structure as described. Support unit, graceful presence. No weapons. Clockwork aesthetic. Brass and copper materials. Translucent clockwork wings. Feathery antennae. 6 functional legs. Thorax is the center of mass. +Z is forward. +Y is up. Scale 1.0. Mesh density balanced for RTS. Optimized for Unity. PBR maps included. Prefab output. Animation target. Mechanical joints visible. Industrial clockwork design. Sentinel theme. Nocturnal coloring. Elegant flight-capable anatomy. Rig is crucial. Part-based skeletal mesh. Skeleton hierarchy from Thorax. Body parts parented to bones. Correct pivot. Smooth skinning. Professional quality. Final asset should be fully animatable in Unity with standard Animator. No root motion. Stationary center. Wings and legs must be articulable. Head must be movable. Abdomen must be articulable. Total bones around 35. This is a technical request for a rigged character model. Final save path: Assets/_InsectWars/Units/Hawk Moth/HawkMoth_Skeletal.prefab. Reference image used for visual consistency. High fidelity output. Clear geometry. Normals corrected. UVs unwrapped. PBR textures assigned. Ready for Text-to-Motion animation. 3D model only. No animations in this file. Just the rig and mesh. Thank you.",
+    "negativePrompt": "",
+    "model": "05e5b649-f94c-4ec6-852c-2a9c4a0af3ab",
+    "modelName": "Hunyuan 3D 3.0 (Pro)",
+    "customSeed": -1,
+    "w3CTraceId": "1250b4eff1e3cc387697d50b2ff8be32",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
