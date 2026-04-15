@@ -755,6 +755,12 @@
       "conversation_id": "d58aaef2-235f-45c3-9b39-67a1ccdead0b",
       "content": "The errors you're seeing are caused by a **Git synchronization conflict** within the automated **Unity Game Data Collection** package. This package is trying to back up your project to GitHub, but it's failing because your local project is \"behind\" the version on the GitHub server (likely due to changes made on another machine or directly on the web).\n\n### How to Fix the Git Error Patterns:\n\nSince this is a standard Git conflict, you can resolve it by following these steps in your terminal:\n\n1.  Open **Terminal** on your Mac.\n2.  Navigate to your project directory:\n    ```bash\n    cd \"/Users/ohad.izraeli/Desktop/Insect Wars\"\n    ```\n3.  Synchronize your local project with the version on GitHub:\n    ```bash\n    git pull origin main --rebase\n    ```\n    *If there are conflicts during the rebase, you'll need to resolve them, but usually, this command will simply \"catch up\" your local project.*\n4.  Once the pull is successful, the Unity automated tool should start working again. If you want to push your local changes manually, run:\n    ```bash\n    git push origin main\n    ```\n\n### Regarding the other warnings:\n*   **Missing Script Warning**: I have scanned your active scenes and prefabs and could not find any missing script components. This warning sometimes persists in Unity's cache even after the issue is fixed. You can usually clear it by restarting the Unity Editor or by going to **Help > Reset Packages to Defaults** (though the latter is usually overkill).\n*   **TextureSkeleton Serialization**: As mentioned previously, this is a minor internal bug within the **Unity Muse/AI PBR** package. It doesn't affect your game's logic or performance and can be safely ignored until Unity releases a package update that adds the missing `[Serializable]` attribute to that specific internal class.\n\nBy running the `git pull` command above, you will resolve the primary \"Git command failed\" error pattern appearing in your console.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "e1fe0403-a0f4-4c33-900d-d4f253a9e2e9",
+      "content": "open moth's unit description and make the animations based on the requirments. remmber that its a flying insect and the animation has to take its anatomy in mind",
+      "snapshot_message_type": 0
     }
   ]
 }

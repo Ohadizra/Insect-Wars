@@ -118,6 +118,14 @@ namespace InsectWars.RTS
             return name.Contains("BlackWidow");
         }
 
+        bool IsHawkMoth()
+        {
+            if (_unit != null && _unit.Archetype == UnitArchetype.HawkMoth) return true;
+            return name.Contains("HawkMoth");
+        }
+
+        bool NeedsPitchCorrection() => IsBlackWidow() || IsHawkMoth();
+
         void Update()
         {
             if (_unit == null || !_unit.IsAlive || _dying)
@@ -157,8 +165,7 @@ namespace InsectWars.RTS
                     _lookRotation = Quaternion.RotateTowards(_lookRotation, q, turnSpeed * Time.unscaledDeltaTime);
                 }
 
-                // Corrective rotation for the Black Widow model orientation (-90X pitch)
-                if (IsBlackWidow())
+                if (NeedsPitchCorrection())
                     modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f, 0f, 0f);
                 else
                     modelRoot.rotation = _lookRotation;
@@ -211,8 +218,7 @@ namespace InsectWars.RTS
                     ResetBones(dt * 5f);
             }
 
-            // Lift the model for Black Widow so legs aren't underground (0.55f height)
-            float heightOffset = IsBlackWidow() ? 0.55f : 0f;
+            float heightOffset = IsBlackWidow() ? 0.55f : IsHawkMoth() ? 0.4f : 0f;
             modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
 
             if (_attackAnimT > 0f)

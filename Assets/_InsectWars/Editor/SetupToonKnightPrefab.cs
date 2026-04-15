@@ -15,14 +15,6 @@ namespace InsectWars.Editor
         const string LibraryDir = "Assets/_InsectWars/Data";
         const string LibraryPath = LibraryDir + "/DefaultVisualLibrary.asset";
 
-        // --- Knight Fighter paths ---
-        const string KnightModelPath = "Assets/Toon_RTS_demo/models/ToonRTS_demo_Knight.FBX";
-        const string KnightAnimIdlePath = "Assets/Toon_RTS_demo/animations/WK_heavy_infantry_05_combat_idle.FBX";
-        const string KnightAnimWalkPath = "Assets/Toon_RTS_demo/animations/WK_heavy_infantry_06_combat_walk.FBX";
-        const string KnightAnimAttackPath = "Assets/Toon_RTS_demo/animations/WK_heavy_infantry_08_attack_B.FBX";
-        const string KnightControllerPath = ControllerDir + "/KnightFighter.controller";
-        const string KnightPrefabPath = PrefabDir + "/KnightFighter.prefab";
-
         // --- Ant Worker paths ---
         const string AntModelPath = "Assets/Insects Art/Meshy_AI_Iron_Ant_Vanguard_0404124845_texture_fbx 1/Meshy_AI_Iron_Ant_Vanguard_quadruped/Meshy_AI_Iron_Ant_Vanguard_quadruped_model_Animation_Walking_withSkin.fbx";
         const string AntTexDir = "Assets/Insects Art/Meshy_AI_Iron_Ant_Vanguard_0404124845_texture_fbx 1/Meshy_AI_Iron_Ant_Vanguard_quadruped";
@@ -100,26 +92,6 @@ namespace InsectWars.Editor
             SetupBlackWidow();
             SetupHawkMoth();
             SetupAntNest();
-        }
-
-        [MenuItem("Insect Wars/Setup Toon Knight Fighter")]
-        public static void SetupKnightFighter()
-        {
-            if (!ValidateAssets(KnightModelPath, KnightAnimIdlePath, KnightAnimWalkPath, KnightAnimAttackPath))
-                return;
-
-            var controller = BuildKnightController();
-            var prefab = BuildPrefab(KnightModelPath, KnightPrefabPath, "KnightFighter",
-                controller, Vector3.one * 0.55f,
-                agentHeight: 1.0f, agentRadius: 0.42f, agentSpeed: 5.4f,
-                colCenter: new Vector3(0f, 0.5f, 0f), colRadius: 0.4f, colHeight: 1.0f);
-
-            UpdateLibrary(meleePrefab: prefab);
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("[Insect Wars] Knight fighter setup complete! " +
-                      "Make sure DefaultVisualLibrary is assigned on MapDirector.");
         }
 
         [MenuItem("Insect Wars/Setup Ant Worker")]
@@ -322,6 +294,8 @@ namespace InsectWars.Editor
                 mat.shader = sh;
             }
 
+            mat.SetColor("_BaseColor", Color.white);
+
             var baseTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothBaseTexPath);
             if (baseTex != null)
                 mat.SetTexture("_BaseMap", baseTex);
@@ -333,14 +307,10 @@ namespace InsectWars.Editor
                 mat.EnableKeyword("_NORMALMAP");
             }
 
-            var emissionTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothEmissionTexPath);
-            if (emissionTex != null)
-            {
-                mat.SetTexture("_EmissionMap", emissionTex);
-                mat.SetColor("_EmissionColor", Color.white * 0.4f);
-                mat.EnableKeyword("_EMISSION");
-                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-            }
+            mat.SetTexture("_EmissionMap", null);
+            mat.SetColor("_EmissionColor", Color.black);
+            mat.DisableKeyword("_EMISSION");
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
 
             var roughnessTex = AssetDatabase.LoadAssetAtPath<Texture2D>(MothRoughnessTexPath);
             if (roughnessTex != null)
@@ -806,37 +776,6 @@ namespace InsectWars.Editor
                 importer.SaveAndReimport();
                 Debug.Log("[Insect Wars] Fixed ant FBX import settings (scale=80, Generic rig, avatar, looping clips).");
             }
-        }
-
-        // ----------------------------------------------------------------
-        // Knight animator
-        // ----------------------------------------------------------------
-
-        static AnimatorController BuildKnightController()
-        {
-            EnsureDirectory(ControllerDir);
-            DeleteIfExists(KnightControllerPath);
-
-            var c = AnimatorController.CreateAnimatorControllerAtPath(KnightControllerPath);
-            AddStandardParameters(c);
-
-            var sm = c.layers[0].stateMachine;
-
-            var idleState = sm.AddState("Idle");
-            idleState.motion = ExtractClip(KnightAnimIdlePath);
-            sm.defaultState = idleState;
-
-            var walkState = sm.AddState("Walk");
-            walkState.motion = ExtractClip(KnightAnimWalkPath);
-
-            var attackState = sm.AddState("Attack");
-            attackState.motion = ExtractClip(KnightAnimAttackPath);
-
-            AddLocomotionTransitions(idleState, walkState);
-            AddAttackTransitions(sm, idleState, attackState);
-
-            EditorUtility.SetDirty(c);
-            return c;
         }
 
         // ----------------------------------------------------------------
