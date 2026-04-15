@@ -378,7 +378,13 @@ namespace InsectWars.Editor
         static AnimatorController BuildStickSpyController()
         {
             EnsureDirectory(ControllerDir);
-            DeleteIfExists(StickControllerPath);
+
+            var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(StickControllerPath);
+            if (existing != null)
+            {
+                Debug.Log("[Insect Wars] Preserving existing StickSpy controller (keeping user-assigned clips).");
+                return existing;
+            }
 
             var c = AnimatorController.CreateAnimatorControllerAtPath(StickControllerPath);
             AddStandardParameters(c);
