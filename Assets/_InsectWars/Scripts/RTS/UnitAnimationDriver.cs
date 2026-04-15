@@ -177,7 +177,7 @@ namespace InsectWars.RTS
                 }
 
                 if (NeedsPitchCorrection())
-                    modelRoot.rotation = _lookRotation * Quaternion.Euler(-90f, 0f, 0f);
+                    modelRoot.rotation = _lookRotation;
                 else
                     modelRoot.rotation = _lookRotation;
             }

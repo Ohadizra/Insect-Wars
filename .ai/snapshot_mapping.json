@@ -869,6 +869,12 @@
       "conversation_id": "b55165a2-b7a3-4007-894c-8603809b88fc",
       "content": "fix spider orientation",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "when spider is walking the back of its body is up in the air, the body shuld stay flat while moving",
+      "snapshot_message_type": 0
     }
   ]
 }
