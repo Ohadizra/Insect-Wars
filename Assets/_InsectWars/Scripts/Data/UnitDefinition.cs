@@ -81,7 +81,7 @@ namespace InsectWars.Data
                 UnitArchetype.StickSpy => 0f,
                 _ => 0.95f
             };
-            d.visionRadius = type == UnitArchetype.StickSpy ? 16f : 12f;
+            d.visionRadius = type == UnitArchetype.StickSpy ? 18f : 12f;
             return d;
         }
     }

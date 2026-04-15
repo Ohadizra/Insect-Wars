@@ -58,13 +58,13 @@ namespace InsectWars.Editor
         const string WidowPrefabPath = PrefabDir + "/BlackWidow.prefab";
 
         // --- Stick Spy paths ---
-        const string StickModelPath = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture.fbx";
-        const string StickTexDir = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx";
-        const string StickBaseTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture.png";
-        const string StickNormalTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_normal.png";
-        const string StickEmissionTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_emission.png";
-        const string StickMetallicTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_metallic.png";
-        const string StickRoughnessTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_roughness.png";
+        const string StickModelPath = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx/Meshy_AI_Sentinel_of_the_Rusty_quadruped/Meshy_AI_Sentinel_of_the_Rusty_quadruped_model_Animation_Walking_withSkin.fbx";
+        const string StickTexDir = "Assets/_InsectWars/Units/Stick/Meshy_AI_Sentinel_of_the_Rusty_0415174332_texture_fbx/Meshy_AI_Sentinel_of_the_Rusty_quadruped";
+        const string StickBaseTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_quadruped_texture_0.png";
+        const string StickNormalTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_quadruped_texture_0_normal.png";
+        const string StickEmissionTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_quadruped_texture_0_emission.png";
+        const string StickMetallicTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_quadruped_texture_0_metallic.png";
+        const string StickRoughnessTexPath = StickTexDir + "/Meshy_AI_Sentinel_of_the_Rusty_quadruped_texture_0_roughness.png";
         const string StickMaterialPath = PrefabDir + "/StickSpyMat.mat";
         const string StickControllerPath = ControllerDir + "/StickSpy.controller";
         const string StickPrefabPath = PrefabDir + "/StickSpy.prefab";
@@ -382,8 +382,24 @@ namespace InsectWars.Editor
             var existing = AssetDatabase.LoadAssetAtPath<AnimatorController>(StickControllerPath);
             if (existing != null)
             {
-                Debug.Log("[Insect Wars] Preserving existing StickSpy controller (keeping user-assigned clips).");
-                return existing;
+                bool hasClips = false;
+                foreach (var layer in existing.layers)
+                {
+                    foreach (var state in layer.stateMachine.states)
+                    {
+                        if (state.state.motion != null) { hasClips = true; break; }
+                    }
+                    if (hasClips) break;
+                }
+
+                if (hasClips)
+                {
+                    Debug.Log("[Insect Wars] Preserving existing StickSpy controller (has valid clips).");
+                    return existing;
+                }
+
+                Debug.Log("[Insect Wars] Existing StickSpy controller has no clips — rebuilding with animated FBX.");
+                DeleteIfExists(StickControllerPath);
             }
 
             var c = AnimatorController.CreateAnimatorControllerAtPath(StickControllerPath);
