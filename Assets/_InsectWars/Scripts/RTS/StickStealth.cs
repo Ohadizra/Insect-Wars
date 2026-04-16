@@ -15,7 +15,10 @@ namespace InsectWars.RTS
 
         const float CloakDelay = 5f;
         const float PanicFleeDistance = 10f;
-        const float CloakedAlpha = 0.5f;
+        const float CloakedAlphaMin = 0.55f;
+        const float CloakedAlphaMax = 0.82f;
+        const float ShimmerSpeed = 1.8f;
+        const float CloakedDesaturation = 0.4f;
 
         static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
         static readonly int ColorID = Shader.PropertyToID("_Color");
@@ -33,6 +36,7 @@ namespace InsectWars.RTS
 
         StickState _state = StickState.Moving;
         float _stateTimer;
+        float _shimmerPhase;
         float _lastDamageTime;
         Vector3 _lastPos;
 
@@ -153,8 +157,9 @@ namespace InsectWars.RTS
         {
             _state = StickState.Cloaked;
             _stateTimer = 0f;
+            _shimmerPhase = 0f;
             _unit.IsCloaked = true;
-            ApplyAlpha(CloakedAlpha, transparent: true);
+            ApplyShimmer();
         }
 
         void UpdateCloaked(bool moved, bool tookDamage)
@@ -169,6 +174,16 @@ namespace InsectWars.RTS
                 PanicFlee();
                 return;
             }
+
+            _shimmerPhase += Time.deltaTime * ShimmerSpeed;
+            ApplyShimmer();
+        }
+
+        void ApplyShimmer()
+        {
+            float t = (Mathf.Sin(_shimmerPhase) + 1f) * 0.5f;
+            float alpha = Mathf.Lerp(CloakedAlphaMin, CloakedAlphaMax, t);
+            ApplyAlpha(alpha, transparent: true, desaturate: true);
         }
 
         // ───────────── Panic flee ─────────────
@@ -210,7 +225,7 @@ namespace InsectWars.RTS
 
         // ───────────── Renderer alpha + URP transparency ─────────────
 
-        void ApplyAlpha(float alpha, bool transparent)
+        void ApplyAlpha(float alpha, bool transparent, bool desaturate = false)
         {
             if (_renderers == null || _teamColors == null) return;
             var block = new MaterialPropertyBlock();
@@ -244,13 +259,17 @@ namespace InsectWars.RTS
                 r.GetPropertyBlock(block);
 
                 var c = _teamColors[i];
+                if (desaturate)
+                {
+                    float grey = c.r * 0.299f + c.g * 0.587f + c.b * 0.114f;
+                    c = Color.Lerp(c, new Color(grey, grey, grey, 1f), CloakedDesaturation);
+                }
                 c.a = alpha;
                 block.SetColor(BaseColorID, c);
 
                 if (mat.HasProperty(ColorID))
                 {
-                    var c2 = _teamColors[i];
-                    c2.a = alpha;
+                    var c2 = c;
                     block.SetColor(ColorID, c2);
                 }
 
