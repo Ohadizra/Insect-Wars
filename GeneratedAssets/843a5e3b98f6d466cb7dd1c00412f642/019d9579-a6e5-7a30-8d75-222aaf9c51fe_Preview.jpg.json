@@ -1,0 +1,12 @@
+{
+    "asset": "843a5e3b98f6d466cb7dd1c00412f642",
+    "fileName": "019d9579-a6e5-7a30-8d75-222aaf9c51fe_Preview.jpg",
+    "prompt": "Glacier ice blocks, crystalline structure, sharp frost edges, trapped air bubbles, realistic PBR, seamless tileable.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1878586655,
+    "w3CTraceId": "df63108fc875410e9c8a35ba99a35d6e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

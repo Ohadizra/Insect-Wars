@@ -38,6 +38,15 @@ namespace InsectWars.Data
             if (constructionPrefab == null)
                 constructionPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
                     "Assets/_InsectWars/Models/ConstructionCocoon.prefab");
+            if (outOfBoundsMaterial == null)
+                outOfBoundsMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/FrozenAbyssDeepIce.mat");
+            if (mapBarrierMaterial == null)
+                mapBarrierMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/GlacierWallCrystal.mat");
+            if (iciclePrefab == null)
+                iciclePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                    "Assets/_InsectWars/Models/GiantIcicleSpike.prefab");
             }
             #endif
 
@@ -64,8 +73,9 @@ namespace InsectWars.Data
         public GameObject clayWallPrefab;
         public GameObject clayWallCornerPrefab;
         public GameObject clayWallPillarPrefab;
+        public GameObject iciclePrefab;
         public Material bigAppleMaterial;
-        public Material groundMaterial;
+public Material groundMaterial;
         public Material outOfBoundsMaterial;
         public Material mapBarrierMaterial;
         public TerrainLayer baseSoilLayer;

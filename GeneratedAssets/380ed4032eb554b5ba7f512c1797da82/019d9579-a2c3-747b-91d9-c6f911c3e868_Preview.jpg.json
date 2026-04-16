@@ -1,0 +1,12 @@
+{
+    "asset": "380ed4032eb554b5ba7f512c1797da82",
+    "fileName": "019d9579-a2c3-747b-91d9-c6f911c3e868_Preview.jpg",
+    "prompt": "Deep frozen dark blue ice, cracked surface with glowing cyan fissures, semi-translucent depth, realistic PBR, seamless tileable.",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 270772988,
+    "w3CTraceId": "2372b7fdb0e77128409dff2a05fef82e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

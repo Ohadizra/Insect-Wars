@@ -91,7 +91,7 @@ namespace InsectWars.RTS
             var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = "GrassTuft";
             go.transform.SetParent(parent, false);
-            Object.Destroy(go.GetComponent<Collider>());
+            if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
             var g = 0.28f + (float)rng.NextDouble() * 0.35f;
             go.transform.position = new Vector3(x, g * 0.5f, z);
             go.transform.localScale = new Vector3(0.35f + (float)rng.NextDouble() * 0.5f, g, 0.35f + (float)rng.NextDouble() * 0.5f);
@@ -111,7 +111,7 @@ namespace InsectWars.RTS
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = "Rock";
             go.transform.SetParent(parent, false);
-            Object.Destroy(go.GetComponent<Collider>());
+            if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
             var s = 0.25f + (float)rng.NextDouble() * 0.55f;
             go.transform.position = new Vector3(x, s * 0.4f, z);
             go.transform.localScale = new Vector3(s, s * (0.55f + (float)rng.NextDouble() * 0.35f), s * (0.8f + (float)rng.NextDouble() * 0.4f));
@@ -146,7 +146,7 @@ namespace InsectWars.RTS
                 var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = "IceCrystal";
                 go.transform.SetParent(parent, false);
-                Object.Destroy(go.GetComponent<Collider>());
+                if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
                 var h = 0.25f + (float)rng.NextDouble() * 0.6f;
                 go.transform.position = new Vector3(x, h * 0.45f, z);
                 go.transform.localScale = new Vector3(0.15f, h, 0.15f);
@@ -170,7 +170,7 @@ namespace InsectWars.RTS
             var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             stem.name = "ShroomStem";
             stem.transform.SetParent(parent, false);
-            Object.Destroy(stem.GetComponent<Collider>());
+            if (Application.isPlaying) Object.Destroy(stem.GetComponent<Collider>()); else Object.DestroyImmediate(stem.GetComponent<Collider>());
             stem.transform.position = new Vector3(x, 0.22f, z);
             stem.transform.localScale = new Vector3(0.12f, 0.22f, 0.12f);
             stem.GetComponent<Renderer>().sharedMaterial = Mat(new Color(0.9f, 0.88f, 0.82f));
@@ -178,7 +178,7 @@ namespace InsectWars.RTS
             var cap = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             cap.name = "ShroomCap";
             cap.transform.SetParent(parent, false);
-            Object.Destroy(cap.GetComponent<Collider>());
+            if (Application.isPlaying) Object.Destroy(cap.GetComponent<Collider>()); else Object.DestroyImmediate(cap.GetComponent<Collider>());
             cap.transform.position = new Vector3(x, 0.42f, z);
             cap.transform.localScale = new Vector3(0.38f, 0.22f, 0.38f);
             var capC = Color.Lerp(new Color(0.75f, 0.2f, 0.22f), new Color(0.55f, 0.15f, 0.45f), (float)rng.NextDouble());
@@ -190,7 +190,7 @@ namespace InsectWars.RTS
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Twig";
             go.transform.SetParent(parent, false);
-            Object.Destroy(go.GetComponent<Collider>());
+            if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
             go.transform.position = new Vector3(x, 0.04f, z);
             go.transform.localScale = new Vector3(0.65f + (float)rng.NextDouble(), 0.06f, 0.08f);
             go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, (float)rng.NextDouble() * 16f - 8f);

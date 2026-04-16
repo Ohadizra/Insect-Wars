@@ -77,17 +77,17 @@ namespace InsectWars.RTS
             SkirmishPlayArea.Clear();
         }
 
-        void DestroyObject(GameObject go)
+        static void SafeDestroy(Object obj)
         {
-            if (go == null) return;
+            if (obj == null) return;
             if (Application.isPlaying)
-                Destroy(go);
+                Object.Destroy(obj);
             else
-                DestroyImmediate(go);
+                Object.DestroyImmediate(obj);
         }
 
         void ApplyMapLayout()
-        {
+{
             var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
             _mapHalfExtent = m != null ? m.mapHalfExtent : 88f;
             _playerStart = m != null ? m.playerArmyStart : new Vector3(-54f, 0f, -44f);
@@ -200,7 +200,7 @@ namespace InsectWars.RTS
 
             EnsureLitShader();
             var world = GameObject.Find("WorldRoot");
-            DestroyObject(world);
+            SafeDestroy(world);
 
             world = new GameObject("WorldRoot");
             var surface = world.AddComponent<NavMeshSurface>();
@@ -254,8 +254,8 @@ namespace InsectWars.RTS
             BuildClimberNavMesh(world);
 
             var systems = GameObject.Find("Systems");
-            DestroyObject(systems);
-            systems = new GameObject("Systems");
+            SafeDestroy(systems);
+systems = new GameObject("Systems");
             systems.AddComponent<PlayerResources>();
             systems.AddComponent<SelectionController>();
             systems.AddComponent<CommandController>();
@@ -367,20 +367,65 @@ namespace InsectWars.RTS
             Material oobMat = (lib != null && lib.outOfBoundsMaterial != null) ? lib.outOfBoundsMaterial : null;
             Material barrierMat = (lib != null && lib.mapBarrierMaterial != null) ? lib.mapBarrierMaterial : null;
 
-            float barrierHeight = 2.5f;
+            bool isFrozen = (lib != null && lib.baseSoilLayer != null && lib.baseSoilLayer.name.Contains("Frozen"));
+            // Better check for frozen theme
+            if (!isFrozen)
+            {
+                var m = GameSession.SelectedMap;
+                if (m != null && m.scatterTheme == ScatterTheme.Frozen) isFrozen = true;
+            }
+
+            float barrierHeight = isFrozen ? 8.5f : 2.5f;
             float barrierY = barrierHeight * 0.5f;
             float len = extent * 2f;
+
             void Edge(string name, Vector3 pos, Vector3 scale)
             {
-                var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                e.name = name;
-                e.transform.SetParent(parent);
-                e.transform.position = pos + Vector3.up * barrierY;
-                e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
-                if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
-                else ApplyMat(e, boundsColor);
-                Object.Destroy(e.GetComponent<Collider>());
-            }
+                var container = new GameObject(name);
+                container.transform.SetParent(parent);
+                container.transform.position = pos;
+
+                if (isFrozen)
+                {
+                    // Create segmented ice wall for "bold" look
+                    int segments = Mathf.CeilToInt(len / 10f);
+                    float segLen = len / segments;
+                    Vector3 forward = (name.Contains("_E") || name.Contains("_W")) ? Vector3.forward : Vector3.right;
+                    Vector3 start = pos - forward * (len * 0.5f) + forward * (segLen * 0.5f);
+
+                    for (int i = 0; i < segments; i++)
+                    {
+                        var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        seg.name = $"{name}_Seg_{i}";
+                        seg.transform.SetParent(container.transform);
+                        float h = barrierHeight * Random.Range(0.85f, 1.25f);
+                        seg.transform.position = start + forward * (i * segLen) + Vector3.up * (h * 0.5f);
+                        seg.transform.localScale = new Vector3(
+                            forward == Vector3.right ? segLen * 1.05f : thickness * 1.5f,
+                            h,
+                            forward == Vector3.forward ? segLen * 1.05f : thickness * 1.5f);
+                        
+                        // Add some organic "ice" rotation
+                        seg.transform.localRotation = Quaternion.Euler(Random.Range(-2f, 2f), Random.Range(-5f, 5f), Random.Range(-2f, 2f));
+
+                        if (barrierMat != null) seg.GetComponent<Renderer>().sharedMaterial = barrierMat;
+                        else ApplyMat(seg, boundsColor);
+                        SafeDestroy(seg.GetComponent<Collider>());
+                        }
+                        }
+                        else
+                        {
+                        var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        e.name = name + "_Solid";
+                        e.transform.SetParent(container.transform);
+                        e.transform.position = pos + Vector3.up * barrierY;
+                        e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
+                        if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
+                        else ApplyMat(e, boundsColor);
+                        SafeDestroy(e.GetComponent<Collider>());
+                        }
+}
+
             Edge("MapEdge_N", new Vector3(0f, 0f, extent), new Vector3(len, thickness, thickness));
             Edge("MapEdge_S", new Vector3(0f, 0f, -extent), new Vector3(len, thickness, thickness));
             Edge("MapEdge_E", new Vector3(extent, 0f, 0f), new Vector3(thickness, thickness, len));
@@ -392,9 +437,26 @@ namespace InsectWars.RTS
                 skirt.name = "OutOfBounds_Skirt";
                 skirt.transform.SetParent(parent);
                 skirt.transform.position = new Vector3(0f, -0.05f, 0f);
-                skirt.transform.localScale = new Vector3(100f, 1f, 100f); 
+                skirt.transform.localScale = new Vector3(400f, 1f, 400f); 
                 skirt.GetComponent<Renderer>().sharedMaterial = oobMat;
-                Object.Destroy(skirt.GetComponent<Collider>());
+                SafeDestroy(skirt.GetComponent<Collider>());
+
+                if (isFrozen && lib != null && lib.iciclePrefab != null)
+                {
+                    // Bold and crazy: Scatter huge icicles in the abyss
+                    Random.InitState(42); 
+                    for (int i = 0; i < 150; i++)
+                    {
+                        Vector2 p = Random.insideUnitCircle.normalized * (extent + Random.Range(20f, 150f));
+                        if (Mathf.Abs(p.x) < extent + 5f && Mathf.Abs(p.y) < extent + 5f) continue;
+
+                        var icicle = Instantiate(lib.iciclePrefab, parent);
+                        icicle.name = "Abyss_Icicle_" + i;
+                        icicle.transform.position = new Vector3(p.x, -2f, p.y);
+                        icicle.transform.localScale = Vector3.one * Random.Range(15f, 45f);
+                        icicle.transform.rotation = Quaternion.Euler(Random.Range(-10f, 10f), Random.Range(0, 360), Random.Range(-10f, 10f));
+                    }
+                }
             }
         }
 
@@ -630,6 +692,7 @@ namespace InsectWars.RTS
                 clay.transform.localScale = scale;
                 foreach (var r in clay.GetComponentsInChildren<Renderer>())
                 {
+                    if (!Application.isPlaying) continue;
                     var mats = r.materials;
                     for (int mi = 0; mi < mats.Length; mi++)
                     {
@@ -641,7 +704,7 @@ namespace InsectWars.RTS
                     }
                     r.materials = mats;
                 }
-            }
+}
             else
             {
                 clay = GameObject.CreatePrimitive(PrimitiveType.Cube);
