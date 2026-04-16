@@ -29,7 +29,7 @@ namespace InsectWars.RTS
             if (_unit.CurrentOrder != UnitOrder.Idle)
                 _unit.OrderStop();
 
-            if (_agent != null)
+            if (_agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh)
             {
                 _agent.isStopped = true;
                 _agent.ResetPath();

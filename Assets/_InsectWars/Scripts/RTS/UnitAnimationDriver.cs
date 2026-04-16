@@ -190,7 +190,7 @@ namespace InsectWars.RTS
             {
                 if (_hasSpeed) animator.SetFloat(Speed, planar.magnitude);
                 if (_hasIsMoving) animator.SetBool(IsMoving, moving);
-                if (_hasGathering) animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isStopped);
+                if (_hasGathering) animator.SetBool(Gathering, _unit.CurrentOrder == UnitOrder.Gather && _agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh && _agent.isStopped);
                 if (_hasBuild) animator.SetBool(Build, _buildAnimTimer > 0f);
             }
 
