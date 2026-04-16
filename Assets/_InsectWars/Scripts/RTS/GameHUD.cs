@@ -48,6 +48,7 @@ namespace InsectWars.RTS
                 var mod = es.AddComponent<InputSystemUIInputModule>();
                 
                 // Manual Link Actions for responsiveness
+                #if UNITY_EDITOR
                 var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
                 if (asset != null)
                 {
@@ -65,8 +66,9 @@ namespace InsectWars.RTS
                         mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
                     }
                 }
-            }
-        }
+                #endif
+                }
+                }
 
         void BuildHud()
         {
