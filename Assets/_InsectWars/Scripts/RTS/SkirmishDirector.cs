@@ -444,11 +444,17 @@ systems = new GameObject("Systems");
                 if (isFrozen && lib != null && lib.iciclePrefab != null)
                 {
                     // Bold and crazy: Scatter huge icicles in the abyss
+                    // EXCLUDE SOUTH to avoid camera occlusion
                     Random.InitState(42); 
                     for (int i = 0; i < 150; i++)
                     {
-                        Vector2 p = Random.insideUnitCircle.normalized * (extent + Random.Range(20f, 150f));
-                        if (Mathf.Abs(p.x) < extent + 5f && Mathf.Abs(p.y) < extent + 5f) continue;
+                        Vector2 p = Random.insideUnitCircle.normalized * (extent + Random.Range(35f, 160f));
+                        
+                        // Avoid spawning in the south sector entirely
+                        if (p.y < -extent + 10f) continue; 
+                        
+                        // Keep further away from playable bounds due to huge scale
+                        if (Mathf.Abs(p.x) < extent + 25f && Mathf.Abs(p.y) < extent + 25f) continue;
 
                         var icicle = Instantiate(lib.iciclePrefab, parent);
                         icicle.name = "Abyss_Icicle_" + i;
@@ -457,7 +463,7 @@ systems = new GameObject("Systems");
                         icicle.transform.rotation = Quaternion.Euler(Random.Range(-10f, 10f), Random.Range(0, 360), Random.Range(-10f, 10f));
                     }
                 }
-            }
+}
         }
 
         static void EnsureLitShader()
