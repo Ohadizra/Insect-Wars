@@ -472,7 +472,6 @@ namespace InsectWars.RTS
 
         void Update()
         {
-            TickRallyUnitTarget();
             TickPassiveRegen();
             if (_queue.Count == 0 || !IsOperational) return;
             var entry = _queue[0];
@@ -483,6 +482,11 @@ namespace InsectWars.RTS
                 _queue.RemoveAt(0);
                 ProduceUnitImmediate(entry.archetype);
             }
+        }
+
+        void LateUpdate()
+        {
+            TickRallyUnitTarget();
         }
 
         void ProduceUnitImmediate(UnitArchetype archetype)

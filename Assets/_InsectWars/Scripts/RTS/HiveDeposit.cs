@@ -77,7 +77,6 @@ namespace InsectWars.RTS
 
         void Update()
         {
-            TickRallyUnitTarget();
             TickPassiveRegen();
             if (_workerQueue.Count == 0) return;
             var entry = _workerQueue[0];
@@ -88,6 +87,11 @@ namespace InsectWars.RTS
                 _workerQueue.RemoveAt(0);
                 SpawnWorker();
             }
+        }
+
+        void LateUpdate()
+        {
+            TickRallyUnitTarget();
         }
 
         public bool QueueWorker()
