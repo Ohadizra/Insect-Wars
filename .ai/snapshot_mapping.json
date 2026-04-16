@@ -977,6 +977,12 @@
       "conversation_id": "bad7f2b7-8ab2-4c6c-aa81-ea4530eacb70",
       "content": "I've increased the padding from `15` to `25` to make the map even smaller and ensure it sits cleanly within the frame's hollow area without overlapping the ornate borders.\n\n### Changes:\n- **Increased Padding**: Updated `BottomBar.cs` to set `MinimapHost` offsets to `25` and `-25`. This reduces the map's visual size within the frame.\n- **Label Alignment**: Since the \"MAP\" text is anchored to the top of the map area with a 25-unit offset, it will naturally move down with the map as the padding increases, keeping the relative spacing consistent.\n\nThe map should now fit perfectly within the decorative frame without any overlap on the edges.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "97ba40cb-31da-404a-9297-ecf0bea0313f",
+      "content": "make art for the out-of-bounds area, also add margin to the map scroll since part of the playable area is covered by the control ui bar when scrolling all the way down",
+      "snapshot_message_type": 0
     }
   ]
 }
