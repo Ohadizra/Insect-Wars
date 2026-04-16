@@ -52,9 +52,6 @@ namespace InsectWars.RTS
         float _buildAnimTimer; 
         float _idleT;
         float _instanceOffset;
-        float _impactStaggerT;
-        Vector3 _impactStaggerDir;
-        float _confusionT;
         bool _dying;
         bool _stompImpactTriggered;
 
@@ -215,28 +212,8 @@ namespace InsectWars.RTS
                 modelRoot.localPosition = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
             }
 
-            if (_impactStaggerT > 0f)
-            {
-                _impactStaggerT -= dt;
-                float p = Mathf.Clamp01(_impactStaggerT / 0.6f);
-                float jitter = Mathf.Sin(p * 50f) * 0.08f * p;
-                float squash = 1f - 0.25f * Mathf.Sin(p * Mathf.PI) * p;
-                modelRoot.localPosition += _impactStaggerDir * jitter;
-                modelRoot.localScale = Vector3.Scale(modelRoot.localScale, new Vector3(1.2f - squash, squash, 1.2f - squash));
-            }
-
-            if (_confusionT > 0f)
-            {
-                _confusionT -= dt;
-                float p = Mathf.Clamp01(_confusionT);
-                float swayAmount = 15f * p;
-                float freq = 8f;
-                modelRoot.localRotation *= Quaternion.Euler(Mathf.Sin(_idleT * freq) * swayAmount, Mathf.Cos(_idleT * freq * 0.7f) * swayAmount, 0f);
-                if (_head != null) _head.localRotation *= Quaternion.Euler(Mathf.Sin(_idleT * freq * 1.5f) * 20f * p, 0f, 0f);
-            }
-
             if (_stompAnimT > 0f)
-            {
+{
                 _stompAnimT -= dt;
                 float p = 1f - (Mathf.Max(0f, _stompAnimT) / _stompAnimDuration);
                 ApplyStagBeetleStomp(p);
@@ -322,10 +299,10 @@ namespace InsectWars.RTS
         }
 
         public void NotifyStomp() { _stompAnimDuration = 1.7f; _stompAnimT = _stompAnimDuration; _stompImpactTriggered = false; if (_hasStomp) animator.SetTrigger(Stomp); }
-        public void NotifyConfusion(float duration) { _confusionT = Mathf.Max(_confusionT, duration); }
+        public void NotifyConfusion(float duration) { }
 
         void ApplyBlackWidowLoop(float dt, bool moving, float speed)
-        {
+{
             if (moving)
             {
                 float cycle = _idleT * 9.0f;
@@ -405,10 +382,10 @@ namespace InsectWars.RTS
         public void NotifyBuild() { _buildAnimTimer = 0.2f; }
         public void NotifyTakeoff() { }
         public void NotifyDeath(float delay = 0.45f) { if (_dying) return; _dying = true; if (_hasDeath) animator.SetTrigger(Death); if (Application.isPlaying) Destroy(gameObject, delay); }
-        public void NotifyStompImpact(Vector3 source) { _impactStaggerT = 0.6f; _impactStaggerDir = (transform.position - source).normalized; if (_impactStaggerDir.sqrMagnitude < 0.01f) _impactStaggerDir = Vector3.up; }
+        public void NotifyStompImpact(Vector3 source) { }
 
         public Vector3 GetProjectileSpawnPoint() { return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f; }
-        public Vector3 GetSprayOrigin() { if (_tail != null) return _tail.position; return modelRoot != null ? modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f : transform.position + Vector3.up * 0.4f; }
+public Vector3 GetSprayOrigin() { if (_tail != null) return _tail.position; return modelRoot != null ? modelRoot.position - modelRoot.forward * 0.4f + Vector3.up * 0.35f : transform.position + Vector3.up * 0.4f; }
 
         public IReadOnlyList<string> GetSpotlightLines()
         {

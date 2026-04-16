@@ -1163,6 +1163,12 @@
       "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
       "content": "the animation of the cracks shuld be like a wave that starts and follows up then its gone. so it shuld be be left on the floor. the animation on the effected units shuld not be on them but actually some elemnets above there head that will show that somthing happned to this units",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "1a614c72-c4ae-487e-8c5b-9ceb4aab8d5a",
+      "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
+      "content": "I have updated the Stag Beetle's stomp effect and the enemy reactions to match your requirements:\n\n### Stomp VFX: Wave Expansion\n*   **Dynamic Ground Cracks**: The ground crack effect now behaves like a **wave**. It starts small and rapidly expands outwards (using a power-curve for a forceful feel) before fading away completely.\n*   **Clean Terrain**: The cracks are fully removed after the animation, leaving the floor clean.\n*   **Optimized Particles**: Further reduced the smoke/gas density to keep the effect focused on the ground impact.\n\n### Enemy Reaction: Head-Top Stars\n*   **No Body Sway**: Removed the physical body swaying and jitter from the units. Affected insects now maintain their normal posture while debuffed.\n*   **Dizzy Stars**: Added a classic \"stunned\" effect consisting of **three golden stars** that orbit and rotate above the head of any unit hit by the stomp. \n*   **Visual Feedback**: These stars persist for the duration of the slow debuff, providing clear information about which units are affected without distorting their actual character animations.\n\n### Implementation Details:\n*   **New Sprite**: Generated and integrated a stylized `StunStar` sprite located at `Assets/_InsectWars/Resources/VFX/StunStar.png`.\n*   **Orbit Logic**: Implemented a `StunStarOrbiter` script that handles the mathematical orbit and ensures the stars always face the camera (**Billboard**).\n*   **Wave Script**: Updated `StompVfxFade` with expansion logic to create the outward wave motion for the ground cracks.\n\nThe ability now feels much more like a powerful shockwave that leaves a \"dizzy\" status on the enemies.",
+      "snapshot_message_type": 1
     }
   ]
 }
