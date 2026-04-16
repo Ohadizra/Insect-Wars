@@ -1091,6 +1091,12 @@
       "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
       "content": "continue from where we stoped",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
+      "content": "the icons do not resamble the building, i added the Mantis art as an example. use this icon and an art example and refear to the actual art of the building",
+      "snapshot_message_type": 0
     }
   ]
 }
