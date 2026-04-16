@@ -363,6 +363,9 @@ namespace InsectWars.RTS
 
         static void AddMapBounds(Transform parent, float extent, float thickness, Color boundsColor)
         {
+            var lib = ActiveVisualLibrary;
+            Material boundsMat = (lib != null && lib.outOfBoundsMaterial != null) ? lib.outOfBoundsMaterial : null;
+
             float y = thickness * 0.5f;
             float len = extent * 2f;
             void Edge(string name, Vector3 pos, Vector3 scale)
@@ -372,13 +375,26 @@ namespace InsectWars.RTS
                 e.transform.SetParent(parent);
                 e.transform.position = pos + Vector3.up * y;
                 e.transform.localScale = scale;
-                ApplyMat(e, boundsColor);
+                if (boundsMat != null) e.GetComponent<Renderer>().sharedMaterial = boundsMat;
+                else ApplyMat(e, boundsColor);
                 Object.Destroy(e.GetComponent<Collider>());
             }
             Edge("MapEdge_N", new Vector3(0f, 0f, extent), new Vector3(len, thickness, thickness));
             Edge("MapEdge_S", new Vector3(0f, 0f, -extent), new Vector3(len, thickness, thickness));
             Edge("MapEdge_E", new Vector3(extent, 0f, 0f), new Vector3(thickness, thickness, len));
             Edge("MapEdge_W", new Vector3(-extent, 0f, 0f), new Vector3(thickness, thickness, len));
+
+            if (boundsMat != null)
+            {
+                var skirt = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                skirt.name = "OutOfBounds_Skirt";
+                skirt.transform.SetParent(parent);
+                skirt.transform.position = new Vector3(0f, -0.05f, 0f);
+                // Plane is 10x10. Make it reach far out (e.g. 1000x1000 units)
+                skirt.transform.localScale = new Vector3(100f, 1f, 100f); 
+                skirt.GetComponent<Renderer>().sharedMaterial = boundsMat;
+                Object.Destroy(skirt.GetComponent<Collider>());
+            }
         }
 
         static void EnsureLitShader()

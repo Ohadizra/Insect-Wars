@@ -1,0 +1,12 @@
+{
+    "asset": "84b2c3eb61f7b41d29596cd14da72d93",
+    "fileName": "019d9545-9850-7b11-99a0-c06d46b0bc16_Preview.jpg",
+    "prompt": "tileable dark rocky cold earth texture with patches of dry roots and small frozen debris, matching the realistic soil style of the reference image but much darker and more rugged for map boundaries",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 440532820,
+    "w3CTraceId": "13f5247abd640e50af2545a2121e4c60",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -66,6 +66,7 @@ namespace InsectWars.Data
         public GameObject clayWallPillarPrefab;
         public Material bigAppleMaterial;
         public Material groundMaterial;
+        public Material outOfBoundsMaterial;
         public TerrainLayer baseSoilLayer;
         public TerrainLayer drySoilLayer;
 
