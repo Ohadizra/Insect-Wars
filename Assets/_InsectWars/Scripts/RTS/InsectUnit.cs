@@ -599,7 +599,33 @@ namespace InsectWars.RTS
                 if (d < bestDist) { bestDist = d; best = u; }
             }
             if (best != null)
+            {
                 OrderAttack(best, true);
+                return;
+            }
+
+            Transform bestStructure = null;
+            float bestStructDist = scanRange;
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || !bld.IsAlive || bld.Team == team) continue;
+                float d = Vector3.Distance(transform.position, bld.transform.position);
+                if (d < bestStructDist) { bestStructDist = d; bestStructure = bld.transform; }
+            }
+            var enemyHive = team == Team.Player ? HiveDeposit.EnemyHive : HiveDeposit.PlayerHive;
+            if (enemyHive != null && enemyHive.IsAlive)
+            {
+                float d = Vector3.Distance(transform.position, enemyHive.transform.position);
+                if (d < bestStructDist) { bestStructDist = d; bestStructure = enemyHive.transform; }
+            }
+            if (bestStructure != null)
+            {
+                ClearTargets();
+                _wantsAttackMove = true;
+                _attackTarget = bestStructure;
+                _order = UnitOrder.AttackBuilding;
+                _agent.isStopped = false;
+            }
         }
 
         void TickPatrol()

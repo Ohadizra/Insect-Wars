@@ -179,17 +179,30 @@ namespace InsectWars.RTS
             SpawnUnit(hiveXZ + new Vector3(0f, 0f, -6f), Team.Player, UnitArchetype.StickSpy);
             SpawnUnit(hiveXZ + new Vector3(-6f, 0f, -6f), Team.Player, UnitArchetype.GiantStagBeetle);
 
-            var dummyPos = hiveXZ + new Vector3(20f, 0f, 20f);
-            var dummyGo = SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
-            var dummyUnit = dummyGo.GetComponent<InsectUnit>();
-            if (dummyUnit != null)
+            var dummyBase = hiveXZ + new Vector3(20f, 0f, 20f);
+            var enemyArchetypes = new[] {
+                UnitArchetype.Worker,
+                UnitArchetype.BasicFighter,
+                UnitArchetype.BasicRanged,
+                UnitArchetype.BlackWidow,
+                UnitArchetype.StickSpy,
+                UnitArchetype.GiantStagBeetle
+            };
+            for (int i = 0; i < enemyArchetypes.Length; i++)
             {
-                var def = UnitDefinition.CreateRuntimeDefault(UnitArchetype.BasicFighter,
-                    TeamPalette.UnitBody(Team.Enemy, UnitArchetype.BasicFighter));
-                def.maxHealth = 100000f;
-                dummyUnit.Configure(Team.Enemy, def);
+                var arch = enemyArchetypes[i];
+                var offset = new Vector3((i % 3) * 5f, 0f, (i / 3) * 5f);
+                var dummyGo = SpawnUnit(dummyBase + offset, Team.Enemy, arch);
+                var dummyUnit = dummyGo.GetComponent<InsectUnit>();
+                if (dummyUnit != null)
+                {
+                    var def = UnitDefinition.CreateRuntimeDefault(arch,
+                        TeamPalette.UnitBody(Team.Enemy, arch));
+                    def.maxHealth = 100000f;
+                    dummyUnit.Configure(Team.Enemy, def);
+                }
+                dummyGo.gameObject.AddComponent<TrainingDummy>();
             }
-            dummyUnit.gameObject.AddComponent<TrainingDummy>();
             }
 
         public void BuildWorldPreview()
@@ -1477,29 +1490,38 @@ float height = topY - bottomY;
                 var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
-                // Consistent coloring using MaterialPropertyBlocks (GPU instancing friendly)
-                // This matches the successful Mantis/Bombardment look.
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
                     if (renderer.sharedMaterial == null) continue;
 
-                    var block = new MaterialPropertyBlock();
-                    renderer.GetPropertyBlock(block);
-                    
-                    if (renderer.sharedMaterial.HasProperty("_BaseColor"))
-                        block.SetColor("_BaseColor", shellColor);
-                    if (renderer.sharedMaterial.HasProperty("_Color"))
-                        block.SetColor("_Color", shellColor);
-                    
-                    // Apply a strong team glow (matches Mantis behavior)
-                    if (renderer.sharedMaterial.HasProperty("_EmissionColor"))
+                    var mat = new Material(renderer.sharedMaterial);
+                    if (mat.HasProperty("_BaseColor"))
                     {
-                        block.SetColor("_EmissionColor", shellColor * 0.45f);
-                        // Ensure the shared material has emission enabled globally
-                        renderer.sharedMaterial.EnableKeyword("_EMISSION");
+                        Color orig = mat.GetColor("_BaseColor");
+                        mat.SetColor("_BaseColor", Color.Lerp(orig, shellColor, 0.45f));
                     }
-                        
-                    renderer.SetPropertyBlock(block);
+                    if (mat.HasProperty("_Color"))
+                    {
+                        Color orig = mat.GetColor("_Color");
+                        mat.SetColor("_Color", Color.Lerp(orig, shellColor, 0.45f));
+                    }
+                    if (mat.HasProperty("_Smoothness"))
+                        mat.SetFloat("_Smoothness", 0f);
+                    if (mat.HasProperty("_Metallic"))
+                        mat.SetFloat("_Metallic", 0f);
+                    if (mat.HasProperty("_SpecularHighlights"))
+                        mat.SetFloat("_SpecularHighlights", 0f);
+                    if (mat.HasProperty("_GlossyReflections"))
+                        mat.SetFloat("_GlossyReflections", 0f);
+                    if (mat.HasProperty("_EnvironmentReflections"))
+                        mat.SetFloat("_EnvironmentReflections", 0f);
+                    mat.DisableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    mat.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    mat.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+                    mat.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+                    mat.EnableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", shellColor * 0.06f);
+                    renderer.material = mat;
                 }
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)

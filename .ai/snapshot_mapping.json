@@ -1139,6 +1139,12 @@
       "conversation_id": "e8375013-216d-4008-9256-fe3ca2cf40c4",
       "content": "I have corrected the unit coloring to perfectly match the Mantis and the building.\n\n### Key Corrections:\n1.  **Restored Consistent Glow**: I identified that the \"terrible\" look was due to a lack of emission \"pop.\" I have restored the strong blue glow (**0.45x intensity**) to all units, matching the successful look of the Mantis and building.\n2.  **Solid Coloring**: I removed the \"lerp\" logic that was making the Spider and Stag Beetle look muddy and desaturated. They now use the same **solid blue** tint as the other correct units.\n3.  **Fixed Stick Insect**: I found a bug in the `StickStealth` script that was failing to capture the team color from the game director, causing it to reset to a neutral \"no color\" state. The script now correctly captures and maintains both the team color and the glow.\n4.  **GPU Instancing Friendly**: I reverted the unit tinting to use `MaterialPropertyBlocks`. This ensures that the coloring is applied on top of the base textures correctly and is more efficient for the game's performance.\n5.  **Keyword Activation**: I ensured the `_EMISSION` shader keyword is enabled for all unit materials so the blue glow is visible across the entire army.\n\nAll units—including the Stick, Stag, and Spider—should now be consistently and correctly colored in the vibrant blue style of your existing correct assets.\n\n```csharp\n// Updated logic applied to all units:\nblock.SetColor(\"_BaseColor\", shellColor); // Solid blue tint\nblock.SetColor(\"_EmissionColor\", shellColor * 0.45f); // Vibrant blue glow\nrenderer.sharedMaterial.EnableKeyword(\"_EMISSION\");\n```",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
+      "content": "the stump animation of the stag beatle is not very reaslitic, i want to have a ground cracking, smoke effect. and an animation effect reaction on the enemys effected by it",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -92,6 +92,13 @@ namespace InsectWars.RTS
         void LateUpdate()
         {
             TickRallyUnitTarget();
+            if (_rallyFlag != null)
+            {
+                bool show = _rallyPoint.HasValue
+                    && SelectionController.Instance != null
+                    && SelectionController.Instance.SelectedHive == this;
+                _rallyFlag.SetActive(show);
+            }
         }
 
         public bool QueueWorker()
@@ -288,7 +295,7 @@ namespace InsectWars.RTS
                 return;
             }
             _rallyPoint = _rallyUnitTarget.transform.position;
-            if (_rallyFlag != null && _rallyFlag.activeSelf)
+            if (_rallyFlag != null)
                 _rallyFlag.transform.position = _rallyPoint.Value;
         }
 

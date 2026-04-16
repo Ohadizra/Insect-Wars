@@ -57,8 +57,8 @@ namespace InsectWars.RTS
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
             {
-                var rallyUnit = hit.collider.GetComponentInParent<InsectUnit>();
-                if (rallyUnit != null && rallyUnit.IsAlive)
+                var rallyUnit = FindNearestAliveUnit(hit);
+                if (rallyUnit != null)
                 {
                     selectedHive.SetRallyUnit(rallyUnit);
                     return;
@@ -73,8 +73,8 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance.SelectedBuilding != null)
             {
-                var rallyUnit = hit.collider.GetComponentInParent<InsectUnit>();
-                if (rallyUnit != null && rallyUnit.IsAlive)
+                var rallyUnit = FindNearestAliveUnit(hit);
+                if (rallyUnit != null)
                 {
                     foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
                         b.SetRallyUnit(rallyUnit);
@@ -395,6 +395,27 @@ namespace InsectWars.RTS
                 var dest = center + offsets[i] * (r * 2.2f);
                 movers[i].OrderMove(dest);
             }
+        }
+
+        const float RallyUnitPickRadius = 2.5f;
+
+        static InsectUnit FindNearestAliveUnit(RaycastHit hit)
+        {
+            var direct = hit.collider.GetComponentInParent<InsectUnit>();
+            if (direct != null && direct.IsAlive)
+                return direct;
+
+            InsectUnit best = null;
+            float bestDist = float.MaxValue;
+            var cols = Physics.OverlapSphere(hit.point, RallyUnitPickRadius, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+            foreach (var c in cols)
+            {
+                var u = c.GetComponentInParent<InsectUnit>();
+                if (u == null || !u.IsAlive) continue;
+                float d = Vector3.Distance(hit.point, u.transform.position);
+                if (d < bestDist) { bestDist = d; best = u; }
+            }
+            return best;
         }
 
         static List<Vector3> ComputeFormationOffsets(int count)
