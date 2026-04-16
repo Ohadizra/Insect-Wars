@@ -1,0 +1,27 @@
+{
+    "asset": "082b6546d78fd47f2b2e8d8b7dfeb6d2",
+    "fileName": "019d95a9-2fc4-7da9-9029-abad06d983b3.png",
+    "prompt": "Flat, high-contrast, semi-minimalist game UI icon for 'Cancel' command. A bold red 'X' mark glyph. Solid dark circular background. Professional RTS game style. Clean lines.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "0ff0b50c7cba442fe31b3821a3390410",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

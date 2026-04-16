@@ -1,0 +1,27 @@
+{
+    "asset": "14429cf5f87be4d07a8f1edf99acaa62",
+    "fileName": "019d95a9-0310-7dbb-8496-04d0293efd31.png",
+    "prompt": "Flat, high-contrast, semi-minimalist game UI icon for 'Move' command. A bold white arrow cursor glyph pointing top-right. Solid dark circular background. Professional RTS game style. Clean lines.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "51e499db6cb125ab02458babd7018d56",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

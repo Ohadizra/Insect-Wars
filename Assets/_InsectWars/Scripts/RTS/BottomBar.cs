@@ -121,14 +121,14 @@ namespace InsectWars.RTS
             if (centerBlockFrame == null) centerBlockFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             if (slotFrame == null) slotFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
 
-            if (iconMove == null) iconMove = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_move");
-            if (iconStop == null) iconStop = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_stop");
-            if (iconHold == null) iconHold = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_hold");
-            if (iconPatrol == null) iconPatrol = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_patrol");
-            if (iconAttack == null) iconAttack = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_attack");
-            if (iconGather == null) iconGather = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_gather");
-            if (iconBuild == null) iconBuild = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_build");
-            if (iconCancel == null) iconCancel = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_cancel");
+            if (iconMove == null) iconMove = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/move_icon");
+            if (iconStop == null) iconStop = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/stop_icon");
+            if (iconHold == null) iconHold = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/hold_icon");
+            if (iconPatrol == null) iconPatrol = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/patrol_icon");
+            if (iconAttack == null) iconAttack = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/attack_icon");
+            if (iconGather == null) iconGather = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/gather_icon");
+            if (iconBuild == null) iconBuild = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/build_icon");
+            if (iconCancel == null) iconCancel = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/cancel_icon");
 
             if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/icon_larva");
             if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_view");

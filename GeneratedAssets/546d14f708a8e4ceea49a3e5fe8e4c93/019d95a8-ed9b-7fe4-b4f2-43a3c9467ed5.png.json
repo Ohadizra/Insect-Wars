@@ -1,0 +1,27 @@
+{
+    "asset": "546d14f708a8e4ceea49a3e5fe8e4c93",
+    "fileName": "019d95a8-ed9b-7fe4-b4f2-43a3c9467ed5.png",
+    "prompt": "Flat, high-contrast, semi-minimalist game UI icon for 'Attack' command. A bold white crosshair or target glyph. Solid dark circular background. Professional RTS game style. Clean lines.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "c3427f95acac615e153b64d890205abc",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

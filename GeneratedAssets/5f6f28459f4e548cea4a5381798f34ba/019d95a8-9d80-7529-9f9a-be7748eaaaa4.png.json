@@ -1,0 +1,27 @@
+{
+    "asset": "5f6f28459f4e548cea4a5381798f34ba",
+    "fileName": "019d95a8-9d80-7529-9f9a-be7748eaaaa4.png",
+    "prompt": "Flat, high-contrast, semi-minimalist game UI icon for 'Stop' command. A bold red square glyph. Solid dark circular background. Professional RTS game style. Clean lines.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "ec073908a30a6afa68ebb9554cd1467d",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
