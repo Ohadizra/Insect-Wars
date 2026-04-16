@@ -467,8 +467,11 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
-                _agent.isStopped = false;
-                _agent.SetDestination(_gatherTarget.GetGatherPoint(_gatherAngle));
+                if (!_agent.hasPath && !_agent.pathPending)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_gatherTarget.GetGatherPoint(_gatherAngle));
+                }
                 return;
             }
             _agent.isStopped = true;
@@ -505,8 +508,11 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > arrivalDist)
             {
-                _agent.isStopped = false;
-                _agent.SetDestination(depositDest.Value);
+                if (!_agent.hasPath && !_agent.pathPending)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(depositDest.Value);
+                }
                 return;
             }
             _agent.isStopped = true;
@@ -582,11 +588,16 @@ namespace InsectWars.RTS
         void TickPatrol()
         {
             if (!_patrolActive) return;
-            var dest = _patrolToB ? _patrolB : _patrolA;
-            _agent.SetDestination(dest);
             if (_agent.pathPending) return;
             if (_agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.35f)
+            {
                 _patrolToB = !_patrolToB;
+                _agent.SetDestination(_patrolToB ? _patrolB : _patrolA);
+            }
+            else if (!_agent.hasPath)
+            {
+                _agent.SetDestination(_patrolToB ? _patrolB : _patrolA);
+            }
         }
 
         void TickIdleAutoGather()
@@ -595,7 +606,7 @@ namespace InsectWars.RTS
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
-            var bestFruit = FindNearbyFruit(15f);
+            var bestFruit = FindNearbyFruit(40f);
 
             if (bestFruit != null)
                 OrderGather(bestFruit);
@@ -812,19 +823,13 @@ namespace InsectWars.RTS
 
         RottingFruitNode FindNearbyFruit(float radius)
         {
-            var resLayer = LayerMask.NameToLayer("Resources");
-            var mask = resLayer >= 0 ? (1 << resLayer) : Physics.DefaultRaycastLayers;
-            var cols = Physics.OverlapSphere(transform.position, radius, mask, QueryTriggerInteraction.Collide);
             RottingFruitNode best = null;
-            float bestDist = float.MaxValue;
-            foreach (var c in cols)
+            float bestDist = radius;
+            foreach (var node in RtsSimRegistry.FruitNodes)
             {
-                var node = c.GetComponent<RottingFruitNode>();
-                if (node != null && !node.Depleted)
-                {
-                    var d = Vector3.Distance(transform.position, node.transform.position);
-                    if (d < bestDist) { bestDist = d; best = node; }
-                }
+                if (node == null || node.Depleted) continue;
+                float d = Vector3.Distance(transform.position, node.transform.position);
+                if (d < bestDist) { bestDist = d; best = node; }
             }
             return best;
         }
