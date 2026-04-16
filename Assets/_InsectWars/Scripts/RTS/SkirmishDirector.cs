@@ -1477,23 +1477,29 @@ float height = topY - bottomY;
                 var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
-                // Strong consistent coloring for all units - creates material instances 
-                // to ensure tint is solid and doesn't conflict with MaterialPropertyBlocks
+                // Consistent coloring using MaterialPropertyBlocks (GPU instancing friendly)
+                // This matches the successful Mantis/Bombardment look.
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
                     if (renderer.sharedMaterial == null) continue;
 
-                    var mat = new Material(renderer.sharedMaterial);
-                    if (mat.HasProperty("_BaseColor"))
-                        mat.SetColor("_BaseColor", shellColor);
-                    if (mat.HasProperty("_Color"))
-                        mat.SetColor("_Color", shellColor);
-                        
-                    // Add subtle team emission for the "blue glow" look
-                    mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", shellColor * 0.18f);
+                    var block = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(block);
                     
-                    renderer.material = mat;
+                    if (renderer.sharedMaterial.HasProperty("_BaseColor"))
+                        block.SetColor("_BaseColor", shellColor);
+                    if (renderer.sharedMaterial.HasProperty("_Color"))
+                        block.SetColor("_Color", shellColor);
+                    
+                    // Apply a strong team glow (matches Mantis behavior)
+                    if (renderer.sharedMaterial.HasProperty("_EmissionColor"))
+                    {
+                        block.SetColor("_EmissionColor", shellColor * 0.45f);
+                        // Ensure the shared material has emission enabled globally
+                        renderer.sharedMaterial.EnableKeyword("_EMISSION");
+                    }
+                        
+                    renderer.SetPropertyBlock(block);
                 }
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)

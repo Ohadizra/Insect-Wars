@@ -27,6 +27,7 @@ namespace InsectWars.RTS
         NavMeshAgent _agent;
         Renderer[] _renderers;
         Color[] _teamColors;
+        Color[] _teamEmissions;
 
         StickState _state = StickState.Moving;
         float _stateTimer;
@@ -54,18 +55,42 @@ namespace InsectWars.RTS
         void CaptureTeamColors()
         {
             _teamColors = new Color[_renderers.Length];
+            _teamEmissions = new Color[_renderers.Length];
             var block = new MaterialPropertyBlock();
             for (int i = 0; i < _renderers.Length; i++)
             {
-                if (_renderers[i] == null) { _teamColors[i] = Color.white; continue; }
+                if (_renderers[i] == null) continue;
+                
+                // Retrieve the block set by SkirmishDirector
                 _renderers[i].GetPropertyBlock(block);
-                var c = block.GetColor(Shader.PropertyToID("_BaseColor"));
+                
+                // 1. Capture Base Color (from block or sharedMaterial)
+                Color c = Color.white;
+                c = block.GetColor("_BaseColor");
+                if (c.a < 0.01f) c = block.GetColor("_Color");
+                
                 if (c.a < 0.01f)
-                    c = _renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor")
-                        ? _renderers[i].sharedMaterial.GetColor("_BaseColor")
-                        : Color.white;
+                {
+                    if (_renderers[i].sharedMaterial != null)
+                    {
+                        if (_renderers[i].sharedMaterial.HasProperty("_BaseColor"))
+                            c = _renderers[i].sharedMaterial.GetColor("_BaseColor");
+                        else if (_renderers[i].sharedMaterial.HasProperty("_Color"))
+                            c = _renderers[i].sharedMaterial.GetColor("_Color");
+                    }
+                }
                 c.a = 1f;
                 _teamColors[i] = c;
+
+                // 2. Capture Emission (from block or sharedMaterial)
+                Color e = Color.black;
+                e = block.GetColor("_EmissionColor");
+                if (e.r < 0.001f && e.g < 0.001f && e.b < 0.001f)
+                {
+                    if (_renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_EmissionColor"))
+                        e = _renderers[i].sharedMaterial.GetColor("_EmissionColor");
+                }
+                _teamEmissions[i] = e;
             }
         }
 
@@ -234,6 +259,15 @@ namespace InsectWars.RTS
                 {
                     var c2 = c;
                     block.SetColor("_Color", c2);
+                }
+                
+                // Re-apply original emission from SkirmishDirector
+                if (i < _teamEmissions.Length)
+                {
+                    Color e = _teamEmissions[i];
+                    // Also fade emission with alpha for better cloak look
+                    e *= alpha; 
+                    block.SetColor("_EmissionColor", e);
                 }
 
                 r.SetPropertyBlock(block);
