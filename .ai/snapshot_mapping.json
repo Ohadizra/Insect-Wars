@@ -1103,6 +1103,12 @@
       "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
       "content": "I have updated the building icons to match the project's hand-painted/sketch style while more closely resembling the actual in-game building models.\n\n### **Changes Made:**\n1.  **Style Matching**: Used the provided \"Mantis art\" (`Icon_Fighter`) as a visual reference to generate new icons. Each new icon now features a detailed hand-painted sketch inside a thick, notched green-bronze circular frame.\n2.  **Visual Consistency**: The new icons directly reflect the actual building prefabs:\n    *   **Underground**: A dark tunnel entrance dug into the earth with organic chitinous reinforcements.\n    *   **Ant Nest**: A large, complex mound of soil and organic matter.\n    *   **Sky Tower**: A tall, slender organic spire reaching upwards.\n    *   **Root Cellar**: A burrow opening woven into thick, gnarled tree roots.\n3.  **Refined Assets**: Removed backgrounds and configured them as high-quality UI Sprites in the `Assets/_InsectWars/Resources/UI/ImprovedIcons/` folder.\n4.  **Updated Scripting**: Updated `BottomBar.cs` to load these new \"v2\" icons for the Build menu.\n\nThe RTS building interface should now feel much more integrated with the overall game aesthetic and be easier to understandble at a glance.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "fa44e03b-6f18-40c0-9f29-50692d8794a0",
+      "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
+      "content": "looks better, W-skytree aproved but remove the circle frame from it and from all icons. and remake the other icons to be a better resemblence to the buildings they build",
+      "snapshot_message_type": 0
     }
   ]
 }
