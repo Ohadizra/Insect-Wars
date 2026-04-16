@@ -1,0 +1,27 @@
+{
+    "asset": "948b9219c1bc84e229a650c1f51319c5",
+    "fileName": "019d95b6-49a2-7aa6-9457-ed5202089c0a.png",
+    "prompt": "High-contrast, semi-minimalist RTS UI icon for 'Root Cellar' building. A bold glyph of a storage chamber woven into underground roots. Solid dark circular background. Clean lines, professional game asset.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "1893f6a15cb39641297e2dae64042476",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

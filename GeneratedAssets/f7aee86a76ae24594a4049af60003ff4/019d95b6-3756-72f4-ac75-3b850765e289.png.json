@@ -1,0 +1,27 @@
+{
+    "asset": "f7aee86a76ae24594a4049af60003ff4",
+    "fileName": "019d95b6-3756-72f4-ac75-3b850765e289.png",
+    "prompt": "High-contrast, semi-minimalist RTS UI icon for 'Ant Nest' building. A bold glyph of a large ant mound or colony hill. Solid dark circular background. Clean lines, professional game asset.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "dab515830fb3e06fb74b1bba825e092d",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

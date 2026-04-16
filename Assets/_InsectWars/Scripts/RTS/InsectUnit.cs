@@ -42,6 +42,8 @@ namespace InsectWars.RTS
         float _idleScanTimer;
         bool _holdPosition;
         bool _patrolActive;
+        ProductionBuilding _buildTarget;
+        bool _registeredAsBuilder;
         Vector3 _patrolA;
         Vector3 _patrolB;
         bool _patrolToB = true;
@@ -89,6 +91,7 @@ namespace InsectWars.RTS
 
         void OnDisable()
         {
+            StopBuilding();
             RtsSimRegistry.Unregister(this);
         }
 
@@ -252,6 +255,9 @@ namespace InsectWars.RTS
                 case UnitOrder.AttackBuilding:
                     TickAttackBuilding();
                     break;
+                case UnitOrder.Build:
+                    TickBuild();
+                    break;
                 case UnitOrder.Idle:
                     TickIdleAutoGather();
                     break;
@@ -320,11 +326,13 @@ namespace InsectWars.RTS
 
         public void OrderBuild(ProductionBuilding building)
         {
-            if (!IsAlive || building == null) return;
+            if (!IsAlive || building == null || !building.IsUnderConstruction) return;
             ClearTargets();
+            _buildTarget = building;
             _attackTarget = building.transform;
             _order = UnitOrder.Build;
             _agent.isStopped = false;
+            _agent.SetDestination(building.transform.position);
         }
 
         public void OrderStop()
@@ -415,11 +423,20 @@ namespace InsectWars.RTS
 
         void ClearTargets()
         {
+            StopBuilding();
             _attackTarget = null;
             _gatherTarget = null;
             _lastGatherTarget = null;
             _gatherTimer = 0f;
             UnlockMelee();
+        }
+
+        void StopBuilding()
+        {
+            if (_registeredAsBuilder && _buildTarget != null && _buildTarget.IsAlive)
+                _buildTarget.UnregisterBuilder();
+            _registeredAsBuilder = false;
+            _buildTarget = null;
         }
 
         void UnlockMelee()
@@ -610,6 +627,65 @@ namespace InsectWars.RTS
 
             if (bestFruit != null)
                 OrderGather(bestFruit);
+        }
+
+        void TickBuild()
+        {
+            if (_buildTarget == null || !_buildTarget.IsAlive)
+            {
+                StopBuilding();
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            if (!_buildTarget.IsUnderConstruction)
+            {
+                StopBuilding();
+                _order = UnitOrder.Idle;
+                return;
+            }
+
+            float dist = Vector3.Distance(transform.position, _buildTarget.transform.position);
+            float buildRange = GetBuildRange(_buildTarget);
+
+            if (dist > buildRange)
+            {
+                if (_registeredAsBuilder)
+                {
+                    _buildTarget.UnregisterBuilder();
+                    _registeredAsBuilder = false;
+                }
+                if (!_agent.hasPath && !_agent.pathPending)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_buildTarget.transform.position);
+                }
+                return;
+            }
+
+            _agent.isStopped = true;
+
+            var lookDir = _buildTarget.transform.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(lookDir);
+
+            if (!_registeredAsBuilder)
+            {
+                _buildTarget.RegisterBuilder();
+                _registeredAsBuilder = true;
+            }
+
+            _buildTarget.TickConstruction(Time.deltaTime);
+            GetComponent<UnitAnimationDriver>()?.NotifyBuild();
+        }
+
+        float GetBuildRange(ProductionBuilding building)
+        {
+            var rend = building.GetComponentInChildren<Renderer>();
+            if (rend != null)
+                return Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 2.5f;
+            return Mathf.Max(building.transform.localScale.x, building.transform.localScale.z) * 0.5f + 2.5f;
         }
 
         void TickAttack()
@@ -845,6 +921,7 @@ namespace InsectWars.RTS
             if (_health <= 0)
             {
                 _health = 0;
+                StopBuilding();
                 UnlockMelee();
                 _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);
@@ -863,6 +940,7 @@ namespace InsectWars.RTS
             if (_health <= 0)
             {
                 _health = 0;
+                StopBuilding();
                 UnlockMelee();
                 _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);

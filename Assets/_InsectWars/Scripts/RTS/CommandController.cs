@@ -93,11 +93,22 @@ namespace InsectWars.RTS
                 return;
             }
 
-            var enemyBuilding = hit.collider.GetComponentInParent<ProductionBuilding>();
-            if (enemyBuilding != null && enemyBuilding.Team == Team.Enemy && enemyBuilding.IsAlive)
+            var clickedBuilding = hit.collider.GetComponentInParent<ProductionBuilding>();
+            if (clickedBuilding != null && clickedBuilding.Team == Team.Enemy && clickedBuilding.IsAlive)
             {
                 foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                    u.OrderAttackBuilding(enemyBuilding);
+                    u.OrderAttackBuilding(clickedBuilding);
+                return;
+            }
+
+            if (clickedBuilding != null && clickedBuilding.Team == Team.Player &&
+                clickedBuilding.IsUnderConstruction && SelectionController.Instance.HasWorkerSelected())
+            {
+                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                {
+                    if (u.Definition != null && u.Definition.canGather)
+                        u.OrderBuild(clickedBuilding);
+                }
                 return;
             }
 

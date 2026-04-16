@@ -1,0 +1,27 @@
+{
+    "asset": "25d449326f30e462f88dd7040520ebb7",
+    "fileName": "019d95b6-3667-7f6b-a624-8a573df9ac06.png",
+    "prompt": "High-contrast, semi-minimalist RTS UI icon for 'Sky Tower' building. A bold glyph of a tall, slender organic tower reaching upwards. Solid dark circular background. Clean lines, professional game asset.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "3b7448e3f4c3effacdf031a575acacc0",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

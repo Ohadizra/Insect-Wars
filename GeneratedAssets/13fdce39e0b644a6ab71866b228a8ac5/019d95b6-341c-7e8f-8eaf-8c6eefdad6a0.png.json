@@ -1,0 +1,27 @@
+{
+    "asset": "13fdce39e0b644a6ab71866b228a8ac5",
+    "fileName": "019d95b6-341c-7e8f-8eaf-8c6eefdad6a0.png",
+    "prompt": "High-contrast, semi-minimalist RTS UI icon for 'Underground' building. A bold glyph of a dark tunnel entrance leading down into the soil. Solid dark circular background. Clean lines, professional game asset.",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "7688d84dc26c9910a9924b5aa6a201ce",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

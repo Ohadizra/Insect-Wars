@@ -55,6 +55,7 @@ namespace InsectWars.RTS
         [SerializeField] Sprite iconUnderground;
         [SerializeField] Sprite iconSkyTower;
         [SerializeField] Sprite iconAntNest;
+        [SerializeField] Sprite iconRootCellar;
         [SerializeField] Sprite iconEvolve;
         [SerializeField] Sprite iconClearRally;
 
@@ -133,9 +134,11 @@ namespace InsectWars.RTS
             if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/icon_larva");
             if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_view");
             if (iconRanged == null) iconRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_view");
-            if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/Icon_Underground");
-            if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/Icon_SkyTower");
-            if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/Icon_AntNest");
+            if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/underground_icon");
+            if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/skytower_icon");
+            if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/antnest_icon");
+            if (iconRootCellar == null) iconRootCellar = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/rootcellar_icon");
+
             if (iconEvolve == null) iconEvolve = GameHUD.LoadSpriteFromResources("UI/Icon_Evolve");
             if (iconClearRally == null) iconClearRally = GameHUD.LoadSpriteFromResources("UI/Icon_ClearRally");
 
@@ -892,6 +895,7 @@ namespace InsectWars.RTS
             if (cmdName.Contains("Underground")) return iconUnderground;
             if (cmdName.Contains("Sky Tower")) return iconSkyTower;
             if (cmdName.Contains("Ant's Nest")) return iconAntNest;
+            if (cmdName.Contains("Root Cellar")) return iconRootCellar;
             if (cmdName.Contains("Evolve")) return iconEvolve;
             if (cmdName.Contains("Clear Rally")) return iconClearRally;
             return null;
