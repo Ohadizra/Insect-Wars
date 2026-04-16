@@ -489,35 +489,32 @@ namespace InsectWars.RTS
             miniContainer.transform.SetParent(bar.transform, false);
             var mcrt = miniContainer.AddComponent<RectTransform>();
             mcrt.anchorMin = new Vector2(0f, 0f);
-            mcrt.anchorMax = new Vector2(0f, 1f);
+            mcrt.anchorMax = new Vector2(0f, 0f);
             mcrt.pivot = new Vector2(0f, 0.5f);
-            mcrt.anchoredPosition = new Vector2(30, 0);
-            mcrt.sizeDelta = new Vector2(minimapSlot - 40, -10);
-
-            var miniInner = new GameObject("MinimapInner");
-            miniInner.transform.SetParent(miniContainer.transform, false);
-            var mi = miniInner.AddComponent<RectTransform>();
-            mi.anchorMin = Vector2.zero;
-            mi.anchorMax = Vector2.one;
-            // Bring the map slightly inward so it fits nicely inside the frame
-            mi.offsetMin = new Vector2(10, 10);
-            mi.offsetMax = new Vector2(-10, -10);
-            MinimapHost = mi;
+            mcrt.anchoredPosition = new Vector2(30, 131.75f); // Centered vertically in bar
+            mcrt.sizeDelta = new Vector2(minimapSlot - 60, minimapSlot - 60);
 
             var miniFrameGo = new GameObject("MinimapFrame");
             miniFrameGo.transform.SetParent(miniContainer.transform, false);
             var mfrt = miniFrameGo.AddComponent<RectTransform>();
             mfrt.anchorMin = Vector2.zero;
             mfrt.anchorMax = Vector2.one;
-            // Expand the ornate frame significantly to cover the background slot
-            mfrt.offsetMin = new Vector2(-35, -35);
-            mfrt.offsetMax = new Vector2(35, 35);
+            mfrt.offsetMin = new Vector2(-15, -15);
+            mfrt.offsetMax = new Vector2(15, 15);
             var frameImg = miniFrameGo.AddComponent<Image>();
             frameImg.sprite = minimapFrame;
-            frameImg.raycastTarget = false; // Fix: don't block minimap clicks
-            frameImg.type = Image.Type.Sliced; // Changed to Sliced to match other panels
-            frameImg.fillCenter = false; // Keep the map area clear
+            frameImg.type = Image.Type.Sliced;
             frameImg.color = Color.white;
+            frameImg.raycastTarget = false;
+
+            var miniInner = new GameObject("MinimapInner");
+            miniInner.transform.SetParent(miniContainer.transform, false);
+            var mi = miniInner.AddComponent<RectTransform>();
+            mi.anchorMin = Vector2.zero;
+            mi.anchorMax = Vector2.one;
+            mi.offsetMin = new Vector2(5, 5);
+            mi.offsetMax = new Vector2(-5, -5);
+            MinimapHost = mi;
 
             var cmdPanel = new GameObject("CommandPanel");
             cmdPanel.transform.SetParent(bar.transform, false);

@@ -1,0 +1,27 @@
+{
+    "asset": "80b917afd13f245148d4a26563b22cd6",
+    "fileName": "019d9532-6d13-7774-bc2c-e6f32594c9a3.png",
+    "prompt": "Ornate UI control group tab button, biological insect theme, dark mahogany wood frame with amber gems, semi-transparent chitin texture center, rectangular with rounded edges, high detail fantasy RPG UI style, 256x128 resolution, game asset",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "ba0db753768b42ca6d99ee9581d7e4b8",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

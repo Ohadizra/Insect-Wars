@@ -12,7 +12,7 @@ namespace InsectWars.RTS
     public class ControlGroupBar : MonoBehaviour
     {
         const int GroupCount = 10;
-        const float TabWidth = 100f;
+        const float TabWidth = 120f;
         const float TabHeight = 44f;
         const float TabSpacing = 4f;
         const float BarBottomOffset = 263.5f; // matches BottomBar.barHeight
@@ -94,24 +94,24 @@ namespace InsectWars.RTS
                 btn.onClick.AddListener(() => OnTabClicked(groupIndex));
 
                 // Number label (moved to left to make room for icons)
-                var numText = CreateText("Num", tab.transform, 16, ColTextNormal, TextAnchor.MiddleLeft);
+                var numText = CreateText("Num", tab.transform, 18, ColTextNormal, TextAnchor.MiddleLeft);
                 numText.text = displayNum.ToString();
                 numText.fontStyle = FontStyle.Bold;
                 var nrt = numText.rectTransform;
                 nrt.anchorMin = Vector2.zero;
                 nrt.anchorMax = Vector2.one;
-                nrt.offsetMin = new Vector2(8f, 0f);
-                nrt.offsetMax = new Vector2(-70f, 0f); // Leave 70px on right for icons
+                nrt.offsetMin = new Vector2(12f, 0f);
+                nrt.offsetMax = new Vector2(-85f, 0f); // Leave 85px on right for icons
                 _tabLabels[i] = numText;
 
                 // Entity count (small, bottom-right corner)
-                var countText = CreateText("Count", tab.transform, 11, ColTextNormal, TextAnchor.LowerRight);
+                var countText = CreateText("Count", tab.transform, 12, ColTextNormal, TextAnchor.LowerRight);
                 countText.text = "";
                 var crt = countText.rectTransform;
                 crt.anchorMin = Vector2.zero;
                 crt.anchorMax = Vector2.one;
-                crt.offsetMin = new Vector2(1f, 1f);
-                crt.offsetMax = new Vector2(-4f, -2f);
+                crt.offsetMin = new Vector2(2f, 2f);
+                crt.offsetMax = new Vector2(-6f, -4f);
                 _tabCounts[i] = countText;
             }
         }
