@@ -1384,21 +1384,43 @@ namespace InsectWars.RTS
                 var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
-                var block = new MaterialPropertyBlock();
+                bool needsStrongTint = arch == UnitArchetype.BlackWidow
+                                    || arch == UnitArchetype.GiantStagBeetle;
+
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
-                    renderer.GetPropertyBlock(block);
-                    if (renderer.sharedMaterial != null)
+                    if (renderer.sharedMaterial == null) continue;
+
+                    if (needsStrongTint)
                     {
+                        var mat = new Material(renderer.sharedMaterial);
+                        if (mat.HasProperty("_BaseColor"))
+                        {
+                            Color orig = mat.GetColor("_BaseColor");
+                            mat.SetColor("_BaseColor", Color.Lerp(orig, shellColor, 0.55f));
+                        }
+                        if (mat.HasProperty("_Color"))
+                        {
+                            Color orig = mat.GetColor("_Color");
+                            mat.SetColor("_Color", Color.Lerp(orig, shellColor, 0.55f));
+                        }
+                        mat.EnableKeyword("_EMISSION");
+                        mat.SetColor("_EmissionColor", shellColor * 0.18f);
+                        renderer.material = mat;
+                    }
+                    else
+                    {
+                        var block = new MaterialPropertyBlock();
+                        renderer.GetPropertyBlock(block);
                         if (renderer.sharedMaterial.HasProperty("_BaseColor"))
                             block.SetColor("_BaseColor", shellColor);
                         if (renderer.sharedMaterial.HasProperty("_Color"))
                             block.SetColor("_Color", shellColor);
                         if (renderer.sharedMaterial.HasProperty("_EmissionColor"))
                             block.SetColor("_EmissionColor", shellColor * 0.45f);
-                        }
                         renderer.SetPropertyBlock(block);
-                        }
+                    }
+                }
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)
                     go.AddComponent<UnitAnimationDriver>();

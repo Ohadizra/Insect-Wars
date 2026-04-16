@@ -4,10 +4,11 @@ using UnityEngine.AI;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Stick spy stealth — mirrors MothStealth flow but without flying/landing:
+    /// Stick spy stealth:
     ///   Moving → Still (5s timer) → Cloaked.
-    ///   On damage while cloaked: panic flee, back to Moving.
+    ///   Once cloaked, stays cloaked even while moving — only damage breaks it.
     ///   Invisible to enemies further than 8 units (bombardier range).
+    ///   Visual: mostly opaque with strong desaturation + green tint + shimmer pulse.
     /// </summary>
     public class StickStealth : MonoBehaviour
     {
@@ -15,24 +16,17 @@ namespace InsectWars.RTS
 
         const float CloakDelay = 5f;
         const float PanicFleeDistance = 10f;
-        const float CloakedAlphaMin = 0.55f;
-        const float CloakedAlphaMax = 0.82f;
-        const float ShimmerSpeed = 1.8f;
-        const float CloakedDesaturation = 0.4f;
-
-        static readonly int BaseColorID = Shader.PropertyToID("_BaseColor");
-        static readonly int ColorID = Shader.PropertyToID("_Color");
-        static readonly int SurfaceID = Shader.PropertyToID("_Surface");
-        static readonly int BlendID = Shader.PropertyToID("_Blend");
-        static readonly int SrcBlendID = Shader.PropertyToID("_SrcBlend");
-        static readonly int DstBlendID = Shader.PropertyToID("_DstBlend");
-        static readonly int ZWriteID = Shader.PropertyToID("_ZWrite");
+        const float CloakedAlpha = 0.25f;
+        const float ShimmerAlphaMin = 0.20f;
+        const float ShimmerAlphaMax = 0.35f;
+        const float ShimmerSpeed = 2.2f;
+        const float CloakedDesaturation = 0.55f;
+        static readonly Color CloakTint = new Color(0.50f, 0.65f, 0.42f, 1f);
 
         InsectUnit _unit;
         NavMeshAgent _agent;
         Renderer[] _renderers;
         Color[] _teamColors;
-        bool[] _wasOpaque;
 
         StickState _state = StickState.Moving;
         float _stateTimer;
@@ -60,22 +54,18 @@ namespace InsectWars.RTS
         void CaptureTeamColors()
         {
             _teamColors = new Color[_renderers.Length];
-            _wasOpaque = new bool[_renderers.Length];
             var block = new MaterialPropertyBlock();
             for (int i = 0; i < _renderers.Length; i++)
             {
-                if (_renderers[i] == null) { _teamColors[i] = Color.white; _wasOpaque[i] = true; continue; }
+                if (_renderers[i] == null) { _teamColors[i] = Color.white; continue; }
                 _renderers[i].GetPropertyBlock(block);
-                var c = block.GetColor(BaseColorID);
+                var c = block.GetColor(Shader.PropertyToID("_BaseColor"));
                 if (c.a < 0.01f)
-                    c = _renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty(BaseColorID)
-                        ? _renderers[i].sharedMaterial.GetColor(BaseColorID)
+                    c = _renderers[i].sharedMaterial != null && _renderers[i].sharedMaterial.HasProperty("_BaseColor")
+                        ? _renderers[i].sharedMaterial.GetColor("_BaseColor")
                         : Color.white;
                 c.a = 1f;
                 _teamColors[i] = c;
-                _wasOpaque[i] = _renderers[i].sharedMaterial != null
-                    && (!_renderers[i].sharedMaterial.HasProperty(SurfaceID)
-                        || _renderers[i].sharedMaterial.GetFloat(SurfaceID) < 0.5f);
             }
         }
 
@@ -111,7 +101,7 @@ namespace InsectWars.RTS
             _state = StickState.Moving;
             _stateTimer = 0f;
             _unit.IsCloaked = false;
-            ApplyAlpha(1f, transparent: false);
+            ApplyAlpha(1f);
         }
 
         void UpdateMoving(bool moved, bool tookDamage)
@@ -164,11 +154,6 @@ namespace InsectWars.RTS
 
         void UpdateCloaked(bool moved, bool tookDamage)
         {
-            if (moved)
-            {
-                EnterMoving();
-                return;
-            }
             if (tookDamage)
             {
                 PanicFlee();
@@ -182,8 +167,8 @@ namespace InsectWars.RTS
         void ApplyShimmer()
         {
             float t = (Mathf.Sin(_shimmerPhase) + 1f) * 0.5f;
-            float alpha = Mathf.Lerp(CloakedAlphaMin, CloakedAlphaMax, t);
-            ApplyAlpha(alpha, transparent: true, desaturate: true);
+            float alpha = Mathf.Lerp(ShimmerAlphaMin, ShimmerAlphaMax, t);
+            ApplyAlpha(alpha, desaturate: true);
         }
 
         // ───────────── Panic flee ─────────────
@@ -223,9 +208,9 @@ namespace InsectWars.RTS
             return best;
         }
 
-        // ───────────── Renderer alpha + URP transparency ─────────────
+        // ───────────── Renderer alpha (Moth-style property block only) ─────────────
 
-        void ApplyAlpha(float alpha, bool transparent, bool desaturate = false)
+        void ApplyAlpha(float alpha, bool desaturate = false)
         {
             if (_renderers == null || _teamColors == null) return;
             var block = new MaterialPropertyBlock();
@@ -233,29 +218,6 @@ namespace InsectWars.RTS
             {
                 var r = _renderers[i];
                 if (r == null) continue;
-
-                var mat = r.material;
-                if (transparent && _wasOpaque[i])
-                {
-                    mat.SetFloat(SurfaceID, 1f);
-                    mat.SetFloat(BlendID, 0f);
-                    mat.SetFloat(SrcBlendID, (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                    mat.SetFloat(DstBlendID, (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                    mat.SetFloat(ZWriteID, 0f);
-                    mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                    mat.DisableKeyword("_ALPHATEST_ON");
-                    mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-                }
-                else if (!transparent && _wasOpaque[i])
-                {
-                    mat.SetFloat(SurfaceID, 0f);
-                    mat.SetFloat(SrcBlendID, (float)UnityEngine.Rendering.BlendMode.One);
-                    mat.SetFloat(DstBlendID, (float)UnityEngine.Rendering.BlendMode.Zero);
-                    mat.SetFloat(ZWriteID, 1f);
-                    mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                    mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Geometry;
-                }
-
                 r.GetPropertyBlock(block);
 
                 var c = _teamColors[i];
@@ -263,14 +225,15 @@ namespace InsectWars.RTS
                 {
                     float grey = c.r * 0.299f + c.g * 0.587f + c.b * 0.114f;
                     c = Color.Lerp(c, new Color(grey, grey, grey, 1f), CloakedDesaturation);
+                    c = Color.Lerp(c, CloakTint, 0.35f);
                 }
                 c.a = alpha;
-                block.SetColor(BaseColorID, c);
+                block.SetColor("_BaseColor", c);
 
-                if (mat.HasProperty(ColorID))
+                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color"))
                 {
                     var c2 = c;
-                    block.SetColor(ColorID, c2);
+                    block.SetColor("_Color", c2);
                 }
 
                 r.SetPropertyBlock(block);

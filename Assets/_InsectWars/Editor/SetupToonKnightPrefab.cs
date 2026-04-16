@@ -646,6 +646,7 @@ namespace InsectWars.Editor
                 mat.SetFloat("_Smoothness", 0.35f);
 
             mat.SetFloat("_Metallic", 0.4f);
+            mat.SetColor("_BaseColor", new Color(0.85f, 0.85f, 0.85f));
             EditorUtility.SetDirty(mat);
             return mat;
         }
@@ -887,6 +888,7 @@ namespace InsectWars.Editor
                 mat.SetFloat("_Smoothness", 0.4f);
 
             mat.SetFloat("_Metallic", 0.15f);
+            mat.SetColor("_BaseColor", new Color(0.85f, 0.85f, 0.85f));
             EditorUtility.SetDirty(mat);
             return mat;
         }
