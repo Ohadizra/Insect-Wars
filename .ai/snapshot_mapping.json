@@ -1115,6 +1115,12 @@
       "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
       "content": "good, now lets make the icons inside the building the produce the units, new Ant icon in ants nest, and all new icons both in underground and in skytree",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "027251ea-a860-456a-b6d7-696cc27fe057",
+      "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
+      "content": "I have successfully updated the unit production icons for all buildings to match the new hand-painted, frame-less style.\n\n### **Changes Made:**\n1.  **Generated New Unit Icons**: Created 6 high-quality, isolated hand-painted icons for:\n    *   **Worker Ant** (Produced in Ant Nest)\n    *   **Mantis Fighter** (Produced in Underground)\n    *   **Beetle Ranged** (Produced in Underground)\n    *   **Giant Stag Beetle** (Produced in Underground)\n    *   **Black Widow Spider** (Produced in Sky Tree)\n    *   **Stick Spy** (Produced in Sky Tree)\n2.  **Visual Consistency**: These icons are frame-less and match the \"Mantis\" sketch style you approved, ensuring a cohesive look across the entire command panel.\n3.  **Asset Integration**:\n    *   Removed backgrounds and moved all assets to `Assets/_InsectWars/Resources/UI/ImprovedIcons/`.\n    *   Updated `BottomBar.cs` to use these new icons for both the production buttons and the unit portraits in the selection grid.\n\nThe unit production menus inside each building now look professional and much clearer. are easy to read.",
+      "snapshot_message_type": 1
     }
   ]
 }

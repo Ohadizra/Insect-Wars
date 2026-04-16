@@ -131,9 +131,9 @@ namespace InsectWars.RTS
             if (iconBuild == null) iconBuild = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/build_icon_v2");
             if (iconCancel == null) iconCancel = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/cancel_icon_v2");
 
-            if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/icon_larva");
-            if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_view");
-            if (iconRanged == null) iconRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_view");
+            if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/worker_ant_icon");
+            if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/mantis_fighter_icon");
+            if (iconRanged == null) iconRanged = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/beetle_ranged_icon");
             if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/underground_icon_v3");
             if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/skytower_icon_v3");
             if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/antnest_icon_v3");
@@ -142,12 +142,12 @@ namespace InsectWars.RTS
             if (iconEvolve == null) iconEvolve = GameHUD.LoadSpriteFromResources("UI/Icon_Evolve");
             if (iconClearRally == null) iconClearRally = GameHUD.LoadSpriteFromResources("UI/Icon_ClearRally");
 
-            if (portraitWorker == null) portraitWorker = GameHUD.LoadSpriteFromResources("UI/Portrait_AntWorker");
-            if (portraitWorker == null) portraitWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/portrait_stag_beetle");
-            if (portraitFighter == null) portraitFighter = GameHUD.LoadSpriteFromResources("UI/Portrait_MantisFighter");
-            if (portraitFighter == null) portraitFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_alt");
-            if (portraitRanged == null) portraitRanged = GameHUD.LoadSpriteFromResources("UI/Portrait_BombardierBeetle");
-            if (portraitRanged == null) portraitRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_alt");
+            if (portraitWorker == null) portraitWorker = iconWorker;
+            if (portraitFighter == null) portraitFighter = iconFighter;
+            if (portraitRanged == null) portraitRanged = iconRanged;
+            if (portraitBlackWidow == null) portraitBlackWidow = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/black_widow_icon");
+            if (portraitStick == null) portraitStick = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/stick_spy_icon");
+            if (portraitStagBeetle == null) portraitStagBeetle = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/stag_beetle_icon");
         }
 
         void Start()
