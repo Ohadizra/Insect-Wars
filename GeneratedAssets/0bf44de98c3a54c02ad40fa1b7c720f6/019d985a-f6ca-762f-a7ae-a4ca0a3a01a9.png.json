@@ -1,0 +1,27 @@
+{
+    "asset": "0bf44de98c3a54c02ad40fa1b7c720f6",
+    "fileName": "019d985a-f6ca-762f-a7ae-a4ca0a3a01a9.png",
+    "prompt": "realistic smoke puff, volumetric grey and white smoke, isolated on white background, game vfx sprite",
+    "negativePrompt": "",
+    "model": "856245a7-19a9-46f3-864c-899b31fd5f9f",
+    "modelName": "Nano Banana - T2i",
+    "customSeed": -1,
+    "w3CTraceId": "4e4f82311c171a3a32da9f5a8db2cf4e",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

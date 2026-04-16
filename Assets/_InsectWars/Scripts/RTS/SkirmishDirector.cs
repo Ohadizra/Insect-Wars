@@ -1490,6 +1490,9 @@ float height = topY - bottomY;
                 var def = UnitDefinition.CreateRuntimeDefault(arch, shellColor);
                 unit.Configure(team, def);
                 
+                float tintStrength = arch == UnitArchetype.StickSpy ? 0.75f : 0.45f;
+                float emissionMul = arch == UnitArchetype.StickSpy ? 0.15f : 0.06f;
+
                 foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
                 {
                     if (renderer.sharedMaterial == null) continue;
@@ -1498,12 +1501,12 @@ float height = topY - bottomY;
                     if (mat.HasProperty("_BaseColor"))
                     {
                         Color orig = mat.GetColor("_BaseColor");
-                        mat.SetColor("_BaseColor", Color.Lerp(orig, shellColor, 0.45f));
+                        mat.SetColor("_BaseColor", Color.Lerp(orig, shellColor, tintStrength));
                     }
                     if (mat.HasProperty("_Color"))
                     {
                         Color orig = mat.GetColor("_Color");
-                        mat.SetColor("_Color", Color.Lerp(orig, shellColor, 0.45f));
+                        mat.SetColor("_Color", Color.Lerp(orig, shellColor, tintStrength));
                     }
                     if (mat.HasProperty("_Smoothness"))
                         mat.SetFloat("_Smoothness", 0f);
@@ -1520,7 +1523,7 @@ float height = topY - bottomY;
                     mat.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
                     mat.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
                     mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", shellColor * 0.06f);
+                    mat.SetColor("_EmissionColor", shellColor * emissionMul);
                     renderer.material = mat;
                 }
 

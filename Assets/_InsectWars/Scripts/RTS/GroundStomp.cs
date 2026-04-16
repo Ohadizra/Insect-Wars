@@ -45,8 +45,11 @@ namespace InsectWars.RTS
                 if (u == null || !u.IsAlive || u.Team == _unit.Team) continue;
                 if (Vector3.Distance(transform.position, u.transform.position) > StompRadius) continue;
 
+                if (u.GetComponent<UnitAnimationDriver>() is { } enemyDriver)
+                    enemyDriver.NotifyStompImpact(transform.position);
+
                 var debuff = u.GetComponent<StompSlow>();
-                if (debuff == null) debuff = u.gameObject.AddComponent<StompSlow>();
+if (debuff == null) debuff = u.gameObject.AddComponent<StompSlow>();
                 debuff.Apply(SlowDuration, MoveSpeedMultiplier, AttackSpeedMultiplier);
             }
         }

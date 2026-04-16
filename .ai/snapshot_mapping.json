@@ -1145,6 +1145,12 @@
       "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
       "content": "the stump animation of the stag beatle is not very reaslitic, i want to have a ground cracking, smoke effect. and an animation effect reaction on the enemys effected by it",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "a5050c59-9b3a-447b-a744-0886565c5300",
+      "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
+      "content": "I have improved the Stag Beetle's stomp ability with a more realistic ground crack, smoke effect, and an impact reaction on affected enemies.\n\n### Changes Made:\n\n1.  **New Visual Effects**:\n    *   **Ground Crack**: Generated a detailed, realistic ground impact texture and applied it to a new ground-aligned quad in the `StompGroundEffect` prefab.\n    *   **Volumetric Smoke**: Added a new particle system to the stomp effect using a generated smoke puff texture, creating a more dramatic burst of dust and smoke on impact.\n2.  **Enemy Reaction Animation**:\n    *   Updated `UnitAnimationDriver.cs` with a new procedural **Impact Stagger** system.\n    *   When hit by the stomp, enemies now perform a quick, realistic reaction consisting of a high-frequency **jitter** and a momentary **squash-and-stretch** effect, visually communicating the force of the impact.\n3.  **Code Integration**:\n    *   Modified `GroundStomp.cs` to notify all units within the stomp radius to trigger their impact reaction.\n    *   Ensured the `StompGroundEffect` prefab is automatically loaded and instantiated during the beetle's slam frame.\n\nThe effect is now fully procedural and integrates seamlessly with the existing unit animation system, providing much better visual feedback for the Stag Beetle's heavy attack.",
+      "snapshot_message_type": 1
     }
   ]
 }

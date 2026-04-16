@@ -58,6 +58,8 @@ namespace InsectWars.RTS
         float _buildAnimTimer; 
         float _idleT;
         float _instanceOffset;
+        float _impactStaggerT;
+        Vector3 _impactStaggerDir;
         bool _dying;
         bool _stompImpactTriggered;
 
@@ -87,49 +89,49 @@ namespace InsectWars.RTS
                     if (p.nameHash == Death) _hasDeath = true;
                     if (p.nameHash == WebCast) _hasWebCast = true;
                     if (p.nameHash == Stomp) _hasStomp = true;
-                    }
-                    }
+                }
+            }
 
-                    if (modelRoot != null)
-                    {
-                    _baseLocalPos = modelRoot.localPosition;
-                    _baseScale = modelRoot.localScale;
-                    _baseLocalRot = modelRoot.localRotation;
-                    if (float.IsNaN(_baseLocalPos.x) || float.IsNaN(_baseLocalPos.y) || float.IsNaN(_baseLocalPos.z))
+            if (modelRoot != null)
+            {
+                _baseLocalPos = modelRoot.localPosition;
+                _baseScale = modelRoot.localScale;
+                _baseLocalRot = modelRoot.localRotation;
+                if (float.IsNaN(_baseLocalPos.x) || float.IsNaN(_baseLocalPos.y) || float.IsNaN(_baseLocalPos.z))
                     _baseLocalPos = Vector3.zero;
-                    if (float.IsNaN(_baseScale.x) || float.IsNaN(_baseScale.y) || float.IsNaN(_baseScale.z)
+                if (float.IsNaN(_baseScale.x) || float.IsNaN(_baseScale.y) || float.IsNaN(_baseScale.z)
                     || _baseScale == Vector3.zero)
                     _baseScale = Vector3.one;
-                    if (float.IsNaN(_baseLocalRot.x) || float.IsNaN(_baseLocalRot.y) || float.IsNaN(_baseLocalRot.z)
+                if (float.IsNaN(_baseLocalRot.x) || float.IsNaN(_baseLocalRot.y) || float.IsNaN(_baseLocalRot.z)
                     || _baseLocalRot == new Quaternion(0, 0, 0, 0))
                     _baseLocalRot = Quaternion.identity;
                 
-                    // Initialize _lookRotation to the transform's heading
-                    _lookRotation = transform.rotation;
+                // Initialize _lookRotation to the transform's heading
+                _lookRotation = transform.rotation;
 
-                    _lArm = FindRecursive(modelRoot, "frontleg") ?? FindRecursive(modelRoot, "LeftArm");
-                    _rArm = FindRecursive(modelRoot, "R_frontleg") ?? FindRecursive(modelRoot, "RightArm");
-                    _chest = FindRecursive(modelRoot, "chest");
-                    _head = FindRecursive(modelRoot, "head");
-                    _tail = FindRecursive(modelRoot, "tail");
+                _lArm = FindRecursive(modelRoot, "frontleg") ?? FindRecursive(modelRoot, "LeftArm");
+                _rArm = FindRecursive(modelRoot, "R_frontleg") ?? FindRecursive(modelRoot, "RightArm");
+                _chest = FindRecursive(modelRoot, "chest");
+                _head = FindRecursive(modelRoot, "head");
+                _tail = FindRecursive(modelRoot, "tail");
 
-                    if (_lArm != null) _lArmBase = _lArm.localRotation;
-                    if (_rArm != null) _rArmBase = _rArm.localRotation;
-                    if (_chest != null) _chestBase = _chest.localRotation;
-                    if (_head != null) _headBase = _head.localRotation;
-                    if (_tail != null) _tailBase = _tail.localRotation;
+                if (_lArm != null) _lArmBase = _lArm.localRotation;
+                if (_rArm != null) _rArmBase = _rArm.localRotation;
+                if (_chest != null) _chestBase = _chest.localRotation;
+                if (_head != null) _headBase = _head.localRotation;
+                if (_tail != null) _tailBase = _tail.localRotation;
 
-                    _lMandible = FindRecursive(modelRoot, "earend");
-                    _rMandible = FindRecursive(modelRoot, "R_earend");
-                    if (_lMandible != null) _lMandibleBase = _lMandible.localRotation;
-                    if (_rMandible != null) _rMandibleBase = _rMandible.localRotation;
+                _lMandible = FindRecursive(modelRoot, "earend");
+                _rMandible = FindRecursive(modelRoot, "R_earend");
+                if (_lMandible != null) _lMandibleBase = _lMandible.localRotation;
+                if (_rMandible != null) _rMandibleBase = _rMandible.localRotation;
 
-                    if (stompVfxPrefab == null && IsStagBeetle())
-                    {
-                        stompVfxPrefab = Resources.Load<GameObject>("VFX/StompGroundEffect");
-                    }
+                if (stompVfxPrefab == null && IsStagBeetle())
+                {
+                    stompVfxPrefab = Resources.Load<GameObject>("VFX/StompGroundEffect");
+                }
 
-                    _lWing = FindRecursive(modelRoot, "L_wing") ?? FindRecursive(modelRoot, "wing_L")
+                _lWing = FindRecursive(modelRoot, "L_wing") ?? FindRecursive(modelRoot, "wing_L")
                     ?? FindRecursive(modelRoot, "LeftWing") ?? FindRecursive(modelRoot, "Wing_L");
                 _rWing = FindRecursive(modelRoot, "R_wing") ?? FindRecursive(modelRoot, "wing_R")
                     ?? FindRecursive(modelRoot, "RightWing") ?? FindRecursive(modelRoot, "Wing_R");
@@ -213,30 +215,30 @@ namespace InsectWars.RTS
                 }
 
                 modelRoot.rotation = _lookRotation * _baseLocalRot;
-                }
-                }
+            }
+        }
 
-                void LateUpdate()
-                {
-                if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
+        void LateUpdate()
+        {
+            if (_unit == null || !_unit.IsAlive || _dying || modelRoot == null) return;
 
-                if (IsStickSpy() || IsBlackWidow() || IsStagBeetle())
-                {
+            if (IsStickSpy() || IsBlackWidow() || IsStagBeetle())
+            {
                 // Force orientation to win against Animator root rotation/FBX bad orientation
                 modelRoot.rotation = _lookRotation * _baseLocalRot;
-                }
+            }
 
-                var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
-                var planar = new Vector3(vel.x, 0f, vel.z);
-                var moving = planar.sqrMagnitude > 0.01f;
+            var vel = (_agent != null && _agent.enabled) ? _agent.velocity : transform.forward * previewSpeed;
+            var planar = new Vector3(vel.x, 0f, vel.z);
+            var moving = planar.sqrMagnitude > 0.01f;
 
-                float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
-                _idleT += dt;
+            float dt = Application.isPlaying ? Time.unscaledDeltaTime : 0.016f;
+            _idleT += dt;
 
-                var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
+            var bob = moving ? Mathf.Sin(_idleT * proceduralBobSpeed) * proceduralBobAmp : 0f;
             
-                if (_buildAnimTimer > 0f)
-                {
+            if (_buildAnimTimer > 0f)
+            {
                 _buildAnimTimer -= dt;
                 float workSpeed = 14f;
                 float cycle = _idleT * workSpeed;
@@ -252,178 +254,188 @@ namespace InsectWars.RTS
                 if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(Mathf.Sin(_idleT * 6f) * 12f, 0f, 0f);
                 bob = 0f; 
                 ResetBonesOnly(dt * 3f, arms: false, chest: false, head: false, tail: false);
+            }
+            else if (IsStagBeetle())
+            {
+                ApplyStagBeetleLoop(dt, moving, planar.magnitude);
+            }
+            else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+            {
+                ApplyMantisLoop(dt);
+            }
+            else
+            {
+                modelRoot.localScale = _baseScale;
+                if (!(animator != null && animator.runtimeAnimatorController != null))
+                    ResetBones(dt * 5f);
+            }
+
+            {
+                float heightOffset = 0f;
+                if (IsBlackWidow()) heightOffset = 0.35f;
+                else if (IsStickSpy()) heightOffset = 0.66f;
+                else if (IsStagBeetle()) heightOffset = 0.53f;
+
+                var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
+                if (!float.IsNaN(newPos.y))
+                    modelRoot.localPosition = newPos;
+            }
+
+            if (_impactStaggerT > 0f)
+            {
+                _impactStaggerT -= dt;
+                float p = Mathf.Clamp01(_impactStaggerT / 0.6f);
+                float jitter = Mathf.Sin(p * 50f) * 0.08f * p;
+                float squash = 1f - 0.25f * Mathf.Sin(p * Mathf.PI) * p;
+                modelRoot.localPosition += _impactStaggerDir * jitter;
+                modelRoot.localScale = Vector3.Scale(modelRoot.localScale, new Vector3(1.2f - squash, squash, 1.2f - squash));
+            }
+
+            if (_stompAnimT > 0f)
+            {
+                _stompAnimT -= dt;
+                float p = 1f - (Mathf.Max(0f, _stompAnimT) / _stompAnimDuration);
+                ApplyStagBeetleStomp(p);
+            }
+            else if (_attackAnimT > 0f)
+            {
+                _attackAnimT -= dt;
+                float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
+
+                if (IsBlackWidow())
+                {
+                    ApplyBlackWidowSpecial(p, _attackAnimDuration);
                 }
                 else if (IsStagBeetle())
                 {
-                    ApplyStagBeetleLoop(dt, moving, planar.magnitude);
+                    ApplyStagBeetleAttack(p);
                 }
-                else if (!moving && _attackAnimT <= 0f && _unit.Archetype == UnitArchetype.BasicFighter)
+                else if (_unit.Archetype == UnitArchetype.BasicRanged)
                 {
-                    ApplyMantisLoop(dt);
+                    float sprayActive = (p > 0.05f && p < 0.65f) ? 1f : 0f;
+                    float jitter = sprayActive * Mathf.Sin(p * 180f) * 6f;
+                    float tailLift = Mathf.Sin(p * Mathf.PI) * 60f;
+                    if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
+                    float brace = Mathf.Sin(p * Mathf.PI) * 0.08f;
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
+                    modelRoot.localPosition += modelRoot.forward * (Mathf.Sin(p * Mathf.PI) * 0.16f + sprayActive * Mathf.Sin(p * 90f) * 0.035f);
+                    if (_chest != null) _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
                 }
                 else
                 {
-                    modelRoot.localScale = _baseScale;
-                    if (!(animator != null && animator.runtimeAnimatorController != null))
-                        ResetBones(dt * 5f);
+                    float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
+                    float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
+                    modelRoot.localPosition += modelRoot.forward * lunge;
+                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+                    if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                    if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
                 }
+            }
+            else if (_unit.Archetype != UnitArchetype.BasicFighter && !IsBlackWidow() && !IsStagBeetle())
+            {
+                float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+            }
+        }
 
-                {
-                    float heightOffset = 0f;
-                    if (IsBlackWidow()) heightOffset = 0.35f;
-                    else if (IsStickSpy()) heightOffset = 0.66f;
-                    else if (IsStagBeetle()) heightOffset = 0.53f;
-
-                    var newPos = _baseLocalPos + new Vector3(0f, bob + heightOffset, 0f);
-                    if (!float.IsNaN(newPos.y))
-                        modelRoot.localPosition = newPos;
-                }
-
-                if (_stompAnimT > 0f)
-                {
-                    _stompAnimT -= dt;
-                    float p = 1f - (Mathf.Max(0f, _stompAnimT) / _stompAnimDuration);
-                    ApplyStagBeetleStomp(p);
-                }
-                else if (_attackAnimT > 0f)
-                {
-                    _attackAnimT -= dt;
-                    float p = 1f - (Mathf.Max(0f, _attackAnimT) / _attackAnimDuration);
-
-                    if (IsBlackWidow())
-                    {
-                        ApplyBlackWidowSpecial(p, _attackAnimDuration);
-                    }
-                    else if (IsStagBeetle())
-                    {
-                        ApplyStagBeetleAttack(p);
-                    }
-                    else if (_unit.Archetype == UnitArchetype.BasicRanged)
-                    {
-                        float sprayActive = (p > 0.05f && p < 0.65f) ? 1f : 0f;
-                        float jitter = sprayActive * Mathf.Sin(p * 180f) * 6f;
-                        float tailLift = Mathf.Sin(p * Mathf.PI) * 60f;
-                        if (_tail != null) _tail.localRotation = _tailBase * Quaternion.Euler(-tailLift + jitter, jitter * 0.4f, 0f);
-                        float brace = Mathf.Sin(p * Mathf.PI) * 0.08f;
-                        modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(1f + brace, 1f - brace * 0.5f, 1f + brace));
-                        modelRoot.localPosition += modelRoot.forward * (Mathf.Sin(p * Mathf.PI) * 0.16f + sprayActive * Mathf.Sin(p * 90f) * 0.035f);
-                        if (_chest != null) _chest.localRotation = _chestBase * Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -18f, 0f, 0f);
-                    }
-                    else
-                    {
-                        float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
-                        float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
-                        modelRoot.localPosition += modelRoot.forward * lunge;
-                        modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
-                        if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                        if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                    }
-                }
-                else if (_unit.Archetype != UnitArchetype.BasicFighter && !IsBlackWidow() && !IsStagBeetle())
-                {
-                    float breath = 1f + Mathf.Sin(_idleT * idlePulseSpeed * 0.5f) * idlePulseAmp;
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
-                }
-                }
-
-                void ApplyStagBeetleLoop(float dt, bool moving, float speed)
-                {
-                if (moving)
-                {
-                    // Slow, heavy walk cycle
-                    float cycleSpeed = 6.0f;
-                    float cycle = _idleT * cycleSpeed;
-                    float groupA = Mathf.Sin(cycle);
+        void ApplyStagBeetleLoop(float dt, bool moving, float speed)
+        {
+            if (moving)
+            {
+                // Slow, heavy walk cycle
+                float cycleSpeed = 6.0f;
+                float cycle = _idleT * cycleSpeed;
+                float groupA = Mathf.Sin(cycle);
                 
-                    float swayYaw = Mathf.Sin(cycle * 0.5f) * 3.5f;
-                    float swayPitch = Mathf.Abs(groupA) * 2.5f;
-                    float walkBob = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle)), 2f) * 0.06f;
+                float swayYaw = Mathf.Sin(cycle * 0.5f) * 3.5f;
+                float swayPitch = Mathf.Abs(groupA) * 2.5f;
+                float walkBob = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle)), 2f) * 0.06f;
 
-                    modelRoot.localRotation *= Quaternion.Euler(swayPitch, swayYaw, groupA * 1.5f);
-                    modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
-                }
-                else
-                {
-                    // Heavy idling
-                    float breath = 1f + Mathf.Sin(_idleT * 1.2f) * 0.015f;
-                    float mandiblesOpen = Mathf.Sin(_idleT * 0.5f) * 10f;
-                    float headScan = Mathf.Sin(_idleT * 0.3f) * 5f;
+                modelRoot.localRotation *= Quaternion.Euler(swayPitch, swayYaw, groupA * 1.5f);
+                modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
+            }
+            else
+            {
+                // Heavy idling
+                float breath = 1f + Mathf.Sin(_idleT * 1.2f) * 0.015f;
+                float mandiblesOpen = Mathf.Sin(_idleT * 0.5f) * 10f;
+                float headScan = Mathf.Sin(_idleT * 0.3f) * 5f;
 
-                    if (_head != null) _head.localRotation = _headBase * Quaternion.Euler(0f, headScan, 0f);
-                    if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandiblesOpen, 0f);
-                    if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandiblesOpen, 0f);
+                if (_head != null) _head.localRotation = _headBase * Quaternion.Euler(0f, headScan, 0f);
+                if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandiblesOpen, 0f);
+                if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandiblesOpen, 0f);
                 
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
-                }
-                }
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+            }
+        }
 
-                void ApplyStagBeetleAttack(float p)
-                {
-                float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
-                float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
-                modelRoot.localPosition += modelRoot.forward * lunge;
-                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
-                if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
-                if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+        void ApplyStagBeetleAttack(float p)
+        {
+            float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
+            float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
+            modelRoot.localPosition += modelRoot.forward * lunge;
+            modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+            if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+            if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
 
-                float mandibleOpen = Mathf.Sin(p * Mathf.PI) * 40f;
-                if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
-                if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
-                }
+            float mandibleOpen = Mathf.Sin(p * Mathf.PI) * 40f;
+            if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
+            if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
+        }
 
-                void ApplyStagBeetleStomp(float p)
-                {
-                float rise = 0f;
-                float mandibleOpen = 0f;
-                float compression = 0f;
+        void ApplyStagBeetleStomp(float p)
+        {
+            float rise = 0f;
+            float mandibleOpen = 0f;
+            float compression = 0f;
 
-                if (p < 0.3f) // Wind-up
-                {
-                    float localP = p / 0.3f;
-                    rise = -25f * localP;
-                    mandibleOpen = 50f * localP;
-                }
-                else if (p < 0.5f) // Slam
-                {
-                    float localP = (p - 0.3f) / 0.2f;
-                    rise = -25f + 35f * localP;
-                    mandibleOpen = 50f * (1f - localP);
-                }
-                else if (p < 0.6f) // Compression
-                {
-                    float localP = (p - 0.5f) / 0.1f;
-                    compression = -0.15f * localP;
-                }
-                else // Recovery
-                {
-                    float localP = (p - 0.6f) / 0.4f;
-                    compression = -0.15f * (1f - localP);
-                }
+            if (p < 0.3f) // Wind-up
+            {
+                float localP = p / 0.3f;
+                rise = -25f * localP;
+                mandibleOpen = 50f * localP;
+            }
+            else if (p < 0.5f) // Slam
+            {
+                float localP = (p - 0.3f) / 0.2f;
+                rise = -25f + 35f * localP;
+                mandibleOpen = 50f * (1f - localP);
+            }
+            else if (p < 0.6f) // Compression
+            {
+                float localP = (p - 0.5f) / 0.1f;
+                compression = -0.15f * localP;
+            }
+            else // Recovery
+            {
+                float localP = (p - 0.6f) / 0.4f;
+                compression = -0.15f * (1f - localP);
+            }
 
-                modelRoot.localRotation *= Quaternion.Euler(rise, 0f, 0f);
-                modelRoot.localPosition += new Vector3(0f, compression, 0f);
-                if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
-                if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
+            modelRoot.localRotation *= Quaternion.Euler(rise, 0f, 0f);
+            modelRoot.localPosition += new Vector3(0f, compression, 0f);
+            if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
+            if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
 
-                if (p >= 0.5f && !_stompImpactTriggered)
+            if (p >= 0.5f && !_stompImpactTriggered)
+            {
+                _stompImpactTriggered = true;
+                if (stompVfxPrefab != null)
                 {
-                    _stompImpactTriggered = true;
-                    if (stompVfxPrefab != null)
-                    {
-                        Instantiate(stompVfxPrefab, transform.position, Quaternion.identity);
-                    }
+                    Instantiate(stompVfxPrefab, transform.position, Quaternion.identity);
                 }
-                }
+            }
+        }
 
-                public void NotifyStomp()
-                {
-                _stompAnimDuration = 1.7f;
-                _stompAnimT = _stompAnimDuration;
-                _stompImpactTriggered = false;
-                if (_hasStomp) animator.SetTrigger(Stomp);
-                }
+        public void NotifyStomp()
+        {
+            _stompAnimDuration = 1.7f;
+            _stompAnimT = _stompAnimDuration;
+            _stompImpactTriggered = false;
+            if (_hasStomp) animator.SetTrigger(Stomp);
+        }
 
-                void ApplyBlackWidowLoop(float dt, bool moving, float speed)
+        void ApplyBlackWidowLoop(float dt, bool moving, float speed)
         {
             if (moving)
             {
@@ -452,34 +464,34 @@ namespace InsectWars.RTS
                 modelRoot.localRotation *= Quaternion.Euler(sway, 0f, rollSway);
                 modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
             }
-            }
+        }
 
-            void ApplyStickLoop(float dt, bool moving, float speed)
+        void ApplyStickLoop(float dt, bool moving, float speed)
+        {
+            if (moving)
             {
-                if (moving)
-                {
-                    // Animated gait for the stick body (procedural because FBX has no clips)
-                    float gaitSpeed = 12.0f;
-                    float cycle = _idleT * gaitSpeed;
-                    float groupA = Mathf.Sin(cycle);
-                
-                    float swayYaw = Mathf.Sin(cycle * 0.5f) * 6.5f;
-                    float swayPitch = Mathf.Abs(groupA) * 4.5f;
-                    float walkBob = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle)), 2f) * 0.12f;
+                // Animated gait for the stick body (procedural because FBX has no clips)
+                float gaitSpeed = 12.0f;
+                float cycle = _idleT * gaitSpeed;
+                float groupA = Mathf.Sin(cycle);
+            
+                float swayYaw = Mathf.Sin(cycle * 0.5f) * 6.5f;
+                float swayPitch = Mathf.Abs(groupA) * 4.5f;
+                float walkBob = Mathf.Pow(Mathf.Abs(Mathf.Sin(cycle)), 2f) * 0.12f;
 
-                    modelRoot.localRotation *= Quaternion.Euler(swayPitch, swayYaw, groupA * 3f);
-                    modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
-                }
-                else
-                {
-                    float breath = 1f + Mathf.Sin(_idleT * 1.8f) * 0.02f;
-                    float sway = Mathf.Sin(_idleT * 0.8f) * 2.5f;
-                    modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
-                    modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
-                }
+                modelRoot.localRotation *= Quaternion.Euler(swayPitch, swayYaw, groupA * 3f);
+                modelRoot.localPosition += new Vector3(0f, walkBob, 0f);
             }
+            else
+            {
+                float breath = 1f + Mathf.Sin(_idleT * 1.8f) * 0.02f;
+                float sway = Mathf.Sin(_idleT * 0.8f) * 2.5f;
+                modelRoot.localRotation *= Quaternion.Euler(sway, 0f, 0f);
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(breath, 1f, breath));
+            }
+        }
 
-            void ApplyBlackWidowSpecial(float p, float duration)
+        void ApplyBlackWidowSpecial(float p, float duration)
         {
             if (duration > 0.45f) // WebCast
             {
@@ -555,6 +567,13 @@ namespace InsectWars.RTS
             _dying = true; 
             if (_hasDeath) animator.SetTrigger(Death); 
             if (Application.isPlaying) Destroy(gameObject, delay); 
+        }
+
+        public void NotifyStompImpact(Vector3 source)
+        {
+            _impactStaggerT = 0.6f;
+            _impactStaggerDir = (transform.position - source).normalized;
+            if (_impactStaggerDir.sqrMagnitude < 0.01f) _impactStaggerDir = Vector3.up;
         }
         
         public Vector3 GetProjectileSpawnPoint() { return modelRoot.position + modelRoot.forward * 0.35f + Vector3.up * 0.25f; }
