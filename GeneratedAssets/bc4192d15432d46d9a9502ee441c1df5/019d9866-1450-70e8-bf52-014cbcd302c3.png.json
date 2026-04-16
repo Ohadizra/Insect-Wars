@@ -1,0 +1,27 @@
+{
+    "asset": "bc4192d15432d46d9a9502ee441c1df5",
+    "fileName": "019d9866-1450-70e8-bf52-014cbcd302c3.png",
+    "prompt": "stylized dizzy debuff icon, yellow swirls or stars, simple flat design, circular, game ui icon, isolated on white background",
+    "negativePrompt": "",
+    "model": "856245a7-19a9-46f3-864c-899b31fd5f9f",
+    "modelName": "Nano Banana - T2i",
+    "customSeed": -1,
+    "w3CTraceId": "095b751fdb0ee86870a4d54c93af38f1",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
