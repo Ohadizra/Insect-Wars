@@ -43,6 +43,7 @@ namespace InsectWars.RTS
         {
             if (amount <= 0) return;
             Calories += amount;
+            MatchStats.RecordCaloriesGathered(amount);
             OnCaloriesChanged?.Invoke(Calories);
         }
 

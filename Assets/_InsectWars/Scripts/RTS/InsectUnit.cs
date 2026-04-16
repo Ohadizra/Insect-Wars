@@ -921,6 +921,7 @@ namespace InsectWars.RTS
             if (_health <= 0)
             {
                 _health = 0;
+                MatchStats.RecordKill(team);
                 StopBuilding();
                 UnlockMelee();
                 _agent.isStopped = true;
@@ -940,6 +941,7 @@ namespace InsectWars.RTS
             if (_health <= 0)
             {
                 _health = 0;
+                MatchStats.RecordKill(team);
                 StopBuilding();
                 UnlockMelee();
                 _agent.isStopped = true;
