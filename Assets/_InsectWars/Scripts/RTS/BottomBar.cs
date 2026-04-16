@@ -288,11 +288,9 @@ namespace InsectWars.RTS
             if (Keyboard.current.hKey.wasPressedThisFrame) IssueHoldAll();
             if (Keyboard.current.pKey.wasPressedThisFrame) SetPending(PendingCommand.Patrol);
             if (Keyboard.current.aKey.wasPressedThisFrame) SetPending(PendingCommand.Attack);
-            if (Keyboard.current.gKey.wasPressedThisFrame && SelectionController.Instance.HasWorkerSelected())
-                SetPending(PendingCommand.Gather);
             if (Keyboard.current.bKey.wasPressedThisFrame && SelectionController.Instance.HasWorkerSelected())
                 EnterBuildMenu();
-        }
+            }
 
         void LateUpdate()
         {
@@ -403,7 +401,6 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Hold", "H", IssueHoldAll);
                     AddCmdButton(_cmdGridParent, "Patrol", "P", () => SetPending(PendingCommand.Patrol));
                     AddCmdButton(_cmdGridParent, "Attack", "A", () => SetPending(PendingCommand.Attack));
-                    AddCmdButton(_cmdGridParent, "Gather", "G", () => SetPending(PendingCommand.Gather));
                     AddCmdButton(_cmdGridParent, "Build", "B", EnterBuildMenu);
                     break;
                 case BarMode.BuildMenu:
@@ -541,8 +538,8 @@ namespace InsectWars.RTS
             grt.offsetMax = new Vector2(-80f, -30f);
             
             var gl = grid.AddComponent<GridLayoutGroup>();
-            gl.cellSize = new Vector2(48f, 48f);
-            gl.spacing = new Vector2(76f, 13f);
+            gl.cellSize = new Vector2(80f, 80f);
+            gl.spacing = new Vector2(50f, 15f);
             gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             gl.constraintCount = 3;
             gl.childAlignment = TextAnchor.MiddleCenter;
@@ -737,7 +734,7 @@ namespace InsectWars.RTS
             btn.colors = colors;
             btn.onClick.AddListener(onClick);
 
-            var keyLabel = CreateText("Key", go.transform, 11, ColTitle, TextAnchor.UpperRight);
+            var keyLabel = CreateText("Key", go.transform, 14, ColTitle, TextAnchor.UpperRight);
             keyLabel.text = key;
             var krt = keyLabel.rectTransform;
             krt.offsetMin = new Vector2(2f, 2f);
