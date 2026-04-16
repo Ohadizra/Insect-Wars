@@ -971,6 +971,12 @@
       "conversation_id": "bad7f2b7-8ab2-4c6c-aa81-ea4530eacb70",
       "content": "I have adjusted the minimap padding and layout to ensure it fits perfectly within its ornate frame without covering it.\n\n### Changes Made:\n- **Increased Padding**: In `BottomBar.cs`, I increased the padding for the `MinimapInner` (the host for the map) from `5` to `15` units. This makes the map slightly smaller, allowing it to sit within the hollow center of the ornate frame rather than overlapping its borders.\n- **Maintained Layering**: I kept the map on top of the frame as you requested, as this ensures the \"MAP\" label and any map markers remain fully visible.\n- **Ensured Label Visibility**: I verified that the \"MAP\" label remains visible and isn't clipped by the new padding, as it still sits within the bounds of the larger minimap container.\n\nThe map should now appear neatly centered and \"fitted\" into the brown ornate frame as intended.\n\n### Validation:\n- Checked `BottomBar.cs` to ensure the `MinimapHost` offsets are correctly applied.\n- Verified that `Minimap.cs` procedurally attaches to the host and scales correctly.\n- Confirmed that the \"MAP\" label position (25 units above the map) still places it within the visible UI area.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "5fca8af4-75b8-49b7-ba2a-aa9ba303b85d",
+      "conversation_id": "bad7f2b7-8ab2-4c6c-aa81-ea4530eacb70",
+      "content": "I've increased the padding from `15` to `25` to make the map even smaller and ensure it sits cleanly within the frame's hollow area without overlapping the ornate borders.\n\n### Changes:\n- **Increased Padding**: Updated `BottomBar.cs` to set `MinimapHost` offsets to `25` and `-25`. This reduces the map's visual size within the frame.\n- **Label Alignment**: Since the \"MAP\" text is anchored to the top of the map area with a 25-unit offset, it will naturally move down with the map as the padding increases, keeping the relative spacing consistent.\n\nThe map should now fit perfectly within the decorative frame without any overlap on the edges.",
+      "snapshot_message_type": 1
     }
   ]
 }
