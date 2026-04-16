@@ -112,11 +112,22 @@ namespace InsectWars.RTS
             }
         }
 
-        static bool IsOnHighGround(Vector3 pos)
+        public static bool IsOnHighGround(Vector3 pos)
         {
             var t = Terrain.activeTerrain;
             if (t == null) return false;
             return t.SampleHeight(pos) > HighGroundThreshold;
+        }
+
+        /// <summary>
+        /// True if an observer can see a target considering high-ground elevation.
+        /// Low-ground observers cannot see high-ground targets unless they are StickSpy.
+        /// </summary>
+        public static bool CanSeeOverHighGround(Vector3 observerPos, Vector3 targetPos, UnitArchetype archetype)
+        {
+            if (!IsOnHighGround(targetPos)) return true;
+            if (archetype == UnitArchetype.StickSpy) return true;
+            return IsOnHighGround(observerPos);
         }
 
         void UpdateEnemyVisibility()

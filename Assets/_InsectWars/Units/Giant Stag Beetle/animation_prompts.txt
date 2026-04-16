@@ -127,6 +127,51 @@ Timing:
   sharp stop on impact, slow ease-out recovery
 
 ========================================
+GROUND STOMP VFX (particle / shader effect)
+  ** Generate alongside GroundStomp anim **
+========================================
+
+--- STOMP_GROUND_EFFECT ---
+Type:           Unity Particle System or VFX Graph
+Trigger:        Spawned at beetle's feet at the moment of impact (t ≈ 0.50s)
+Duration:       1.0-1.5 seconds (one-shot, then destroy)
+
+Prompt:
+"A radial ground shockwave expanding outward from the point of impact.
+
+ ON IMPACT (t=0):
+ - A ring of dust and dirt BURSTS outward from the beetle's feet in a
+   flat, circular wave along the ground plane. The ring starts small
+   (radius ~0.5m) and expands to the full stomp radius (~6m) over 0.8s.
+ - Small chunks of earth and pebbles fly upward near the center
+   (0-2m radius), reaching ~1m height, then fall back down.
+ - A brief, flat dust cloud lingers at ground level around the impact
+   point (3m radius), fading over 1.0s.
+
+ COLOR PALETTE (organic, earthy — no magic effects):
+ - Expanding ring: Brown-tan dust (0.45, 0.38, 0.25) → transparent
+ - Debris chunks: Dark brown (0.35, 0.25, 0.15), small 0.05-0.15m cubes
+ - Dust cloud: Light tan (0.55, 0.48, 0.35, 0.4 alpha) → fully transparent
+ - NO glowing, NO magic circles, NO energy effects — pure physical impact
+
+ PARTICLE SETTINGS (if using Unity Particle System):
+ - Emission: Burst of 30-50 particles at t=0
+ - Shape: Circle, radius 0.3m (start small, expand via velocity)
+ - Start Speed: 4-8 m/s outward (radial), 2-4 m/s upward for debris
+ - Start Size: 0.3-0.8m for dust billows, 0.05-0.15m for debris
+ - Lifetime: 0.8-1.2s for ring, 0.5-0.8s for debris
+ - Gravity: 0 for ring (stays flat), 3-5 for debris (falls back)
+ - Color over Lifetime: Fade alpha from 0.6 → 0 over lifetime
+ - Size over Lifetime: Grow 2-3x for dust billows (expanding cloud)
+ - Render Mode: Billboard for dust, Mesh (small cube) for debris
+ - Texture: Soft cloud/smoke puff (reuse BombardierSprayPuff.png or similar)
+
+ The effect should feel like a heavy object hitting packed earth —
+ dust flies, small rocks bounce, the ground visibly reacts to immense
+ force. It must be visible from the RTS camera at 30-60m altitude,
+ so the ring needs to be large enough (6m radius) to read clearly."
+
+========================================
 IDLE ANIMATION (optional, lower priority)
 ========================================
 

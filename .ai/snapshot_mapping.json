@@ -929,6 +929,12 @@
       "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
       "content": "",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "1b3d01e7-7a7f-49cd-9c81-5e92b5914435",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "I have fixed the team color tinting for the Spider (Black Widow) and the Giant Stag Beetle.\n\n### The Problem\nThe models for the Spider and Stag Beetle use high-detail textures that are naturally very dark (mostly black). In the Universal Render Pipeline (URP), setting a `_BaseColor` via a `MaterialPropertyBlock` multiplies the color by the texture. Since multiplying any color by black results in black, the blue and red team colors were not showing up on these units, making them look un-tinted.\n\n### The Fix\n1.  **Enabled Emission**: I programmatically enabled the `_EMISSION` keyword on the unit materials (`BlackWidowMat` and `GiantStagBeetleMat`).\n2.  **Applied Team Emission**: I updated the `SkirmishDirector.cs` unit spawning logic. It now applies the team color to both the `_BaseColor` (standard tinting) and the `_EmissionColor` channel.\n3.  **Coated Visuals**: By adding a subtle emission boost (45% of the team color), the units now appear \"coated\" and clearly identifiable as Blue or Red team members, even on their dark carapaces, without losing the fine texture detail from Meshy AI.\n\nAll units, including the Spider and Stag Beetle, should now be clearly color-coded according to their team.",
+      "snapshot_message_type": 1
     }
   ]
 }

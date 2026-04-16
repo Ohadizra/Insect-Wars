@@ -541,6 +541,7 @@ namespace InsectWars.RTS
             {
                 var mask = 1 << s_unitsLayer;
                 var cols = Physics.OverlapSphere(transform.position, scan, mask, QueryTriggerInteraction.Ignore);
+                var myArchetype = definition != null ? definition.archetype : UnitArchetype.Worker;
                 foreach (var c in cols)
                 {
                     var u = c.GetComponentInParent<InsectUnit>();
@@ -549,6 +550,8 @@ namespace InsectWars.RTS
                     if (u.IsCloaked && d > 8f) continue;
                     if (u.IsAirborne && definition != null
                         && definition.archetype != UnitArchetype.BasicRanged) continue;
+                    if (!FogOfWarSystem.CanSeeOverHighGround(transform.position, u.transform.position, myArchetype))
+                        continue;
                     if (d < bestD) { bestD = d; bestUnit = u; }
                 }
             }
@@ -563,15 +566,19 @@ namespace InsectWars.RTS
             HiveDeposit bestHive = null;
             float bestBldD = scan;
 
+            var scanArchetype = definition != null ? definition.archetype : UnitArchetype.Worker;
             foreach (var bld in ProductionBuilding.All)
             {
                 if (bld == null || !bld.IsAlive || bld.Team == team) continue;
+                if (!FogOfWarSystem.CanSeeOverHighGround(transform.position, bld.transform.position, scanArchetype))
+                    continue;
                 var d = Vector3.Distance(transform.position, bld.transform.position);
                 if (d < bestBldD) { bestBldD = d; bestBld = bld; bestHive = null; }
             }
 
             var eHive = team == Team.Player ? HiveDeposit.EnemyHive : HiveDeposit.PlayerHive;
-            if (eHive != null && eHive.IsAlive)
+            if (eHive != null && eHive.IsAlive
+                && FogOfWarSystem.CanSeeOverHighGround(transform.position, eHive.transform.position, scanArchetype))
             {
                 var d = Vector3.Distance(transform.position, eHive.transform.position);
                 if (d < bestBldD) { bestBld = null; bestHive = eHive; }

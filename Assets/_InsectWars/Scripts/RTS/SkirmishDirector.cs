@@ -1394,9 +1394,11 @@ namespace InsectWars.RTS
                             block.SetColor("_BaseColor", shellColor);
                         if (renderer.sharedMaterial.HasProperty("_Color"))
                             block.SetColor("_Color", shellColor);
-                    }
-                    renderer.SetPropertyBlock(block);
-                }
+                        if (renderer.sharedMaterial.HasProperty("_EmissionColor"))
+                            block.SetColor("_EmissionColor", shellColor * 0.45f);
+                        }
+                        renderer.SetPropertyBlock(block);
+                        }
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)
                     go.AddComponent<UnitAnimationDriver>();
