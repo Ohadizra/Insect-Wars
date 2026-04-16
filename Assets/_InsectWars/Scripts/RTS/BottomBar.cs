@@ -935,7 +935,7 @@ namespace InsectWars.RTS
 
         void ClearRally()
         {
-            var hive = HiveDeposit.PlayerHive;
+            var hive = SelectionController.Instance?.SelectedHive ?? HiveDeposit.PlayerHive;
             if (hive != null) hive.ClearRally();
         }
 
@@ -1001,11 +1001,6 @@ namespace InsectWars.RTS
             if (SelectionController.Instance == null) return;
             foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
                 b.ClearRally();
-        }
-
-        static void ClearBuildingRally(ProductionBuilding bld)
-        {
-            if (bld != null) bld.ClearRally();
         }
 
         public void ForceRebuild()

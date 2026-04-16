@@ -32,6 +32,7 @@ namespace InsectWars.RTS
         Team _team = Team.Player;
         Vector3? _rallyPoint;
         RottingFruitNode _rallyGatherTarget;
+        InsectUnit _rallyUnitTarget;
         GameObject _rallyFlag;
         BuildingState _state = BuildingState.Active;
         float _maxHealth;
@@ -57,6 +58,7 @@ namespace InsectWars.RTS
         public Team Team => _team;
         public Vector3? RallyPoint => _rallyPoint;
         public RottingFruitNode RallyGatherTarget => _rallyGatherTarget;
+        public InsectUnit RallyUnitTarget => _rallyUnitTarget;
         public BuildingState State => _state;
         public bool IsOperational => _state == BuildingState.Active;
         public float ConstructionProgress => _buildTimeTotal > 0f
@@ -397,6 +399,7 @@ namespace InsectWars.RTS
             var position = transform.position;
             var savedRally = _rallyPoint;
             var savedRallyTarget = _rallyGatherTarget;
+            var savedRallyUnit = _rallyUnitTarget;
             bool wasSelected = SelectionController.Instance != null &&
                                SelectionController.Instance.SelectedBuildings.Contains(this);
 
@@ -404,7 +407,9 @@ namespace InsectWars.RTS
 
             var newBuilding = Place(position, _type, _team, startBuilt: true);
 
-            if (savedRallyTarget != null && savedRally.HasValue)
+            if (savedRallyUnit != null && savedRallyUnit.IsAlive)
+                newBuilding.SetRallyUnit(savedRallyUnit);
+            else if (savedRallyTarget != null && savedRally.HasValue)
                 newBuilding.SetRallyGather(savedRally.Value, savedRallyTarget);
             else if (savedRally.HasValue)
                 newBuilding.SetRallyPoint(savedRally.Value);
@@ -467,6 +472,7 @@ namespace InsectWars.RTS
 
         void Update()
         {
+            TickRallyUnitTarget();
             TickPassiveRegen();
             if (_queue.Count == 0 || !IsOperational) return;
             var entry = _queue[0];
@@ -518,6 +524,11 @@ namespace InsectWars.RTS
 
         void SendToRally(InsectUnit unit)
         {
+            if (_rallyUnitTarget != null && _rallyUnitTarget.IsAlive)
+            {
+                unit.OrderMove(_rallyUnitTarget.transform.position);
+                return;
+            }
             if (_rallyGatherTarget != null && !_rallyGatherTarget.Depleted &&
                 unit.Definition != null && unit.Definition.canGather)
                 unit.OrderGather(_rallyGatherTarget);
@@ -529,6 +540,7 @@ namespace InsectWars.RTS
         {
             _rallyPoint = pos;
             _rallyGatherTarget = null;
+            _rallyUnitTarget = null;
             SyncRallyFlag();
         }
 
@@ -536,6 +548,15 @@ namespace InsectWars.RTS
         {
             _rallyPoint = pos;
             _rallyGatherTarget = node;
+            _rallyUnitTarget = null;
+            SyncRallyFlag();
+        }
+
+        public void SetRallyUnit(InsectUnit unit)
+        {
+            _rallyPoint = unit.transform.position;
+            _rallyGatherTarget = null;
+            _rallyUnitTarget = unit;
             SyncRallyFlag();
         }
 
@@ -543,7 +564,23 @@ namespace InsectWars.RTS
         {
             _rallyPoint = null;
             _rallyGatherTarget = null;
+            _rallyUnitTarget = null;
             SyncRallyFlag();
+        }
+
+        void TickRallyUnitTarget()
+        {
+            if (_rallyUnitTarget == null) return;
+            if (!_rallyUnitTarget.IsAlive)
+            {
+                _rallyUnitTarget = null;
+                _rallyPoint = null;
+                SyncRallyFlag();
+                return;
+            }
+            _rallyPoint = _rallyUnitTarget.transform.position;
+            if (_rallyFlag != null && _rallyFlag.activeSelf)
+                _rallyFlag.transform.position = _rallyPoint.Value;
         }
 
         void SyncRallyFlag()

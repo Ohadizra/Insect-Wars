@@ -57,6 +57,12 @@ namespace InsectWars.RTS
             var selectedHive = SelectionController.Instance.SelectedHive;
             if (selectedHive != null)
             {
+                var rallyUnit = hit.collider.GetComponentInParent<InsectUnit>();
+                if (rallyUnit != null && rallyUnit.IsAlive)
+                {
+                    selectedHive.SetRallyUnit(rallyUnit);
+                    return;
+                }
                 var rallyFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
                 if (rallyFruit != null && !rallyFruit.Depleted)
                     selectedHive.SetRallyGather(hit.point, rallyFruit);
@@ -67,6 +73,13 @@ namespace InsectWars.RTS
 
             if (SelectionController.Instance.SelectedBuilding != null)
             {
+                var rallyUnit = hit.collider.GetComponentInParent<InsectUnit>();
+                if (rallyUnit != null && rallyUnit.IsAlive)
+                {
+                    foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
+                        b.SetRallyUnit(rallyUnit);
+                    return;
+                }
                 var rallyFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
                 foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
                 {
