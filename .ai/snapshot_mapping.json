@@ -1067,6 +1067,12 @@
       "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
       "content": "I have successfully improved the UI icons for the basic RTS commands (Move, Stop, Hold, Patrol, Attack, Gather, Build, and Cancel) to prioritize clarity and readability.\n\n### **Changes Made:**\n1.  **Generated New High-Clarity Icons**: Created a set of 8 semi-minimalist icons using universally recognized RTS symbols (e.g., a bold arrow for Move, a red octagon for Stop, a crosshair for Attack).\n2.  **Processed Assets**: Removed backgrounds from the generated icons to ensure they look clean and professional within the UI grid.\n3.  **Integrated into Project**:\n    *   Moved the new icons to `Assets/_InsectWars/Resources/UI/ImprovedIcons/` to allow for efficient runtime loading.\n    *   Updated `BottomBar.cs` to reference the improved icon paths, ensuring they are loaded automatically by the UI system.\n4.  **Validated Import Settings**: Configured all new assets as **UI Sprites** to ensure they render correctly at various resolutions.\n\nThe command panel now displays these clear, high-contrast symbols, making it much easier for players to identify actions at a glance.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "86dc5d84-103b-4902-9954-937616b74456",
+      "conversation_id": "eb2bb356-20d3-42ad-8886-810b1912cb31",
+      "content": "better but still some work, for ant remove the \"gather\" icon , keep the actiivty just dont let user activate it via icon but via sending the unit on the gathering souce (as it already works). also make all icons bigger to utilize the actions frame space",
+      "snapshot_message_type": 0
     }
   ]
 }
