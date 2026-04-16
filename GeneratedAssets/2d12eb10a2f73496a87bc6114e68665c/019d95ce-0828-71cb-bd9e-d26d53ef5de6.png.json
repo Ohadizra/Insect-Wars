@@ -1,0 +1,36 @@
+{
+    "asset": "2d12eb10a2f73496a87bc6114e68665c",
+    "fileName": "019d95ce-0828-71cb-bd9e-d26d53ef5de6.png",
+    "prompt": "A circular RTS UI icon for an 'Ant Nest' colony building. It features a detailed hand-painted sketch of a large, complex ant mound made of soil and organic matter. It is enclosed in a thick, notched green-bronze circular frame, matching the style, lighting, and color palette of the provided reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "86f9b7dc39d212f46e6d0eeaa5deb042",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

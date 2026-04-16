@@ -1,0 +1,36 @@
+{
+    "asset": "7f54d8601297d4ee0b83f4fff2ea0741",
+    "fileName": "019d95ce-3b54-710e-8eed-51e5f89bbccb.png",
+    "prompt": "A circular RTS UI icon for a 'Sky Tower' building. It features a detailed hand-painted sketch of a tall, slender organic spire reaching upwards, made of chitin and silk. It is enclosed in a thick, notched green-bronze circular frame, matching the style, lighting, and color palette of the provided reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "a2a027e5d4b88ee041d8eb98106d8c65",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

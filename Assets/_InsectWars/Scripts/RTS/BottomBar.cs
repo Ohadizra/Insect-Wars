@@ -134,10 +134,10 @@ namespace InsectWars.RTS
             if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/icon_larva");
             if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_view");
             if (iconRanged == null) iconRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_view");
-            if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/underground_icon");
-            if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/skytower_icon");
-            if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/antnest_icon");
-            if (iconRootCellar == null) iconRootCellar = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/rootcellar_icon");
+            if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/underground_icon_v2");
+            if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/skytower_icon_v2");
+            if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/antnest_icon_v2");
+            if (iconRootCellar == null) iconRootCellar = GameHUD.LoadSpriteFromResources("UI/ImprovedIcons/rootcellar_icon_v2");
 
             if (iconEvolve == null) iconEvolve = GameHUD.LoadSpriteFromResources("UI/Icon_Evolve");
             if (iconClearRally == null) iconClearRally = GameHUD.LoadSpriteFromResources("UI/Icon_ClearRally");

@@ -1,0 +1,36 @@
+{
+    "asset": "bfcf4a359be8243bcae9e79fd69402e3",
+    "fileName": "019d95ce-24cd-784f-88ae-3288cce0b726.png",
+    "prompt": "A circular RTS UI icon for an 'Underground' insect barracks building. It features a detailed hand-painted sketch of a dark tunnel entrance dug into the earth, with organic chitinous reinforcements. It is enclosed in a thick, notched green-bronze circular frame, matching the style, lighting, and color palette of the provided reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "34f8819fb15cafb169b108b3e34ca96d",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
