@@ -1,0 +1,36 @@
+{
+    "asset": "8e4ed4ba0e09b4517b8c18405f3559e2",
+    "fileName": "019d95db-9f76-792e-80a1-60b6f5dc8d9f.png",
+    "prompt": "A hand-painted RTS UI icon for the 'Hold Position' command. A bold white shield symbol with organic, hand-drawn edges and subtle shading. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style of the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "5acf5a160b69143b9852860a51c4c7e4",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

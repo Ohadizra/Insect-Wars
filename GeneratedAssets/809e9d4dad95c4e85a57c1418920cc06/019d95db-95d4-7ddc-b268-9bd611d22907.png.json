@@ -1,0 +1,36 @@
+{
+    "asset": "809e9d4dad95c4e85a57c1418920cc06",
+    "fileName": "019d95db-95d4-7ddc-b268-9bd611d22907.png",
+    "prompt": "A hand-painted RTS UI icon for the 'Stop' command. A bold red square symbol with organic, hand-drawn edges and subtle shading. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style of the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "b7406c807a940a221c4a0c7d6be32bd0",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

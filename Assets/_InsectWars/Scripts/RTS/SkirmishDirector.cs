@@ -281,6 +281,16 @@ systems = new GameObject("Systems");
             ProductionBuilding.Place(hiveXZ + new Vector3(-12f, 0f, 4f), BuildingType.Underground, Team.Player, startBuilt: true);
             ProductionBuilding.Place(hiveXZ + new Vector3(4f, 0f, -12f), BuildingType.RootCellar, Team.Player, startBuilt: true);
             ProductionBuilding.Place(hiveXZ + new Vector3(12f, 0f, 4f), BuildingType.SkyTower, Team.Player, startBuilt: true);
+
+            PlaceEnemyDummyBuildings();
+        }
+
+        void PlaceEnemyDummyBuildings()
+        {
+            var dummyCenter = new Vector3(_playerHive.x + 20f, 0f, _playerHive.z + 20f);
+            ProductionBuilding.Place(dummyCenter + new Vector3(-8f, 0f, 6f), BuildingType.Underground, Team.Enemy, startBuilt: true);
+            ProductionBuilding.Place(dummyCenter + new Vector3(8f, 0f, 6f), BuildingType.SkyTower, Team.Enemy, startBuilt: true);
+            ProductionBuilding.Place(dummyCenter + new Vector3(0f, 0f, -8f), BuildingType.AntNest, Team.Enemy, startBuilt: true);
         }
 
         void RegisterBuildZones()

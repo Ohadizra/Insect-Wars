@@ -34,10 +34,18 @@ namespace InsectWars.UI
         Canvas _canvas;
         Font _font;
         GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelLearning, _panelSettings, _panelAbout;
+        GameObject _loadingScreen;
+        CanvasGroup _loadingCanvasGroup;
         Text _volValueLabel, _diffLabelInMapSelect;
+        float _fadeTimer = -1f;
+        int _revealCountdown = -1;
+        const float FadeDuration = 0.5f;
+        const int FramesToWaitAfterPlay = 3;
 
         void Awake()
         {
+            HideSceneJunk();
+
             GameSession.LoadPrefs();
             AudioListener.volume = GameSession.GetSavedMasterVolume();
             Screen.fullScreen = GameSession.GetSavedFullscreen();
@@ -49,21 +57,98 @@ namespace InsectWars.UI
             if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_WithTitle");
             if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_Raw");
 
-            // Stop NavMesh errors in Home scene
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == SceneLoader.HomeScene)
-            {
-                foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
-                    agent.enabled = false;
-                foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
-                    unit.enabled = false;
-            }
-
             SetupEventSystem();
             BuildCanvas();
+            BuildLoadingScreen();
             BuildVideoBackground();
             BuildMainMenu();
             BuildSubPanels();
-            ShowMain();
+        }
+
+        void HideSceneJunk()
+        {
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = Color.black;
+            }
+
+            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                r.enabled = false;
+            foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
+                agent.enabled = false;
+            foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
+                unit.enabled = false;
+        }
+
+        void Update()
+        {
+            if (_revealCountdown > 0)
+            {
+                _revealCountdown--;
+                if (_revealCountdown == 0)
+                {
+                    ShowMain();
+                    _fadeTimer = 0f;
+                    _revealCountdown = -1;
+                }
+            }
+
+            if (_fadeTimer < 0f) return;
+            _fadeTimer += Time.deltaTime;
+            float t = Mathf.Clamp01(_fadeTimer / FadeDuration);
+            if (_loadingCanvasGroup != null)
+                _loadingCanvasGroup.alpha = 1f - t;
+            if (t >= 1f)
+            {
+                if (_loadingScreen != null) _loadingScreen.SetActive(false);
+                _fadeTimer = -1f;
+            }
+        }
+
+        void OnVideoReady()
+        {
+            _revealCountdown = FramesToWaitAfterPlay;
+        }
+
+        void BuildLoadingScreen()
+        {
+            _loadingScreen = new GameObject("LoadingScreen");
+            _loadingScreen.transform.SetParent(_canvas.transform, false);
+            var rt = _loadingScreen.AddComponent<RectTransform>();
+            Stretch(rt);
+            _loadingCanvasGroup = _loadingScreen.AddComponent<CanvasGroup>();
+            _loadingCanvasGroup.blocksRaycasts = true;
+
+            var bg = new GameObject("BG");
+            bg.transform.SetParent(_loadingScreen.transform, false);
+            Stretch(bg.AddComponent<RectTransform>());
+            var bgImg = bg.AddComponent<Image>();
+            bgImg.color = Color.black;
+            bgImg.raycastTarget = false;
+
+            if (logoSprite != null)
+            {
+                var logo = new GameObject("Logo");
+                logo.transform.SetParent(_loadingScreen.transform, false);
+                var logoImg = logo.AddComponent<Image>();
+                logoImg.sprite = logoSprite;
+                logoImg.preserveAspect = true;
+                logoImg.raycastTarget = false;
+                var logoRt = logo.GetComponent<RectTransform>();
+                logoRt.anchorMin = logoRt.anchorMax = logoRt.pivot = new Vector2(0.5f, 0.5f);
+                logoRt.anchoredPosition = new Vector2(0, 40f);
+                logoRt.sizeDelta = new Vector2(500, 200);
+            }
+
+            var loadingTxt = Txt(_loadingScreen.transform, "LOADING...", 24, ColSub, TextAnchor.MiddleCenter);
+            var txtRt = loadingTxt.rectTransform;
+            txtRt.anchorMin = txtRt.anchorMax = txtRt.pivot = new Vector2(0.5f, 0.5f);
+            txtRt.anchoredPosition = new Vector2(0, -100f);
+            txtRt.sizeDelta = new Vector2(300, 40);
+
+            _loadingScreen.transform.SetAsLastSibling();
         }
 
         void SetupEventSystem()
@@ -140,6 +225,10 @@ namespace InsectWars.UI
 
             var vrt = new RenderTexture(1920, 1080, 24);
             vrt.Create();
+            var prev = RenderTexture.active;
+            RenderTexture.active = vrt;
+            GL.Clear(true, true, Color.black);
+            RenderTexture.active = prev;
             raw.texture = vrt;
 
             var vgo = new GameObject("VideoPlayer");
@@ -157,7 +246,7 @@ namespace InsectWars.UI
                 vp.source = VideoSource.VideoClip;
                 vp.clip = backgroundClip;
                 vp.Prepare();
-                vp.prepareCompleted += (p) => { p.Play(); };
+                vp.prepareCompleted += (p) => { p.Play(); OnVideoReady(); };
                 vp.loopPointReached += (p) => { p.Pause(); };
                 var freeze = vgo.AddComponent<VideoFreezeBeforeEnd>();
                 freeze.player = vp;
@@ -167,6 +256,7 @@ namespace InsectWars.UI
             {
                 Debug.LogWarning("HomeMenu: Video clip is not assigned.");
                 vp.enabled = false;
+                OnVideoReady();
             }
 
             var dim = new GameObject("Dim");

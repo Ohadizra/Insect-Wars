@@ -1,0 +1,36 @@
+{
+    "asset": "830ecb31982894a17873c5e5c117e17a",
+    "fileName": "019d95dc-a6b8-7b9a-a09f-06d5e806d3bf.png",
+    "prompt": "A hand-painted RTS UI icon for the 'Attack' command. A bold white crosshair symbol with organic, hand-drawn edges and subtle shading. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style of the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "26bfe1ab3dffdbb7550bce7c9be7b57d",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

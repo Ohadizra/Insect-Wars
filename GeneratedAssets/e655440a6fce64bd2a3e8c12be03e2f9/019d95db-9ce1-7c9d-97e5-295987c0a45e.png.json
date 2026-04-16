@@ -1,0 +1,36 @@
+{
+    "asset": "e655440a6fce64bd2a3e8c12be03e2f9",
+    "fileName": "019d95db-9ce1-7c9d-97e5-295987c0a45e.png",
+    "prompt": "A hand-painted RTS UI icon for the 'Patrol' command. Two bold white arrows forming a loop, with organic, hand-drawn edges and subtle shading. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style of the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "efd7f549000114ed5189a4231bf33f4c",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

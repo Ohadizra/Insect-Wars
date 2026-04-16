@@ -1,0 +1,36 @@
+{
+    "asset": "65bc91e813f1a43f2a250342eacf61c3",
+    "fileName": "019d95d9-9f80-7bb7-abce-0d5926f59479.png",
+    "prompt": "A detailed hand-painted RTS building icon for an 'Ant Nest'. A massive, multi-tiered mound of packed earth and clay, with several visible tunnel openings and organic rib-like structures. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style and palette of the mantis in the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "ece8b32685ce4f3d74770d4dbf441762",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

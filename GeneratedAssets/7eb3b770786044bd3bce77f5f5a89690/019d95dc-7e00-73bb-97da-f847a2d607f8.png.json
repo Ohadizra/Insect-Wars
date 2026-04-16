@@ -1,0 +1,36 @@
+{
+    "asset": "7eb3b770786044bd3bce77f5f5a89690",
+    "fileName": "019d95dc-7e00-73bb-97da-f847a2d607f8.png",
+    "prompt": "A hand-painted RTS UI icon for the 'Build' command. A bold white hammer symbol with organic, hand-drawn edges and subtle shading. Clean, isolated sketch style. No circular frame, no background. Transparent background. Matches the rendering style of the reference image.",
+    "negativePrompt": "",
+    "model": "2e08f181-6547-40b4-b51e-f6cc1fd63500",
+    "modelName": "Gemini 3.0 Pro",
+    "customSeed": -1,
+    "w3CTraceId": "287a0e52df0d152e0971b583a406872d",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": [
+            {
+                "doodleReferenceType": 7,
+                "doodle": [],
+                "label": "Image",
+                "strength": 0.25,
+                "invertStrength": false,
+                "assetReferenceGuid": "ee3168a8ba75145dd884a42f17a46408"
+            }
+        ]
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}
