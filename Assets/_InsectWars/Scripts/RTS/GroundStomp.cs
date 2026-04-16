@@ -3,15 +3,14 @@ using UnityEngine;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Giant Stag Beetle's ground stomp — passive AoE aura that slows
-    /// enemy movement speed and attack speed within range.
-    /// Pulses every <see cref="StompInterval"/> seconds with a brief
-    /// visual shake to indicate the stomp.
+    /// Giant Stag Beetle's ground stomp — AoE slow that triggers only while
+    /// the beetle is in combat (attacking a unit, attacking a building, or
+    /// attack-moving). Pulses every <see cref="StompInterval"/> seconds.
     /// </summary>
     public class GroundStomp : MonoBehaviour
     {
         const float StompRadius = 6f;
-        const float StompInterval = 4f;
+        const float StompInterval = 8f;
         const float SlowDuration = 3f;
         const float MoveSpeedMultiplier = 0.5f;
         const float AttackSpeedMultiplier = 0.6f;
@@ -21,16 +20,22 @@ namespace InsectWars.RTS
 
         void Awake() => _unit = GetComponent<InsectUnit>();
 
+        static bool IsInCombat(InsectUnit u)
+        {
+            var order = u.CurrentOrder;
+            return order == UnitOrder.Attack
+                || order == UnitOrder.AttackBuilding
+                || order == UnitOrder.AttackMove;
+        }
+
         void Update()
         {
             if (_unit == null || !_unit.IsAlive) return;
+            if (!IsInCombat(_unit)) return;
 
             _stompTimer += Time.deltaTime;
             if (_stompTimer < StompInterval) return;
             _stompTimer = 0f;
-
-            if (GetComponentInChildren<UnitAnimationDriver>() is { } driver)
-                driver.NotifyStomp();
 
             foreach (var u in RtsSimRegistry.Units)
             {

@@ -352,34 +352,16 @@ namespace InsectWars.RTS
 
                 void ApplyStagBeetleAttack(float p)
                 {
-                float headTilt = 0f;
-                float mandibleOpen = 0f;
-                float lunge = 0f;
+                float lunge = Mathf.Sin(p * Mathf.PI) * 0.45f;
+                float squash = 1f + 0.18f * Mathf.Sin(p * Mathf.PI * 2f);
+                modelRoot.localPosition += modelRoot.forward * lunge;
+                modelRoot.localScale = Vector3.Scale(_baseScale, new Vector3(squash, 1f / squash, squash));
+                if (_lArm != null) _lArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
+                if (_rArm != null) _rArm.localRotation *= Quaternion.Euler(Mathf.Sin(p * Mathf.PI) * -85f, 0f, 0f);
 
-                if (p < 0.25f) // Anticipation
-                {
-                    float localP = p / 0.25f;
-                    headTilt = -15f * localP;
-                    mandibleOpen = 45f * localP;
-                }
-                else if (p < 0.55f) // Strike
-                {
-                    float localP = (p - 0.25f) / 0.3f;
-                    headTilt = -15f + 40f * localP;
-                    mandibleOpen = 45f * (1f - localP * 1.2f);
-                    lunge = Mathf.Sin(localP * Mathf.PI) * 0.5f;
-                }
-                else // Recovery
-                {
-                    float localP = (p - 0.55f) / 0.45f;
-                    headTilt = 25f * (1f - localP);
-                    mandibleOpen = -10f * (1f - localP);
-                }
-
-                if (_head != null) _head.localRotation = _headBase * Quaternion.Euler(headTilt, 0f, 0f);
+                float mandibleOpen = Mathf.Sin(p * Mathf.PI) * 40f;
                 if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
                 if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
-                modelRoot.localPosition += modelRoot.forward * lunge;
                 }
 
                 void ApplyStagBeetleStomp(float p)

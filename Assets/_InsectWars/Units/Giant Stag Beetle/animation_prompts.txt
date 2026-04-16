@@ -46,37 +46,39 @@ ATTACK ANIMATION
 
 --- ATTACK ---
 Clip Name:      Attack
-Duration:       1.2-1.5 seconds (looping)
+Duration:       0.35-0.45 seconds (looping)
 Loop:           Yes
 
+NOTE: This attack follows the SAME pattern as the Mantis Fighter and other
+melee units — a fast forward lunge with squash-and-stretch. The beetle's
+mandibles open during the lunge to add its own flavor, but the core motion
+is identical to the standard melee attack so all units feel consistent.
+
 Prompt:
-"A giant armored stag beetle performing a powerful melee bite attack.
- The beetle rears its head up slightly, opening its massive mandibles wide
- apart (0.3s anticipation). Then it lunges its head forward and DOWN,
- snapping the mandibles shut with tremendous force — like a bear trap
- slamming closed (0.4s strike). The front legs brace and dig into the
- ground during the lunge. The whole body shifts forward slightly with the
- attack's momentum, then settles back to neutral stance (0.5s recovery).
- The mandibles open only partially during recovery, ready for the next bite.
- All six legs stay planted — only the front pair shifts slightly.
- The movement is HEAVY and BRUTAL — this is a creature that crushes,
- not slashes. Think of a hydraulic press closing, not a sword swing."
+"A giant armored stag beetle performing a fast forward lunge attack.
+ The entire body LUNGES forward along its facing direction — a sharp,
+ explosive thrust. At the same time the body squashes vertically and
+ stretches horizontally (squash-and-stretch cartoon principle) to sell
+ the impact. The mandibles snap open wide during the lunge peak, then
+ clamp shut as the body returns. The front legs extend forward with the
+ lunge. The motion is quick and punchy — roughly 0.4 seconds total.
+ Think of the same attack motion as a mantis fighter, but heavier and
+ with mandibles opening. The beetle springs forward, crunches the target,
+ and snaps back to ready stance."
 
 Key Bones:
-- Head: Rears up 15-20 degrees, then lunges forward and down 25 degrees
-- Mandibles (L/R): Open 40-50 degrees apart, snap shut to 5-degree gap
-- Front legs (pair 1): Brace outward, claws dig in during strike
-- Middle legs (pair 2): Slight shift for balance
-- Rear legs (pair 3): Nearly stationary, anchor point
-- Body/thorax: Subtle forward lean during strike, ~5 degrees
-- Carapace: Minimal movement, maybe 2-3 degree tilt forward
+- Body/root: Translate forward ~0.45 units along facing, sinusoidal arc
+- Body scale: Squash Y (compress height), stretch X+Z (widen) at lunge peak
+- Front legs (arms): Swing forward ~85 degrees during lunge
+- Mandibles (L/R): Open 40 degrees at lunge peak, close on return
+- Head: Follows body momentum, slight forward dip
+- Middle/rear legs: Stay planted, absorb momentum
 
 Timing:
-- 0.00-0.30s: Anticipation — head rises, mandibles open wide
-- 0.30-0.70s: Strike — head lunges forward+down, mandibles SNAP shut
-- 0.70-1.20s: Recovery — head returns to neutral, mandibles relax open
-- Easing: Slow ease-in on anticipation, SHARP snap on mandible close,
-  slow ease-out on recovery
+- 0.00-0.15s: Lunge forward, body squash begins, mandibles open
+- 0.15-0.25s: Peak lunge, maximum squash-stretch, mandibles widest
+- 0.25-0.40s: Snap back to neutral, mandibles close, body unsquashes
+- Easing: Sinusoidal (smooth in, smooth out) — same curve as Mantis
 
 ========================================
 GROUND STOMP ANIMATION
