@@ -1,0 +1,12 @@
+{
+    "asset": "75cfe58a0d5784d33b500b9d915190a6",
+    "fileName": "019d9560-0a5c-797f-8134-5c1d62758fd9_Preview.jpg",
+    "prompt": "tileable jagged icy rock wall texture, frost-covered dark stone, realistic stylized, used for a map boundary barrier, rugged and sharp edges",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1546253145,
+    "w3CTraceId": "4afce4c1c932d4ed79349fd3ffb680dc",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,12 @@
+{
+    "asset": "4d46ffd8a703046c984e07f2197503f2",
+    "fileName": "019d9560-09c7-76d6-9343-4b8cf700fd91_Preview.jpg",
+    "prompt": "tileable dark deep blue cracked abyss ice texture, realistic stylized, deep frozen ocean look, contrasting with white snow, extremely dark and cold atmosphere",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 2117819452,
+    "w3CTraceId": "071c9ddabe9818f58dc46901ed312517",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

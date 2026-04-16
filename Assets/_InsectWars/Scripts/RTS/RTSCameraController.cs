@@ -15,7 +15,7 @@ namespace InsectWars.RTS
         [SerializeField] float defaultOrbitDistance = 24f;
         [SerializeField] float edgePx = 14f;
         [SerializeField] float boundsMargin = 16f;
-        [SerializeField] float southMarginExtra = 12f;
+        [SerializeField] float southOvershoot = 12f;
 
         Transform _pivot;
         float _yaw;
@@ -89,7 +89,7 @@ namespace InsectWars.RTS
             if (h <= m + 0.5f) return;
             var p = _pivot.position;
             p.x = Mathf.Clamp(p.x, -h + m, h - m);
-            p.z = Mathf.Clamp(p.z, -h + m + southMarginExtra, h - m);
+            p.z = Mathf.Clamp(p.z, -h + m - southOvershoot, h - m);
             p.y = 0f;
             _pivot.position = p;
         }

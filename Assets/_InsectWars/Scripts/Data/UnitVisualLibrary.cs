@@ -67,6 +67,7 @@ namespace InsectWars.Data
         public Material bigAppleMaterial;
         public Material groundMaterial;
         public Material outOfBoundsMaterial;
+        public Material mapBarrierMaterial;
         public TerrainLayer baseSoilLayer;
         public TerrainLayer drySoilLayer;
 

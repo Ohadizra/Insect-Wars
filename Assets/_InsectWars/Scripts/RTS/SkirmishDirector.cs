@@ -364,18 +364,20 @@ namespace InsectWars.RTS
         static void AddMapBounds(Transform parent, float extent, float thickness, Color boundsColor)
         {
             var lib = ActiveVisualLibrary;
-            Material boundsMat = (lib != null && lib.outOfBoundsMaterial != null) ? lib.outOfBoundsMaterial : null;
+            Material oobMat = (lib != null && lib.outOfBoundsMaterial != null) ? lib.outOfBoundsMaterial : null;
+            Material barrierMat = (lib != null && lib.mapBarrierMaterial != null) ? lib.mapBarrierMaterial : null;
 
-            float y = thickness * 0.5f;
+            float barrierHeight = 2.5f;
+            float barrierY = barrierHeight * 0.5f;
             float len = extent * 2f;
             void Edge(string name, Vector3 pos, Vector3 scale)
             {
                 var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 e.name = name;
                 e.transform.SetParent(parent);
-                e.transform.position = pos + Vector3.up * y;
-                e.transform.localScale = scale;
-                if (boundsMat != null) e.GetComponent<Renderer>().sharedMaterial = boundsMat;
+                e.transform.position = pos + Vector3.up * barrierY;
+                e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
+                if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
                 else ApplyMat(e, boundsColor);
                 Object.Destroy(e.GetComponent<Collider>());
             }
@@ -384,15 +386,14 @@ namespace InsectWars.RTS
             Edge("MapEdge_E", new Vector3(extent, 0f, 0f), new Vector3(thickness, thickness, len));
             Edge("MapEdge_W", new Vector3(-extent, 0f, 0f), new Vector3(thickness, thickness, len));
 
-            if (boundsMat != null)
+            if (oobMat != null)
             {
                 var skirt = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 skirt.name = "OutOfBounds_Skirt";
                 skirt.transform.SetParent(parent);
                 skirt.transform.position = new Vector3(0f, -0.05f, 0f);
-                // Plane is 10x10. Make it reach far out (e.g. 1000x1000 units)
                 skirt.transform.localScale = new Vector3(100f, 1f, 100f); 
-                skirt.GetComponent<Renderer>().sharedMaterial = boundsMat;
+                skirt.GetComponent<Renderer>().sharedMaterial = oobMat;
                 Object.Destroy(skirt.GetComponent<Collider>());
             }
         }
