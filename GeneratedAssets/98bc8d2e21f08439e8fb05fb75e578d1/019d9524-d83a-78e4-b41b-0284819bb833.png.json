@@ -1,0 +1,27 @@
+{
+    "asset": "98bc8d2e21f08439e8fb05fb75e578d1",
+    "fileName": "019d9524-d83a-78e4-b41b-0284819bb833.png",
+    "prompt": "Ornate UI control group button, realistic dark wood frame with polished amber accents, insect wing texture in the background, semi-transparent center, biological and organic aesthetic, high detail, rectangular with rounded corners, game asset, 256x128",
+    "negativePrompt": "",
+    "model": "67bfd488-3588-4076-9d7b-14710382cf78",
+    "modelName": "Game UI Elements (Flux)",
+    "customSeed": -1,
+    "w3CTraceId": "a27ec635b05046a7ab092563f3cd2d07",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

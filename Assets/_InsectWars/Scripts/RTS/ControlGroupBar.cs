@@ -12,15 +12,17 @@ namespace InsectWars.RTS
     public class ControlGroupBar : MonoBehaviour
     {
         const int GroupCount = 10;
-        const float TabWidth = 52f;
-        const float TabHeight = 34f;
+        const float TabWidth = 100f;
+        const float TabHeight = 44f;
         const float TabSpacing = 4f;
         const float BarBottomOffset = 263.5f; // matches BottomBar.barHeight
         const float MinimapSlot = 357f;
 
-        static readonly Color ColActive   = new(0.96f, 0.90f, 0.78f, 0.95f);
-        static readonly Color ColOccupied = new(0.45f, 0.40f, 0.32f, 0.75f);
-        static readonly Color ColEmpty    = new(0.25f, 0.22f, 0.18f, 0.35f);
+        [SerializeField] Sprite tabSprite;
+
+        static readonly Color ColActive   = Color.white;
+        static readonly Color ColOccupied = new(0.85f, 0.85f, 0.85f, 0.75f);
+        static readonly Color ColEmpty    = new(0.45f, 0.45f, 0.45f, 0.35f);
         static readonly Color ColTextActive   = new(0.12f, 0.10f, 0.08f);
         static readonly Color ColTextNormal   = new(0.83f, 0.69f, 0.44f);
         static readonly Color ColOutline  = new(0.1f, 0.08f, 0.06f, 0.8f);
@@ -33,6 +35,10 @@ namespace InsectWars.RTS
         void Awake()
         {
             _font = UiFontHelper.GetFont();
+    #if UNITY_EDITOR
+            if (tabSprite == null)
+                tabSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/ControlGroupTab.png");
+    #endif
         }
 
         void Start()
@@ -74,36 +80,38 @@ namespace InsectWars.RTS
                 tabRt.sizeDelta = new Vector2(TabWidth, 0f);
 
                 var img = tab.AddComponent<Image>();
+                img.sprite = tabSprite;
+                img.type = Image.Type.Sliced; // Use sliced if it's UI
                 img.color = ColEmpty;
                 _tabImages[i] = img;
 
                 var btn = tab.AddComponent<Button>();
                 var colors = btn.colors;
-                colors.highlightedColor = new Color(0.6f, 0.55f, 0.42f, 0.85f);
+                colors.highlightedColor = new Color(1f, 1f, 1f, 0.85f);
                 colors.pressedColor = new Color(0.85f, 0.75f, 0.65f, 0.9f);
                 btn.colors = colors;
                 int groupIndex = i;
                 btn.onClick.AddListener(() => OnTabClicked(groupIndex));
 
-                // Number label (large, centered)
-                var numText = CreateText("Num", tab.transform, 16, ColTextNormal, TextAnchor.MiddleCenter);
+                // Number label (moved to left to make room for icons)
+                var numText = CreateText("Num", tab.transform, 16, ColTextNormal, TextAnchor.MiddleLeft);
                 numText.text = displayNum.ToString();
                 numText.fontStyle = FontStyle.Bold;
                 var nrt = numText.rectTransform;
                 nrt.anchorMin = Vector2.zero;
                 nrt.anchorMax = Vector2.one;
-                nrt.offsetMin = Vector2.zero;
-                nrt.offsetMax = Vector2.zero;
+                nrt.offsetMin = new Vector2(8f, 0f);
+                nrt.offsetMax = new Vector2(-70f, 0f); // Leave 70px on right for icons
                 _tabLabels[i] = numText;
 
                 // Entity count (small, bottom-right corner)
-                var countText = CreateText("Count", tab.transform, 9, ColTextNormal, TextAnchor.LowerRight);
+                var countText = CreateText("Count", tab.transform, 11, ColTextNormal, TextAnchor.LowerRight);
                 countText.text = "";
                 var crt = countText.rectTransform;
                 crt.anchorMin = Vector2.zero;
                 crt.anchorMax = Vector2.one;
                 crt.offsetMin = new Vector2(1f, 1f);
-                crt.offsetMax = new Vector2(-3f, -1f);
+                crt.offsetMax = new Vector2(-4f, -2f);
                 _tabCounts[i] = countText;
             }
         }

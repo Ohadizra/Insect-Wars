@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.EventSystems;
@@ -80,13 +81,7 @@ namespace InsectWars.RTS
             var fruit = hit.collider.GetComponentInParent<RottingFruitNode>();
             if (fruit != null && !fruit.Depleted && SelectionController.Instance.HasWorkerSelected())
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                {
-                    if (u.Definition != null && u.Definition.canGather)
-                        u.OrderGather(fruit);
-                    else
-                        u.OrderMove(hit.point);
-                }
+                IssueGroupGatherOrMove(hit.point, fruit);
                 return;
             }
 
@@ -126,8 +121,7 @@ namespace InsectWars.RTS
                     moveTarget = groundHit.point;
             }
 
-            foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                u.OrderMove(moveTarget);
+            IssueGroupMove(moveTarget);
         }
 
         void TryLeftClickCommand(Vector2 screen)
@@ -224,13 +218,7 @@ namespace InsectWars.RTS
                     var resFruit = hit.collider.GetComponentInParent<RottingFruitNode>();
                     if (resFruit != null && !resFruit.Depleted)
                     {
-                        foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                        {
-                            if (u.Definition != null && u.Definition.canGather)
-                                u.OrderGather(resFruit);
-                            else
-                                u.OrderMove(hit.point);
-                        }
+                        IssueGroupGatherOrMove(hit.point, resFruit);
                         BottomBar.Instance.SetPending(PendingCommand.None);
                     }
                 }
@@ -239,8 +227,7 @@ namespace InsectWars.RTS
 
             if (pending == PendingCommand.Move)
             {
-                foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
-                    u.OrderMove(hit.point);
+                IssueGroupMove(hit.point);
                 BottomBar.Instance.SetPending(PendingCommand.None);
             }
             else if (pending == PendingCommand.Attack)
@@ -333,6 +320,79 @@ namespace InsectWars.RTS
 
             // TODO: fog-of-war explored check
             return true;
+        }
+
+        void IssueGroupMove(Vector3 center)
+        {
+            var units = new List<InsectUnit>();
+            foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+                units.Add(u);
+
+            if (units.Count <= 1)
+            {
+                foreach (var u in units)
+                    u.OrderMove(center);
+                return;
+            }
+
+            var offsets = ComputeFormationOffsets(units.Count);
+            for (int i = 0; i < units.Count; i++)
+            {
+                var agent = units[i].Agent;
+                float r = agent != null ? agent.radius : 0.4f;
+                var dest = center + offsets[i] * (r * 2.2f);
+                units[i].OrderMove(dest);
+            }
+        }
+
+        void IssueGroupGatherOrMove(Vector3 center, RottingFruitNode fruit)
+        {
+            var movers = new List<InsectUnit>();
+            foreach (var u in SelectionController.Instance.SelectedPlayerUnits())
+            {
+                if (u.Definition != null && u.Definition.canGather)
+                    u.OrderGather(fruit);
+                else
+                    movers.Add(u);
+            }
+
+            if (movers.Count <= 1)
+            {
+                foreach (var u in movers)
+                    u.OrderMove(center);
+                return;
+            }
+
+            var offsets = ComputeFormationOffsets(movers.Count);
+            for (int i = 0; i < movers.Count; i++)
+            {
+                var agent = movers[i].Agent;
+                float r = agent != null ? agent.radius : 0.4f;
+                var dest = center + offsets[i] * (r * 2.2f);
+                movers[i].OrderMove(dest);
+            }
+        }
+
+        static List<Vector3> ComputeFormationOffsets(int count)
+        {
+            var offsets = new List<Vector3>(count);
+            if (count <= 0) return offsets;
+
+            offsets.Add(Vector3.zero);
+            int placed = 1;
+            int ring = 1;
+            while (placed < count)
+            {
+                int perRing = Mathf.Max(6, ring * 6);
+                for (int i = 0; i < perRing && placed < count; i++)
+                {
+                    float angle = Mathf.PI * 2f * i / perRing;
+                    offsets.Add(new Vector3(Mathf.Cos(angle) * ring, 0f, Mathf.Sin(angle) * ring));
+                    placed++;
+                }
+                ring++;
+            }
+            return offsets;
         }
     }
 }

@@ -947,6 +947,12 @@
       "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
       "content": "I have fixed the build failure by wrapping a runtime usage of `UnityEditor.AssetDatabase` in `GameHUD.cs` with the appropriate `#if UNITY_EDITOR` preprocessor directive.\n\n### Changes Made:\n- **`Assets/_InsectWars/Scripts/RTS/GameHUD.cs`**:\n    - Wrapped the manual input action linking logic in `EnsureEventSystem()` with `#if UNITY_EDITOR`. This prevents the compiler from trying to access the `UnityEditor` namespace in the player build, which was the cause of the build failure.\n    - Verified all other `AssetDatabase` usages in the project are already correctly wrapped or located in `Editor` folders.\n\nThe project should now compile successfully for both the Unity Editor and final player builds.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "a9d046c3-31a9-46a1-93b2-6621605b9a94",
+      "conversation_id": "2fe04744-e734-45a2-a000-c56a57f8d936",
+      "content": "I have updated the control group buttons to be wider and taller, with a new ornate sprite design that fits the project's biological and organic aesthetic.\n\n### Changes Summary:\n- **Resized Tabs**: Increased dimensions to **100px width** (from 52px) and **44px height** (from 34px).\n- **Custom Sprite Art**: Generated a high-quality \"natural ornate\" UI sprite featuring dark carved wood and polished amber accents, then configured it as a **9-sliced** sprite to maintain sharp edges at any width.\n- **Optimized Layout for Icons**: Moved the control group number to the far left of the tab and created a **70px clear zone** on the right side of each button. This provides enough space to add 2-3 unit status icons in future updates.\n- **Visual Feedback**:\n    - **Active Group**: Displays at full brightness and original sprite colors.\n    - **Occupied Group**: Slightly dimmed to indicate presence but not active focus.\n    - **Empty Group**: Darkened and semi-transparent to keep the UI clean.\n\nThe control group bar is located just above the bottom HUD and now has a much more premium, \"finished\" look while being functionally ready for advanced unit status displays.",
+      "snapshot_message_type": 1
     }
   ]
 }

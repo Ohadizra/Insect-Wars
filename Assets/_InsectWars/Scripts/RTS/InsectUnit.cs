@@ -199,17 +199,19 @@ namespace InsectWars.RTS
         void SyncAvoidance()
         {
             if (_agent == null) return;
-            bool moving = _order == UnitOrder.Move || _order == UnitOrder.Patrol
-                || _order == UnitOrder.ReturnDeposit
-                || (_order == UnitOrder.Attack && !_agent.isStopped)
-                || (_order == UnitOrder.AttackBuilding && !_agent.isStopped)
-                || (_order == UnitOrder.Gather && !_agent.isStopped)
-                || (_order == UnitOrder.Build && !_agent.isStopped);
-            var desired = moving
-                ? ObstacleAvoidanceType.LowQualityObstacleAvoidance
-                : ObstacleAvoidanceType.NoObstacleAvoidance;
-            if (_agent.obstacleAvoidanceType != desired)
-                _agent.obstacleAvoidanceType = desired;
+            bool shouldBeActive = _order != UnitOrder.Idle || _meleeLockedPos.HasValue;
+            if (shouldBeActive && !_agent.enabled)
+            {
+                _agent.enabled = true;
+                _agent.Warp(transform.position);
+            }
+            else if (!shouldBeActive && _agent.enabled)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+                _agent.enabled = false;
+            }
         }
 
         float GetEffectiveAttackRange()
@@ -287,6 +289,15 @@ namespace InsectWars.RTS
             SyncAvoidance();
         }
 
+        void EnsureAgentActive()
+        {
+            if (!_agent.enabled)
+            {
+                _agent.enabled = true;
+                _agent.Warp(transform.position);
+            }
+        }
+
         public void OrderMove(Vector3 world)
         {
             if (!IsAlive) return;
@@ -295,6 +306,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Move;
+            EnsureAgentActive();
             _agent.isStopped = false;
             _agent.SetDestination(world);
         }
@@ -308,6 +320,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Move;
+            EnsureAgentActive();
             _agent.isStopped = false;
             _agent.SetDestination(world);
         }
@@ -329,6 +342,7 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _attackTarget = target.transform;
             _order = UnitOrder.Attack;
+            EnsureAgentActive();
             _agent.isStopped = false;
         }
 
@@ -339,6 +353,7 @@ namespace InsectWars.RTS
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
+            EnsureAgentActive();
             _agent.isStopped = false;
         }
 
@@ -349,6 +364,7 @@ namespace InsectWars.RTS
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
+            EnsureAgentActive();
             _agent.isStopped = false;
         }
 
@@ -359,6 +375,7 @@ namespace InsectWars.RTS
             ClearTargets();
             _attackTarget = building.transform;
             _order = UnitOrder.Build;
+            EnsureAgentActive();
             _agent.isStopped = false;
             building.RegisterBuilder();
         }
@@ -370,9 +387,7 @@ namespace InsectWars.RTS
             _wantsAttackMove = false;
             _holdPosition = false;
             _patrolActive = false;
-            _order = UnitOrder.Idle;
-            _agent.isStopped = true;
-            _agent.ResetPath();
+            StopAndIdle();
         }
 
         public void OrderHoldPosition()
@@ -382,9 +397,7 @@ namespace InsectWars.RTS
             _wantsAttackMove = false;
             _patrolActive = false;
             _holdPosition = true;
-            _order = UnitOrder.Idle;
-            _agent.isStopped = true;
-            _agent.ResetPath();
+            StopAndIdle();
         }
 
         public void OrderPatrol(Vector3 a, Vector3 b)
@@ -398,6 +411,7 @@ namespace InsectWars.RTS
             _patrolB = b;
             _patrolToB = true;
             _order = UnitOrder.Patrol;
+            EnsureAgentActive();
             _agent.isStopped = false;
             _agent.SetDestination(_patrolB);
         }
@@ -416,6 +430,7 @@ namespace InsectWars.RTS
                 _holdPosition = false;
                 _patrolActive = false;
                 _order = UnitOrder.ReturnDeposit;
+                EnsureAgentActive();
                 _agent.ResetPath();
                 _agent.isStopped = false;
                 _agent.SetDestination(depositDest.Value);
@@ -430,6 +445,7 @@ namespace InsectWars.RTS
             _lastGatherTarget = node;
             _gatherAngle = Random.Range(0f, Mathf.PI * 2f);
             _order = UnitOrder.Gather;
+            EnsureAgentActive();
             _agent.ResetPath();
             _agent.isStopped = false;
             _agent.SetDestination(node.GetGatherPoint(_gatherAngle));
@@ -445,6 +461,7 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.ReturnDeposit;
+            EnsureAgentActive();
             _agent.isStopped = false;
             _agent.SetDestination(dest.Value);
         }
@@ -543,7 +560,18 @@ namespace InsectWars.RTS
                         return;
                     }
                 }
-                _order = UnitOrder.Idle;
+                StopAndIdle();
+            }
+        }
+
+        void StopAndIdle()
+        {
+            _order = UnitOrder.Idle;
+            if (_agent.enabled)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
             }
         }
 
@@ -613,7 +641,7 @@ namespace InsectWars.RTS
         {
             if (_gatherTarget == null || _gatherTarget.Depleted)
             {
-                _order = UnitOrder.Idle;
+                StopAndIdle();
                 return;
             }
             var diff = transform.position - _gatherTarget.transform.position;
@@ -647,7 +675,7 @@ namespace InsectWars.RTS
             var depositDest = FindNearestTeamDepositPoint();
             if (!depositDest.HasValue)
             {
-                _order = UnitOrder.Idle;
+                StopAndIdle();
                 return;
             }
 
@@ -677,7 +705,7 @@ namespace InsectWars.RTS
                 return;
             }
             _lastGatherTarget = null;
-            _order = UnitOrder.Idle;
+            StopAndIdle();
         }
 
 
@@ -923,7 +951,7 @@ return;
         {
             if (_attackTarget == null)
             {
-                _order = UnitOrder.Idle;
+                StopAndIdle();
                 return;
             }
 
@@ -932,7 +960,7 @@ return;
             {
                 UnregisterFromBuildTarget();
                 _attackTarget = null;
-                _order = UnitOrder.Idle;
+                StopAndIdle();
                 return;
             }
 
@@ -968,11 +996,12 @@ return;
             if (_wantsAttackMove)
             {
                 _order = UnitOrder.Move;
+                EnsureAgentActive();
                 _agent.isStopped = false;
                 _agent.SetDestination(_attackMoveDest);
                 return;
             }
-            _order = UnitOrder.Idle;
+            StopAndIdle();
         }
 
         public void ApplyDamage(float dmg)
