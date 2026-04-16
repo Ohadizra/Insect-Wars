@@ -375,8 +375,8 @@ systems = new GameObject("Systems");
                 if (m != null && m.scatterTheme == ScatterTheme.Frozen) isFrozen = true;
             }
 
-            float mapWallTopY = isFrozen ? 2.4f : 0.9f;
-            float mapWallBottomY = -1.5f;
+            float mapWallTopY = isFrozen ? 5.0f : 2.5f;
+            float mapWallBottomY = -5.0f;
             float barrierHeight = mapWallTopY - mapWallBottomY;
 float len = extent * 2f;
 
@@ -671,9 +671,9 @@ float len = extent * 2f;
                 clay.name = "Clay";
                 clay.tag = "Clay";
                 
-                // Align top to a fixed world height (1.2f) and extend deep (-1.0f) to handle high/low ground
-                float topY = 1.2f;
-                float bottomY = -1.0f;
+                // Align top to a fixed world height (2.4f) and extend deep (-3.0f) to handle high/low ground
+                float topY = 2.4f;
+                float bottomY = -3.0f;
 float height = topY - bottomY;
                 clay.transform.position = new Vector3(pos.x, (topY + bottomY) * 0.5f, pos.z);
                 clay.transform.localScale = new Vector3(scale.x, height, scale.z);
@@ -699,9 +699,9 @@ foreach (var r in clay.GetComponentsInChildren<Renderer>())
                 clay.tag = "Clay";
                 clay.transform.SetParent(parent);
                 
-                // Align top to a fixed world height (1.2f) and extend deep (-1.0f) to handle high/low ground
-                float topY = 1.2f;
-                float bottomY = -1.0f;
+                // Align top to a fixed world height (2.4f) and extend deep (-3.0f) to handle high/low ground
+                float topY = 2.4f;
+                float bottomY = -3.0f;
 float height = topY - bottomY;
                 clay.transform.position = new Vector3(pos.x, (topY + bottomY) * 0.5f, pos.z);
                 clay.transform.localScale = new Vector3(scale.x, height, scale.z);
