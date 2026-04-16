@@ -983,6 +983,12 @@
       "conversation_id": "97ba40cb-31da-404a-9297-ecf0bea0313f",
       "content": "make art for the out-of-bounds area, also add margin to the map scroll since part of the playable area is covered by the control ui bar when scrolling all the way down",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "97ba40cb-31da-404a-9297-ecf0bea0313f",
+      "content": "try again",
+      "snapshot_message_type": 0
     }
   ]
 }
