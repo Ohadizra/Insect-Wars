@@ -18,6 +18,7 @@ namespace InsectWars.RTS
         GameObject _rallyFlag;
 
         float _currentHealth = HiveMaxHealth;
+        float _regenTimer;
 
         struct WorkerQueueEntry
         {
@@ -42,6 +43,8 @@ namespace InsectWars.RTS
         void Awake()
         {
             RegisterHive();
+            if (GetComponent<BuildingHealthBar>() == null)
+                gameObject.AddComponent<BuildingHealthBar>();
         }
 
         void OnDestroy()
@@ -72,6 +75,7 @@ namespace InsectWars.RTS
 
         void Update()
         {
+            TickPassiveRegen();
             if (_workerQueue.Count == 0) return;
             var entry = _workerQueue[0];
             entry.elapsed += Time.deltaTime;
@@ -149,9 +153,23 @@ namespace InsectWars.RTS
                 unit.OrderMove(_rallyPoint.Value);
         }
 
+        public float LastDamageTime { get; private set; } = -1f;
+
         public void TakeDamage(float dmg)
         {
             _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
+            LastDamageTime = Time.time;
+        }
+
+        void TickPassiveRegen()
+        {
+            if (!IsAlive || _currentHealth >= HiveMaxHealth) return;
+            _regenTimer += Time.deltaTime;
+            if (_regenTimer >= 10f)
+            {
+                _regenTimer -= 10f;
+                _currentHealth = Mathf.Min(_currentHealth + 1f, HiveMaxHealth);
+            }
         }
 
         /// <summary>

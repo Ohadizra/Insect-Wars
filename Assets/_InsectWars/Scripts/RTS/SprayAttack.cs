@@ -147,14 +147,12 @@ namespace InsectWars.RTS
 
             s_sprayMat = new Material(sh) { name = "IW_SprayMat" };
 
-            // Load the generated high-quality spray puff
+            var tex = Resources.Load<Texture2D>("Textures/BombardierSprayPuff");
         #if UNITY_EDITOR
-            var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png");
-            if (tex != null) s_sprayMat.mainTexture = tex;
-            else s_sprayMat.mainTexture = GetSoftCircleTexture();
-        #else
-            s_sprayMat.mainTexture = GetSoftCircleTexture();
+            if (tex == null)
+                tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Sprites/VFX/BombardierSprayPuff.png");
         #endif
+            s_sprayMat.mainTexture = tex != null ? tex : GetSoftCircleTexture();
 
             if (s_sprayMat.HasProperty("_Surface"))
                 s_sprayMat.SetFloat("_Surface", 1f);  // Transparent

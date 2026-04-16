@@ -6,9 +6,6 @@ using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace InsectWars.RTS
 {
@@ -113,40 +110,41 @@ namespace InsectWars.RTS
             PendingBuildingType = default;
             PatrolCoordinator.Reset();
 
-        #if UNITY_EDITOR
-            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
-            string np = "Assets/_InsectWars/Sprites/UI/NewIcons/";
-            
-            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
-            
-            // Set the minimap frame to match the other blocks (centerBlockFrame)
+            if (centerBlockFrame == null) centerBlockFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+
             if (minimapFrame == null) minimapFrame = centerBlockFrame;
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-            if (minimapFrame == null) minimapFrame = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/frame_minimap_hollow.png");
+            if (minimapFrame == null) minimapFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            if (minimapFrame == null) minimapFrame = GameHUD.LoadSpriteFromResources("UI/frame_minimap_hollow");
 
-            if (commandCardFrame == null) commandCardFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_action_grid_empty.png");
-            if (portraitFrame == null) portraitFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_portrait.png");
-            if (centerBlockFrame == null) centerBlockFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
-            if (slotFrame == null) slotFrame = AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
+            if (commandCardFrame == null) commandCardFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_action_grid_empty");
+            if (portraitFrame == null) portraitFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_portrait");
+            if (centerBlockFrame == null) centerBlockFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            if (slotFrame == null) slotFrame = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
 
-            // Load symbolic icons instead of insect art
-            iconMove = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_move.png");
-            iconStop = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_stop.png");
-            iconHold = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_hold.png");
-            iconPatrol = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_patrol.png");
-            iconAttack = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_attack.png");
-            iconGather = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_gather.png");
-            iconBuild = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_build.png");
-            iconCancel = AssetDatabase.LoadAssetAtPath<Sprite>(np + "icon_cancel.png");
-            
-            if (iconWorker == null) iconWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "icon_larva.png");
-            if (iconFighter == null) iconFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_view.png");
-            if (iconRanged == null) iconRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_view.png");
+            if (iconMove == null) iconMove = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_move");
+            if (iconStop == null) iconStop = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_stop");
+            if (iconHold == null) iconHold = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_hold");
+            if (iconPatrol == null) iconPatrol = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_patrol");
+            if (iconAttack == null) iconAttack = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_attack");
+            if (iconGather == null) iconGather = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_gather");
+            if (iconBuild == null) iconBuild = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_build");
+            if (iconCancel == null) iconCancel = GameHUD.LoadSpriteFromResources("UI/NewIcons/icon_cancel");
 
-            if (portraitWorker == null) portraitWorker = AssetDatabase.LoadAssetAtPath<Sprite>(p + "portrait_stag_beetle.png");
-            if (portraitFighter == null) portraitFighter = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_top_alt.png");
-            if (portraitRanged == null) portraitRanged = AssetDatabase.LoadAssetAtPath<Sprite>(p + "beetle_side_alt.png");
-        #endif
+            if (iconWorker == null) iconWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/icon_larva");
+            if (iconFighter == null) iconFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_view");
+            if (iconRanged == null) iconRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_view");
+            if (iconUnderground == null) iconUnderground = GameHUD.LoadSpriteFromResources("UI/Icon_Underground");
+            if (iconSkyTower == null) iconSkyTower = GameHUD.LoadSpriteFromResources("UI/Icon_SkyTower");
+            if (iconAntNest == null) iconAntNest = GameHUD.LoadSpriteFromResources("UI/Icon_AntNest");
+            if (iconEvolve == null) iconEvolve = GameHUD.LoadSpriteFromResources("UI/Icon_Evolve");
+            if (iconClearRally == null) iconClearRally = GameHUD.LoadSpriteFromResources("UI/Icon_ClearRally");
+
+            if (portraitWorker == null) portraitWorker = GameHUD.LoadSpriteFromResources("UI/Portrait_AntWorker");
+            if (portraitWorker == null) portraitWorker = GameHUD.LoadSpriteFromResources("UI/Extracted/portrait_stag_beetle");
+            if (portraitFighter == null) portraitFighter = GameHUD.LoadSpriteFromResources("UI/Portrait_MantisFighter");
+            if (portraitFighter == null) portraitFighter = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_top_alt");
+            if (portraitRanged == null) portraitRanged = GameHUD.LoadSpriteFromResources("UI/Portrait_BombardierBeetle");
+            if (portraitRanged == null) portraitRanged = GameHUD.LoadSpriteFromResources("UI/Extracted/beetle_side_alt");
         }
 
         void Start()
@@ -183,7 +181,7 @@ namespace InsectWars.RTS
                 return;
             }
 
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (Keyboard.current.escapeKey.wasPressedThisFrame && !GameHUD.SettingsPanelOpen)
             {
                 if (_buildMenuActive)
                 {
@@ -196,7 +194,6 @@ namespace InsectWars.RTS
                 }
                 else if (SelectionController.Instance != null)
                 {
-                    // Cancel production on first producing building of active type
                     bool cancelled = false;
                     foreach (var b in SelectionController.Instance.SelectedBuildingsOfActiveType)
                     {

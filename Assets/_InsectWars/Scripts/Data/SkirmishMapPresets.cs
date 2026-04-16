@@ -406,14 +406,20 @@ namespace InsectWars.Data
             map.mapBoundsColor = new Color(0.48f, 0.52f, 0.58f);
             map.scatterTheme = ScatterTheme.Frozen;
 
+            map.baseTerrainLayer = Resources.Load<TerrainLayer>("Materials/RealisticFrozenEarth_Layer");
+            map.secondaryTerrainLayer = Resources.Load<TerrainLayer>("Materials/RealisticSnow_Layer");
+            map.bigAppleMaterial = Resources.Load<Material>("Materials/FrostedNastyApple");
 #if UNITY_EDITOR
-            map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
-            map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
-            map.bigAppleMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(
-                "Assets/_InsectWars/Materials/FrostedNastyApple.mat");
-            #endif
+            if (map.baseTerrainLayer == null)
+                map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                    "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
+            if (map.secondaryTerrainLayer == null)
+                map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                    "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
+            if (map.bigAppleMaterial == null)
+                map.bigAppleMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/FrostedNastyApple.mat");
+#endif
 
             // ── Elevation (High-Ground Plateaus) ──
             // UV = (worldPos + 120) / 240

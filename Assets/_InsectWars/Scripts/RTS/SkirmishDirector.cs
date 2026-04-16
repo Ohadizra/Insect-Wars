@@ -330,7 +330,13 @@ namespace InsectWars.RTS
         void SpawnDecorativePrefab(Transform parent, DecorativePrefabPlaced dp)
         {
             if (string.IsNullOrEmpty(dp.prefabPath)) return;
-            GameObject prefab = Resources.Load<GameObject>(dp.prefabPath);
+            string resPath = dp.prefabPath;
+            if (resPath.Contains("Assets/_InsectWars/"))
+            {
+                resPath = resPath.Replace("Assets/_InsectWars/", "");
+                if (resPath.EndsWith(".prefab")) resPath = resPath[..^".prefab".Length];
+            }
+            GameObject prefab = Resources.Load<GameObject>(resPath);
         #if UNITY_EDITOR
             if (prefab == null)
                 prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(dp.prefabPath);
@@ -1511,31 +1517,38 @@ namespace InsectWars.RTS
             agent2.enabled = false;
             agent2.acceleration = 48f;
             agent2.angularSpeed = 520f;
+            agent2.autoBraking = false;
             switch (arch)
             {
                 case UnitArchetype.Worker:
                     agent2.height = 0.92f;
-                    agent2.radius = 0.3f;
+                    agent2.radius = 0.4f;
+                    agent2.avoidancePriority = 50;
                     break;
                 case UnitArchetype.BasicFighter:
                     agent2.height = 0.5f;
-                    agent2.radius = 0.42f;
+                    agent2.radius = 0.85f;
+                    agent2.avoidancePriority = 40;
                     break;
                 case UnitArchetype.BlackWidow:
                     agent2.height = 0.55f;
-                    agent2.radius = 0.38f;
+                    agent2.radius = 0.55f;
+                    agent2.avoidancePriority = 35;
                     break;
                 case UnitArchetype.StickSpy:
                     agent2.height = 1.35f;
-                    agent2.radius = 0.18f;
+                    agent2.radius = 0.22f;
+                    agent2.avoidancePriority = 60;
                     break;
                 case UnitArchetype.GiantStagBeetle:
                     agent2.height = 0.9f;
-                    agent2.radius = 0.5f;
+                    agent2.radius = 0.7f;
+                    agent2.avoidancePriority = 20;
                     break;
                 default:
                     agent2.height = 1.12f;
-                    agent2.radius = 0.27f;
+                    agent2.radius = 0.35f;
+                    agent2.avoidancePriority = 45;
                     break;
             }
             agent2.enabled = true;

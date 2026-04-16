@@ -140,17 +140,18 @@ namespace InsectWars.RTS
             if (!_unit.IsAlive) return false;
 
             float fraction = _unit.MaxHealth > 0f ? _unit.CurrentHealth / _unit.MaxHealth : 1f;
+            bool damaged = fraction < 1f;
 
-            if (_unit.IsSelected)
+            if (_unit.IsSelected && damaged)
                 return true;
 
-            if (Keyboard.current != null && Keyboard.current.leftAltKey.isPressed)
+            if (Keyboard.current != null && Keyboard.current.leftAltKey.isPressed && damaged)
                 return true;
 
             if (_unit.LastDamageTime > 0f && Time.time - _unit.LastDamageTime < DamageShowDuration)
                 return true;
 
-            if (_unit.Team == Team.Enemy && fraction < 1f)
+            if (_unit.Team == Team.Enemy && damaged)
                 return true;
 
             return false;

@@ -43,14 +43,11 @@ namespace InsectWars.UI
             Screen.fullScreen = GameSession.GetSavedFullscreen();
             _font = UiFontHelper.GetFont();
 
-        #if UNITY_EDITOR
-            string p = "Assets/_InsectWars/Sprites/UI/Extracted/";
-            if (mainFrameSprite == null) mainFrameSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_square_panel.png");
-            if (buttonSprite == null) buttonSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "btn_menu.png");
-            if (separatorSprite == null) separatorSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(p + "frame_ornate.png");
-            if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_WithTitle.png");
-if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/InsectWarsLogo_Raw.png");
-#endif
+            if (mainFrameSprite == null) mainFrameSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            if (buttonSprite == null) buttonSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/btn_menu");
+            if (separatorSprite == null) separatorSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_WithTitle");
+            if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_Raw");
 
             // Stop NavMesh errors in Home scene
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == SceneLoader.HomeScene)
@@ -80,7 +77,7 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
                     TryAssignInputActions(mod);
                     return;
                 }
-                DestroyImmediate(existing.gameObject);
+                Destroy(existing.gameObject);
             }
             var es = new GameObject("EventSystem");
             es.AddComponent<EventSystem>();
@@ -90,8 +87,11 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
 
         void TryAssignInputActions(InputSystemUIInputModule mod)
         {
-        #if UNITY_EDITOR
-            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+            var asset = Resources.Load<UnityEngine.InputSystem.InputActionAsset>("InputSystem_Actions");
+            #if UNITY_EDITOR
+            if (asset == null)
+                asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+            #endif
             if (asset != null)
             {
                 mod.actionsAsset = asset;
@@ -108,13 +108,12 @@ if (logoSprite == null) logoSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<S
                     mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
                 }
             }
-        #endif
         }
 
         void BuildCanvas()
         {
             var existing = GameObject.Find("MainMenuCanvas");
-            if (existing != null) DestroyImmediate(existing);
+            if (existing != null) Destroy(existing);
 
             var go = new GameObject("MainMenuCanvas");
             _canvas = go.AddComponent<Canvas>();

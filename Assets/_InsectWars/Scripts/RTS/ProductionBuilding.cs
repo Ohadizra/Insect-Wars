@@ -38,6 +38,7 @@ namespace InsectWars.RTS
         float _currentHealth;
         float _buildTimeTotal;
         float _buildTimeElapsed;
+        float _regenTimer;
 
         Vector3 _originalScale;
         Vector3 _originalPosition;
@@ -207,6 +208,7 @@ namespace InsectWars.RTS
         {
             if (!IsAlive) return;
             _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
+            LastDamageTime = Time.time;
             if (_currentHealth <= 0f)
             {
                 _state = BuildingState.Destroyed;
@@ -216,12 +218,28 @@ namespace InsectWars.RTS
             }
         }
 
+        public float LastDamageTime { get; private set; } = -1f;
+
+        void TickPassiveRegen()
+        {
+            if (!IsAlive || _currentHealth >= _maxHealth) return;
+            _regenTimer += Time.deltaTime;
+            if (_regenTimer >= 10f)
+            {
+                _regenTimer -= 10f;
+                _currentHealth = Mathf.Min(_currentHealth + 1f, _maxHealth);
+            }
+        }
+
         public void Initialize(BuildingType type, Team team = Team.Player, bool startBuilt = true)
         {
             _type = type;
             _team = team;
             _maxHealth = GetMaxHealth(type);
             _buildTimeTotal = GetConstructionTime(type);
+
+            if (GetComponent<BuildingHealthBar>() == null)
+                gameObject.AddComponent<BuildingHealthBar>();
 
             if (startBuilt)
             {
@@ -449,6 +467,7 @@ namespace InsectWars.RTS
 
         void Update()
         {
+            TickPassiveRegen();
             if (_queue.Count == 0 || !IsOperational) return;
             var entry = _queue[0];
             entry.elapsed += Time.deltaTime;

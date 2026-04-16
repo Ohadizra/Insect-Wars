@@ -51,6 +51,7 @@ namespace InsectWars.RTS
 
         float _terrainSpeedTimer;
         float _terrainDmgAccum;
+        float _regenTimer;
 
         public Team Team => team;
         public UnitDefinition Definition => definition;
@@ -104,8 +105,8 @@ namespace InsectWars.RTS
         {
             if (s_sharedRingMesh != null) return;
             const int segments = 48;
-            const float inner = 0.55f;
-            const float outer = 0.65f;
+            const float inner = 0.70f;
+            const float outer = 0.82f;
             var verts = new Vector3[segments * 2];
             var tris = new int[segments * 6];
             for (var i = 0; i < segments; i++)
@@ -146,6 +147,8 @@ namespace InsectWars.RTS
                 _selectionRing.transform.SetParent(transform, false);
                 _selectionRing.transform.localPosition = new Vector3(0f, 0.07f, 0f);
                 _selectionRing.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                float ringScale = Archetype == UnitArchetype.BasicFighter ? 2f : 1f;
+                _selectionRing.transform.localScale = new Vector3(ringScale, ringScale, 1f);
                 var mf = _selectionRing.AddComponent<MeshFilter>();
                 mf.sharedMesh = s_sharedRingMesh;
                 var mr = _selectionRing.AddComponent<MeshRenderer>();
@@ -189,10 +192,24 @@ namespace InsectWars.RTS
             if (_agent != null)
             {
                 _agent.speed = definition.moveSpeed;
-                // Melee units should try to get close enough for their radius. 
-                // Large units like Mantis (radius 1.05) need a stopping distance that doesn't prevent them from reaching range.
                 _agent.stoppingDistance = definition.archetype == UnitArchetype.BasicRanged ? definition.attackRange * 0.85f : 0.5f;
             }
+        }
+
+        void SyncAvoidance()
+        {
+            if (_agent == null) return;
+            bool moving = _order == UnitOrder.Move || _order == UnitOrder.Patrol
+                || _order == UnitOrder.ReturnDeposit
+                || (_order == UnitOrder.Attack && !_agent.isStopped)
+                || (_order == UnitOrder.AttackBuilding && !_agent.isStopped)
+                || (_order == UnitOrder.Gather && !_agent.isStopped)
+                || (_order == UnitOrder.Build && !_agent.isStopped);
+            var desired = moving
+                ? ObstacleAvoidanceType.LowQualityObstacleAvoidance
+                : ObstacleAvoidanceType.NoObstacleAvoidance;
+            if (_agent.obstacleAvoidanceType != desired)
+                _agent.obstacleAvoidanceType = desired;
         }
 
         float GetEffectiveAttackRange()
@@ -235,6 +252,7 @@ namespace InsectWars.RTS
         void Update()
         {
             if (!IsAlive) return;
+            TickPassiveRegen();
             var stompSlow = GetComponent<StompSlow>();
             float atkMult = stompSlow != null ? stompSlow.AttackSpeedMultiplier : 1f;
             _attackCooldown -= Time.deltaTime * atkMult;
@@ -266,6 +284,7 @@ namespace InsectWars.RTS
                     TickIdleAutoGather();
                     break;
             }
+            SyncAvoidance();
         }
 
         public void OrderMove(Vector3 world)
@@ -974,6 +993,18 @@ return;
                     drv.NotifyDeath(0.48f);
                 else
                     Destroy(gameObject, 0.15f);
+            }
+        }
+
+        void TickPassiveRegen()
+        {
+            float maxHp = MaxHealth;
+            if (_health >= maxHp) return;
+            _regenTimer += Time.deltaTime;
+            if (_regenTimer >= 10f)
+            {
+                _regenTimer -= 10f;
+                _health = Mathf.Min(_health + 1f, maxHp);
             }
         }
 

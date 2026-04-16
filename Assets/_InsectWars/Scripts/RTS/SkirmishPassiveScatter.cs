@@ -123,10 +123,12 @@ namespace InsectWars.RTS
             if (theme == ScatterTheme.Frozen)
             {
                 var mat = Mat(new Color(0.68f, 0.68f, 0.72f));
+                var tex = Resources.Load<Texture2D>("Textures/FrozenRockBaseMap");
         #if UNITY_EDITOR
-                var tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Textures/RealisticFrozenRock_Generated Maps/BaseMap.jpg");
-                if (tex != null) mat.SetTexture("_BaseMap", tex);
+                if (tex == null)
+                    tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Textures/RealisticFrozenRock_Generated Maps/BaseMap.jpg");
         #endif
+                if (tex != null) mat.SetTexture("_BaseMap", tex);
                 go.GetComponent<Renderer>().sharedMaterial = mat;
             }
             else

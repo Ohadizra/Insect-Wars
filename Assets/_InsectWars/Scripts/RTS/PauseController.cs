@@ -1,11 +1,10 @@
 using InsectWars.Core;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Escape toggles pause. Ignored while a match end screen is active.
+    /// Manages pause state. Toggled via the in-game settings panel, not a hotkey.
     /// </summary>
     public class PauseController : MonoBehaviour
     {
@@ -18,13 +17,10 @@ namespace InsectWars.RTS
             Time.timeScale = 1f;
         }
 
-        void LateUpdate()
+        /// <summary>Toggle pause on/off. Called from the settings panel UI.</summary>
+        public static void TogglePause()
         {
-            if (Keyboard.current == null) return;
-            if (!Keyboard.current.escapeKey.wasPressedThisFrame) return;
             if (MatchDirector.MatchEnded) return;
-            if (BottomBar.WouldConsumeEscape) return;
-
             IsPaused = !IsPaused;
             Time.timeScale = IsPaused ? 0f : 1f;
             GameAudio.PlayUi(GameAudio.UiKind.PauseToggle);
