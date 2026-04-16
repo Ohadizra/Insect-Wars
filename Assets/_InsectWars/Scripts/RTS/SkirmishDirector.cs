@@ -375,8 +375,9 @@ systems = new GameObject("Systems");
                 if (m != null && m.scatterTheme == ScatterTheme.Frozen) isFrozen = true;
             }
 
-            float barrierHeight = isFrozen ? 8.5f : 2.5f;
-            float barrierY = barrierHeight * 0.5f;
+            float mapWallTopY = isFrozen ? 16f : 6f;
+            float mapWallBottomY = -8f;
+            float barrierHeight = mapWallTopY - mapWallBottomY;
             float len = extent * 2f;
 
             void Edge(string name, Vector3 pos, Vector3 scale)
@@ -385,46 +386,22 @@ systems = new GameObject("Systems");
                 container.transform.SetParent(parent);
                 container.transform.position = pos;
 
-                if (isFrozen)
-                {
-                    // Create segmented ice wall for "bold" look
-                    int segments = Mathf.CeilToInt(len / 10f);
-                    float segLen = len / segments;
-                    Vector3 forward = (name.Contains("_E") || name.Contains("_W")) ? Vector3.forward : Vector3.right;
-                    Vector3 start = pos - forward * (len * 0.5f) + forward * (segLen * 0.5f);
-
-                    for (int i = 0; i < segments; i++)
-                    {
-                        var seg = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        seg.name = $"{name}_Seg_{i}";
-                        seg.transform.SetParent(container.transform);
-                        float h = barrierHeight * Random.Range(0.85f, 1.25f);
-                        seg.transform.position = start + forward * (i * segLen) + Vector3.up * (h * 0.5f);
-                        seg.transform.localScale = new Vector3(
-                            forward == Vector3.right ? segLen * 1.05f : thickness * 1.5f,
-                            h,
-                            forward == Vector3.forward ? segLen * 1.05f : thickness * 1.5f);
-                        
-                        // Add some organic "ice" rotation
-                        seg.transform.localRotation = Quaternion.Euler(Random.Range(-2f, 2f), Random.Range(-5f, 5f), Random.Range(-2f, 2f));
-
-                        if (barrierMat != null) seg.GetComponent<Renderer>().sharedMaterial = barrierMat;
-                        else ApplyMat(seg, boundsColor);
-                        SafeDestroy(seg.GetComponent<Collider>());
-                        }
-                        }
-                        else
-                        {
-                        var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        e.name = name + "_Solid";
-                        e.transform.SetParent(container.transform);
-                        e.transform.position = pos + Vector3.up * barrierY;
-                        e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
-                        if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
-                        else ApplyMat(e, boundsColor);
-                        SafeDestroy(e.GetComponent<Collider>());
-                        }
-}
+                // Create a single solid cube for the entire edge to ensure it is perfectly straight
+                var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                e.name = name + "_Solid";
+                e.transform.SetParent(container.transform);
+                
+                // Align the top of the wall to a fixed world height (mapWallTopY)
+                // and extend deep into the ground (mapWallBottomY) to handle all levels
+                float centerY = (mapWallTopY + mapWallBottomY) * 0.5f;
+                e.transform.position = new Vector3(pos.x, centerY, pos.z);
+                e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
+                
+                if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
+                else ApplyMat(e, boundsColor);
+                
+                SafeDestroy(e.GetComponent<Collider>());
+            }
 
             Edge("MapEdge_N", new Vector3(0f, 0f, extent), new Vector3(len, thickness, thickness));
             Edge("MapEdge_S", new Vector3(0f, 0f, -extent), new Vector3(len, thickness, thickness));
@@ -693,10 +670,14 @@ systems = new GameObject("Systems");
                 clay = Instantiate(prefab, parent);
                 clay.name = "Clay";
                 clay.tag = "Clay";
-                float h = GetHeight(pos);
-                clay.transform.position = new Vector3(pos.x, h, pos.z);
-                clay.transform.localScale = scale;
-                foreach (var r in clay.GetComponentsInChildren<Renderer>())
+                
+                // Align top to a fixed world height (8f) and extend deep (-5f) to handle high/low ground
+                float topY = 8f;
+                float bottomY = -5f;
+                float height = topY - bottomY;
+                clay.transform.position = new Vector3(pos.x, (topY + bottomY) * 0.5f, pos.z);
+                clay.transform.localScale = new Vector3(scale.x, height, scale.z);
+foreach (var r in clay.GetComponentsInChildren<Renderer>())
                 {
                     if (!Application.isPlaying) continue;
                     var mats = r.materials;
@@ -717,11 +698,21 @@ systems = new GameObject("Systems");
                 clay.name = "Clay";
                 clay.tag = "Clay";
                 clay.transform.SetParent(parent);
-                float h = GetHeight(pos);
-                clay.transform.position = new Vector3(pos.x, h + (scale.y * 0.5f), pos.z);
-                clay.transform.localScale = scale;
-                ApplyMat(clay, clayColor);
-            }
+                
+                // Align top to a fixed world height (8f) and extend deep (-5f) to handle high/low ground
+                float topY = 8f;
+                float bottomY = -5f;
+                float height = topY - bottomY;
+                clay.transform.position = new Vector3(pos.x, (topY + bottomY) * 0.5f, pos.z);
+                clay.transform.localScale = new Vector3(scale.x, height, scale.z);
+                
+                // Use theme material for frozen walls
+                bool isFrozen = (lib != null && lib.baseSoilLayer != null && lib.baseSoilLayer.name.Contains("Frozen"));
+                if (isFrozen && lib.mapBarrierMaterial != null)
+                    clay.GetComponent<Renderer>().sharedMaterial = lib.mapBarrierMaterial;
+                else
+                    ApplyMat(clay, clayColor);
+}
 
             var obs = clay.GetComponent<NavMeshObstacle>();
             if (obs == null) obs = clay.AddComponent<NavMeshObstacle>();
