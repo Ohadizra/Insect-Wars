@@ -30,6 +30,7 @@ namespace InsectWars.RTS
         [SerializeField] float proceduralBobAmp = 0.035f;
         [SerializeField] float idlePulseSpeed = 2f;
         [SerializeField] float idlePulseAmp = 0.02f;
+        [SerializeField] GameObject stompVfxPrefab;
 
         public float previewSpeed;
 
@@ -58,6 +59,7 @@ namespace InsectWars.RTS
         float _idleT;
         float _instanceOffset;
         bool _dying;
+        bool _stompImpactTriggered;
 
         bool _hasSpeed, _hasIsMoving, _hasGathering, _hasBuild, _hasAttack, _hasDeath, _hasWebCast, _hasStomp;
 
@@ -121,6 +123,11 @@ namespace InsectWars.RTS
                     _rMandible = FindRecursive(modelRoot, "R_earend");
                     if (_lMandible != null) _lMandibleBase = _lMandible.localRotation;
                     if (_rMandible != null) _rMandibleBase = _rMandible.localRotation;
+
+                    if (stompVfxPrefab == null && IsStagBeetle())
+                    {
+                        stompVfxPrefab = Resources.Load<GameObject>("VFX/StompGroundEffect");
+                    }
 
                     _lWing = FindRecursive(modelRoot, "L_wing") ?? FindRecursive(modelRoot, "wing_L")
                     ?? FindRecursive(modelRoot, "LeftWing") ?? FindRecursive(modelRoot, "Wing_L");
@@ -397,13 +404,23 @@ namespace InsectWars.RTS
                 modelRoot.localPosition += new Vector3(0f, compression, 0f);
                 if (_lMandible != null) _lMandible.localRotation = _lMandibleBase * Quaternion.Euler(0f, -mandibleOpen, 0f);
                 if (_rMandible != null) _rMandible.localRotation = _rMandibleBase * Quaternion.Euler(0f, mandibleOpen, 0f);
+
+                if (p >= 0.5f && !_stompImpactTriggered)
+                {
+                    _stompImpactTriggered = true;
+                    if (stompVfxPrefab != null)
+                    {
+                        Instantiate(stompVfxPrefab, transform.position, Quaternion.identity);
+                    }
+                }
                 }
 
                 public void NotifyStomp()
                 {
-                    _stompAnimDuration = 1.7f;
-                    _stompAnimT = _stompAnimDuration;
-                    if (_hasStomp) animator.SetTrigger(Stomp);
+                _stompAnimDuration = 1.7f;
+                _stompAnimT = _stompAnimDuration;
+                _stompImpactTriggered = false;
+                if (_hasStomp) animator.SetTrigger(Stomp);
                 }
 
                 void ApplyBlackWidowLoop(float dt, bool moving, float speed)

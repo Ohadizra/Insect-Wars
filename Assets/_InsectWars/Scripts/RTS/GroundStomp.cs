@@ -37,6 +37,9 @@ namespace InsectWars.RTS
             if (_stompTimer < StompInterval) return;
             _stompTimer = 0f;
 
+            if (GetComponentInChildren<UnitAnimationDriver>() is { } driver)
+                driver.NotifyStomp();
+
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team == _unit.Team) continue;
