@@ -965,6 +965,12 @@
       "conversation_id": "bad7f2b7-8ab2-4c6c-aa81-ea4530eacb70",
       "content": "map is on top of the map frame, which is good. but the map is slighly too big and covers the frame instead of fiting into it",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "5dbe7af8-f7cf-407d-99b2-96e0246f70c1",
+      "conversation_id": "bad7f2b7-8ab2-4c6c-aa81-ea4530eacb70",
+      "content": "I have adjusted the minimap padding and layout to ensure it fits perfectly within its ornate frame without covering it.\n\n### Changes Made:\n- **Increased Padding**: In `BottomBar.cs`, I increased the padding for the `MinimapInner` (the host for the map) from `5` to `15` units. This makes the map slightly smaller, allowing it to sit within the hollow center of the ornate frame rather than overlapping its borders.\n- **Maintained Layering**: I kept the map on top of the frame as you requested, as this ensures the \"MAP\" label and any map markers remain fully visible.\n- **Ensured Label Visibility**: I verified that the \"MAP\" label remains visible and isn't clipped by the new padding, as it still sits within the bounds of the larger minimap container.\n\nThe map should now appear neatly centered and \"fitted\" into the brown ornate frame as intended.\n\n### Validation:\n- Checked `BottomBar.cs` to ensure the `MinimapHost` offsets are correctly applied.\n- Verified that `Minimap.cs` procedurally attaches to the host and scales correctly.\n- Confirmed that the \"MAP\" label position (25 units above the map) still places it within the visible UI area.",
+      "snapshot_message_type": 1
     }
   ]
 }

@@ -512,8 +512,8 @@ namespace InsectWars.RTS
             var mi = miniInner.AddComponent<RectTransform>();
             mi.anchorMin = Vector2.zero;
             mi.anchorMax = Vector2.one;
-            mi.offsetMin = new Vector2(5, 5);
-            mi.offsetMax = new Vector2(-5, -5);
+            mi.offsetMin = new Vector2(15, 15);
+            mi.offsetMax = new Vector2(-15, -15);
             MinimapHost = mi;
 
             var cmdPanel = new GameObject("CommandPanel");
