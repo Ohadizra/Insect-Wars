@@ -9,7 +9,7 @@ namespace InsectWars.RTS
     /// </summary>
     public class GroundStomp : MonoBehaviour
     {
-        const float StompRadius = 6f;
+        const float StompRadius = 4f;
         const float StompInterval = 8f;
         const float SlowDuration = 3f;
         const float MoveSpeedMultiplier = 0.5f;
