@@ -1,0 +1,27 @@
+{
+    "asset": "07ded2107420c4a26b1d4a2c9b8f3e25",
+    "fileName": "019d9a41-9d7c-79c4-85b2-68ebec271b91.png",
+    "prompt": "stylized toon shockwave ring, circular ripple, white and light blue, energy wave, game vfx sprite, isolated on white background, thick lines, clean vector style",
+    "negativePrompt": "",
+    "model": "856245a7-19a9-46f3-864c-899b31fd5f9f",
+    "modelName": "Nano Banana - T2i",
+    "customSeed": -1,
+    "w3CTraceId": "972afebeb444d2580f7a7930be751926",
+    "feedback": 0,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0,
+    "dimensions": {
+        "width": 1024,
+        "height": 1024
+    },
+    "spriteSheet": false,
+    "duration": 0.0
+}

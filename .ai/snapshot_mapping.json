@@ -1175,6 +1175,12 @@
       "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
       "content": "i want the stamp to be not like an object on the ground, remove the animation of the cracks and make it like a shockwave, with animation that will fit the art of the the game",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "700f8f7f-4cc1-4324-9cdd-b48b92b8863b",
+      "conversation_id": "c10e55e0-445a-43ec-aa15-51de3687ebda",
+      "content": "I have completely redesigned the Stag Beetle's stomp to be a powerful shockwave effect with clean, stylized visual feedback:\n\n### New Shockwave Animation:\n*   **Expanding Ripple**: Replaced the static \"crack\" quad on the floor with a dynamic, expanding shockwave. I generated a new stylized **Energy Ripple** sprite (`Assets/_InsectWars/Resources/VFX/ShockwaveRing.png`) that expands rapidly outwards from the point of impact before fading away.\n*   **Clean Ground**: Since the effect is now a particle-based shockwave, it leaves absolutely no residue on the floor, keeping the battlefield clean.\n*   **Complementary Dust**: A small burst of impact dust follows the ripple to ground the effect in the environment without obscuring the view.\n\n### Refined Enemy Stun:\n*   **Overhead Stun Stars**: Removed all body-based animations (shaking/staggering) from the affected units.\n*   **Golden Orbitals**: Enemies now display three golden **Stun Stars** that orbit in a smooth, circular path above their heads for the duration of the slow debuff. This clearly signals that something happened to the unit (a status change) while allowing their normal animations to continue unhindered.\n*   **Billboarding**: The stars are set to always face the camera, ensuring they are readable from any angle.\n\n### Assets Used:\n*   **`ShockwaveRing.png`**: A toon-style energy wave for the stomp.\n*   **`StunStar.png`**: A bright, stylized gold star for the overhead debuff.\n*   **Updated Prefab**: The `StompGroundEffect` prefab in `Resources/VFX/` now correctly handles the automatic destruction of the ripple and dust after they finish their wave motion.\n\nThe Beetle's slam now feels like a powerful, \"Insect Wars\"-themed shockwave that visually stuns enemies from above.",
+      "snapshot_message_type": 1
     }
   ]
 }
