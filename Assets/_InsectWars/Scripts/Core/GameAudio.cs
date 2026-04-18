@@ -18,10 +18,13 @@ namespace InsectWars.Core
         [SerializeField] AudioClip combatHit;
         [SerializeField] public AudioClip constructionComplete;
         [SerializeField] public AudioClip workerLift;
+        [SerializeField] AudioClip backgroundMusic;
         [SerializeField] [Range(0f, 1f)] float uiVolume = 0.65f;
-[SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
+        [SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
+        [SerializeField] [Range(0f, 1f)] float musicVolume = 0.4f;
 
         AudioSource _src;
+        AudioSource _musicSrc;
 
         void Awake()
         {
@@ -33,6 +36,16 @@ namespace InsectWars.Core
                 _src.playOnAwake = false;
                 _src.spatialBlend = 0f;
             }
+
+            _musicSrc = gameObject.AddComponent<AudioSource>();
+            _musicSrc.loop = true;
+            _musicSrc.playOnAwake = false;
+            _musicSrc.spatialBlend = 0f;
+        }
+
+        void Start()
+        {
+            PlayBackgroundMusic();
         }
 
         void OnDestroy()
@@ -75,6 +88,19 @@ namespace InsectWars.Core
             
             if (Instance.workerLift != null)
                 Instance._src.PlayOneShot(Instance.workerLift, Instance.uiVolume);
+        }
+
+        public void PlayBackgroundMusic()
+        {
+            if (backgroundMusic == null)
+                backgroundMusic = Resources.Load<AudioClip>("Audio/Music_FinntrollStyle");
+
+            if (backgroundMusic != null && _musicSrc != null)
+            {
+                _musicSrc.clip = backgroundMusic;
+                _musicSrc.volume = musicVolume;
+                _musicSrc.Play();
+            }
         }
         }
         }

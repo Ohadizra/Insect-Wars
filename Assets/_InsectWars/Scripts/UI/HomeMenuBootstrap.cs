@@ -63,7 +63,10 @@ namespace InsectWars.UI
             BuildVideoBackground();
             BuildMainMenu();
             BuildSubPanels();
-        }
+
+            var systems = new GameObject("Systems");
+            systems.AddComponent<GameAudio>();
+            }
 
         void HideSceneJunk()
         {

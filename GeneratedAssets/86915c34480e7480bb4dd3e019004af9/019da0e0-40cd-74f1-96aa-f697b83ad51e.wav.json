@@ -1,0 +1,14 @@
+{
+    "asset": "86915c34480e7480bb4dd3e019004af9",
+    "fileName": "019da0e0-40cd-74f1-96aa-f697b83ad51e.wav",
+    "prompt": "Folk Metal, Humppa, Finntroll style, heavy distorted guitars, fast accordion melodies, driving drum beat, dark forest troll atmosphere, epic and energetic, high quality, loopable.",
+    "negativePrompt": "",
+    "model": "7df9b85a-1695-49f7-89bf-988208d5a3bc",
+    "modelName": "Meta MusicGen",
+    "customSeed": -1,
+    "w3CTraceId": "4183b6aeadba4197376aad1ad3da3dca",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}
