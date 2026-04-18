@@ -43,13 +43,8 @@ namespace InsectWars.Core
             _musicSrc.spatialBlend = 0f;
         }
 
-        void Start()
-        {
-            PlayBackgroundMusic();
-        }
-
         void OnDestroy()
-        {
+{
             if (Instance == this) Instance = null;
         }
 
@@ -90,16 +85,18 @@ namespace InsectWars.Core
                 Instance._src.PlayOneShot(Instance.workerLift, Instance.uiVolume);
         }
 
-        public void PlayBackgroundMusic()
+        public static void PlayGameMusic()
         {
-            if (backgroundMusic == null)
-                backgroundMusic = Resources.Load<AudioClip>("Audio/Music_FinntrollStyle");
+            if (Instance == null) return;
+            
+            if (Instance.backgroundMusic == null)
+                Instance.backgroundMusic = Resources.Load<AudioClip>("Audio/Music_TribalBattle");
 
-            if (backgroundMusic != null && _musicSrc != null)
+            if (Instance.backgroundMusic != null && Instance._musicSrc != null)
             {
-                _musicSrc.clip = backgroundMusic;
-                _musicSrc.volume = musicVolume;
-                _musicSrc.Play();
+                Instance._musicSrc.clip = Instance.backgroundMusic;
+                Instance._musicSrc.volume = Instance.musicVolume;
+                Instance._musicSrc.Play();
             }
         }
         }

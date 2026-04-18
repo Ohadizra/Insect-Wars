@@ -1,0 +1,14 @@
+{
+    "asset": "c9c1630e749524d359d6ce09bd6754ed",
+    "fileName": "019da0ec-66e1-7ff7-9c8f-52e4797f315c.wav",
+    "prompt": "Heavy slow tribal drums, dark primeval atmosphere, sounds of dry branches breaking and leaves being crushed, rhythmic and steady, cinematic insect war tension, no melody, percussive focus.",
+    "negativePrompt": "",
+    "model": "7df9b85a-1695-49f7-89bf-988208d5a3bc",
+    "modelName": "Meta MusicGen",
+    "customSeed": -1,
+    "w3CTraceId": "e3193290c72024f189f54d111d58fe5d",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

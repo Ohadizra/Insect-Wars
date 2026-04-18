@@ -118,9 +118,10 @@ namespace InsectWars.RTS
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
+            GameAudio.PlayGameMusic();
 
             if (GameSession.IsLearningMode)
-            {
+{
                 SpawnLearningModeUnits();
             }
             else
