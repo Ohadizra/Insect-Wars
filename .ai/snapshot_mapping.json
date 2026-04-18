@@ -1199,6 +1199,12 @@
       "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
       "content": "I apologize for that. The previous model was a Text-to-Speech (TTS) model that misinterpreted the description as part of the text to be spoken.\n\nI have regenerated the sound using the **Sound Effects model**, which is specifically designed for creature vocals and stylized noises rather than just reading text.\n\n### Actions Taken:\n1.  **Regenerated Audio**: Used a Sound Effects model with the prompt: *\"High-pitched squeaky insect voice chirping the word 'Lift' once. Tiny creature vocalization.\"*\n2.  **Replaced File**: Deleted the robotic version and replaced it with the new version at `Assets/Resources/Audio/Worker_Lift.wav`.\n3.  **Code Maintenance**: The existing code in `SelectionController` and `GameAudio` will work immediately with the new file.\n\nPlease try double-clicking the worker again! It should now sound like a tiny creature vocalizing instead of an AI reading the prompt.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "e357ddca-c3ea-4aac-a6e9-f7ac975faeb7",
+      "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
+      "content": "make a sound track for the game that will sound like \"När Allt Blir Is\" of finntroll,",
+      "snapshot_message_type": 0
     }
   ]
 }
