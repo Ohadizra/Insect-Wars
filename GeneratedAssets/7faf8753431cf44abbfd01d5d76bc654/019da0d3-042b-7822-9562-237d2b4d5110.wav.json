@@ -1,0 +1,14 @@
+{
+    "asset": "7faf8753431cf44abbfd01d5d76bc654",
+    "fileName": "019da0d3-042b-7822-9562-237d2b4d5110.wav",
+    "prompt": "A tiny, squeaky, high-pitched insect voice saying the word 'Lift'. It should sound like an ant worker talking. Slightly raspy and chirpy.",
+    "negativePrompt": "",
+    "model": "6be7790d-b2f4-4fe0-8ca2-76ddaaf94361",
+    "modelName": "ElevenLabs Multilingual V2",
+    "customSeed": -1,
+    "w3CTraceId": "dc65c0cdfa1fbeb407e631e3014e27b3",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

@@ -17,8 +17,9 @@ namespace InsectWars.Core
         [SerializeField] AudioClip uiClick;
         [SerializeField] AudioClip combatHit;
         [SerializeField] public AudioClip constructionComplete;
+        [SerializeField] public AudioClip workerLift;
         [SerializeField] [Range(0f, 1f)] float uiVolume = 0.65f;
-        [SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
+[SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
 
         AudioSource _src;
 
@@ -65,5 +66,15 @@ namespace InsectWars.Core
             if (Instance == null || Instance.combatHit == null) return;
             AudioSource.PlayClipAtPoint(Instance.combatHit, world, Instance.combatVolume);
         }
-    }
-}
+
+        public static void PlayWorkerLift()
+        {
+            if (Instance == null) return;
+            if (Instance.workerLift == null)
+                Instance.workerLift = Resources.Load<AudioClip>("Audio/Worker_Lift");
+            
+            if (Instance.workerLift != null)
+                Instance._src.PlayOneShot(Instance.workerLift, Instance.uiVolume);
+        }
+        }
+        }

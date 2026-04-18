@@ -1187,6 +1187,12 @@
       "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
       "content": "lets make sounds for the worker, the clicked 2 times will say \"Lift\" in a Ant/insect like voice",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "94133136-9208-45b9-9472-bbda1b1b7cdd",
+      "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
+      "content": "I have successfully created and integrated the \"Lift\" sound effect for the worker units.\n\n### Changes Made:\n1.  **Generated Audio**: Produced a high-pitched, chirpy, insect-like voice clip saying \"Lift\" using AI generation.\n2.  **Asset Organization**: \n    *   Saved the audio to `Assets/Resources/Audio/Worker_Lift.wav`.\n    *   Ensured the file is in a `Resources` folder so the game can load it at runtime even if it's not pre-assigned in a prefab or scene.\n3.  **Core Audio System Update**:\n    *   Modified `Assets/_InsectWars/Scripts/Core/GameAudio.cs` to include a `workerLift` clip field.\n    *   Added a `PlayWorkerLift()` static method that automatically loads the clip from `Resources` if it hasn't been assigned yet.\n4.  **Interaction Logic**:\n    *   Updated `Assets/_InsectWars/Scripts/RTS/SelectionController.cs` to detect when a **Worker** unit is double-clicked.\n    *   Added a call to `GameAudio.PlayWorkerLift()` within the double-click detection block.\n\nNow, whenever you double-click a worker unit in the game, you will hear them say \"Lift\" in their tiny insect voice.",
+      "snapshot_message_type": 1
     }
   ]
 }

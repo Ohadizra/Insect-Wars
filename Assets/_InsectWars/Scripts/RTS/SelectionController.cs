@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using InsectWars.Data;
+using InsectWars.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -273,6 +274,8 @@ namespace InsectWars.RTS
                 if (isDoubleClick)
                 {
                     SelectAllOfTypeInView(u.Archetype);
+                    if (u.Archetype == UnitArchetype.Worker)
+                        GameAudio.PlayWorkerLift();
                     return;
                 }
 
