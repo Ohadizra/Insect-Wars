@@ -1,0 +1,14 @@
+{
+    "asset": "cc587d054a3fd48598f51f1d88472c2a",
+    "fileName": "019da0db-3563-75fe-91ae-f2c99f862c26.wav",
+    "prompt": "High-pitched squeaky insect voice chirping the word \"Lift\" once. Tiny creature vocalization.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "4c0e101e5f01a0c9cd4532bc1bbcb743",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}
