@@ -1223,6 +1223,12 @@
       "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
       "content": "The soundtrack is playing in the following locations:\n\n1.  **Home Page (Main Menu)**: I integrated the `GameAudio` system into `HomeMenuBootstrap.cs`. As soon as you open the game and land on the home screen (`Home.unity`), the music will start.\n2.  **Frozen Map (Lalush)**: This map is handled by the `SkirmishDirector.cs`. I modified the director to add the `GameAudio` component at runtime when it builds the scene systems. Since the \"Frozen\" theme is a preset for this director, the music will play throughout the match.\n3.  **Skirmish Demo / Test Maps**: Any scene that uses the `SkirmishDirector` to initialize the game (which includes the main `SkirmishDemo.unity` and likely any \"test\" maps built using the same architecture) will automatically trigger the background music.\n\nIn short: the music is active in **both the menus and the actual gameplay** for all current maps.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "3c1a4591-8676-46e3-86d7-70ab075782bd",
+      "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
+      "content": "for the the music to be played only during the game, i want it to be a slower music, heavy slow tribal drumps, sounds of branches breaking, leafs being smashed.",
+      "snapshot_message_type": 0
     }
   ]
 }
