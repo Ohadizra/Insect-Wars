@@ -46,32 +46,43 @@ namespace InsectWars.RTS
 
         void EnsureEventSystem()
         {
-            if (FindFirstObjectByType<EventSystem>() == null)
+            var existingES = FindFirstObjectByType<EventSystem>();
+            InputSystemUIInputModule mod;
+
+            if (existingES != null)
+            {
+                mod = existingES.GetComponent<InputSystemUIInputModule>();
+                if (mod != null) return;
+                var legacy = existingES.GetComponent<BaseInputModule>();
+                if (legacy != null) Destroy(legacy);
+                mod = existingES.gameObject.AddComponent<InputSystemUIInputModule>();
+            }
+            else
             {
                 var es = new GameObject("EventSystem");
                 es.AddComponent<EventSystem>();
-                var mod = es.AddComponent<InputSystemUIInputModule>();
+                mod = es.AddComponent<InputSystemUIInputModule>();
+            }
 
-                var asset = Resources.Load<UnityEngine.InputSystem.InputActionAsset>("InputSystem_Actions");
-                #if UNITY_EDITOR
-                if (asset == null)
-                    asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
-                #endif
-                if (asset != null)
+            var asset = Resources.Load<UnityEngine.InputSystem.InputActionAsset>("InputSystem_Actions");
+            #if UNITY_EDITOR
+            if (asset == null)
+                asset = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/InputSystem_Actions.inputactions");
+            #endif
+            if (asset != null)
+            {
+                mod.actionsAsset = asset;
+                var uiMap = asset.FindActionMap("UI");
+                if (uiMap != null)
                 {
-                    mod.actionsAsset = asset;
-                    var uiMap = asset.FindActionMap("UI");
-                    if (uiMap != null)
-                    {
-                        mod.point = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Point"));
-                        mod.leftClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Click"));
-                        mod.rightClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("RightClick"));
-                        mod.middleClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("MiddleClick"));
-                        mod.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("ScrollWheel"));
-                        mod.move = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Navigate"));
-                        mod.submit = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Submit"));
-                        mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
-                    }
+                    mod.point = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Point"));
+                    mod.leftClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Click"));
+                    mod.rightClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("RightClick"));
+                    mod.middleClick = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("MiddleClick"));
+                    mod.scrollWheel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("ScrollWheel"));
+                    mod.move = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Navigate"));
+                    mod.submit = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Submit"));
+                    mod.cancel = UnityEngine.InputSystem.InputActionReference.Create(uiMap.FindAction("Cancel"));
                 }
             }
         }

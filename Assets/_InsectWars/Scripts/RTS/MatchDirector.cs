@@ -91,7 +91,13 @@ namespace InsectWars.RTS
         {
             if (_overlayRoot != null) return;
             var parent = GameHUD.HudCanvasRect;
-            if (parent == null) return;
+            if (parent == null)
+            {
+                Debug.LogWarning("MatchDirector: HudCanvasRect is null, loading home to avoid soft-lock.");
+                Time.timeScale = 1f;
+                SceneLoader.LoadHome();
+                return;
+            }
 
             var frameSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             var btnSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/btn_menu");

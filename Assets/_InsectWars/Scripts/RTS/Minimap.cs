@@ -29,9 +29,18 @@ namespace InsectWars.RTS
 
         IEnumerator CoInit()
         {
-            // Wait until the host is ready
-            while (BottomBar.MinimapHost == null)
+            float timeout = 5f;
+            while (BottomBar.MinimapHost == null && timeout > 0f)
+            {
+                timeout -= Time.unscaledDeltaTime;
                 yield return null;
+            }
+
+            if (BottomBar.MinimapHost == null)
+            {
+                Debug.LogWarning("Minimap: BottomBar.MinimapHost not available after timeout, skipping minimap init.");
+                yield break;
+            }
 
             BuildMinimapUi();
             BuildMinimapCamera();

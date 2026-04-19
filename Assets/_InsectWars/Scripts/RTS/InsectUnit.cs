@@ -874,14 +874,20 @@ _attackCooldown = definition.attackCooldown;
 
             if (dist > range)
             {
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackTarget.position);
+                if (_agent.isOnNavMesh)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_attackTarget.position);
+                }
                 return;
             }
 
-            _agent.isStopped = true;
-            _agent.ResetPath();
-            _agent.velocity = Vector3.zero;
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+            }
 
             var lookDir = _attackTarget.position - transform.position;
             lookDir.y = 0f;
@@ -898,31 +904,34 @@ _attackCooldown = definition.attackCooldown;
             GameAudio.PlayAttack(definition.archetype, transform.position);
             GetComponent<UnitAnimationDriver>()?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
-}
+            }
 
-        void ResumeAfterAttack()
-        {
+            void ResumeAfterAttack()
+            {
             _attackTarget = null;
             UnlockMelee();
             if (_wantsAttackMove)
             {
                 _order = UnitOrder.AttackMove;
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackMoveDest);
+                if (_agent.isOnNavMesh)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_attackMoveDest);
+                }
                 return;
             }
             _order = UnitOrder.Idle; _idleElapsed = 0f;
-        }
+            }
 
-        // --- Helpers ---
+            // --- Helpers ---
 
-        HiveDeposit GetTeamHive()
-        {
+            HiveDeposit GetTeamHive()
+            {
             return team == Team.Player ? HiveDeposit.PlayerHive : HiveDeposit.EnemyHive;
-        }
+            }
 
-        Vector3? FindNearestTeamDepositPoint()
-        {
+            Vector3? FindNearestTeamDepositPoint()
+            {
             float bestDist = float.MaxValue;
             Vector3? bestPoint = null;
 
@@ -941,10 +950,10 @@ _attackCooldown = definition.attackCooldown;
             }
 
             return bestPoint;
-        }
+            }
 
-        Transform FindNearestTeamHive()
-        {
+            Transform FindNearestTeamHive()
+            {
             float bestDist = float.MaxValue;
             Transform best = null;
 
@@ -963,18 +972,18 @@ _attackCooldown = definition.attackCooldown;
             }
 
             return best;
-        }
+            }
 
-        float GetHiveArrivalRadius(Transform hive)
-        {
+            float GetHiveArrivalRadius(Transform hive)
+            {
             var rend = hive.GetComponentInChildren<Renderer>();
             if (rend != null)
                 return Mathf.Max(rend.bounds.extents.x, rend.bounds.extents.z) + 1.5f;
             return Mathf.Max(hive.localScale.x, hive.localScale.z) * 0.5f + 1.5f;
-        }
+            }
 
-        RottingFruitNode FindNearbyFruit(float radius)
-        {
+            RottingFruitNode FindNearbyFruit(float radius)
+            {
             RottingFruitNode best = null;
             float bestDist = radius;
             foreach (var node in RtsSimRegistry.FruitNodes)
@@ -984,12 +993,12 @@ _attackCooldown = definition.attackCooldown;
                 if (d < bestDist) { bestDist = d; best = node; }
             }
             return best;
-        }
+            }
 
-        // --- Damage ---
+            // --- Damage ---
 
-        public void ApplyDamage(float dmg)
-        {
+            public void ApplyDamage(float dmg)
+            {
             if (_health <= 0f) return;
             _health -= dmg;
             LastDamageTime = Time.time;
@@ -1007,7 +1016,7 @@ _attackCooldown = definition.attackCooldown;
                 MatchStats.RecordKill(team);
                 StopBuilding();
                 UnlockMelee();
-                _agent.isStopped = true;
+                if (_agent.isOnNavMesh) _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);
                 ColonyCapacity.NotifyChanged();
                 var drv = GetComponent<UnitAnimationDriver>();
@@ -1016,10 +1025,10 @@ _attackCooldown = definition.attackCooldown;
                 else
                     Destroy(gameObject, 0.15f);
             }
-        }
+            }
 
-        public void ApplyEnvironmentDamage(float dmg)
-        {
+            public void ApplyEnvironmentDamage(float dmg)
+            {
             if (_health <= 0f) return;
             _health -= dmg;
             if (_health <= 0)
@@ -1028,7 +1037,7 @@ _attackCooldown = definition.attackCooldown;
                 MatchStats.RecordKill(team);
                 StopBuilding();
                 UnlockMelee();
-                _agent.isStopped = true;
+                if (_agent.isOnNavMesh) _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);
                 ColonyCapacity.NotifyChanged();
                 var drv = GetComponent<UnitAnimationDriver>();
@@ -1037,7 +1046,7 @@ _attackCooldown = definition.attackCooldown;
                 else
                     Destroy(gameObject, 0.15f);
             }
-        }
+            }
 
         public void Heal(float amount)
         {

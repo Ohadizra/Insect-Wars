@@ -726,11 +726,15 @@ namespace InsectWars.RTS
             bcrt.offsetMax = new Vector2(0f, -2f);
 
             _prodBarBgImg = barContainer.AddComponent<Image>();
-            _prodBarBgImg.color = new Color(0f, 0f, 0f, 0.5f);
+            _prodBarBgImg.sprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            _prodBarBgImg.type = Image.Type.Sliced;
+            _prodBarBgImg.color = new Color(0.1f, 0.08f, 0.06f, 0.8f);
 
             var fillGo = new GameObject("Fill");
             fillGo.transform.SetParent(barContainer.transform, false);
             _prodBarFillImg = fillGo.AddComponent<Image>();
+            _prodBarFillImg.sprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            _prodBarFillImg.type = Image.Type.Sliced;
             _prodBarFillImg.color = new Color(0.3f, 0.75f, 0.4f, 0.9f);
             _prodBarFillImg.raycastTarget = false;
             var frt = _prodBarFillImg.rectTransform;
@@ -751,7 +755,8 @@ namespace InsectWars.RTS
             var r2rt = _queueRow.AddComponent<RectTransform>();
             r2rt.anchorMin = new Vector2(0f, 0f);
             r2rt.anchorMax = new Vector2(1f, 0.48f);
-            r2rt.offsetMin = r2rt.offsetMax = Vector2.zero;
+            r2rt.offsetMin = new Vector2(34f, 0f);
+            r2rt.offsetMax = Vector2.zero;
 
             var qLayout = _queueRow.AddComponent<HorizontalLayoutGroup>();
             qLayout.spacing = 3f;
@@ -800,9 +805,21 @@ namespace InsectWars.RTS
             }
 
             _prodRoot.SetActive(false);
-        }
+            }
 
-        Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
+            Sprite GetBuildingIcon(BuildingType t)
+            {
+            return t switch
+            {
+                BuildingType.Underground => iconUnderground,
+                BuildingType.AntNest => iconAntNest,
+                BuildingType.SkyTower => iconSkyTower,
+                BuildingType.RootCellar => iconRootCellar,
+                _ => null
+            };
+            }
+
+            Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -1475,12 +1492,12 @@ namespace InsectWars.RTS
                 var hive = SelectionController.Instance.SelectedHive;
                 _portraitLabel.text = "Ant Nest";
                 _attributeLabel.text = "Structure - Biological";
-                if (_portraitMain != null) { _portraitMain.sprite = portraitWorker; _portraitMain.color = Color.white; }
+                if (_portraitMain != null) { _portraitMain.sprite = iconAntNest; _portraitMain.color = Color.white; }
                 if (_portraitBlock != null) _portraitBlock.SetActive(true);
                 ShowHpDisplay(hive.CurrentHealth, hive.MaxHealth);
                 var cell0 = _selectionCells[0];
                 cell0.color = Color.white;
-                cell0.sprite = portraitWorker;
+                cell0.sprite = iconAntNest;
                 return;
             }
 
@@ -1489,6 +1506,9 @@ namespace InsectWars.RTS
             {
                 var sc = SelectionController.Instance;
                 var primary = sc.SelectedBuilding;
+
+                if (_portraitMain != null) { _portraitMain.sprite = GetBuildingIcon(primary.Type); _portraitMain.color = Color.white; }
+                if (_portraitBlock != null) _portraitBlock.SetActive(true);
 
                 int activeCount = 0;
                 float activeHp = 0f, activeMaxHp = 0f;
