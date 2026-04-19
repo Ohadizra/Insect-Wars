@@ -73,6 +73,7 @@ namespace InsectWars.RTS
 
         Image[] _selectionCells;
         Image _portraitMain;
+        GameObject _portraitBlock;
         Text _portraitLabel;
         Text _hpLabel;
         Text _attributeLabel;
@@ -84,11 +85,14 @@ namespace InsectWars.RTS
         readonly Dictionary<string, Image> _cmdButtonImages = new();
 
         const int QueueSlotCount = 5;
-        GameObject _queueStripRoot;
+        GameObject _prodRoot;
+        Image _prodActiveIcon;
+        Image _prodBarBgImg;
+        Image _prodBarFillImg;
+        Text _prodBarLabel;
+        GameObject _queueRow;
         Image[] _queueSlotBg = new Image[QueueSlotCount];
         Image[] _queueSlotIcon = new Image[QueueSlotCount];
-        Image[] _queueSlotOverlay = new Image[QueueSlotCount];
-        Text[] _queueSlotText = new Text[QueueSlotCount];
         ProductionBuilding _queueDisplayBuilding;
         HiveDeposit _queueDisplayHive;
 
@@ -554,35 +558,21 @@ namespace InsectWars.RTS
             
             _cmdGridParent = grid.transform;
 
-            var center = new GameObject("SelectionBlock");
-            center.transform.SetParent(bar.transform, false);
-            var cr = center.AddComponent<RectTransform>();
-            cr.anchorMin = new Vector2(0f, 0f);
-            cr.anchorMax = new Vector2(1f, 1f);
-            cr.offsetMin = new Vector2(minimapSlot, 8f);
-            cr.offsetMax = new Vector2(-commandPanelWidth, -8f);
-            var centerBg = center.AddComponent<Image>();
-            centerBg.sprite = centerBlockFrame;
-            centerBg.type = Image.Type.Sliced;
-            centerBg.fillCenter = true; // Enable background
-            centerBg.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Slight tint
-            centerBg.raycastTarget = true; 
-
-            var portrait = new GameObject("PortraitBlock");
-            portrait.transform.SetParent(center.transform, false);
-            var pr = portrait.AddComponent<RectTransform>();
+            _portraitBlock = new GameObject("PortraitBlock");
+            _portraitBlock.transform.SetParent(bar.transform, false);
+            var pr = _portraitBlock.AddComponent<RectTransform>();
             pr.anchorMin = new Vector2(0f, 0.5f);
             pr.anchorMax = new Vector2(0f, 0.5f);
             pr.pivot = new Vector2(0f, 0.5f);
-            pr.anchoredPosition = new Vector2(34f, 0f);
+            pr.anchoredPosition = new Vector2(minimapSlot + 24f, 0f);
             pr.sizeDelta = new Vector2(128f, 128f);
-            var pImg = portrait.AddComponent<Image>();
+            var pImg = _portraitBlock.AddComponent<Image>();
             pImg.sprite = portraitFrame;
             pImg.type = Image.Type.Simple; 
             pImg.color = Color.white;
 
             var portraitSub = new GameObject("PortraitInner");
-            portraitSub.transform.SetParent(portrait.transform, false);
+            portraitSub.transform.SetParent(_portraitBlock.transform, false);
             var psr = portraitSub.AddComponent<RectTransform>();
             psr.anchorMin = Vector2.zero;
             psr.anchorMax = Vector2.one;
@@ -591,13 +581,27 @@ namespace InsectWars.RTS
             _portraitMain = portraitSub.AddComponent<Image>();
             _portraitMain.preserveAspect = true;
 
+            var center = new GameObject("SelectionBlock");
+            center.transform.SetParent(bar.transform, false);
+            var cr = center.AddComponent<RectTransform>();
+            cr.anchorMin = new Vector2(0f, 0f);
+            cr.anchorMax = new Vector2(1f, 1f);
+            cr.offsetMin = new Vector2(minimapSlot + 168f, 8f);
+            cr.offsetMax = new Vector2(-commandPanelWidth, -8f);
+            var centerBg = center.AddComponent<Image>();
+            centerBg.sprite = centerBlockFrame;
+            centerBg.type = Image.Type.Sliced;
+            centerBg.fillCenter = true; // Enable background
+            centerBg.color = new Color(0.8f, 0.8f, 0.8f, 1f); // Slight tint
+            centerBg.raycastTarget = true; 
+
             var infoBlock = new GameObject("InfoBlock");
             infoBlock.transform.SetParent(center.transform, false);
             var ibr = infoBlock.AddComponent<RectTransform>();
             ibr.anchorMin = new Vector2(0f, 0f);
             ibr.anchorMax = new Vector2(1f, 1f);
             ibr.pivot = new Vector2(0.5f, 0.5f);
-            ibr.offsetMin = new Vector2(178f, 8f);
+            ibr.offsetMin = new Vector2(8f, 8f);
             ibr.offsetMax = new Vector2(-8f, -8f);
 
             _portraitLabel = CreateText("NameText", infoBlock.transform, 19, ColTitle, TextAnchor.MiddleCenter);
@@ -612,19 +616,21 @@ namespace InsectWars.RTS
             al.anchorMax = new Vector2(1f, 0.15f);
             al.offsetMin = al.offsetMax = Vector2.zero;
 
-            _hpLabel = CreateText("HpText", infoBlock.transform, 13, Color.white, TextAnchor.MiddleCenter);
+            _hpLabel = CreateText("HpText", _portraitBlock.transform, 13, Color.white, TextAnchor.MiddleCenter);
             var hpRt = _hpLabel.rectTransform;
-            hpRt.anchorMin = new Vector2(0f, 0.45f);
-            hpRt.anchorMax = new Vector2(1f, 0.55f);
-            hpRt.offsetMin = hpRt.offsetMax = Vector2.zero;
+            hpRt.anchorMin = new Vector2(0f, 0f);
+            hpRt.anchorMax = new Vector2(1f, 0f);
+            hpRt.anchoredPosition = new Vector2(0f, -82f);
+            hpRt.sizeDelta = new Vector2(0f, 20f);
 
             _hpBarBg = new GameObject("HpBarBg").AddComponent<Image>();
-            _hpBarBg.transform.SetParent(infoBlock.transform, false);
+            _hpBarBg.transform.SetParent(_portraitBlock.transform, false);
             _hpBarBg.color = new Color(0f, 0f, 0f, 0.4f); 
             var hbr = _hpBarBg.rectTransform;
-            hbr.anchorMin = new Vector2(0.1f, 0.35f);
-            hbr.anchorMax = new Vector2(0.9f, 0.40f);
-            hbr.offsetMin = hbr.offsetMax = Vector2.zero;
+            hbr.anchorMin = new Vector2(0.1f, 0f);
+            hbr.anchorMax = new Vector2(0.9f, 0f);
+            hbr.anchoredPosition = new Vector2(0f, -102f);
+            hbr.sizeDelta = new Vector2(0f, 10f);
 
             _hpBarFill = new GameObject("HpBarFill").AddComponent<Image>();
             _hpBarFill.transform.SetParent(_hpBarBg.transform, false);
@@ -672,32 +678,100 @@ namespace InsectWars.RTS
             ph.anchoredPosition = Vector2.zero;
             ph.sizeDelta = new Vector2(680f, 28f);
 
-            _queueStripRoot = new GameObject("QueueStrip");
-            _queueStripRoot.transform.SetParent(infoBlock.transform, false);
-            var qsr = _queueStripRoot.AddComponent<RectTransform>();
-            qsr.anchorMin = new Vector2(0.05f, 0.55f);
-            qsr.anchorMax = new Vector2(0.95f, 0.75f);
-            qsr.offsetMin = qsr.offsetMax = Vector2.zero;
+            _prodRoot = new GameObject("ProdRoot");
+            _prodRoot.transform.SetParent(infoBlock.transform, false);
+            var prodRt = _prodRoot.AddComponent<RectTransform>();
+            prodRt.anchorMin = new Vector2(0.02f, 0.16f);
+            prodRt.anchorMax = new Vector2(0.98f, 0.74f);
+            prodRt.offsetMin = prodRt.offsetMax = Vector2.zero;
 
-            var qsLayout = _queueStripRoot.AddComponent<HorizontalLayoutGroup>();
-            qsLayout.spacing = 4f;
-            qsLayout.childAlignment = TextAnchor.MiddleLeft;
-            qsLayout.childForceExpandWidth = false;
-            qsLayout.childForceExpandHeight = false;
-            qsLayout.childControlWidth = false;
-            qsLayout.childControlHeight = false;
+            // --- Row 1: active icon + progress bar ---
+            var row1 = new GameObject("ProdRow");
+            row1.transform.SetParent(_prodRoot.transform, false);
+            var r1rt = row1.AddComponent<RectTransform>();
+            r1rt.anchorMin = new Vector2(0f, 0.5f);
+            r1rt.anchorMax = new Vector2(1f, 1f);
+            r1rt.offsetMin = r1rt.offsetMax = Vector2.zero;
+
+            var activeSlot = new GameObject("ActiveIcon");
+            activeSlot.transform.SetParent(row1.transform, false);
+            var asrt = activeSlot.AddComponent<RectTransform>();
+            asrt.anchorMin = new Vector2(0f, 0f);
+            asrt.anchorMax = new Vector2(0f, 1f);
+            asrt.pivot = new Vector2(0f, 0.5f);
+            asrt.anchoredPosition = Vector2.zero;
+            asrt.sizeDelta = new Vector2(30f, 0f);
+            var asBg = activeSlot.AddComponent<Image>();
+            asBg.sprite = slotFrame;
+            asBg.type = Image.Type.Simple;
+            asBg.color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
+
+            var activeIconGo = new GameObject("Icon");
+            activeIconGo.transform.SetParent(activeSlot.transform, false);
+            _prodActiveIcon = activeIconGo.AddComponent<Image>();
+            _prodActiveIcon.preserveAspect = true;
+            _prodActiveIcon.raycastTarget = false;
+            var airt = _prodActiveIcon.rectTransform;
+            airt.anchorMin = new Vector2(0.1f, 0.1f);
+            airt.anchorMax = new Vector2(0.9f, 0.9f);
+            airt.offsetMin = airt.offsetMax = Vector2.zero;
+            _prodActiveIcon.color = new Color(1f, 1f, 1f, 0f);
+
+            var barContainer = new GameObject("BarContainer");
+            barContainer.transform.SetParent(row1.transform, false);
+            var bcrt = barContainer.AddComponent<RectTransform>();
+            bcrt.anchorMin = new Vector2(0f, 0f);
+            bcrt.anchorMax = new Vector2(1f, 1f);
+            bcrt.offsetMin = new Vector2(34f, 2f);
+            bcrt.offsetMax = new Vector2(0f, -2f);
+
+            _prodBarBgImg = barContainer.AddComponent<Image>();
+            _prodBarBgImg.color = new Color(0f, 0f, 0f, 0.5f);
+
+            var fillGo = new GameObject("Fill");
+            fillGo.transform.SetParent(barContainer.transform, false);
+            _prodBarFillImg = fillGo.AddComponent<Image>();
+            _prodBarFillImg.color = new Color(0.3f, 0.75f, 0.4f, 0.9f);
+            _prodBarFillImg.raycastTarget = false;
+            var frt = _prodBarFillImg.rectTransform;
+            frt.anchorMin = Vector2.zero;
+            frt.anchorMax = new Vector2(0f, 1f);
+            frt.offsetMin = frt.offsetMax = Vector2.zero;
+
+            _prodBarLabel = CreateText("BarLabel", barContainer.transform, 11, Color.white, TextAnchor.MiddleCenter);
+            _prodBarLabel.raycastTarget = false;
+            var blrt = _prodBarLabel.rectTransform;
+            blrt.anchorMin = Vector2.zero;
+            blrt.anchorMax = Vector2.one;
+            blrt.offsetMin = blrt.offsetMax = Vector2.zero;
+
+            // --- Row 2: queue slots ---
+            _queueRow = new GameObject("QueueRow");
+            _queueRow.transform.SetParent(_prodRoot.transform, false);
+            var r2rt = _queueRow.AddComponent<RectTransform>();
+            r2rt.anchorMin = new Vector2(0f, 0f);
+            r2rt.anchorMax = new Vector2(1f, 0.48f);
+            r2rt.offsetMin = r2rt.offsetMax = Vector2.zero;
+
+            var qLayout = _queueRow.AddComponent<HorizontalLayoutGroup>();
+            qLayout.spacing = 3f;
+            qLayout.childAlignment = TextAnchor.MiddleLeft;
+            qLayout.childForceExpandWidth = false;
+            qLayout.childForceExpandHeight = false;
+            qLayout.childControlWidth = false;
+            qLayout.childControlHeight = false;
 
             for (int i = 0; i < QueueSlotCount; i++)
             {
                 var slot = new GameObject($"QSlot_{i}");
-                slot.transform.SetParent(_queueStripRoot.transform, false);
+                slot.transform.SetParent(_queueRow.transform, false);
                 var slotRt = slot.AddComponent<RectTransform>();
-                slotRt.sizeDelta = new Vector2(36f, 36f);
+                slotRt.sizeDelta = new Vector2(28f, 28f);
 
                 var slotBg = slot.AddComponent<Image>();
                 slotBg.sprite = slotFrame;
                 slotBg.type = Image.Type.Simple;
-                slotBg.color = new Color(0.15f, 0.12f, 0.1f, 0.8f);
+                slotBg.color = new Color(0.12f, 0.1f, 0.08f, 0.6f);
                 slotBg.raycastTarget = true;
                 _queueSlotBg[i] = slotBg;
 
@@ -713,25 +787,6 @@ namespace InsectWars.RTS
                 iconImg.color = new Color(1f, 1f, 1f, 0f);
                 _queueSlotIcon[i] = iconImg;
 
-                var overlayGo = new GameObject("Overlay");
-                overlayGo.transform.SetParent(slot.transform, false);
-                var overlayImg = overlayGo.AddComponent<Image>();
-                overlayImg.color = new Color(0f, 0f, 0f, 0.6f);
-                overlayImg.raycastTarget = false;
-                var ort = overlayImg.rectTransform;
-                ort.anchorMin = Vector2.zero;
-                ort.anchorMax = Vector2.one;
-                ort.offsetMin = ort.offsetMax = Vector2.zero;
-                _queueSlotOverlay[i] = overlayImg;
-
-                var pctText = CreateText("Pct", slot.transform, 10, Color.white, TextAnchor.MiddleCenter);
-                pctText.raycastTarget = false;
-                var ptr = pctText.rectTransform;
-                ptr.anchorMin = Vector2.zero;
-                ptr.anchorMax = Vector2.one;
-                ptr.offsetMin = ptr.offsetMax = Vector2.zero;
-                _queueSlotText[i] = pctText;
-
                 int idx = i;
                 var trigger = slot.AddComponent<EventTrigger>();
                 var clickEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
@@ -744,7 +799,7 @@ namespace InsectWars.RTS
                 trigger.triggers.Add(clickEntry);
             }
 
-            _queueStripRoot.SetActive(false);
+            _prodRoot.SetActive(false);
         }
 
         Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
@@ -1214,7 +1269,7 @@ namespace InsectWars.RTS
 
         void RefreshProductionBar()
         {
-            if (_queueStripRoot == null) return;
+            if (_prodRoot == null) return;
 
             _queueDisplayBuilding = null;
             _queueDisplayHive = null;
@@ -1252,91 +1307,99 @@ namespace InsectWars.RTS
                 }
             }
 
+            // --- Construction mode: show progress bar only, no queue row ---
             if (isConstruction)
             {
-                _queueStripRoot.SetActive(true);
-                for (int i = 0; i < QueueSlotCount; i++)
-                {
-                    if (i == 0)
-                    {
-                        _queueSlotBg[0].color = new Color(0.2f, 0.16f, 0.12f, 0.9f);
-                        _queueSlotIcon[0].sprite = iconBuild;
-                        _queueSlotIcon[0].color = Color.white;
-                        float fill = 1f - Mathf.Clamp01(constructionProgress);
-                        _queueSlotOverlay[0].rectTransform.anchorMin = Vector2.zero;
-                        _queueSlotOverlay[0].rectTransform.anchorMax = new Vector2(1f, fill);
-                        _queueSlotOverlay[0].color = new Color(0f, 0f, 0f, 0.6f);
-                        string bldLabel = constructionBuilders > 0
-                            ? $"{Mathf.RoundToInt(constructionProgress * 100f)}%"
-                            : "0%";
-                        _queueSlotText[0].text = bldLabel;
-                    }
-                    else
-                    {
-                        _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.4f);
-                        _queueSlotIcon[i].color = new Color(1f, 1f, 1f, 0f);
-                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
-                        _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
-                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
-                        _queueSlotText[i].text = "";
-                    }
-                }
+                _prodRoot.SetActive(true);
+                _queueRow.SetActive(false);
+
+                _prodActiveIcon.sprite = iconBuild;
+                _prodActiveIcon.color = Color.white;
+
+                float p = Mathf.Clamp01(constructionProgress);
+                _prodBarFillImg.rectTransform.anchorMax = new Vector2(p, 1f);
+                _prodBarFillImg.color = new Color(0.95f, 0.75f, 0.2f, 0.9f);
+
+                string bldLabel = constructionBuilders > 0
+                    ? $"Building... ({constructionBuilders} worker{(constructionBuilders > 1 ? "s" : "")}) {Mathf.RoundToInt(p * 100f)}%"
+                    : "Building... (no workers)";
+                _prodBarLabel.text = bldLabel;
+                ClearQueueSlots();
                 return;
             }
 
+            // --- Nothing producing ---
             if (displayBld == null && displayHive == null)
             {
-                _queueStripRoot.SetActive(false);
+                _prodRoot.SetActive(false);
                 return;
             }
 
-            _queueStripRoot.SetActive(true);
+            _prodRoot.SetActive(true);
             _queueDisplayBuilding = displayBld;
             _queueDisplayHive = displayHive;
 
             int queueCount = displayBld != null ? displayBld.QueueCount : displayHive.QueueCount;
             float progress = displayBld != null ? displayBld.ProductionProgress : displayHive.ProductionProgress;
 
+            // --- Row 1: active unit icon + progress bar ---
+            Sprite activeIcon;
+            string unitName;
+            if (displayBld != null)
+            {
+                var arch = displayBld.GetQueuedArchetype(0);
+                activeIcon = GetUnitPortrait(arch);
+                unitName = ProductionBuilding.GetUnitName(arch);
+            }
+            else
+            {
+                activeIcon = portraitWorker;
+                unitName = "Worker";
+            }
+
+            _prodActiveIcon.sprite = activeIcon;
+            _prodActiveIcon.color = Color.white;
+
+            float prog = Mathf.Clamp01(progress);
+            _prodBarFillImg.rectTransform.anchorMax = new Vector2(prog, 1f);
+            _prodBarFillImg.color = new Color(0.3f, 0.75f, 0.4f, 0.9f);
+            _prodBarLabel.text = $"{unitName}  {Mathf.RoundToInt(prog * 100f)}%";
+
+            // --- Row 2: queued units (index 1+) ---
+            bool hasQueued = queueCount > 1;
+            _queueRow.SetActive(hasQueued);
+
             for (int i = 0; i < QueueSlotCount; i++)
             {
-                if (i < queueCount)
+                int qIdx = i + 1;
+                if (qIdx < queueCount)
                 {
                     Sprite icon;
                     if (displayBld != null)
-                        icon = GetUnitPortrait(displayBld.GetQueuedArchetype(i));
+                        icon = GetUnitPortrait(displayBld.GetQueuedArchetype(qIdx));
                     else
                         icon = portraitWorker;
 
-                    _queueSlotBg[i].color = new Color(0.2f, 0.16f, 0.12f, 0.9f);
+                    _queueSlotBg[i].color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
                     _queueSlotIcon[i].sprite = icon;
                     _queueSlotIcon[i].color = Color.white;
-
-                    if (i == 0)
-                    {
-                        float fill = 1f - Mathf.Clamp01(progress);
-                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
-                        _queueSlotOverlay[i].rectTransform.anchorMax = new Vector2(1f, fill);
-                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0.6f);
-                        _queueSlotText[i].text = $"{Mathf.RoundToInt(progress * 100f)}%";
-                    }
-                    else
-                    {
-                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
-                        _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
-                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
-                        _queueSlotText[i].text = "";
-                    }
                 }
                 else
                 {
-                    _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.4f);
+                    _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.35f);
                     _queueSlotIcon[i].sprite = null;
                     _queueSlotIcon[i].color = new Color(1f, 1f, 1f, 0f);
-                    _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
-                    _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
-                    _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
-                    _queueSlotText[i].text = "";
                 }
+            }
+        }
+
+        void ClearQueueSlots()
+        {
+            for (int i = 0; i < QueueSlotCount; i++)
+            {
+                _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.35f);
+                _queueSlotIcon[i].sprite = null;
+                _queueSlotIcon[i].color = new Color(1f, 1f, 1f, 0f);
             }
         }
 
@@ -1383,6 +1446,7 @@ namespace InsectWars.RTS
 
             HideHpDisplay();
             if (_portraitMain != null) { _portraitMain.sprite = null; _portraitMain.color = new Color(1f, 1f, 1f, 0f); }
+            if (_portraitBlock != null) _portraitBlock.SetActive(false);
             if (_portraitLabel != null) _portraitLabel.text = "";
             if (_attributeLabel != null) _attributeLabel.text = "";
 
@@ -1411,6 +1475,7 @@ namespace InsectWars.RTS
                 _portraitLabel.text = "Ant Nest";
                 _attributeLabel.text = "Structure - Biological";
                 if (_portraitMain != null) { _portraitMain.sprite = portraitWorker; _portraitMain.color = Color.white; }
+                if (_portraitBlock != null) _portraitBlock.SetActive(true);
                 ShowHpDisplay(hive.CurrentHealth, hive.MaxHealth);
                 var cell0 = _selectionCells[0];
                 cell0.color = Color.white;
@@ -1468,6 +1533,7 @@ namespace InsectWars.RTS
             _portraitLabel.text = first.Definition != null ? first.Definition.displayName : "Unit";
             _attributeLabel.text = GetAttributes(first);
             if (_portraitMain != null) { _portraitMain.sprite = GetUnitPortrait(first.Archetype); _portraitMain.color = Color.white; }
+            if (_portraitBlock != null) _portraitBlock.SetActive(true);
 
             var sc2 = SelectionController.Instance;
             if (sc2.HasMultipleSubgroups)
