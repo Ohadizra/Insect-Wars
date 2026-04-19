@@ -1241,6 +1241,12 @@
       "conversation_id": "1d54ad19-7c12-4f45-8039-261aacbf1ae1",
       "content": "add a brand new map by duplicating the current frozen map, keep the base area similar but make the map much much smaller so it will be a short rush distance map.",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "4d615e60-2848-4e61-bcad-a3b97376eec8",
+      "conversation_id": "1d54ad19-7c12-4f45-8039-261aacbf1ae1",
+      "content": "I have added a brand new map called **Frozen Pass**, which is a compact, high-intensity version of the Frozen Expanse map.\n\n### Changes Made:\n1.  **Map Logic**: Created a new procedural map definition `CreateFrozenPass()` in `SkirmishMapPresets.cs`.\n    *   **Reduced Size**: Set `mapHalfExtent` to `45f` (total size 90m), compared to the original `120f` (240m).\n    *   **Rush Distance**: Hives are now placed much closer together (approx. 90m apart vs 300m), making it ideal for fast-paced rush strategies.\n    *   **Maintained Style**: Kept the \"Frozen\" theme, including specialized ground layers, frosted apple materials, and icy decorative prefabs.\n    *   **Simplified Layout**: Balanced the layout with mirrored plateaus for player bases and a central contestable high-ground corridor.\n2.  **Map Registration**: Updated `SkirmishMapPresets.GetAll()` to include the new **Frozen Pass** in the available map list.\n3.  **Project Health**: Fixed a pre-existing compilation error in `BottomBar.cs` where a local variable name conflict was preventing the project from building.\n\nThe new map is now available for selection in the skirmish menu.",
+      "snapshot_message_type": 1
     }
   ]
 }

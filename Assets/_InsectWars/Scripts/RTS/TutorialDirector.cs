@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using InsectWars.Core;
 using InsectWars.Data;
 using UnityEngine;
@@ -9,7 +10,6 @@ namespace InsectWars.RTS
     {
         public static TutorialDirector Instance { get; private set; }
 
-        // White-panel palette
         static readonly Color ColPanelWhite = new(0.97f, 0.96f, 0.93f, 1f);
         static readonly Color ColTitle = new(0.12f, 0.10f, 0.08f);
         static readonly Color ColBody = new(0.22f, 0.20f, 0.18f);
@@ -25,7 +25,8 @@ namespace InsectWars.RTS
         static readonly Color ColDimBg = new(0f, 0f, 0f, 0.55f);
         static readonly Color ColHudBg = new(0.97f, 0.96f, 0.93f, 0.95f);
         static readonly Color ColTrackerBg = new(0.97f, 0.96f, 0.93f, 0.92f);
-        static readonly Color ColNone = new(0f, 0f, 0f, 0f);
+        static readonly Color ColHighlight = new(1f, 0.82f, 0.15f, 1f);
+        static readonly Color ColPopupBg = new(0.14f, 0.12f, 0.10f, 0.96f);
 
         enum Phase { Intro, Playing, Complete, Finished }
 
@@ -50,8 +51,31 @@ namespace InsectWars.RTS
         float _graceTimer;
         const float GraceDuration = 1f;
 
+        // ── Chapter state ──
         int _startingCalories;
+        int _startingWorkerCount;
         int _startingFighterCount;
+
+        // Ch4 army requirements
+        const int ReqWorkers = 3;
+        const int ReqMantis = 3;
+        const int ReqBombardiers = 2;
+        bool _ccPopupShown;
+        bool _ccPopupDismissed;
+        GameObject _ccPopup;
+
+        // ── Highlight system ──
+        readonly List<HighlightEntry> _highlights = new();
+        float _highlightPulse;
+        GameObject _worldArrow;
+        Transform _worldArrowTarget;
+        Vector3 _worldArrowOffset = new(0f, 4f, 0f);
+
+        struct HighlightEntry
+        {
+            public string uiNameMatch;
+            public GameObject frame;
+        }
 
         void Awake() { Instance = this; }
 
@@ -60,60 +84,74 @@ namespace InsectWars.RTS
             BuildChapters();
             BuildTracker();
             BuildHud();
+            CreateWorldArrow();
             BeginChapter(0);
         }
 
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            ClearHighlights();
+            if (_worldArrow != null) Destroy(_worldArrow);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  Chapter Definitions
+        // ═══════════════════════════════════════════════════════════
 
         void BuildChapters()
         {
             _chapters = new[]
             {
                 new TutorialChapter(
-                    "Gathering Resources",
-                    "Every colony needs food to survive.\n\n" +
-                    "In this lesson you will learn how to send a Worker ant " +
-                    "to collect Calories from a rotting apple " +
-                    "and bring them back to the hive.\n\n" +
-                    "<b>Left-click</b> the worker to select it.\n" +
-                    "<b>Right-click</b> the apple to send it gathering.",
-                    "Select the worker, then right-click the apple.",
-                    SetupGatheringChapter,
+                    "Train a Worker",
+                    "Every colony starts with its Nest.\n\n" +
+                    "Your first task is to produce a <b>Worker</b> ant.\n" +
+                    "<b>Click</b> on the Ant's Nest (your main base),\n" +
+                    "then press the <b>Worker</b> button to begin training.",
+                    "Click the Ant's Nest, then train a Worker.",
+                    SetupTrainWorkerChapter,
+                    () => CountPlayerUnits(UnitArchetype.Worker) > _startingWorkerCount
+                ),
+                new TutorialChapter(
+                    "Gather Resources",
+                    "Workers collect Calories from rotting apples.\n\n" +
+                    "<b>Left-click</b> a Worker to select it,\n" +
+                    "then <b>right-click</b> the apple to send it gathering.\n" +
+                    "Calories fuel everything in your colony.",
+                    "Select a Worker, then right-click the apple.",
+                    SetupGatherChapter,
                     () => PlayerResources.Instance != null && PlayerResources.Instance.Calories > _startingCalories
                 ),
                 new TutorialChapter(
-                    "Constructing Buildings",
-                    "A strong colony needs structures.\n\n" +
-                    "You will learn how to place an Ant Nest building " +
-                    "and have your worker construct it. " +
-                    "Buildings let you train new units and grow your colony.\n\n" +
-                    "<b>Select</b> the worker, then click the <b>Ant Nest</b> button " +
-                    "in the bottom bar and place it near the hive.",
-                    "Place an Ant Nest near the hive and wait for it to finish.",
-                    SetupBuildingChapter,
-                    IsAntNestBuilt
+                    "Build an Underground",
+                    "Military buildings let you train combat units.\n\n" +
+                    "<b>Select</b> a Worker, click the <b>Build</b> button,\n" +
+                    "then choose <b>Underground</b> and place it near the hive.\n" +
+                    "The worker will construct it automatically.",
+                    "Select a Worker, open Build menu, place an Underground.",
+                    SetupBuildUndergroundChapter,
+                    IsUndergroundBuilt
                 ),
                 new TutorialChapter(
-                    "Training Units",
-                    "Time to grow your army.\n\n" +
-                    "You will learn how to produce combat units " +
-                    "from a military building. " +
-                    "The Underground building can train Mantis fighters.\n\n" +
-                    "<b>Select</b> the Underground building, then click " +
-                    "the <b>Mantis</b> icon to queue a fighter.",
-                    "Select the Underground and queue a Mantis fighter.",
-                    SetupTrainingChapter,
-                    () => CountPlayerUnits(UnitArchetype.BasicFighter) > _startingFighterCount
+                    "Build Your Army",
+                    "Time to raise a fighting force!\n\n" +
+                    $"Train <b>{ReqWorkers} Workers</b>, <b>{ReqMantis} Mantis</b>, " +
+                    $"and <b>{ReqBombardiers} Bombardiers</b>.\n" +
+                    "If you run out of Colony Capacity, build an\n" +
+                    "<b>Ant's Nest</b> or <b>Root Cellar</b> to expand it.",
+                    GetArmyObjective(),
+                    SetupArmyChapter,
+                    IsArmyComplete
                 ),
                 new TutorialChapter(
-                    "Combat",
-                    "Your soldiers are ready for battle.\n\n" +
-                    "You will learn how to command your units " +
-                    "to attack an enemy target. " +
-                    "Destroy the enemy training dummy to complete the tutorial!\n\n" +
-                    "<b>Select</b> your fighters, then <b>right-click</b> the enemy.",
-                    "Select your fighters and right-click the enemy to attack.",
-                    SetupCombatChapter,
+                    "Attack!",
+                    "Enemy scouts have been spotted nearby!\n\n" +
+                    "<b>Select</b> your combat units,\n" +
+                    "then <b>right-click</b> the enemies to attack.\n" +
+                    "Destroy them all to prove your command!",
+                    "Select your army and right-click enemies to attack!",
+                    SetupAttackChapter,
                     IsEnemyDummyDestroyed
                 ),
             };
@@ -127,6 +165,9 @@ namespace InsectWars.RTS
             {
                 case Phase.Playing:
                     if (_graceTimer > 0f) { _graceTimer -= Time.deltaTime; return; }
+                    UpdateChapterHighlights();
+                    UpdateDynamicObjective();
+                    CheckCCPopup();
                     if (_current != null && _current.IsComplete())
                         OnChapterComplete();
                     break;
@@ -135,6 +176,8 @@ namespace InsectWars.RTS
                     if (_completeTimer <= 0f) AdvanceChapter();
                     break;
             }
+            UpdateHighlightFrames();
+            UpdateWorldArrow();
         }
 
         // ── Chapter Flow ──
@@ -144,6 +187,10 @@ namespace InsectWars.RTS
             _currentIndex = index;
             _current = _chapters[index];
             _phase = Phase.Intro;
+            _ccPopupShown = false;
+            _ccPopupDismissed = false;
+            ClearHighlights();
+            SetWorldArrowTarget(null);
             UpdateTracker();
             ShowIntroOverlay();
         }
@@ -162,6 +209,9 @@ namespace InsectWars.RTS
         void OnChapterComplete()
         {
             _phase = Phase.Complete;
+            ClearHighlights();
+            SetWorldArrowTarget(null);
+            if (_ccPopup != null) { Destroy(_ccPopup); _ccPopup = null; }
             MarkChapterDone(_currentIndex);
             GameAudio.PlayUi(GameAudio.UiKind.MatchVictory);
             if (_hudPanel != null) _hudPanel.SetActive(false);
@@ -190,9 +240,17 @@ namespace InsectWars.RTS
             BeginChapter(nextIndex);
         }
 
-        // ── Chapter Setup ──
+        // ═══════════════════════════════════════════════════════════
+        //  Chapter Setup
+        // ═══════════════════════════════════════════════════════════
 
-        void SetupGatheringChapter()
+        void SetupTrainWorkerChapter()
+        {
+            _startingWorkerCount = CountPlayerUnits(UnitArchetype.Worker);
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(200);
+        }
+
+        void SetupGatherChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
             var worker = SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
@@ -200,52 +258,77 @@ namespace InsectWars.RTS
             _startingCalories = PlayerResources.Instance != null ? PlayerResources.Instance.Calories : 0;
         }
 
-        void SetupBuildingChapter()
+        void SetupBuildUndergroundChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
             var worker = SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
             if (worker != null) worker.OrderStop();
-            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(500);
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(600);
         }
 
-        void SetupTrainingChapter()
+        void SetupArmyChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
+            // Give the player a worker to start
             var worker = SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
             if (worker != null) worker.OrderStop();
+
+            // Place an Underground (pre-built) for combat units
             ProductionBuilding.Place(hiveXZ + new Vector3(8f, 0f, -8f), BuildingType.Underground, Team.Player, startBuilt: true);
-            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(300);
-            _startingFighterCount = CountPlayerUnits(UnitArchetype.BasicFighter);
+
+            // Give plenty of calories so the focus is on CC, not gathering
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(2000);
+
+            _ccPopupShown = false;
+            _ccPopupDismissed = false;
         }
 
-        void SetupCombatChapter()
+        void SetupAttackChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
+
+            // Spawn the player's army from Ch4
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(-3f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
-            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(0f, 0f, 3f), Team.Player, UnitArchetype.BasicRanged);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(0f, 0f, 3f), Team.Player, UnitArchetype.BasicFighter);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(6f, 0f, 3f), Team.Player, UnitArchetype.BasicRanged);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 3f), Team.Player, UnitArchetype.BasicRanged);
 
-            var dummyPos = hiveXZ + new Vector3(18f, 0f, 18f);
-            var dummyUnit = SkirmishDirector.SpawnUnit(dummyPos, Team.Enemy, UnitArchetype.BasicFighter);
-            if (dummyUnit != null)
+            // Spawn enemy group at a distance
+            var enemyPos = hiveXZ + new Vector3(20f, 0f, 20f);
+            for (int i = 0; i < 3; i++)
             {
-                var def = UnitDefinition.CreateRuntimeDefault(UnitArchetype.BasicFighter,
-                    TeamPalette.UnitBody(Team.Enemy, UnitArchetype.BasicFighter));
-                def.maxHealth = 200f;
-                dummyUnit.Configure(Team.Enemy, def);
-                dummyUnit.gameObject.AddComponent<TrainingDummy>();
+                var offset = new Vector3(i * 3f - 3f, 0f, 0f);
+                var enemy = SkirmishDirector.SpawnUnit(enemyPos + offset, Team.Enemy, UnitArchetype.BasicFighter);
+                if (enemy != null)
+                {
+                    var def = UnitDefinition.CreateRuntimeDefault(UnitArchetype.BasicFighter,
+                        TeamPalette.UnitBody(Team.Enemy, UnitArchetype.BasicFighter));
+                    def.maxHealth = 120f;
+                    enemy.Configure(Team.Enemy, def);
+                    enemy.gameObject.AddComponent<TrainingDummy>();
+                }
             }
         }
 
-        // ── Completion Checks ──
+        // ═══════════════════════════════════════════════════════════
+        //  Completion Checks
+        // ═══════════════════════════════════════════════════════════
 
-        static bool IsAntNestBuilt()
+        static bool IsUndergroundBuilt()
         {
             foreach (var bld in ProductionBuilding.All)
                 if (bld != null && bld.IsAlive && !bld.IsUnderConstruction
-                    && bld.Team == Team.Player && bld.Type == BuildingType.AntNest)
+                    && bld.Team == Team.Player && bld.Type == BuildingType.Underground)
                     return true;
             return false;
+        }
+
+        bool IsArmyComplete()
+        {
+            return CountPlayerUnits(UnitArchetype.Worker) >= ReqWorkers
+                && CountPlayerUnits(UnitArchetype.BasicFighter) >= ReqMantis
+                && CountPlayerUnits(UnitArchetype.BasicRanged) >= ReqBombardiers;
         }
 
         static bool IsEnemyDummyDestroyed()
@@ -273,7 +356,478 @@ namespace InsectWars.RTS
         }
 
         // ═══════════════════════════════════════════════════════════
-        //  UI — Progress Tracker  (top-right)
+        //  Dynamic Objectives & Highlights per Chapter
+        // ═══════════════════════════════════════════════════════════
+
+        void UpdateChapterHighlights()
+        {
+            if (_phase != Phase.Playing) return;
+
+            switch (_currentIndex)
+            {
+                case 0: UpdateCh1Highlights(); break;
+                case 1: UpdateCh2Highlights(); break;
+                case 2: UpdateCh3Highlights(); break;
+                case 3: UpdateCh4Highlights(); break;
+                case 4: UpdateCh5Highlights(); break;
+            }
+        }
+
+        void UpdateCh1Highlights()
+        {
+            var hive = HiveDeposit.PlayerHive;
+            var sc = SelectionController.Instance;
+            bool hiveSelected = sc != null && sc.SelectedHive != null;
+
+            if (!hiveSelected)
+            {
+                SetWorldArrowTarget(hive != null ? hive.transform : null);
+                ClearHighlights();
+            }
+            else
+            {
+                SetWorldArrowTarget(null);
+                SetHighlight("Worker");
+            }
+        }
+
+        void UpdateCh2Highlights()
+        {
+            var sc = SelectionController.Instance;
+            bool hasWorker = sc != null && sc.HasWorkerSelected();
+
+            if (!hasWorker)
+            {
+                ClearHighlights();
+                var worker = FindFirstPlayerUnit(UnitArchetype.Worker);
+                SetWorldArrowTarget(worker != null ? worker.transform : null);
+            }
+            else
+            {
+                SetWorldArrowTarget(FindNearestApple());
+            }
+        }
+
+        void UpdateCh3Highlights()
+        {
+            var sc = SelectionController.Instance;
+            bool hasWorker = sc != null && sc.HasWorkerSelected();
+
+            if (!hasWorker)
+            {
+                ClearHighlights();
+                var worker = FindFirstPlayerUnit(UnitArchetype.Worker);
+                SetWorldArrowTarget(worker != null ? worker.transform : null);
+                return;
+            }
+
+            SetWorldArrowTarget(null);
+            if (BottomBar.Instance != null)
+            {
+                bool buildMenuOpen = BottomBar.Pending == PendingCommand.PlaceBuilding;
+                if (buildMenuOpen)
+                    ClearHighlights();
+                else if (IsBuildMenuOpen())
+                    SetHighlight("Underground");
+                else
+                    SetHighlight("Build");
+            }
+        }
+
+        void UpdateCh4Highlights()
+        {
+            var sc = SelectionController.Instance;
+            bool hiveSel = sc != null && sc.SelectedHive != null;
+            bool bldSel = sc != null && sc.SelectedBuilding != null;
+
+            if (!hiveSel && !bldSel)
+            {
+                int workers = CountPlayerUnits(UnitArchetype.Worker);
+                int mantis = CountPlayerUnits(UnitArchetype.BasicFighter);
+                int bombardiers = CountPlayerUnits(UnitArchetype.BasicRanged);
+
+                ClearHighlights();
+
+                if (workers < ReqWorkers)
+                {
+                    var hive = HiveDeposit.PlayerHive;
+                    SetWorldArrowTarget(hive != null ? hive.transform : null);
+                }
+                else if (mantis < ReqMantis || bombardiers < ReqBombardiers)
+                {
+                    var underground = FindPlayerBuilding(BuildingType.Underground);
+                    SetWorldArrowTarget(underground != null ? underground.transform : null);
+                }
+                else
+                {
+                    SetWorldArrowTarget(null);
+                }
+            }
+            else
+            {
+                SetWorldArrowTarget(null);
+                if (hiveSel)
+                    SetHighlight("Worker");
+                else if (bldSel)
+                {
+                    int mantis = CountPlayerUnits(UnitArchetype.BasicFighter);
+                    if (mantis < ReqMantis)
+                        SetHighlight("Mantis");
+                    else
+                        SetHighlight("Beetle");
+                }
+            }
+        }
+
+        void UpdateCh5Highlights()
+        {
+            ClearHighlights();
+            InsectUnit enemy = null;
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u != null && u.IsAlive && u.Team == Team.Enemy)
+                { enemy = u; break; }
+            }
+            if (enemy != null)
+                SetWorldArrowTarget(enemy.transform);
+            else
+                SetWorldArrowTarget(null);
+        }
+
+        void UpdateDynamicObjective()
+        {
+            if (_objectiveLabel == null || _current == null) return;
+
+            if (_currentIndex == 0)
+            {
+                var sc = SelectionController.Instance;
+                bool hiveSelected = sc != null && sc.SelectedHive != null;
+                _objectiveLabel.text = hiveSelected
+                    ? "Now click the Worker button to train one!"
+                    : "Click on the Ant's Nest (your base).";
+            }
+            else if (_currentIndex == 2)
+            {
+                var sc = SelectionController.Instance;
+                bool hasWorker = sc != null && sc.HasWorkerSelected();
+                if (!hasWorker)
+                    _objectiveLabel.text = "Select a Worker first.";
+                else if (IsBuildMenuOpen())
+                    _objectiveLabel.text = "Click Underground to start placing it.";
+                else if (BottomBar.Pending == PendingCommand.PlaceBuilding)
+                    _objectiveLabel.text = "Click a spot near the hive to place the building.";
+                else if (HasUndergroundUnderConstruction())
+                    _objectiveLabel.text = "Good! Wait for construction to finish.";
+                else
+                    _objectiveLabel.text = "Select a Worker, then click Build (B).";
+            }
+            else if (_currentIndex == 3)
+            {
+                _objectiveLabel.text = GetArmyObjective();
+            }
+        }
+
+        string GetArmyObjective()
+        {
+            int w = CountPlayerUnits(UnitArchetype.Worker);
+            int m = CountPlayerUnits(UnitArchetype.BasicFighter);
+            int b = CountPlayerUnits(UnitArchetype.BasicRanged);
+            return $"Workers: {Mathf.Min(w, ReqWorkers)}/{ReqWorkers}  |  " +
+                   $"Mantis: {Mathf.Min(m, ReqMantis)}/{ReqMantis}  |  " +
+                   $"Bombardiers: {Mathf.Min(b, ReqBombardiers)}/{ReqBombardiers}";
+        }
+
+        void CheckCCPopup()
+        {
+            if (_currentIndex != 3 || _ccPopupDismissed) return;
+
+            int used = ColonyCapacity.GetUsed(Team.Player) + ColonyCapacity.GetQueued(Team.Player);
+            int cap = ColonyCapacity.GetCap(Team.Player);
+
+            if (used >= cap && !_ccPopupShown)
+            {
+                _ccPopupShown = true;
+                ShowCCPopup();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  Helpers — finding game objects
+        // ═══════════════════════════════════════════════════════════
+
+        static InsectUnit FindFirstPlayerUnit(UnitArchetype arch)
+        {
+            foreach (var u in RtsSimRegistry.Units)
+                if (u != null && u.IsAlive && u.Team == Team.Player && u.Archetype == arch)
+                    return u;
+            return null;
+        }
+
+        static Transform FindNearestApple()
+        {
+            var fruits = Object.FindObjectsByType<RottingFruitNode>(FindObjectsSortMode.None);
+            if (fruits.Length == 0) return null;
+            return fruits[0].transform;
+        }
+
+        static ProductionBuilding FindPlayerBuilding(BuildingType type)
+        {
+            foreach (var b in ProductionBuilding.All)
+                if (b != null && b.IsAlive && b.Team == Team.Player && b.Type == type)
+                    return b;
+            return null;
+        }
+
+        static bool IsBuildMenuOpen()
+        {
+            if (BottomBar.Instance == null) return false;
+            var grid = FindCmdGrid();
+            if (grid == null) return false;
+            foreach (Transform child in grid)
+            {
+                if (child.name.Contains("Underground") || child.name.Contains("Sky Tower"))
+                    return true;
+            }
+            return false;
+        }
+
+        static bool HasUndergroundUnderConstruction()
+        {
+            foreach (var b in ProductionBuilding.All)
+                if (b != null && b.IsAlive && b.IsUnderConstruction
+                    && b.Team == Team.Player && b.Type == BuildingType.Underground)
+                    return true;
+            return false;
+        }
+
+        static Transform FindCmdGrid()
+        {
+            var canvas = GameHUD.HudCanvasRect;
+            if (canvas == null) return null;
+            return FindChildRecursive(canvas, "CmdGrid");
+        }
+
+        static Transform FindChildRecursive(Transform parent, string name)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name == name) return child;
+                var found = FindChildRecursive(child, name);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  Highlight System — UI button glow frames
+        // ═══════════════════════════════════════════════════════════
+
+        void SetHighlight(string nameContains)
+        {
+            if (_highlights.Count == 1 && _highlights[0].uiNameMatch == nameContains)
+                return;
+            ClearHighlights();
+
+            var canvas = GameHUD.HudCanvasRect;
+            if (canvas == null) return;
+
+            var frame = CreateHighlightFrame(canvas);
+            _highlights.Add(new HighlightEntry { uiNameMatch = nameContains, frame = frame });
+        }
+
+        void ClearHighlights()
+        {
+            foreach (var h in _highlights)
+                if (h.frame != null) Destroy(h.frame);
+            _highlights.Clear();
+        }
+
+        void UpdateHighlightFrames()
+        {
+            if (_highlights.Count == 0) return;
+
+            _highlightPulse += Time.unscaledDeltaTime * 4f;
+            float alpha = 0.55f + 0.45f * Mathf.Sin(_highlightPulse);
+
+            var grid = FindCmdGrid();
+
+            for (int i = 0; i < _highlights.Count; i++)
+            {
+                var entry = _highlights[i];
+                if (entry.frame == null) continue;
+
+                RectTransform targetRt = null;
+
+                if (grid != null)
+                {
+                    foreach (Transform child in grid)
+                    {
+                        if (child.name.Contains(entry.uiNameMatch))
+                        {
+                            targetRt = child as RectTransform;
+                            break;
+                        }
+                    }
+                }
+
+                if (targetRt == null)
+                {
+                    entry.frame.SetActive(false);
+                    continue;
+                }
+
+                var canvasRect = GameHUD.HudCanvasRect;
+                if (canvasRect == null) { entry.frame.SetActive(false); continue; }
+
+                entry.frame.SetActive(true);
+                var frt = entry.frame.GetComponent<RectTransform>();
+
+                Vector3[] corners = new Vector3[4];
+                targetRt.GetWorldCorners(corners);
+
+                Vector2 min, max;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect, RectTransformUtility.WorldToScreenPoint(null, corners[0]), null, out min);
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    canvasRect, RectTransformUtility.WorldToScreenPoint(null, corners[2]), null, out max);
+
+                frt.anchorMin = frt.anchorMax = new Vector2(0.5f, 0.5f);
+                frt.anchoredPosition = (min + max) * 0.5f;
+                frt.sizeDelta = (max - min) + new Vector2(12f, 12f);
+
+                var img = entry.frame.GetComponent<Image>();
+                img.color = new Color(ColHighlight.r, ColHighlight.g, ColHighlight.b, alpha * 0.85f);
+            }
+        }
+
+        GameObject CreateHighlightFrame(RectTransform parent)
+        {
+            var go = new GameObject("HighlightFrame");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(90f, 90f);
+
+            var img = go.AddComponent<Image>();
+            img.color = ColHighlight;
+            img.raycastTarget = false;
+
+            var inner = new GameObject("Inner");
+            inner.transform.SetParent(go.transform, false);
+            var irt = inner.AddComponent<RectTransform>();
+            irt.anchorMin = Vector2.zero;
+            irt.anchorMax = Vector2.one;
+            irt.offsetMin = new Vector2(4f, 4f);
+            irt.offsetMax = new Vector2(-4f, -4f);
+            var iimg = inner.AddComponent<Image>();
+            iimg.color = new Color(0f, 0f, 0f, 0f);
+            iimg.raycastTarget = false;
+
+            go.SetActive(false);
+            return go;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  Highlight System — World-space arrow
+        // ═══════════════════════════════════════════════════════════
+
+        void CreateWorldArrow()
+        {
+            _worldArrow = new GameObject("TutorialArrow");
+            _worldArrow.transform.SetParent(transform);
+
+            var lineGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            lineGo.name = "ArrowBody";
+            lineGo.transform.SetParent(_worldArrow.transform, false);
+            lineGo.transform.localScale = new Vector3(0.3f, 2f, 0.3f);
+            lineGo.transform.localPosition = new Vector3(0f, 1f, 0f);
+            var col = lineGo.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            var tipGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            tipGo.name = "ArrowTip";
+            tipGo.transform.SetParent(_worldArrow.transform, false);
+            tipGo.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+            tipGo.transform.localPosition = Vector3.zero;
+            tipGo.transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
+            var tipCol = tipGo.GetComponent<Collider>();
+            if (tipCol != null) Destroy(tipCol);
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")
+                ?? Shader.Find("Sprites/Default"));
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", ColHighlight);
+            else if (mat.HasProperty("_Color"))
+                mat.color = ColHighlight;
+
+            foreach (var r in _worldArrow.GetComponentsInChildren<Renderer>())
+                r.sharedMaterial = mat;
+
+            _worldArrow.SetActive(false);
+        }
+
+        void SetWorldArrowTarget(Transform target)
+        {
+            _worldArrowTarget = target;
+        }
+
+        void UpdateWorldArrow()
+        {
+            if (_worldArrow == null) return;
+
+            if (_worldArrowTarget == null || !_worldArrowTarget.gameObject.activeInHierarchy)
+            {
+                _worldArrow.SetActive(false);
+                return;
+            }
+
+            _worldArrow.SetActive(true);
+            float bob = Mathf.Sin(Time.unscaledTime * 3f) * 0.5f;
+            _worldArrow.transform.position = _worldArrowTarget.position + _worldArrowOffset + new Vector3(0f, bob, 0f);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  CC Popup (Chapter 4)
+        // ═══════════════════════════════════════════════════════════
+
+        void ShowCCPopup()
+        {
+            var canvasRect = GameHUD.HudCanvasRect;
+            if (canvasRect == null) return;
+
+            _ccPopup = new GameObject("CCPopup");
+            _ccPopup.transform.SetParent(canvasRect, false);
+            var rt = _ccPopup.AddComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(520, 220);
+
+            var bg = _ccPopup.AddComponent<Image>();
+            bg.color = ColPopupBg;
+            bg.raycastTarget = true;
+
+            var title = MakeLabel(_ccPopup.transform, "Title",
+                "Colony Capacity Full!", 26,
+                FontStyle.Bold, ColHighlight, TextAnchor.MiddleCenter);
+            AnchorFill(title, new Vector2(0f, 0.65f), new Vector2(1f, 0.92f));
+
+            var body = MakeLabel(_ccPopup.transform, "Body",
+                "Build an <b>Ant's Nest</b> (+25 CC) or\n" +
+                "<b>Root Cellar</b> (+15 CC) to increase\nyour Colony Capacity.",
+                17, FontStyle.Normal, ColPanelWhite, TextAnchor.MiddleCenter);
+            AnchorFill(body, new Vector2(0.05f, 0.25f), new Vector2(0.95f, 0.65f));
+
+            var btn = MakeGreenButton(_ccPopup.transform, "OkBtn", "GOT IT!", () =>
+            {
+                _ccPopupDismissed = true;
+                if (_ccPopup != null) { Destroy(_ccPopup); _ccPopup = null; }
+            });
+            var brt = btn.GetComponent<RectTransform>();
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.10f);
+            brt.sizeDelta = new Vector2(180, 48);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  UI — Progress Tracker  (top-right, below settings button)
         // ═══════════════════════════════════════════════════════════
 
         void BuildTracker()
@@ -458,26 +1012,21 @@ namespace InsectWars.RTS
             var pImg = panel.AddComponent<Image>();
             pImg.color = ColPanelWhite;
 
-            // Chapter number
             var numTxt = MakeLabel(panel.transform, "Num",
                 $"Chapter {_currentIndex + 1} of {_chapters.Length}",
                 17, FontStyle.Normal, ColMuted, TextAnchor.MiddleCenter);
             AnchorFill(numTxt, new Vector2(0f, 0.90f), new Vector2(1f, 0.97f));
 
-            // Title
             var titleTxt = MakeLabel(panel.transform, "Title",
                 _current.Title, 36, FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
             AnchorFill(titleTxt, new Vector2(0f, 0.76f), new Vector2(1f, 0.90f));
 
-            // Separator line
             MakeSepLine(panel.transform, 0.74f);
 
-            // Body text
             var bodyTxt = MakeLabel(panel.transform, "Body",
                 _current.IntroText, 19, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(bodyTxt, new Vector2(0.07f, 0.22f), new Vector2(0.93f, 0.72f));
 
-            // BEGIN button
             var btnGo = MakeGreenButton(panel.transform, "BeginBtn", "BEGIN", () => StartPlaying());
             var brt = btnGo.GetComponent<RectTransform>();
             brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.09f);
@@ -531,6 +1080,8 @@ namespace InsectWars.RTS
         {
             _current = null;
             _phase = Phase.Finished;
+            ClearHighlights();
+            SetWorldArrowTarget(null);
             if (_hudPanel != null) _hudPanel.SetActive(false);
 
             var canvasRect = GameHUD.HudCanvasRect;
@@ -549,18 +1100,16 @@ namespace InsectWars.RTS
             prt.sizeDelta = new Vector2(620, 460);
             panel.AddComponent<Image>().color = ColPanelWhite;
 
-            // Title
             var title = MakeLabel(panel.transform, "Title", "TUTORIAL COMPLETE", 38,
                 FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
             AnchorFill(title, new Vector2(0f, 0.82f), new Vector2(1f, 0.96f));
 
             MakeSepLine(panel.transform, 0.80f);
 
-            // Achievement list
             for (int i = 0; i < _chapters.Length; i++)
             {
-                float rowTop = 0.74f - i * 0.10f;
-                float rowBot = rowTop - 0.09f;
+                float rowTop = 0.74f - i * 0.08f;
+                float rowBot = rowTop - 0.07f;
 
                 var mark = MakeLabel(panel.transform, $"M{i}", "[X]", 18,
                     FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
@@ -572,12 +1121,12 @@ namespace InsectWars.RTS
                 AnchorFill(lbl, new Vector2(0.16f, rowBot), new Vector2(0.94f, rowTop));
             }
 
-            MakeSepLine(panel.transform, 0.32f);
+            MakeSepLine(panel.transform, 0.30f);
 
             var sub = MakeLabel(panel.transform, "Sub",
                 "You've learned the basics.\nYou're ready for real battle!", 19,
                 FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
-            AnchorFill(sub, new Vector2(0f, 0.16f), new Vector2(1f, 0.30f));
+            AnchorFill(sub, new Vector2(0f, 0.14f), new Vector2(1f, 0.28f));
 
             var btnGo = MakeGreenButton(panel.transform, "MenuBtn", "RETURN TO MENU", () =>
             {

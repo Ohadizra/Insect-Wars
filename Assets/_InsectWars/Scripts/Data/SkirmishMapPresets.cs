@@ -12,8 +12,103 @@ namespace InsectWars.Data
         public static SkirmishMapDefinition[] GetAll()
         {
             if (s_maps != null) return s_maps;
-            s_maps = new[] { CreateFrozenExpanse() };
+            s_maps = new[] { CreateFrozenExpanse(), CreateFrozenPass() };
             return s_maps;
+        }
+
+        /// <summary>
+        /// A small, aggressive frozen map designed for fast-paced rush strategies.
+        /// </summary>
+        static SkirmishMapDefinition CreateFrozenPass()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "FrozenPass";
+            map.displayName = "Frozen Pass";
+            map.description =
+                "A narrow, icy corridor where hives are mere seconds apart.\n" +
+                "Brace for an immediate frost-bitten clash on this compact rush map.";
+
+            map.mapHalfExtent = 45f;
+
+            // ── Spawns ──
+            map.playerHivePosition    = new Vector3(-35f, 1f, -30f);
+            map.enemyHivePosition     = new Vector3( 35f, 1f,  30f);
+            map.playerArmyStart       = new Vector3(-35f, 0f, -30f);
+            map.enemyArmyStart        = new Vector3( 35f, 0f,  30f);
+            map.cameraFocusWorld      = new Vector3(-30f, 0f, -25f);
+            map.bigApplePosition      = new Vector3(-28f, 1.5f, -22f);
+            map.enemyBigApplePosition = new Vector3( 28f, 1.5f,  22f);
+
+            map.passiveScatterSeed = 12345;
+
+            // ── Visual Overrides ──
+            map.clayColor = new Color(0.55f, 0.58f, 0.65f);
+            map.mapBoundsColor = new Color(0.48f, 0.52f, 0.58f);
+            map.scatterTheme = ScatterTheme.Frozen;
+
+            map.baseTerrainLayer = Resources.Load<TerrainLayer>("Materials/RealisticFrozenEarth_Layer");
+            map.secondaryTerrainLayer = Resources.Load<TerrainLayer>("Materials/RealisticSnow_Layer");
+            map.bigAppleMaterial = Resources.Load<Material>("Materials/FrostedNastyApple");
+        #if UNITY_EDITOR
+            if (map.baseTerrainLayer == null)
+                map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                    "Assets/_InsectWars/Materials/RealisticFrozenEarth_Layer.terrainlayer");
+            if (map.secondaryTerrainLayer == null)
+                map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
+                    "Assets/_InsectWars/Materials/RealisticSnow_Layer.terrainlayer");
+            if (map.bigAppleMaterial == null)
+                map.bigAppleMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(
+                    "Assets/_InsectWars/Materials/FrostedNastyApple.mat");
+        #endif
+
+            // ── Elevation ──
+            // UV = (worldPos + 45) / 90
+            map.highGrounds = new[]
+            {
+                // Main base plateaus
+                new HighGroundPlaced { uv = new Vector2(0.11f, 0.16f), radius = 0.15f, rampWidth = 0.05f, heightFraction = 0.15f, rotation = 45f },
+                new HighGroundPlaced { uv = new Vector2(0.89f, 0.84f), radius = 0.15f, rampWidth = 0.05f, heightFraction = 0.15f, rotation = 225f },
+                // Central contestable ledge
+                new HighGroundPlaced { uv = new Vector2(0.5f, 0.5f), radius = 0.1f, rampWidth = 0.06f, heightFraction = 0.1f, rotation = 135f },
+            };
+
+            // ── Clay Walls ──
+            map.clay = new[]
+            {
+                // Narrowing the central pass
+                new ClayPlaced { position = new Vector3(-15f, 0f, 5f), scale = new Vector3(8f, 4f, 2f) },
+                new ClayPlaced { position = new Vector3( 15f, 0f, -5f), scale = new Vector3(8f, 4f, 2f) },
+                new ClayPlaced { position = new Vector3(-5f, 0f, 15f), scale = new Vector3(2f, 4f, 8f) },
+                new ClayPlaced { position = new Vector3( 5f, 0f, -15f), scale = new Vector3(2f, 4f, 8f) },
+            };
+
+            map.fruits = new[]
+            {
+                // Center fruit
+                new FruitPlaced { position = new Vector3(0f, 0.6f, 0f), calories = 8000, gatherPerTick = 12, gatherSeconds = 4f },
+                // Expansion-lite positions
+                new FruitPlaced { position = new Vector3(-20f, 0.6f, 20f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 20f, 0.6f, -20f), calories = 5000, gatherPerTick = 8, gatherSeconds = 5f },
+            };
+
+            map.terrainFeatures = new[]
+            {
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 8f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-15f, 0f, -15f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 15f, 0f,  15f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, 30f), radius = 5f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, -30f), radius = 5f },
+            };
+
+            map.decorativePrefabs = new[]
+            {
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3(-42f, 0f, -42f), rotation = Vector3.zero, scale = Vector3.one * 1.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenHiveSpire.prefab", position = new Vector3( 42f, 0f,  42f), rotation = Vector3.zero, scale = Vector3.one * 1.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, 20f), rotation = new Vector3(0, 90, 0), scale = Vector3.one * 1.5f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/FrozenInsectHorn.prefab", position = new Vector3(0f, 0f, -20f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 1.5f },
+            };
+
+            return map;
         }
 
         /// <summary>

@@ -694,12 +694,12 @@ namespace InsectWars.RTS
                 var slotRt = slot.AddComponent<RectTransform>();
                 slotRt.sizeDelta = new Vector2(36f, 36f);
 
-                var bg = slot.AddComponent<Image>();
-                bg.sprite = slotFrame;
-                bg.type = Image.Type.Simple;
-                bg.color = new Color(0.15f, 0.12f, 0.1f, 0.8f);
-                bg.raycastTarget = true;
-                _queueSlotBg[i] = bg;
+                var slotBg = slot.AddComponent<Image>();
+                slotBg.sprite = slotFrame;
+                slotBg.type = Image.Type.Simple;
+                slotBg.color = new Color(0.15f, 0.12f, 0.1f, 0.8f);
+                slotBg.raycastTarget = true;
+                _queueSlotBg[i] = slotBg;
 
                 var iconGo = new GameObject("Icon");
                 iconGo.transform.SetParent(slot.transform, false);
