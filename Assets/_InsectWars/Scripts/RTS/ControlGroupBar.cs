@@ -35,6 +35,8 @@ namespace InsectWars.RTS
         void Awake()
         {
             _font = UiFontHelper.GetFont();
+            if (tabSprite == null)
+                tabSprite = GameHUD.LoadSpriteFromResources("UI/ControlGroupTab");
     #if UNITY_EDITOR
             if (tabSprite == null)
                 tabSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_InsectWars/Sprites/UI/ControlGroupTab.png");

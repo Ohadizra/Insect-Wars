@@ -105,6 +105,10 @@ namespace InsectWars.RTS
         bool _firstWaveSent;
         int _rangedToggle;
 
+        // Scouting
+        bool _scoutSent;
+        const float ScoutSendTime = 18f;
+
         float TickInterval => 1.5f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
         const float ProduceBaseInterval = 4f;
@@ -136,6 +140,7 @@ namespace InsectWars.RTS
             if (_tickTimer > 0f) return;
             _tickTimer = TickInterval;
 
+            TryScout();
             AssignIdleWorkers();
             TryBuild();
             TryProduceUnits();
@@ -367,6 +372,39 @@ namespace InsectWars.RTS
                 nest.SetRallyGather(fruit.transform.position, fruit);
         }
 
+        // ──────────── Scouting ────────────
+
+        void TryScout()
+        {
+            if (_scoutSent) return;
+            if (_matchTime < ScoutSendTime) return;
+            var fog = FogOfWarSystem.Instance;
+            if (fog != null && fog.PlayerHiveDiscovered) { _scoutSent = true; return; }
+
+            var hive = HiveDeposit.EnemyHive;
+            if (hive == null) return;
+
+            // Mirror the enemy hive position through map center to guess the player base location.
+            var scoutTarget = -hive.transform.position;
+            scoutTarget.y = 0f;
+
+            InsectUnit scout = null;
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
+                if (u.Archetype != UnitArchetype.Worker) continue;
+                if (u.CurrentOrder == UnitOrder.Idle)
+                {
+                    scout = u;
+                    break;
+                }
+            }
+
+            if (scout == null) return;
+            scout.OrderMove(scoutTarget);
+            _scoutSent = true;
+        }
+
         // ──────────── Attack & Defense ────────────
 
         void TryAttackOrDefend()
@@ -405,11 +443,16 @@ namespace InsectWars.RTS
             if (_matchTime < _nextHarassTime) return;
             _nextHarassTime = _matchTime + HarassInterval * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
+            var fog = FogOfWarSystem.Instance;
+
             Vector3? workerPos = null;
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
-                if (u.Archetype == UnitArchetype.Worker) { workerPos = u.transform.position; break; }
+                if (u.Archetype != UnitArchetype.Worker) continue;
+                if (fog != null && !fog.IsVisibleToEnemy(u.transform.position)) continue;
+                workerPos = u.transform.position;
+                break;
             }
             if (workerPos == null) return;
 
@@ -460,6 +503,7 @@ namespace InsectWars.RTS
         Vector3 PickAttackTarget()
         {
             var from = HiveDeposit.EnemyHive != null ? HiveDeposit.EnemyHive.transform.position : Vector3.zero;
+            var fog = FogOfWarSystem.Instance;
 
             InsectUnit bestWorker = null;
             float bestWorkerDist = float.MaxValue;
@@ -469,6 +513,7 @@ namespace InsectWars.RTS
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
+                if (fog != null && !fog.IsVisibleToEnemy(u.transform.position)) continue;
                 float d = Vector3.Distance(from, u.transform.position);
                 if (u.Archetype == UnitArchetype.Worker && d < bestWorkerDist)
                 { bestWorkerDist = d; bestWorker = u; }
@@ -478,7 +523,10 @@ namespace InsectWars.RTS
             if (bestWorker != null && bestWorkerDist < bestAnyDist * 1.5f)
                 return bestWorker.transform.position;
             if (bestAny != null) return bestAny.transform.position;
-            if (HiveDeposit.PlayerHive != null) return HiveDeposit.PlayerHive.transform.position;
+
+            // Fall back to scouted player hive position, or map center if not yet discovered.
+            if (fog != null && fog.KnownPlayerHivePos.HasValue)
+                return fog.KnownPlayerHivePos.Value;
             return Vector3.zero;
         }
 

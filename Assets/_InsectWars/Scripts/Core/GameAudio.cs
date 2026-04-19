@@ -1,3 +1,4 @@
+using InsectWars.Data;
 using UnityEngine;
 
 namespace InsectWars.Core
@@ -19,6 +20,10 @@ namespace InsectWars.Core
         [SerializeField] public AudioClip constructionComplete;
         [SerializeField] public AudioClip workerLift;
         [SerializeField] AudioClip backgroundMusic;
+        [SerializeField] AudioClip attackWood;
+        [SerializeField] AudioClip attackScratch;
+        [SerializeField] AudioClip attackBone;
+        [SerializeField] AudioClip attackSpray;
         [SerializeField] [Range(0f, 1f)] float uiVolume = 0.65f;
         [SerializeField] [Range(0f, 1f)] float combatVolume = 0.5f;
         [SerializeField] [Range(0f, 1f)] float musicVolume = 0.4f;
@@ -98,6 +103,28 @@ namespace InsectWars.Core
                 Instance._musicSrc.volume = Instance.musicVolume;
                 Instance._musicSrc.Play();
             }
+        }
+
+        public static void PlayAttack(UnitArchetype arch, Vector3 pos)
+        {
+            if (Instance == null) return;
+            AudioClip clip = arch switch
+            {
+                UnitArchetype.Worker => Instance.LoadClip(ref Instance.attackWood, "Audio/Attack_WoodClash"),
+                UnitArchetype.BasicFighter => Instance.LoadClip(ref Instance.attackWood, "Audio/Attack_WoodClash"),
+                UnitArchetype.BlackWidow => Instance.LoadClip(ref Instance.attackScratch, "Audio/Attack_Scratch"),
+                UnitArchetype.GiantStagBeetle => Instance.LoadClip(ref Instance.attackBone, "Audio/Attack_BoneCrunch"),
+                UnitArchetype.BasicRanged => Instance.LoadClip(ref Instance.attackSpray, "Audio/Attack_SprayHiss"),
+                _ => null
+            };
+            if (clip != null)
+                AudioSource.PlayClipAtPoint(clip, pos, Instance.combatVolume);
+        }
+
+        AudioClip LoadClip(ref AudioClip field, string path)
+        {
+            if (field == null) field = Resources.Load<AudioClip>(path);
+            return field;
         }
         }
         }

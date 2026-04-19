@@ -24,6 +24,8 @@ namespace InsectWars.RTS
 
         void Start()
         {
+            if (GameSession.IsTutorialMode)
+                return;
             if (GameSession.IsLearningMode)
             {
                 AddCalories(10000);

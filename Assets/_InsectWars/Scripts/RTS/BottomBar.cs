@@ -83,9 +83,14 @@ namespace InsectWars.RTS
         Transform _cmdGridParent;
         readonly Dictionary<string, Image> _cmdButtonImages = new();
 
-        GameObject _prodBarRoot;
-        Image _prodBarFill;
-        Text _prodLabel;
+        const int QueueSlotCount = 5;
+        GameObject _queueStripRoot;
+        Image[] _queueSlotBg = new Image[QueueSlotCount];
+        Image[] _queueSlotIcon = new Image[QueueSlotCount];
+        Image[] _queueSlotOverlay = new Image[QueueSlotCount];
+        Text[] _queueSlotText = new Text[QueueSlotCount];
+        ProductionBuilding _queueDisplayBuilding;
+        HiveDeposit _queueDisplayHive;
 
         bool _buildMenuActive;
         GameObject _ghostPreview;
@@ -667,31 +672,79 @@ namespace InsectWars.RTS
             ph.anchoredPosition = Vector2.zero;
             ph.sizeDelta = new Vector2(680f, 28f);
 
-            _prodBarRoot = new GameObject("ProdBar");
-            _prodBarRoot.transform.SetParent(infoBlock.transform, false);
-            var pbr = _prodBarRoot.AddComponent<RectTransform>();
-            pbr.anchorMin = new Vector2(0.05f, 0.65f);
-            pbr.anchorMax = new Vector2(0.95f, 0.72f);
-            pbr.offsetMin = pbr.offsetMax = Vector2.zero;
-            var pbBg = _prodBarRoot.AddComponent<Image>();
-            pbBg.color = new Color(0f, 0f, 0f, 0.5f); // Semi-transparent black
+            _queueStripRoot = new GameObject("QueueStrip");
+            _queueStripRoot.transform.SetParent(infoBlock.transform, false);
+            var qsr = _queueStripRoot.AddComponent<RectTransform>();
+            qsr.anchorMin = new Vector2(0.05f, 0.55f);
+            qsr.anchorMax = new Vector2(0.95f, 0.75f);
+            qsr.offsetMin = qsr.offsetMax = Vector2.zero;
 
-            var fillGo = new GameObject("ProdFill");
-            fillGo.transform.SetParent(_prodBarRoot.transform, false);
-            _prodBarFill = fillGo.AddComponent<Image>();
-            _prodBarFill.color = new Color(0.95f, 0.75f, 0.35f, 1f);
-            var pfr = _prodBarFill.rectTransform;
-            pfr.anchorMin = Vector2.zero;
-            pfr.anchorMax = new Vector2(0f, 1f);
-            pfr.offsetMin = pfr.offsetMax = Vector2.zero;
+            var qsLayout = _queueStripRoot.AddComponent<HorizontalLayoutGroup>();
+            qsLayout.spacing = 4f;
+            qsLayout.childAlignment = TextAnchor.MiddleLeft;
+            qsLayout.childForceExpandWidth = false;
+            qsLayout.childForceExpandHeight = false;
+            qsLayout.childControlWidth = false;
+            qsLayout.childControlHeight = false;
 
-            _prodLabel = CreateText("ProdText", _prodBarRoot.transform, 11, Color.white, TextAnchor.MiddleCenter);
-            var plr = _prodLabel.rectTransform;
-            plr.anchorMin = Vector2.zero;
-            plr.anchorMax = Vector2.one;
-            plr.offsetMin = plr.offsetMax = Vector2.zero;
+            for (int i = 0; i < QueueSlotCount; i++)
+            {
+                var slot = new GameObject($"QSlot_{i}");
+                slot.transform.SetParent(_queueStripRoot.transform, false);
+                var slotRt = slot.AddComponent<RectTransform>();
+                slotRt.sizeDelta = new Vector2(36f, 36f);
 
-            _prodBarRoot.SetActive(false);
+                var bg = slot.AddComponent<Image>();
+                bg.sprite = slotFrame;
+                bg.type = Image.Type.Simple;
+                bg.color = new Color(0.15f, 0.12f, 0.1f, 0.8f);
+                bg.raycastTarget = true;
+                _queueSlotBg[i] = bg;
+
+                var iconGo = new GameObject("Icon");
+                iconGo.transform.SetParent(slot.transform, false);
+                var iconImg = iconGo.AddComponent<Image>();
+                iconImg.preserveAspect = true;
+                iconImg.raycastTarget = false;
+                var irt = iconImg.rectTransform;
+                irt.anchorMin = new Vector2(0.08f, 0.08f);
+                irt.anchorMax = new Vector2(0.92f, 0.92f);
+                irt.offsetMin = irt.offsetMax = Vector2.zero;
+                iconImg.color = new Color(1f, 1f, 1f, 0f);
+                _queueSlotIcon[i] = iconImg;
+
+                var overlayGo = new GameObject("Overlay");
+                overlayGo.transform.SetParent(slot.transform, false);
+                var overlayImg = overlayGo.AddComponent<Image>();
+                overlayImg.color = new Color(0f, 0f, 0f, 0.6f);
+                overlayImg.raycastTarget = false;
+                var ort = overlayImg.rectTransform;
+                ort.anchorMin = Vector2.zero;
+                ort.anchorMax = Vector2.one;
+                ort.offsetMin = ort.offsetMax = Vector2.zero;
+                _queueSlotOverlay[i] = overlayImg;
+
+                var pctText = CreateText("Pct", slot.transform, 10, Color.white, TextAnchor.MiddleCenter);
+                pctText.raycastTarget = false;
+                var ptr = pctText.rectTransform;
+                ptr.anchorMin = Vector2.zero;
+                ptr.anchorMax = Vector2.one;
+                ptr.offsetMin = ptr.offsetMax = Vector2.zero;
+                _queueSlotText[i] = pctText;
+
+                int idx = i;
+                var trigger = slot.AddComponent<EventTrigger>();
+                var clickEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+                clickEntry.callback.AddListener(data =>
+                {
+                    var ped = (PointerEventData)data;
+                    if (ped.button == PointerEventData.InputButton.Right)
+                        CancelQueueSlot(idx);
+                });
+                trigger.triggers.Add(clickEntry);
+            }
+
+            _queueStripRoot.SetActive(false);
         }
 
         Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
@@ -1161,66 +1214,144 @@ namespace InsectWars.RTS
 
         void RefreshProductionBar()
         {
-            if (_prodBarRoot == null) return;
+            if (_queueStripRoot == null) return;
 
-            float progress = 0f;
-            string label = null;
-            int queueCount = 0;
-            Color barColor = new Color(0.3f, 0.7f, 1f);
+            _queueDisplayBuilding = null;
+            _queueDisplayHive = null;
+
+            ProductionBuilding displayBld = null;
+            HiveDeposit displayHive = null;
+            bool isConstruction = false;
+            float constructionProgress = 0f;
+            int constructionBuilders = 0;
 
             if (SelectionController.Instance != null)
             {
                 var bld = SelectionController.Instance.SelectedBuilding;
                 if (bld != null && bld.State == BuildingState.UnderConstruction)
                 {
-                    progress = bld.ConstructionProgress;
-                    int builders = bld.AssignedBuilders;
-                    label = builders > 0 ? $"Building... ({builders} worker{(builders > 1 ? "s" : "")})" : "Building... (no workers)";
-                    barColor = new Color(0.95f, 0.75f, 0.2f);
+                    isConstruction = true;
+                    constructionProgress = bld.ConstructionProgress;
+                    constructionBuilders = bld.AssignedBuilders;
                 }
                 else if (bld != null)
                 {
-                    int producingCount = 0;
-                    int totalQueued = 0;
                     foreach (var ab in SelectionController.Instance.SelectedBuildingsOfActiveType)
                     {
-                        totalQueued += ab.QueueCount;
                         if (!ab.IsProducing) continue;
-                        producingCount++;
-                        if (label == null)
-                        {
-                            progress = ab.ProductionProgress;
-                            var arch = ab.CurrentProducing;
-                            label = arch.HasValue ? ProductionBuilding.GetUnitName(arch.Value) : "Unit";
-                        }
+                        displayBld = ab;
+                        break;
                     }
-                    if (label != null)
-                        queueCount = totalQueued;
                 }
 
-                if (label == null)
+                if (displayBld == null && !isConstruction)
                 {
                     var hive = SelectionController.Instance.SelectedHive;
                     if (hive != null && hive.IsProducing)
-                    {
-                        progress = hive.ProductionProgress;
-                        label = "Worker";
-                        queueCount = hive.QueueCount;
-                    }
+                        displayHive = hive;
                 }
             }
 
-            if (label == null)
+            if (isConstruction)
             {
-                _prodBarRoot.SetActive(false);
+                _queueStripRoot.SetActive(true);
+                for (int i = 0; i < QueueSlotCount; i++)
+                {
+                    if (i == 0)
+                    {
+                        _queueSlotBg[0].color = new Color(0.2f, 0.16f, 0.12f, 0.9f);
+                        _queueSlotIcon[0].sprite = iconBuild;
+                        _queueSlotIcon[0].color = Color.white;
+                        float fill = 1f - Mathf.Clamp01(constructionProgress);
+                        _queueSlotOverlay[0].rectTransform.anchorMin = Vector2.zero;
+                        _queueSlotOverlay[0].rectTransform.anchorMax = new Vector2(1f, fill);
+                        _queueSlotOverlay[0].color = new Color(0f, 0f, 0f, 0.6f);
+                        string bldLabel = constructionBuilders > 0
+                            ? $"{Mathf.RoundToInt(constructionProgress * 100f)}%"
+                            : "0%";
+                        _queueSlotText[0].text = bldLabel;
+                    }
+                    else
+                    {
+                        _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.4f);
+                        _queueSlotIcon[i].color = new Color(1f, 1f, 1f, 0f);
+                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
+                        _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
+                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
+                        _queueSlotText[i].text = "";
+                    }
+                }
                 return;
             }
 
-            _prodBarRoot.SetActive(true);
-            _prodBarFill.color = barColor;
-            _prodBarFill.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(progress), 1f);
-            string queueSuffix = queueCount > 1 ? $" [{queueCount}]" : "";
-            _prodLabel.text = $"{label} {Mathf.RoundToInt(progress * 100f)}%{queueSuffix}";
+            if (displayBld == null && displayHive == null)
+            {
+                _queueStripRoot.SetActive(false);
+                return;
+            }
+
+            _queueStripRoot.SetActive(true);
+            _queueDisplayBuilding = displayBld;
+            _queueDisplayHive = displayHive;
+
+            int queueCount = displayBld != null ? displayBld.QueueCount : displayHive.QueueCount;
+            float progress = displayBld != null ? displayBld.ProductionProgress : displayHive.ProductionProgress;
+
+            for (int i = 0; i < QueueSlotCount; i++)
+            {
+                if (i < queueCount)
+                {
+                    Sprite icon;
+                    if (displayBld != null)
+                        icon = GetUnitPortrait(displayBld.GetQueuedArchetype(i));
+                    else
+                        icon = portraitWorker;
+
+                    _queueSlotBg[i].color = new Color(0.2f, 0.16f, 0.12f, 0.9f);
+                    _queueSlotIcon[i].sprite = icon;
+                    _queueSlotIcon[i].color = Color.white;
+
+                    if (i == 0)
+                    {
+                        float fill = 1f - Mathf.Clamp01(progress);
+                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
+                        _queueSlotOverlay[i].rectTransform.anchorMax = new Vector2(1f, fill);
+                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0.6f);
+                        _queueSlotText[i].text = $"{Mathf.RoundToInt(progress * 100f)}%";
+                    }
+                    else
+                    {
+                        _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
+                        _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
+                        _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
+                        _queueSlotText[i].text = "";
+                    }
+                }
+                else
+                {
+                    _queueSlotBg[i].color = new Color(0.1f, 0.08f, 0.06f, 0.4f);
+                    _queueSlotIcon[i].sprite = null;
+                    _queueSlotIcon[i].color = new Color(1f, 1f, 1f, 0f);
+                    _queueSlotOverlay[i].rectTransform.anchorMin = Vector2.zero;
+                    _queueSlotOverlay[i].rectTransform.anchorMax = Vector2.zero;
+                    _queueSlotOverlay[i].color = new Color(0f, 0f, 0f, 0f);
+                    _queueSlotText[i].text = "";
+                }
+            }
+        }
+
+        void CancelQueueSlot(int slotIndex)
+        {
+            if (_queueDisplayBuilding != null && slotIndex < _queueDisplayBuilding.QueueCount)
+            {
+                _queueDisplayBuilding.CancelAtIndex(slotIndex);
+                ForceRebuild();
+            }
+            else if (_queueDisplayHive != null && slotIndex < _queueDisplayHive.QueueCount)
+            {
+                _queueDisplayHive.CancelAtIndex(slotIndex);
+                ForceRebuild();
+            }
         }
 
         void RefreshPendingHint()

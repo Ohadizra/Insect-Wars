@@ -6,8 +6,13 @@ using UnityEngine.Rendering;
 namespace InsectWars.RTS
 {
     /// <summary>
-    /// Fog map: R = ever explored, G = current vision (this frame). Rebuilt before the main camera renders.
-    /// Enemies are hidden unless their cell has current vision (SC2-style).
+    /// SC2-style fog of war.
+    /// Fog texture: R = ever explored, G = current vision (this frame).
+    /// Player-side: enemy units hidden outside current vision; enemy buildings stay
+    /// visible once explored (dimmed by shader) and disappear only when destroyed
+    /// AND re-explored.
+    /// Enemy-side: lightweight intel tracking so the AI must scout to discover the
+    /// player base instead of map-hacking.
     /// </summary>
     public class FogOfWarSystem : MonoBehaviour
     {
@@ -15,6 +20,8 @@ namespace InsectWars.RTS
 
         const int TexRes = 256;
         const float HighGroundThreshold = 0.5f;
+        const float CloakDetectionRange = 8f;
+
         public static readonly int FogTexId = Shader.PropertyToID("_IW_FogWarTex");
         static readonly int FogBoundsId = Shader.PropertyToID("_IW_FogBounds");
         static readonly int FogActiveId = Shader.PropertyToID("_IW_FogActive");
@@ -26,7 +33,24 @@ namespace InsectWars.RTS
         Texture2D _tex;
         Color32[] _pix;
         Color32 _black;
+
+        // ──── Player-side: enemy unit renderer cache ────
         readonly Dictionary<InsectUnit, Renderer[]> _enemyRenderers = new();
+
+        // ──── Player-side: enemy building/hive renderer cache ────
+        readonly Dictionary<ProductionBuilding, Renderer[]> _enemyBuildingRenderers = new();
+        Renderer[] _enemyHiveRenderers;
+        HiveDeposit _trackedEnemyHive;
+
+        // SC2-style ghost tracking: buildings that were alive last time we had vision.
+        // When we re-explore and the building is gone, we finally hide the renderers.
+        readonly HashSet<ProductionBuilding> _knownAliveBuildings = new();
+        bool _enemyHiveKnownAlive;
+
+        // ──── Enemy-side intel (for AI fairness) ────
+        Vector3? _knownPlayerHivePos;
+        public Vector3? KnownPlayerHivePos => _knownPlayerHivePos;
+        public bool PlayerHiveDiscovered => _knownPlayerHivePos.HasValue;
 
         void OnEnable()
         {
@@ -42,7 +66,6 @@ namespace InsectWars.RTS
                 wrapMode = TextureWrapMode.Clamp,
                 name = "FogOfWarData"
             };
-            // Must stay CPU-writable so LateUpdate/beginCamera can update every frame.
             _tex.SetPixels32(_pix);
             _tex.Apply(false, false);
             Shader.SetGlobalTexture(FogTexId, _tex);
@@ -56,6 +79,12 @@ namespace InsectWars.RTS
             if (Instance == this) Instance = null;
             Shader.SetGlobalFloat(FogActiveId, 0f);
             _enemyRenderers.Clear();
+            _enemyBuildingRenderers.Clear();
+            _enemyHiveRenderers = null;
+            _trackedEnemyHive = null;
+            _knownAliveBuildings.Clear();
+            _enemyHiveKnownAlive = false;
+            _knownPlayerHivePos = null;
             if (_tex != null)
                 Destroy(_tex);
             _tex = null;
@@ -76,7 +105,13 @@ namespace InsectWars.RTS
             }
 
             UpdateEnemyVisibility();
+            UpdateEnemyBuildingVisibility();
+            UpdateEnemyIntel();
         }
+
+        // ═══════════════════════════════════════════════════════
+        //  PLAYER FOG GRID
+        // ═══════════════════════════════════════════════════════
 
         void RebuildVisionGrid()
         {
@@ -130,9 +165,13 @@ namespace InsectWars.RTS
             return IsOnHighGround(observerPos);
         }
 
+        // ═══════════════════════════════════════════════════════
+        //  PLAYER-SIDE: ENEMY UNIT VISIBILITY
+        // ═══════════════════════════════════════════════════════
+
         void UpdateEnemyVisibility()
         {
-            var toRemove = (List<InsectUnit>)null;
+            List<InsectUnit> toRemove = null;
             foreach (var kv in _enemyRenderers)
             {
                 var u = kv.Key;
@@ -164,10 +203,9 @@ namespace InsectWars.RTS
                     foreach (var pu in RtsSimRegistry.Units)
                     {
                         if (pu == null || !pu.IsAlive || pu.Team != Team.Player) continue;
-                        if (Vector3.Distance(pu.transform.position, u.transform.position) <= 8f)
+                        if (Vector3.Distance(pu.transform.position, u.transform.position) <= CloakDetectionRange)
                         { proximityReveal = true; break; }
                     }
-
                     show = proximityReveal;
                 }
                 else
@@ -196,6 +234,152 @@ namespace InsectWars.RTS
             }
         }
 
+        // ═══════════════════════════════════════════════════════
+        //  PLAYER-SIDE: ENEMY BUILDING / HIVE VISIBILITY
+        //  SC2 rules: buildings stay visible once explored (dimmed
+        //  by the fog shader). They disappear only when destroyed
+        //  AND the player re-explores (gets current vision on)
+        //  that cell — so the player "sees" it's gone.
+        // ═══════════════════════════════════════════════════════
+
+        void UpdateEnemyBuildingVisibility()
+        {
+            // --- Enemy production buildings ---
+            List<ProductionBuilding> bldToRemove = null;
+            foreach (var kv in _enemyBuildingRenderers)
+            {
+                if (kv.Key == null)
+                {
+                    bldToRemove ??= new List<ProductionBuilding>();
+                    bldToRemove.Add(kv.Key);
+                }
+            }
+            if (bldToRemove != null)
+            {
+                foreach (var b in bldToRemove)
+                    _enemyBuildingRenderers.Remove(b);
+            }
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || bld.Team != Team.Enemy) continue;
+                if (!_enemyBuildingRenderers.TryGetValue(bld, out var renderers))
+                {
+                    renderers = bld.GetComponentsInChildren<Renderer>(true);
+                    _enemyBuildingRenderers[bld] = renderers;
+                }
+
+                bool show = ResolveBuildingShow(bld.transform.position, bld.IsAlive,
+                    _knownAliveBuildings.Contains(bld));
+
+                if (show && bld.IsAlive)
+                    _knownAliveBuildings.Add(bld);
+
+                if (IsInCurrentVision(bld.transform.position) && !bld.IsAlive)
+                {
+                    _knownAliveBuildings.Remove(bld);
+                    show = false;
+                }
+
+                foreach (var r in renderers)
+                {
+                    if (r != null) r.enabled = show;
+                }
+            }
+
+            // --- Enemy hive ---
+            var enemyHive = HiveDeposit.EnemyHive;
+            if (enemyHive != null && enemyHive != _trackedEnemyHive)
+            {
+                _trackedEnemyHive = enemyHive;
+                _enemyHiveRenderers = enemyHive.GetComponentsInChildren<Renderer>(true);
+            }
+
+            if (_trackedEnemyHive != null && _enemyHiveRenderers != null)
+            {
+                bool show = ResolveBuildingShow(_trackedEnemyHive.transform.position,
+                    _trackedEnemyHive.IsAlive, _enemyHiveKnownAlive);
+
+                if (show && _trackedEnemyHive.IsAlive)
+                    _enemyHiveKnownAlive = true;
+
+                if (IsInCurrentVision(_trackedEnemyHive.transform.position) && !_trackedEnemyHive.IsAlive)
+                {
+                    _enemyHiveKnownAlive = false;
+                    show = false;
+                }
+
+                foreach (var r in _enemyHiveRenderers)
+                {
+                    if (r != null) r.enabled = show;
+                }
+            }
+        }
+
+        /// <summary>
+        /// SC2 building visibility logic:
+        /// - Never explored → hidden.
+        /// - Explored (R) but no current vision (G) → show if we last knew it alive.
+        /// - Current vision → show if actually alive.
+        /// </summary>
+        bool ResolveBuildingShow(Vector3 pos, bool actuallyAlive, bool knownAlive)
+        {
+            bool explored = IsExplored(pos);
+            bool inVision = IsInCurrentVision(pos);
+
+            if (!explored) return false;
+            if (inVision) return actuallyAlive;
+            return knownAlive;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  ENEMY-SIDE INTEL (AI fairness — no map hack)
+        // ═══════════════════════════════════════════════════════
+
+        void UpdateEnemyIntel()
+        {
+            if (_knownPlayerHivePos.HasValue) return;
+            var playerHive = HiveDeposit.PlayerHive;
+            if (playerHive == null || !playerHive.IsAlive) return;
+
+            if (IsVisibleToEnemy(playerHive.transform.position))
+                _knownPlayerHivePos = playerHive.transform.position;
+        }
+
+        /// <summary>
+        /// True if any enemy unit or building currently has line-of-sight to the position.
+        /// Used by the AI commander so it must scout rather than cheat.
+        /// </summary>
+        public bool IsVisibleToEnemy(Vector3 pos)
+        {
+            foreach (var u in RtsSimRegistry.Units)
+            {
+                if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
+                float vr = u.Definition != null ? u.Definition.visionRadius : 12f;
+                if (Vector3.Distance(u.transform.position, pos) > vr) continue;
+                if (CanSeeOverHighGround(u.transform.position, pos, u.Archetype))
+                    return true;
+            }
+
+            foreach (var bld in ProductionBuilding.All)
+            {
+                if (bld == null || !bld.IsAlive || bld.Team != Team.Enemy) continue;
+                if (Vector3.Distance(bld.transform.position, pos) <= buildingVisionRadius)
+                    return true;
+            }
+
+            var eHive = HiveDeposit.EnemyHive;
+            if (eHive != null && eHive.IsAlive &&
+                Vector3.Distance(eHive.transform.position, pos) <= hiveVisionRadius)
+                return true;
+
+            return false;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  PUBLIC QUERIES
+        // ═══════════════════════════════════════════════════════
+
         /// <summary>True if this XZ is lit by current player vision (not merely explored).</summary>
         public bool IsInCurrentVision(Vector3 world)
         {
@@ -211,6 +395,10 @@ namespace InsectWars.RTS
             if (!TryTexel(world, out var x, out var z)) return false;
             return _pix[z * TexRes + x].r >= 96;
         }
+
+        // ═══════════════════════════════════════════════════════
+        //  INTERNALS
+        // ═══════════════════════════════════════════════════════
 
         bool TryTexel(Vector3 world, out int x, out int z)
         {

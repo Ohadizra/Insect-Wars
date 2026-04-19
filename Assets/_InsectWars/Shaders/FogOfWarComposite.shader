@@ -57,8 +57,8 @@ Shader "Hidden/InsectWars/FogOfWarComposite"
                 // 2) Explored but no vision — terrain dimmed; enemies culled in C#
                 if (exp > 0.18h)
                     return half4(scene.rgb * half3(0.48h, 0.5h, 0.58h), scene.a);
-                // 3) Shroud — never explored
-                return half4(scene.rgb * half3(0.04h, 0.045h, 0.07h), scene.a);
+                // 3) Shroud — never explored: fully opaque black (SC2-style)
+                return half4(0.0h, 0.0h, 0.0h, scene.a);
             }
             ENDHLSL
         }

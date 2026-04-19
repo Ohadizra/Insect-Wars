@@ -37,6 +37,7 @@ namespace InsectWars.RTS
             if (_state != MatchState.Playing) return;
             if (PauseController.IsPaused) return;
             if (Core.GameSession.IsLearningMode) return;
+            if (Core.GameSession.IsTutorialMode) return;
 
             MatchStats.ElapsedTime += Time.deltaTime;
 

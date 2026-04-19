@@ -64,7 +64,7 @@ Shader "InsectWars/MinimapFog"
                 if (fog.r > 0.18)
                     return fixed4(scene.rgb * fixed3(0.48, 0.5, 0.58), scene.a);
 
-                return fixed4(0.02, 0.025, 0.04, scene.a);
+                return fixed4(0, 0, 0, scene.a);
             }
             ENDCG
         }

@@ -1,0 +1,14 @@
+{
+    "asset": "ff7ea39f703634914b528637d16f3ee2",
+    "fileName": "019da100-b2d8-72af-8908-dbe02cad83b9.wav",
+    "prompt": "Extra heavy resonant wooden thud and ground impact sound. Low frequency organic boom. Single impact. Organic and powerful.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "9c0b9171dc7e87d20e90d6a876479d30",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

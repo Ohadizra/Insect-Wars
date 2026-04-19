@@ -1,0 +1,14 @@
+{
+    "asset": "ff4e5475a8dcf45abba6f30945d1d036",
+    "fileName": "019da0fa-c12c-7aa3-b147-5475d30f7a7c.wav",
+    "prompt": "Sharp pressurized liquid spray and short hiss. Bio-chemical insect attack sound. Squelchy pop at start.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "0c0117682d5819da1f347ee47628ff8c",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

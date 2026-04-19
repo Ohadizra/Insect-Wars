@@ -10,12 +10,12 @@ namespace InsectWars.Core
 
         public static void LoadHome()
         {
-            SceneManager.LoadScene(HomeScene);
+            SceneManager.LoadSceneAsync(HomeScene);
         }
 
         public static void LoadSkirmishDemo()
         {
-            SceneManager.LoadScene(SkirmishScene);
+            SceneManager.LoadSceneAsync(SkirmishScene);
         }
     }
 }

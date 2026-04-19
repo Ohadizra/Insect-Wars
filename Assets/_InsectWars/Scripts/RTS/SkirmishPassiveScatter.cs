@@ -29,6 +29,9 @@ namespace InsectWars.RTS
         }
 
         static Material s_lit;
+        static readonly Dictionary<int, Material> s_matCache = new();
+        static Texture2D s_frozenRockTex;
+        static bool s_frozenRockTexLoaded;
 
         static void EnsureLit()
         {
@@ -40,10 +43,28 @@ namespace InsectWars.RTS
 
         static Material Mat(Color c)
         {
+            int key = ((int)(c.r * 255f) << 24) | ((int)(c.g * 255f) << 16) |
+                      ((int)(c.b * 255f) << 8) | (int)(c.a * 255f);
+            if (s_matCache.TryGetValue(key, out var cached))
+                return cached;
             EnsureLit();
             var m = new Material(s_lit);
             m.SetColor("_BaseColor", c);
+            s_matCache[key] = m;
             return m;
+        }
+
+        static Texture2D GetFrozenRockTexture()
+        {
+            if (s_frozenRockTexLoaded) return s_frozenRockTex;
+            s_frozenRockTexLoaded = true;
+            s_frozenRockTex = Resources.Load<Texture2D>("Textures/FrozenRockBaseMap");
+        #if UNITY_EDITOR
+            if (s_frozenRockTex == null)
+                s_frozenRockTex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(
+                    "Assets/_InsectWars/Textures/RealisticFrozenRock_Generated Maps/BaseMap.jpg");
+        #endif
+            return s_frozenRockTex;
         }
 
         static bool Excluded(float x, float z, IReadOnlyList<ExclusionZone> zones)
@@ -123,11 +144,7 @@ namespace InsectWars.RTS
             if (theme == ScatterTheme.Frozen)
             {
                 var mat = Mat(new Color(0.68f, 0.68f, 0.72f));
-                var tex = Resources.Load<Texture2D>("Textures/FrozenRockBaseMap");
-        #if UNITY_EDITOR
-                if (tex == null)
-                    tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_InsectWars/Textures/RealisticFrozenRock_Generated Maps/BaseMap.jpg");
-        #endif
+                var tex = GetFrozenRockTexture();
                 if (tex != null) mat.SetTexture("_BaseMap", tex);
                 go.GetComponent<Renderer>().sharedMaterial = mat;
             }

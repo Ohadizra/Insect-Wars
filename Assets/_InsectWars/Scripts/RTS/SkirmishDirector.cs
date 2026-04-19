@@ -118,10 +118,16 @@ namespace InsectWars.RTS
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
-            GameAudio.PlayGameMusic();
+            if (!GameSession.IsTutorialMode)
+                GameAudio.PlayGameMusic();
 
-            if (GameSession.IsLearningMode)
-{
+            if (GameSession.IsTutorialMode)
+            {
+                var tutGo = new GameObject("TutorialRoot");
+                tutGo.AddComponent<TutorialDirector>();
+            }
+            else if (GameSession.IsLearningMode)
+            {
                 SpawnLearningModeUnits();
             }
             else
@@ -229,11 +235,11 @@ namespace InsectWars.RTS
                 AddClay(world.transform, c.position, c.scale, _clayColor, c.variant);
 
             BuildHive(world.transform, _playerHive, Team.Player, "PlayerHive");
-            if (!GameSession.IsLearningMode)
+            if (!GameSession.IsLearningMode && !GameSession.IsTutorialMode)
                 BuildHive(world.transform, _enemyHive, Team.Enemy, "EnemyHive");
 
             AddRottingApple(world.transform, _applePos);
-            if (!GameSession.IsLearningMode)
+            if (!GameSession.IsLearningMode && !GameSession.IsTutorialMode)
                 AddRottingApple(world.transform, _enemyApplePos);
 
             foreach (var f in _fruitLayout)
@@ -278,18 +284,28 @@ systems = new GameObject("Systems");
             systems.AddComponent<Minimap>();
             systems.AddComponent<FogOfWarSystem>();
             systems.AddComponent<MatchDirector>();
-            if (!GameSession.IsLearningMode)
+            if (!GameSession.IsLearningMode && !GameSession.IsTutorialMode)
                 systems.AddComponent<EnemyCommander>();
             systems.AddComponent<PauseController>();
             systems.AddComponent<GameAudio>();
             systems.AddComponent<ControlGroupManager>();
             systems.AddComponent<ControlGroupBar>();
+            systems.AddComponent<WarningSystem>();
         }
 
+        /// <summary>
+        /// Tears down the world and systems, then rebuilds everything fresh.
+        /// Used by TutorialDirector between chapters.
+        /// </summary>
+        public void RebuildWorldForTutorial()
+        {
+            EnemyResources.Reset();
+            BuildWorldPreview();
+        }
 
         void PlaceStarterPlayerBuildings(Transform worldRoot)
         {
-            if (!GameSession.IsLearningMode) return;
+            if (!GameSession.IsLearningMode || GameSession.IsTutorialMode) return;
 
             var hiveXZ = new Vector3(_playerHive.x, 0f, _playerHive.z);
             ProductionBuilding.Place(hiveXZ + new Vector3(-12f, 0f, 4f), BuildingType.Underground, Team.Player, startBuilt: true);
@@ -358,6 +374,7 @@ systems = new GameObject("Systems");
             if (resPath.Contains("Assets/_InsectWars/"))
             {
                 resPath = resPath.Replace("Assets/_InsectWars/", "");
+                if (resPath.StartsWith("Resources/")) resPath = resPath["Resources/".Length..];
                 if (resPath.EndsWith(".prefab")) resPath = resPath[..^".prefab".Length];
             }
             GameObject prefab = Resources.Load<GameObject>(resPath);
@@ -704,16 +721,11 @@ float height = topY - bottomY;
 foreach (var r in clay.GetComponentsInChildren<Renderer>())
                 {
                     if (!Application.isPlaying) continue;
-                    var mats = r.materials;
-                    for (int mi = 0; mi < mats.Length; mi++)
-                    {
-                        mats[mi] = new Material(mats[mi]);
-                        if (mats[mi].HasProperty("_BaseColor"))
-                            mats[mi].SetColor("_BaseColor", clayColor);
-                        else if (mats[mi].HasProperty("_Color"))
-                            mats[mi].SetColor("_Color", clayColor);
-                    }
-                    r.materials = mats;
+                    var pb = new MaterialPropertyBlock();
+                    r.GetPropertyBlock(pb);
+                    pb.SetColor("_BaseColor", clayColor);
+                    pb.SetColor("_Color", clayColor);
+                    r.SetPropertyBlock(pb);
                 }
 }
             else
@@ -799,43 +811,24 @@ float height = topY - bottomY;
                 var deposit = hive.GetComponent<HiveDeposit>();
                 if (deposit == null) deposit = hive.AddComponent<HiveDeposit>();
                 
-                // CRITICAL: Configure before any logic runs to set correct static refs
                 deposit.Configure(team);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
-                if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
-                else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
                 if (team == Team.Player) HiveDeposit.SetMainPlayerHive(deposit);
                 else if (team == Team.Enemy) HiveDeposit.SetMainEnemyHive(deposit);
                 
                 if (hive.GetComponent<HiveVisual>() == null) hive.AddComponent<HiveVisual>();
                 
-                // Apply skin color to prefab renderers
                 var skinColor = TeamPalette.GetShellColor(team);
                 foreach (var renderer in hive.GetComponentsInChildren<Renderer>(true))
                 {
-                    var mats = renderer.sharedMaterials;
-                    for (int i = 0; i < mats.Length; i++)
-                    {
-                        if (mats[i] == null) continue;
-                        var m = new Material(mats[i]);
-                        if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", skinColor);
-                        else if (m.HasProperty("_Color")) m.color = skinColor;
-                        mats[i] = m;
-                    }
-                    renderer.sharedMaterials = mats;
+                    var pb = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(pb);
+                    pb.SetColor("_BaseColor", skinColor);
+                    pb.SetColor("_Color", skinColor);
+                    renderer.SetPropertyBlock(pb);
                 }
 
                 var prod = hive.AddComponent<ProductionBuilding>();
-                prod.Initialize(BuildingType.AntNest, team);
+                prod.Initialize(BuildingType.Hive, team);
             }
             else
             {
@@ -862,7 +855,7 @@ float height = topY - bottomY;
                 hive.AddComponent<HiveVisual>();
 
                 var prod = hive.AddComponent<ProductionBuilding>();
-                prod.Initialize(BuildingType.AntNest, team);
+                prod.Initialize(BuildingType.Hive, team);
             }
 
             SetIgnoreNavMeshRecursive(hive);
@@ -1498,34 +1491,24 @@ float height = topY - bottomY;
                 {
                     if (renderer.sharedMaterial == null) continue;
 
-                    var mat = new Material(renderer.sharedMaterial);
-                    if (mat.HasProperty("_BaseColor"))
+                    var pb = new MaterialPropertyBlock();
+                    renderer.GetPropertyBlock(pb);
+
+                    if (renderer.sharedMaterial.HasProperty("_BaseColor"))
                     {
-                        Color orig = mat.GetColor("_BaseColor");
-                        mat.SetColor("_BaseColor", Color.Lerp(orig, shellColor, tintStrength));
+                        Color orig = renderer.sharedMaterial.GetColor("_BaseColor");
+                        pb.SetColor("_BaseColor", Color.Lerp(orig, shellColor, tintStrength));
                     }
-                    if (mat.HasProperty("_Color"))
+                    if (renderer.sharedMaterial.HasProperty("_Color"))
                     {
-                        Color orig = mat.GetColor("_Color");
-                        mat.SetColor("_Color", Color.Lerp(orig, shellColor, tintStrength));
+                        Color orig = renderer.sharedMaterial.GetColor("_Color");
+                        pb.SetColor("_Color", Color.Lerp(orig, shellColor, tintStrength));
                     }
-                    if (mat.HasProperty("_Smoothness"))
-                        mat.SetFloat("_Smoothness", 0f);
-                    if (mat.HasProperty("_Metallic"))
-                        mat.SetFloat("_Metallic", 0f);
-                    if (mat.HasProperty("_SpecularHighlights"))
-                        mat.SetFloat("_SpecularHighlights", 0f);
-                    if (mat.HasProperty("_GlossyReflections"))
-                        mat.SetFloat("_GlossyReflections", 0f);
-                    if (mat.HasProperty("_EnvironmentReflections"))
-                        mat.SetFloat("_EnvironmentReflections", 0f);
-                    mat.DisableKeyword("_SPECULARHIGHLIGHTS_OFF");
-                    mat.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
-                    mat.DisableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
-                    mat.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
-                    mat.EnableKeyword("_EMISSION");
-                    mat.SetColor("_EmissionColor", shellColor * emissionMul);
-                    renderer.material = mat;
+                    pb.SetFloat("_Smoothness", 0f);
+                    pb.SetFloat("_Metallic", 0f);
+                    pb.SetColor("_EmissionColor", shellColor * emissionMul);
+
+                    renderer.SetPropertyBlock(pb);
                 }
 
                 if (go.GetComponent<UnitAnimationDriver>() == null)

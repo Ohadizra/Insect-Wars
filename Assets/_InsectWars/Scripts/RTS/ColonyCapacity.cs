@@ -31,7 +31,7 @@ namespace InsectWars.RTS
         /// <summary>Total CC provided by alive hive + operational buildings for a team.</summary>
         public static int GetCap(Team team)
         {
-            if (team == Team.Player && Core.GameSession.IsLearningMode) return MaxCap;
+            if (team == Team.Player && Core.GameSession.IsLearningMode && !Core.GameSession.IsTutorialMode) return MaxCap;
 
             int cap = 0;
 

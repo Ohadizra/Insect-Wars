@@ -78,11 +78,13 @@ namespace InsectWars.UI
             }
 
             foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+            {
                 r.enabled = false;
-            foreach (var agent in Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None))
-                agent.enabled = false;
-            foreach (var unit in Object.FindObjectsByType<InsectUnit>(FindObjectsSortMode.None))
-                unit.enabled = false;
+                var agent = r.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null) agent.enabled = false;
+                var unit = r.GetComponent<InsectUnit>();
+                if (unit != null) unit.enabled = false;
+            }
         }
 
         void Update()
@@ -351,10 +353,17 @@ namespace InsectWars.UI
             var box = DarkBox(_panelLearning.transform, 550, 550);
             PanelHeader(box.transform, "LEARNING", -50f);
             float y = -150f;
-            DarkButton(box.transform, "HOW TO PLAY", ref y, () => ShowHow());
+            DarkButton(box.transform, "HOW TO PLAY", ref y, () =>
+            {
+                GameSession.SetLearningMode(true);
+                GameSession.SetTutorialMode(true);
+                GameSession.SetSelectedMap(SkirmishMapPresets.GetTutorialMap());
+                SceneLoader.LoadSkirmishDemo();
+            });
             DarkButton(box.transform, "LEARNING MAP", ref y, () =>
             {
                 GameSession.SetLearningMode(true);
+                GameSession.SetTutorialMode(false);
                 GameSession.SetSelectedMap(SkirmishMapPresets.GetLearningMap());
                 SceneLoader.LoadSkirmishDemo();
             });
@@ -363,34 +372,6 @@ namespace InsectWars.UI
 
         void BuildHowToPlayPanel()
         {
-            _panelHow = MakePanel("HowPanel");
-            var box = DarkBox(_panelHow.transform, 700, 750);
-            PanelHeader(box.transform, "HOW TO PLAY", -30f);
-
-            const string howText =
-                "<b>CONTROLS</b>\n" +
-                "  Left-click to select units.  Right-click to move or attack.\n" +
-                "  Drag to box-select.  Ctrl+# to assign control groups.\n\n" +
-                "<b>ECONOMY</b>\n" +
-                "  Workers gather Calories from apple deposits.\n" +
-                "  Spend Calories to train units or construct buildings.\n\n" +
-                "<b>BUILDINGS</b>\n" +
-                "  Ant Nest — trains Workers and provides supply.\n" +
-                "  Underground — trains Fighters and Beetles.\n" +
-                "  Sky Tower — trains Black Widows.\n" +
-                "  Root Cellar — provides additional supply capacity.\n\n" +
-                "<b>COMBAT</b>\n" +
-                "  Fighters (Mantis) — fast melee attackers.\n" +
-                "  Beetles (Bombardier) — ranged acid sprayers.\n" +
-                "  Black Widow — elite melee assassin with poison and web net.\n\n" +
-                "<b>VICTORY</b>\n" +
-                "  Destroy all enemy buildings and their hive to win.";
-
-            var body = Txt(box.transform, howText, 18, ColTitle, TextAnchor.UpperLeft);
-            AnchorTopCenter(body.rectTransform, new Vector2(0, -100f), new Vector2(600, 500));
-
-            float y = -650f;
-            DarkButton(box.transform, "BACK", ref y, () => ShowLearning());
         }
 
         // ── Helpers ──

@@ -13,7 +13,8 @@ namespace InsectWars.RTS
         Underground,
         AntNest,
         SkyTower,
-        RootCellar
+        RootCellar,
+        Hive
     }
 
     public enum BuildingState
@@ -76,6 +77,21 @@ namespace InsectWars.RTS
             ? Mathf.Clamp01(_queue[0].elapsed / _queue[0].buildTime) : 0f;
         public UnitArchetype? CurrentProducing => _queue.Count > 0 ? _queue[0].archetype : null;
 
+        public UnitArchetype GetQueuedArchetype(int index) => _queue[index].archetype;
+
+        public void CancelAtIndex(int index)
+        {
+            if (index < 0 || index >= _queue.Count) return;
+            var entry = _queue[index];
+            _queue.RemoveAt(index);
+            int refund = GetUnitCost(entry.archetype);
+            if (_team == Team.Player && PlayerResources.Instance != null)
+                PlayerResources.Instance.AddCalories(refund);
+            else if (_team == Team.Enemy)
+                EnemyResources.AddCalories(refund);
+            ColonyCapacity.NotifyChanged();
+        }
+
         public int GetQueuedCCCost()
         {
             int cost = 0;
@@ -89,6 +105,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => "Underground",
             BuildingType.AntNest => "Ant's\nNest",
             BuildingType.SkyTower => "Sky Tower",
+            BuildingType.Hive => "Hive",
             _ => _type.ToString()
         };
 
@@ -96,6 +113,7 @@ namespace InsectWars.RTS
         {
             BuildingType.Underground => new[] { UnitArchetype.BasicFighter, UnitArchetype.BasicRanged, UnitArchetype.GiantStagBeetle },
             BuildingType.AntNest => new[] { UnitArchetype.Worker },
+            BuildingType.Hive => new[] { UnitArchetype.Worker },
             BuildingType.SkyTower => new[] { UnitArchetype.BlackWidow, UnitArchetype.StickSpy },
             _ => System.Array.Empty<UnitArchetype>()
         };
@@ -128,6 +146,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => 400,
             BuildingType.SkyTower => 300,
             BuildingType.RootCellar => 150,
+            BuildingType.Hive => 0,
             _ => 100
         };
 
@@ -148,6 +167,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => 500f,
             BuildingType.SkyTower => 350f,
             BuildingType.RootCellar => 300f,
+            BuildingType.Hive => 600f,
             _ => 300f
         };
 
@@ -157,6 +177,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => 35f,
             BuildingType.SkyTower => 30f,
             BuildingType.RootCellar => 20f,
+            BuildingType.Hive => 0f,
             _ => 20f
         };
 
@@ -166,6 +187,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => "Ant's Nest",
             BuildingType.SkyTower => "Sky Tower",
             BuildingType.RootCellar => "Root Cellar",
+            BuildingType.Hive => "Hive",
             _ => type.ToString()
         };
 
@@ -175,6 +197,7 @@ namespace InsectWars.RTS
             BuildingType.AntNest => "Expands the colony. Produces Worker ants and provides supply capacity.",
             BuildingType.SkyTower => "Elevated hive tower. Produces Black Widows — elite assassins — and Sticks — invisible spy units that can climb high ground.",
             BuildingType.RootCellar => "Storage burrow. Provides additional supply capacity for the colony.",
+            BuildingType.Hive => "The main colony hive. Produces Worker ants.",
             _ => ""
         };
 
@@ -184,6 +207,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => 4f,
             BuildingType.SkyTower => 4f,
             BuildingType.RootCellar => 1.75f,
+            BuildingType.Hive => 6f,
             _ => 4f
         };
 
@@ -211,6 +235,8 @@ namespace InsectWars.RTS
             if (!IsAlive) return;
             _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
             LastDamageTime = Time.time;
+            if (_team == Team.Player)
+                WarningSystem.ReportWarning(WarningType.BuildingUnderAttack, transform.position);
             if (_currentHealth <= 0f)
             {
                 _state = BuildingState.Destroyed;
@@ -436,17 +462,31 @@ namespace InsectWars.RTS
             if (unit == null) return null;
 
             SendToRally(unit);
+            ColonyCapacity.NotifyChanged();
             return unit;
         }
 
         public bool QueueUnit(UnitArchetype archetype)
         {
-            if (!IsOperational || _queue.Count >= MaxQueueSize) return false;
-            if (!ColonyCapacity.CanAfford(_team, archetype))
+            if (!IsOperational) return false;
+            if (_queue.Count >= MaxQueueSize)
+            {
+                if (_team == Team.Player)
+                    WarningSystem.ReportWarning(WarningType.QueueFull);
                 return false;
+            }
+            if (!ColonyCapacity.CanAfford(_team, archetype))
+            {
+                if (_team == Team.Player)
+                    WarningSystem.ReportWarning(WarningType.ColonyCapFull);
+                return false;
+            }
             int cost = GetUnitCost(archetype);
             if (_team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
+            {
+                WarningSystem.ReportWarning(WarningType.NotEnoughCalories);
                 return false;
+            }
             if (_team == Team.Enemy && !EnemyResources.TrySpend(cost))
                 return false;
             _queue.Add(new QueueEntry
@@ -468,6 +508,7 @@ namespace InsectWars.RTS
                 PlayerResources.Instance.AddCalories(refund);
             else if (_team == Team.Enemy)
                 EnemyResources.AddCalories(refund);
+            ColonyCapacity.NotifyChanged();
         }
 
         void Update()
@@ -502,6 +543,7 @@ namespace InsectWars.RTS
             var unit = SkirmishDirector.SpawnUnit(spawnPos, _team, archetype);
             if (unit == null) return;
             SendToRally(unit);
+            ColonyCapacity.NotifyChanged();
         }
 
         Vector3 GetSpawnPosition()

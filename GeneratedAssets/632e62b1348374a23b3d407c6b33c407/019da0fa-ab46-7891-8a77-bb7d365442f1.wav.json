@@ -1,0 +1,14 @@
+{
+    "asset": "632e62b1348374a23b3d407c6b33c407",
+    "fileName": "019da0fa-ab46-7891-8a77-bb7d365442f1.wav",
+    "prompt": "Sharp insect claw scratching sound. Natural wood-on-wood scrape. Quick and aggressive strike.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "3f739d8985078ad84bf17077d5e8dcd8",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

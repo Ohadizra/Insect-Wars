@@ -40,6 +40,8 @@ namespace InsectWars.RTS
         float _gatherTimer;
         float _gatherAngle;
         float _idleScanTimer;
+        float _idleElapsed;
+        bool _hasReceivedOrder;
         bool _holdPosition;
         bool _patrolActive;
         ProductionBuilding _buildTarget;
@@ -269,6 +271,7 @@ namespace InsectWars.RTS
         public void OrderMove(Vector3 world)
         {
             if (!IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _wantsAttackMove = false;
             _holdPosition = false;
@@ -281,6 +284,7 @@ namespace InsectWars.RTS
         public void OrderAttackMove(Vector3 world)
         {
             if (!IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _wantsAttackMove = true;
             _attackMoveDest = world;
@@ -294,6 +298,7 @@ namespace InsectWars.RTS
         public void OrderAttack(InsectUnit target, bool keepAttackMoveIntent = false)
         {
             if (!IsAlive || target == null || !target.IsAlive || target.team == team) return;
+            _hasReceivedOrder = true;
             var keepAm = keepAttackMoveIntent && _wantsAttackMove;
             var keepDest = _attackMoveDest;
             ClearTargets();
@@ -309,6 +314,7 @@ namespace InsectWars.RTS
         public void OrderAttackBuilding(ProductionBuilding target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -318,6 +324,7 @@ namespace InsectWars.RTS
         public void OrderAttackHive(HiveDeposit target)
         {
             if (!IsAlive || target == null || !target.IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
@@ -327,6 +334,7 @@ namespace InsectWars.RTS
         public void OrderBuild(ProductionBuilding building)
         {
             if (!IsAlive || building == null || !building.IsUnderConstruction) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _buildTarget = building;
             _attackTarget = building.transform;
@@ -338,11 +346,12 @@ namespace InsectWars.RTS
         public void OrderStop()
         {
             if (!IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _wantsAttackMove = false;
             _holdPosition = false;
             _patrolActive = false;
-            _order = UnitOrder.Idle;
+            _order = UnitOrder.Idle; _idleElapsed = 0f;
             _agent.isStopped = true;
             _agent.ResetPath();
         }
@@ -350,11 +359,12 @@ namespace InsectWars.RTS
         public void OrderHoldPosition()
         {
             if (!IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _wantsAttackMove = false;
             _patrolActive = false;
             _holdPosition = true;
-            _order = UnitOrder.Idle;
+            _order = UnitOrder.Idle; _idleElapsed = 0f;
             _agent.isStopped = true;
             _agent.ResetPath();
         }
@@ -362,6 +372,7 @@ namespace InsectWars.RTS
         public void OrderPatrol(Vector3 a, Vector3 b)
         {
             if (!IsAlive) return;
+            _hasReceivedOrder = true;
             ClearTargets();
             _wantsAttackMove = false;
             _holdPosition = false;
@@ -477,7 +488,7 @@ namespace InsectWars.RTS
         {
             if (_gatherTarget == null || _gatherTarget.Depleted)
             {
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
                 return;
             }
             var diff = transform.position - _gatherTarget.transform.position;
@@ -514,7 +525,7 @@ namespace InsectWars.RTS
             var depositDest = FindNearestTeamDepositPoint();
             if (!depositDest.HasValue)
             {
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
                 return;
             }
 
@@ -547,7 +558,7 @@ namespace InsectWars.RTS
                 return;
             }
             _lastGatherTarget = null;
-            _order = UnitOrder.Idle;
+            _order = UnitOrder.Idle; _idleElapsed = 0f;
         }
 
         void TickMove()
@@ -555,7 +566,7 @@ namespace InsectWars.RTS
             if (_agent.pathPending) return;
             if (_agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
             {
-                if (definition != null && definition.canGather)
+                if (team != Team.Player && definition != null && definition.canGather)
                 {
                     var nearby = FindNearbyFruit(6f);
                     if (nearby != null)
@@ -564,7 +575,7 @@ namespace InsectWars.RTS
                         return;
                     }
                 }
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
             }
         }
 
@@ -574,7 +585,7 @@ namespace InsectWars.RTS
             if (_agent.pathPending) return;
             if (_agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
             {
-                if (definition != null && definition.canGather)
+                if (team != Team.Player && definition != null && definition.canGather)
                 {
                     var nearby = FindNearbyFruit(6f);
                     if (nearby != null)
@@ -583,7 +594,7 @@ namespace InsectWars.RTS
                         return;
                     }
                 }
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
             }
         }
 
@@ -643,9 +654,18 @@ namespace InsectWars.RTS
             }
         }
 
+        const float AutoGatherIdleDelay = 60f;
+
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
+
+            if (_hasReceivedOrder && team == Team.Player)
+            {
+                _idleElapsed += Time.deltaTime;
+                if (_idleElapsed < AutoGatherIdleDelay) return;
+            }
+
             _idleScanTimer -= Time.deltaTime;
             if (_idleScanTimer > 0f) return;
             _idleScanTimer = 0.5f;
@@ -660,14 +680,14 @@ namespace InsectWars.RTS
             if (_buildTarget == null || !_buildTarget.IsAlive)
             {
                 StopBuilding();
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
                 return;
             }
 
             if (!_buildTarget.IsUnderConstruction)
             {
                 StopBuilding();
-                _order = UnitOrder.Idle;
+                _order = UnitOrder.Idle; _idleElapsed = 0f;
                 return;
             }
 
@@ -752,9 +772,10 @@ namespace InsectWars.RTS
                         if (targetUnit != null)
                         {
                             targetUnit.ApplyDamage(definition.attackDamage);
+                            GameAudio.PlayAttack(definition.archetype, transform.position);
                         }
                         GetComponent<UnitAnimationDriver>()?.NotifyAttack();
-                        _attackCooldown = definition.attackCooldown;
+_attackCooldown = definition.attackCooldown;
                     }
                     return;
                 }
@@ -799,9 +820,10 @@ namespace InsectWars.RTS
                 : transform.position + Vector3.up * 0.45f;
             SprayAttack.Fire(sprayOrigin, lookDir.normalized, definition.attackRange,
                 team, definition.attackDamage, this);
+            GameAudio.PlayAttack(definition.archetype, transform.position);
             animDriver?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
-        }
+}
 
         void TickAttackBuilding()
         {
@@ -846,9 +868,10 @@ namespace InsectWars.RTS
             else if (hive != null)
                 hive.TakeDamage(definition.attackDamage);
 
+            GameAudio.PlayAttack(definition.archetype, transform.position);
             GetComponent<UnitAnimationDriver>()?.NotifyAttack();
             _attackCooldown = definition.attackCooldown;
-        }
+}
 
         void ResumeAfterAttack()
         {
@@ -861,7 +884,7 @@ namespace InsectWars.RTS
                 _agent.SetDestination(_attackMoveDest);
                 return;
             }
-            _order = UnitOrder.Idle;
+            _order = UnitOrder.Idle; _idleElapsed = 0f;
         }
 
         // --- Helpers ---
@@ -944,6 +967,13 @@ namespace InsectWars.RTS
             _health -= dmg;
             LastDamageTime = Time.time;
             GameAudio.PlayCombatHit(transform.position);
+            if (team == Team.Player)
+            {
+                if (Archetype == UnitArchetype.Worker)
+                    WarningSystem.ReportWarning(WarningType.WorkerUnderAttack, transform.position);
+                else if (_order != UnitOrder.Attack && _order != UnitOrder.AttackMove && _order != UnitOrder.AttackBuilding)
+                    WarningSystem.ReportWarning(WarningType.UnitsUnderAttack, transform.position);
+            }
             if (_health <= 0)
             {
                 _health = 0;
@@ -952,6 +982,7 @@ namespace InsectWars.RTS
                 UnlockMelee();
                 _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);
+                ColonyCapacity.NotifyChanged();
                 var drv = GetComponent<UnitAnimationDriver>();
                 if (drv != null)
                     drv.NotifyDeath(0.48f);
@@ -972,6 +1003,7 @@ namespace InsectWars.RTS
                 UnlockMelee();
                 _agent.isStopped = true;
                 SelectionController.Instance?.Deselect(this);
+                ColonyCapacity.NotifyChanged();
                 var drv = GetComponent<UnitAnimationDriver>();
                 if (drv != null)
                     drv.NotifyDeath(0.48f);

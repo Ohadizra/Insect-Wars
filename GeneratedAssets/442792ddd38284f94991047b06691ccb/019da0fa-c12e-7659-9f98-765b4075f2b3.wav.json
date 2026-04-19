@@ -1,0 +1,14 @@
+{
+    "asset": "442792ddd38284f94991047b06691ccb",
+    "fileName": "019da0fa-c12e-7659-9f98-765b4075f2b3.wav",
+    "prompt": "Deep heavy bone-like crunch and wooden impact. Resonant and powerful insect strike. Organic crushing sound.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "85cf8880cb9375d7963b8fb7b37ef43d",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

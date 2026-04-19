@@ -103,12 +103,24 @@ namespace InsectWars.RTS
 
         public bool QueueWorker()
         {
-            if (_workerQueue.Count >= MaxQueueSize) return false;
-            if (!ColonyCapacity.CanAfford(team, UnitArchetype.Worker))
+            if (_workerQueue.Count >= MaxQueueSize)
+            {
+                if (team == Team.Player)
+                    WarningSystem.ReportWarning(WarningType.QueueFull);
                 return false;
+            }
+            if (!ColonyCapacity.CanAfford(team, UnitArchetype.Worker))
+            {
+                if (team == Team.Player)
+                    WarningSystem.ReportWarning(WarningType.ColonyCapFull);
+                return false;
+            }
             int cost = ProductionBuilding.GetUnitCost(UnitArchetype.Worker);
             if (team == Team.Player && PlayerResources.Instance != null && !PlayerResources.Instance.TrySpend(cost))
+            {
+                WarningSystem.ReportWarning(WarningType.NotEnoughCalories);
                 return false;
+            }
             if (team == Team.Enemy && !EnemyResources.TrySpend(cost))
                 return false;
             _workerQueue.Add(new WorkerQueueEntry
@@ -128,6 +140,19 @@ namespace InsectWars.RTS
                 PlayerResources.Instance.AddCalories(refund);
             else if (team == Team.Enemy)
                 EnemyResources.AddCalories(refund);
+            ColonyCapacity.NotifyChanged();
+        }
+
+        public void CancelAtIndex(int index)
+        {
+            if (index < 0 || index >= _workerQueue.Count) return;
+            _workerQueue.RemoveAt(index);
+            int refund = ProductionBuilding.GetUnitCost(UnitArchetype.Worker);
+            if (team == Team.Player && PlayerResources.Instance != null)
+                PlayerResources.Instance.AddCalories(refund);
+            else if (team == Team.Enemy)
+                EnemyResources.AddCalories(refund);
+            ColonyCapacity.NotifyChanged();
         }
 
         void SpawnWorker()
@@ -159,6 +184,7 @@ namespace InsectWars.RTS
 
             var unit = SkirmishDirector.SpawnUnit(spawnPos, team, UnitArchetype.Worker);
             if (unit == null) return;
+            ColonyCapacity.NotifyChanged();
 
             if (_rallyUnitTarget != null && _rallyUnitTarget.IsAlive)
                 unit.OrderMove(_rallyUnitTarget.transform.position);
@@ -175,6 +201,8 @@ namespace InsectWars.RTS
         {
             _currentHealth = Mathf.Max(0f, _currentHealth - dmg);
             LastDamageTime = Time.time;
+            if (this == PlayerHive)
+                WarningSystem.ReportWarning(WarningType.BaseUnderAttack, transform.position);
         }
 
         void TickPassiveRegen()

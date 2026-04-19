@@ -1,0 +1,14 @@
+{
+    "asset": "a60523d037ca042c399436675dd95f20",
+    "fileName": "019da0fa-ac27-7b16-a2ec-901e5c3e00e2.wav",
+    "prompt": "Short natural clash of dry wood and clicking insect sounds. Single impact. Organic and crisp.",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "5daf3fff95bec8c1cf551399de1b0e0b",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

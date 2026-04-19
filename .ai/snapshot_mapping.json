@@ -1235,6 +1235,12 @@
       "conversation_id": "bbb8787d-1841-4a80-b76e-92c3a1ee7e90",
       "content": "I have updated the game music to be a darker, more percussive tribal track that plays **only during the game**.\n\n### Changes Made:\n1.  **New Audio Asset**: Generated a percussive-heavy track at `Assets/Resources/Audio/Music_TribalBattle.wav`. This track features:\n    *   **Heavy slow tribal drums** for rhythmic tension.\n    *   **Sounds of dry branches breaking and leaves being crushed** for a raw, natural insect-war atmosphere.\n2.  **Logic Update**:\n    *   **Silenced the Menu**: Modified `GameAudio.cs` to remove the automatic music startup. The main menu will now be silent or use existing UI sounds only.\n    *   **Game-Only Trigger**: Added a call to `GameAudio.PlayGameMusic()` inside the `SkirmishDirector.cs` Start method. This ensures the music only begins when a mission actually starts.\n3.  **Static API**: Updated the `GameAudio` music methods to be static (`PlayGameMusic`), making it easier to trigger from any game-state controller.\n\nThe previous \"Finntroll\" style music has been replaced by this slower, more atmospheric tribal beat to fit the \"smashed leaves and breaking branches\" feel you requested for gameplay.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "1d54ad19-7c12-4f45-8039-261aacbf1ae1",
+      "content": "add a brand new map by duplicating the current frozen map, keep the base area similar but make the map much much smaller so it will be a short rush distance map.",
+      "snapshot_message_type": 0
     }
   ]
 }

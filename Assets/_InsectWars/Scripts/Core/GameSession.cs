@@ -28,6 +28,9 @@ namespace InsectWars.Core
         /// <summary>When true the match runs as a sandbox with no enemy AI, pre-built buildings, and a training dummy.</summary>
         public static bool IsLearningMode { get; private set; }
 
+        /// <summary>When true the match runs as a guided tutorial with sequential quest chapters.</summary>
+        public static bool IsTutorialMode { get; private set; }
+
         public static void SetSelectedMap(SkirmishMapDefinition map)
         {
             SelectedMap = map;
@@ -36,6 +39,11 @@ namespace InsectWars.Core
         public static void SetLearningMode(bool on)
         {
             IsLearningMode = on;
+        }
+
+        public static void SetTutorialMode(bool on)
+        {
+            IsTutorialMode = on;
         }
 
         public static float DifficultyEnemyHpMultiplier => Difficulty switch

@@ -234,6 +234,48 @@ namespace InsectWars.Data
             return map;
             }
 
+        // ────────────────────── Tutorial ──────────────────────
+
+        static SkirmishMapDefinition s_tutorialMap;
+
+        public static SkirmishMapDefinition GetTutorialMap()
+        {
+            if (s_tutorialMap != null) return s_tutorialMap;
+            s_tutorialMap = CreateTutorialMap();
+            return s_tutorialMap;
+        }
+
+        static SkirmishMapDefinition CreateTutorialMap()
+        {
+            var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
+            map.name = "TutorialMap";
+            map.displayName = "Tutorial";
+            map.description = "A compact guided tutorial map.";
+
+            map.mapHalfExtent = 22f;
+
+            map.playerHivePosition    = new Vector3(0f, 1f, 0f);
+            map.enemyHivePosition     = new Vector3(200f, 1f, 200f);
+            map.playerArmyStart       = new Vector3(0f, 0f, 0f);
+            map.enemyArmyStart        = new Vector3(200f, 0f, 200f);
+            map.cameraFocusWorld      = new Vector3(0f, 0f, 0f);
+            map.bigApplePosition      = new Vector3(12f, 1.5f, 8f);
+            map.enemyBigApplePosition = new Vector3(200f, 1.5f, 200f);
+
+            map.passiveScatterSeed = 77777;
+
+            map.highGrounds = System.Array.Empty<HighGroundPlaced>();
+            map.clay = System.Array.Empty<ClayPlaced>();
+            map.terrainFeatures = System.Array.Empty<TerrainFeaturePlaced>();
+            map.decorativePrefabs = System.Array.Empty<DecorativePrefabPlaced>();
+            map.fruits = new[]
+            {
+                new FruitPlaced { position = new Vector3(12f, 0.6f, 8f), calories = 10000, gatherPerTick = 15, gatherSeconds = 3f },
+            };
+
+            return map;
+        }
+
         // ────────────────────── Learning / Sandbox ──────────────────────
 
         static SkirmishMapDefinition s_learningMap;
