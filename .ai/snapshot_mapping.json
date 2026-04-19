@@ -1265,6 +1265,12 @@
       "conversation_id": "6bd13642-61ab-4ebf-8819-2f148671934b",
       "content": "fix progress bar,l it shuld be solid green color and less 40% in width",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "120bd6ce-1941-42a4-b5d1-94258b3d087f",
+      "conversation_id": "6bd13642-61ab-4ebf-8819-2f148671934b",
+      "content": "I have updated the progress bar in the `BottomBar.cs` script to match your requirements.\n\n### Changes made:\n1.  **Visual Style**: Replaced the ornate textured sprite with a **solid green color** (`new Color(0.1f, 0.8f, 0.1f, 1f)`) for both production and construction progress bars.\n2.  **Width Reduction**: Reduced the width of the progress bar container by **40%** (set to 60% of its original size) to make it less prominent in the UI.\n3.  **Background**: Set the progress bar background to a solid dark color to match the new flat design.\n\nThese changes apply to both the unit production progress (e.g., when a \"Worker\" is being trained at the Hive) and the building construction progress.\n\n```csharp\n// Example of the updated code in BottomBar.cs:\n_prodBarFillImg.sprite = null; // Solid color instead of texture\n_prodBarFillImg.color = new Color(0.1f, 0.8f, 0.1f, 1f); // Solid Green\nbcrt.anchorMax = new Vector2(0.6f, 1f); // Reduced width by 40%\n```\n\nYou can now verify the change in-game by selecting a Hive or a building under construction.",
+      "snapshot_message_type": 1
     }
   ]
 }

@@ -721,21 +721,21 @@ namespace InsectWars.RTS
             barContainer.transform.SetParent(row1.transform, false);
             var bcrt = barContainer.AddComponent<RectTransform>();
             bcrt.anchorMin = new Vector2(0f, 0f);
-            bcrt.anchorMax = new Vector2(1f, 1f);
+            bcrt.anchorMax = new Vector2(0.6f, 1f);
             bcrt.offsetMin = new Vector2(34f, 2f);
             bcrt.offsetMax = new Vector2(0f, -2f);
 
             _prodBarBgImg = barContainer.AddComponent<Image>();
-            _prodBarBgImg.sprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            _prodBarBgImg.sprite = null;
             _prodBarBgImg.type = Image.Type.Sliced;
             _prodBarBgImg.color = new Color(0.1f, 0.08f, 0.06f, 0.8f);
 
             var fillGo = new GameObject("Fill");
             fillGo.transform.SetParent(barContainer.transform, false);
             _prodBarFillImg = fillGo.AddComponent<Image>();
-            _prodBarFillImg.sprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+            _prodBarFillImg.sprite = null;
             _prodBarFillImg.type = Image.Type.Sliced;
-            _prodBarFillImg.color = new Color(0.3f, 0.75f, 0.4f, 0.9f);
+            _prodBarFillImg.color = new Color(0.1f, 0.8f, 0.1f, 1f);
             _prodBarFillImg.raycastTarget = false;
             var frt = _prodBarFillImg.rectTransform;
             frt.anchorMin = Vector2.zero;
@@ -1335,7 +1335,7 @@ namespace InsectWars.RTS
 
                 float p = Mathf.Clamp01(constructionProgress);
                 _prodBarFillImg.rectTransform.anchorMax = new Vector2(p, 1f);
-                _prodBarFillImg.color = new Color(0.95f, 0.75f, 0.2f, 0.9f);
+                _prodBarFillImg.color = new Color(0.1f, 0.8f, 0.1f, 1f);
 
                 string bldLabel = constructionBuilders > 0
                     ? $"Building... ({constructionBuilders} worker{(constructionBuilders > 1 ? "s" : "")}) {Mathf.RoundToInt(p * 100f)}%"
@@ -1343,44 +1343,44 @@ namespace InsectWars.RTS
                 _prodBarLabel.text = bldLabel;
                 ClearQueueSlots();
                 return;
-            }
+                }
 
-            // --- Nothing producing ---
-            if (displayBld == null && displayHive == null)
-            {
+                // --- Nothing producing ---
+                if (displayBld == null && displayHive == null)
+                {
                 _prodRoot.SetActive(false);
                 return;
-            }
+                }
 
-            _prodRoot.SetActive(true);
-            _queueDisplayBuilding = displayBld;
-            _queueDisplayHive = displayHive;
+                _prodRoot.SetActive(true);
+                _queueDisplayBuilding = displayBld;
+                _queueDisplayHive = displayHive;
 
-            int queueCount = displayBld != null ? displayBld.QueueCount : displayHive.QueueCount;
-            float progress = displayBld != null ? displayBld.ProductionProgress : displayHive.ProductionProgress;
+                int queueCount = displayBld != null ? displayBld.QueueCount : displayHive.QueueCount;
+                float progress = displayBld != null ? displayBld.ProductionProgress : displayHive.ProductionProgress;
 
-            // --- Row 1: active unit icon + progress bar ---
-            Sprite activeIcon;
-            string unitName;
-            if (displayBld != null)
-            {
+                // --- Row 1: active unit icon + progress bar ---
+                Sprite activeIcon;
+                string unitName;
+                if (displayBld != null)
+                {
                 var arch = displayBld.GetQueuedArchetype(0);
                 activeIcon = GetUnitPortrait(arch);
                 unitName = ProductionBuilding.GetUnitName(arch);
-            }
-            else
-            {
+                }
+                else
+                {
                 activeIcon = portraitWorker;
                 unitName = "Worker";
-            }
+                }
 
-            _prodActiveIcon.sprite = activeIcon;
-            _prodActiveIcon.color = Color.white;
+                _prodActiveIcon.sprite = activeIcon;
+                _prodActiveIcon.color = Color.white;
 
-            float prog = Mathf.Clamp01(progress);
-            _prodBarFillImg.rectTransform.anchorMax = new Vector2(prog, 1f);
-            _prodBarFillImg.color = new Color(0.3f, 0.75f, 0.4f, 0.9f);
-            _prodBarLabel.text = $"{unitName}  {Mathf.RoundToInt(prog * 100f)}%";
+                float prog = Mathf.Clamp01(progress);
+                _prodBarFillImg.rectTransform.anchorMax = new Vector2(prog, 1f);
+                _prodBarFillImg.color = new Color(0.1f, 0.8f, 0.1f, 1f);
+                _prodBarLabel.text = $"{unitName}  {Mathf.RoundToInt(prog * 100f)}%";
 
             // --- Row 2: queued units (index 1+) ---
             bool hasQueued = queueCount > 1;
