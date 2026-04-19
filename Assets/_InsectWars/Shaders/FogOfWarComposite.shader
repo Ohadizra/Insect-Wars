@@ -24,6 +24,16 @@ Shader "Hidden/InsectWars/FogOfWarComposite"
             float4 _IW_FogBounds;
             float _IW_FogActive;
 
+            static const half3 ShroudColor = half3(0.012h, 0.014h, 0.028h);
+            static const half3 ExploredTint = half3(0.38h, 0.42h, 0.52h);
+
+            float hash12(float2 p)
+            {
+                float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
+                p3 += dot(p3, p3.yzx + 33.33);
+                return frac((p3.x + p3.y) * p3.z);
+            }
+
             half4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
@@ -47,18 +57,20 @@ Shader "Hidden/InsectWars/FogOfWarComposite"
                 if (fuv.x < -0.05 || fuv.x > 1.05 || fuv.y < -0.05 || fuv.y > 1.05)
                     return scene;
 
-                // R = explored (memory), G = current vision. Bilinear soft edges → use lower thresholds.
                 half2 fog = SAMPLE_TEXTURE2D(_IW_FogWarTex, sampler_IW_FogWarTex, saturate(fuv)).rg;
                 half vis = fog.g;
                 half exp = fog.r;
-                // 1) Full vision — player sees terrain + units here
-                if (vis > 0.22h)
-                    return scene;
-                // 2) Explored but no vision — terrain dimmed; enemies culled in C#
-                if (exp > 0.18h)
-                    return half4(scene.rgb * half3(0.48h, 0.5h, 0.58h), scene.a);
-                // 3) Shroud — never explored: fully opaque black (SC2-style)
-                return half4(0.0h, 0.0h, 0.0h, scene.a);
+
+                float noise = hash12(fuv * 200.0) * 0.12;
+
+                half visFactor = smoothstep(0.10h + noise, 0.35h + noise, vis);
+                half expFactor = smoothstep(0.08h + noise, 0.30h + noise, exp);
+
+                half3 explored = scene.rgb * ExploredTint;
+                half3 col = lerp(ShroudColor, explored, expFactor);
+                col = lerp(col, scene.rgb, visFactor);
+
+                return half4(col, scene.a);
             }
             ENDHLSL
         }

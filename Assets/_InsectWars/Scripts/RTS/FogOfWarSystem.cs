@@ -18,6 +18,8 @@ namespace InsectWars.RTS
     {
         public static FogOfWarSystem Instance { get; private set; }
 
+        public Texture2D FogTexture => _tex;
+
         const int TexRes = 256;
         const float HighGroundThreshold = 0.5f;
         const float CloakDetectionRange = 8f;

@@ -112,23 +112,37 @@ namespace InsectWars.RTS
         float TickInterval => 1.5f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
         const float ProduceBaseInterval = 4f;
-        const float BuildCheckInterval = 10f;
         const float HarassInterval = 45f;
         const float AttackCooldown = 50f;
 
-        int DesiredWorkers => Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
-        int MaxCombat => Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
-        int MaxUndergrounds => _matchTime > 180f ? 2 : 1;
+        static bool IsHard => GameSession.Difficulty == DemoDifficulty.Hard;
+        static bool IsNormalOrHard => GameSession.Difficulty >= DemoDifficulty.Normal;
+
+        float BuildCheckInterval => IsHard ? 7f : 10f;
+
+        int DesiredWorkers => IsHard
+            ? Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 12)
+            : Mathf.Clamp(3 + (int)(_matchTime / 35f), 3, 10);
+
+        int MaxCombat => IsHard
+            ? Mathf.Clamp(6 + (int)(_matchTime / 18f), 6, 30)
+            : IsNormalOrHard
+                ? Mathf.Clamp(5 + (int)(_matchTime / 22f), 5, 25)
+                : Mathf.Clamp(4 + (int)(_matchTime / 25f), 4, 20);
+
+        int MaxUndergrounds => IsHard
+            ? (_matchTime > 100f ? 3 : _matchTime > 50f ? 2 : 1)
+            : (_matchTime > 180f ? 2 : 1);
 
         void Start()
         {
             ResetTracking();
             float diffMul = GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
-            _nextProduceTime = 6f;
-            _nextBuildTime = 25f * diffMul;
+            _nextProduceTime = IsHard ? 3f : 6f;
+            _nextBuildTime = (IsHard ? 15f : 25f) * diffMul;
             _nextWorkerAssignTime = 2f;
-            _nextHarassTime = 80f * diffMul;
-            _nextMainAttackTime = 55f * diffMul;
+            _nextHarassTime = (IsHard ? 50f : 80f) * diffMul;
+            _nextMainAttackTime = (IsHard ? 40f : 55f) * diffMul;
         }
 
         void Update()
@@ -173,40 +187,56 @@ namespace InsectWars.RTS
             if (_matchTime < _nextBuildTime) return;
             _nextBuildTime = _matchTime + BuildCheckInterval;
 
-            int undergrounds = 0, antNests = 0, rootCellars = 0;
+            int undergrounds = 0, antNests = 0, rootCellars = 0, skyTowers = 0;
             foreach (var b in ProductionBuilding.All)
             {
                 if (b == null || b.Team != Team.Enemy) continue;
-                if (b.Type == BuildingType.Underground) undergrounds++;
-                if (b.Type == BuildingType.AntNest) antNests++;
-                if (b.Type == BuildingType.RootCellar) rootCellars++;
+                switch (b.Type)
+                {
+                    case BuildingType.Underground: undergrounds++; break;
+                    case BuildingType.AntNest: antNests++; break;
+                    case BuildingType.RootCellar: rootCellars++; break;
+                    case BuildingType.SkyTower: skyTowers++; break;
+                }
             }
 
-            // Build Root Cellar when nearing CC cap
             int ccUsed = ColonyCapacity.GetUsed(Team.Enemy) + ColonyCapacity.GetQueued(Team.Enemy);
             int ccCap = ColonyCapacity.GetCap(Team.Enemy);
             int ccRoom = ccCap - ccUsed;
             int cellarCost = ProductionBuilding.GetBuildCost(BuildingType.RootCellar);
-            if (ccRoom <= 5 && ccCap < ColonyCapacity.MaxCap
+            int ccRoomThreshold = IsHard ? 8 : 5;
+            if (ccRoom <= ccRoomThreshold && ccCap < ColonyCapacity.MaxCap
                 && EnemyResources.Calories >= cellarCost + 50)
             {
                 TryPlaceRootCellar();
             }
 
-            if (undergrounds == 0 && _matchTime > 25f)
+            float firstUndergroundTime = IsHard ? 15f : (IsNormalOrHard ? 20f : 25f);
+            if (undergrounds == 0 && _matchTime > firstUndergroundTime)
             {
                 TryPlaceUnderground();
                 return;
             }
 
             int nestCost = ProductionBuilding.GetBuildCost(BuildingType.AntNest);
-            if (antNests < 2 && _matchTime > 90f && EnemyResources.Calories >= nestCost + 100)
+            float expansionTime = IsHard ? 50f : (IsNormalOrHard ? 70f : 90f);
+            int maxNests = IsHard ? 3 : 2;
+            if (antNests < maxNests && _matchTime > expansionTime && EnemyResources.Calories >= nestCost + 100)
             {
                 if (TryPlaceExpansionNest()) return;
             }
 
+            // Normal/Hard: build a SkyTower for Black Widows
+            if (IsNormalOrHard && skyTowers == 0 && _matchTime > (IsHard ? 80f : 120f))
+            {
+                int towerCost = ProductionBuilding.GetBuildCost(BuildingType.SkyTower);
+                if (EnemyResources.Calories >= towerCost + 100)
+                    TryPlaceSkyTower();
+            }
+
             int undergroundCost = ProductionBuilding.GetBuildCost(BuildingType.Underground);
-            if (undergrounds < MaxUndergrounds && _matchTime > 150f
+            float secondUndergroundTime = IsHard ? 80f : (IsNormalOrHard ? 120f : 150f);
+            if (undergrounds < MaxUndergrounds && _matchTime > secondUndergroundTime
                 && EnemyResources.Calories >= undergroundCost + 100)
             {
                 TryPlaceUnderground();
@@ -250,6 +280,15 @@ namespace InsectWars.RTS
             if (hive == null) return;
             ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 6f),
                 BuildingType.RootCellar, Team.Enemy, startBuilt: true);
+        }
+
+        void TryPlaceSkyTower()
+        {
+            if (!EnemyResources.TrySpend(ProductionBuilding.GetBuildCost(BuildingType.SkyTower))) return;
+            var hive = HiveDeposit.EnemyHive;
+            if (hive == null) return;
+            ProductionBuilding.Place(FindBuildPosition(hive.transform.position, 10f),
+                BuildingType.SkyTower, Team.Enemy, startBuilt: true);
         }
 
         Vector3 FindBuildPosition(Vector3 near, float radius)
@@ -419,29 +458,47 @@ namespace InsectWars.RTS
             var hive = HiveDeposit.EnemyHive;
             if (hive == null) return false;
 
-            bool threatened = false;
+            int threatCount = 0;
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Player) continue;
                 if (Vector3.Distance(hive.transform.position, u.transform.position) < 25f)
-                { threatened = true; break; }
+                    threatCount++;
             }
-            if (!threatened) return false;
+            if (threatCount == 0) return false;
 
+            float recallRange = IsHard ? 50f : 30f;
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
                 if (u.Archetype == UnitArchetype.Worker) continue;
-                if (Vector3.Distance(hive.transform.position, u.transform.position) > 30f)
+                if (Vector3.Distance(hive.transform.position, u.transform.position) > recallRange)
                     u.OrderAttackMove(hive.transform.position);
             }
+
+            // Hard: pull nearby idle workers to fight when outnumbered
+            if (IsHard && threatCount >= 3)
+            {
+                foreach (var u in RtsSimRegistry.Units)
+                {
+                    if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
+                    if (u.Archetype != UnitArchetype.Worker) continue;
+                    if (Vector3.Distance(hive.transform.position, u.transform.position) < 20f
+                        && u.CurrentOrder is UnitOrder.Idle or UnitOrder.Gather)
+                    {
+                        u.OrderAttackMove(hive.transform.position);
+                    }
+                }
+            }
+
             return true;
         }
 
         void TryHarass()
         {
             if (_matchTime < _nextHarassTime) return;
-            _nextHarassTime = _matchTime + HarassInterval * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
+            float harassCooldown = IsHard ? 25f : HarassInterval;
+            _nextHarassTime = _matchTime + harassCooldown * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
 
             var fog = FogOfWarSystem.Instance;
 
@@ -456,10 +513,11 @@ namespace InsectWars.RTS
             }
             if (workerPos == null) return;
 
+            int maxHarass = IsHard ? 5 : (IsNormalOrHard ? 4 : 3);
             int sent = 0;
             foreach (var u in RtsSimRegistry.Units)
             {
-                if (sent >= 3) break;
+                if (sent >= maxHarass) break;
                 if (u == null || !u.IsAlive || u.Team != Team.Enemy) continue;
                 if (u.Archetype == UnitArchetype.Worker) continue;
                 if (u.CurrentOrder is UnitOrder.Idle or UnitOrder.Move)
@@ -481,23 +539,58 @@ namespace InsectWars.RTS
                 if (u.Archetype != UnitArchetype.Worker) army.Add(u);
             }
 
-            int threshold = _matchTime < 60f ? 3 : (_matchTime < 120f ? 5 : 7);
+            int threshold;
+            if (IsHard)
+                threshold = _matchTime < 45f ? 3 : (_matchTime < 90f ? 5 : 6);
+            else if (IsNormalOrHard)
+                threshold = _matchTime < 55f ? 3 : (_matchTime < 110f ? 5 : 7);
+            else
+                threshold = _matchTime < 60f ? 3 : (_matchTime < 120f ? 5 : 7);
+
             bool allIn = EnemyResources.Calories < 30 && !HasActiveFruit() && army.Count > 0;
 
             if (!allIn)
             {
                 if (army.Count < threshold) return;
-                if (!_firstWaveSent && _matchTime < 55f * GameSession.DifficultyEnemyAiThinkIntervalMultiplier) return;
+                float firstWaveTime = IsHard ? 35f : 55f;
+                if (!_firstWaveSent && _matchTime < firstWaveTime * GameSession.DifficultyEnemyAiThinkIntervalMultiplier) return;
             }
 
             var target = PickAttackTarget();
             if (target == Vector3.zero) return;
 
-            foreach (var u in army)
-                u.OrderAttackMove(target);
+            // Normal/Hard: split army for a multi-prong attack when big enough
+            if (IsNormalOrHard && army.Count >= 8)
+            {
+                var flanking = new List<InsectUnit>();
+                var main = new List<InsectUnit>();
+
+                for (int i = 0; i < army.Count; i++)
+                {
+                    if (i % 4 == 0 && flanking.Count < army.Count / 3)
+                        flanking.Add(army[i]);
+                    else
+                        main.Add(army[i]);
+                }
+
+                var flankOffset = Vector3.Cross(Vector3.up,
+                    (target - (HiveDeposit.EnemyHive != null ? HiveDeposit.EnemyHive.transform.position : Vector3.zero)).normalized) * 15f;
+                var flankTarget = target + flankOffset;
+
+                foreach (var u in main)
+                    u.OrderAttackMove(target);
+                foreach (var u in flanking)
+                    u.OrderAttackMove(flankTarget);
+            }
+            else
+            {
+                foreach (var u in army)
+                    u.OrderAttackMove(target);
+            }
 
             _firstWaveSent = true;
-            _nextMainAttackTime = _matchTime + AttackCooldown * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
+            float cooldown = IsHard ? 35f : AttackCooldown;
+            _nextMainAttackTime = _matchTime + cooldown * GameSession.DifficultyEnemyAiThinkIntervalMultiplier;
         }
 
         Vector3 PickAttackTarget()

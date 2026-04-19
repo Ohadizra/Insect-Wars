@@ -52,8 +52,25 @@ namespace InsectWars.RTS
                 Destroy(_fogMat);
         }
 
+        static readonly int FogTexProp = Shader.PropertyToID("_IW_FogWarTex");
+        static readonly int FogActiveProp = Shader.PropertyToID("_IW_FogActive");
+
         void LateUpdate()
         {
+            if (_fogMat != null)
+            {
+                var fog = FogOfWarSystem.Instance;
+                if (fog != null && fog.FogTexture != null)
+                {
+                    _fogMat.SetTexture(FogTexProp, fog.FogTexture);
+                    _fogMat.SetFloat(FogActiveProp, 1f);
+                }
+                else
+                {
+                    _fogMat.SetFloat(FogActiveProp, 0f);
+                }
+            }
+
             UpdateViewportIndicator();
         }
 

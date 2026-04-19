@@ -7,7 +7,7 @@ namespace InsectWars.RTS
     /// <summary>
     /// SC2/WC3-grade per-unit AI for enemy team.
     /// Workers: round-trip gathering via <see cref="EnemyCommander.FindBestFruit"/>,
-    ///          saturation tracking, flee toward nearby allies.
+    ///          saturation tracking, flee toward nearby allies, fight back when cornered.
     /// Combat:  leash radius, assist nearby allies, focus-fire injured targets,
     ///          ranged kiting, low-HP retreat, re-aggro on damage.
     /// </summary>
@@ -31,6 +31,7 @@ namespace InsectWars.RTS
         const float LeashRadius = 40f;
         const float RetreatHpFraction = 0.2f;
         const float AssistRadius = 15f;
+        const float WorkerFightBackRadius = 8f;
 
         void Awake()
         {
@@ -85,33 +86,73 @@ namespace InsectWars.RTS
         void TickWorker()
         {
             float vision = _self.Definition != null ? _self.Definition.visionRadius : 12f;
+            bool wasHitRecently = _self.LastDamageTime >= 0 && Time.time - _self.LastDamageTime < 3f;
 
-            // Threat scan — flee from non-worker player combat units
-            InsectUnit threat = null;
-            float threatDist = vision;
+            // Threat scan — find nearby player units
+            InsectUnit combatThreat = null;
+            float combatThreatDist = vision;
+            InsectUnit workerThreat = null;
+            float workerThreatDist = vision;
+
             foreach (var u in RtsSimRegistry.Units)
             {
                 if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
-                if (u.Archetype == UnitArchetype.Worker) continue;
                 float d = Vector3.Distance(transform.position, u.transform.position);
-                if (d >= threatDist) continue;
+                if (d >= vision) continue;
                 float concealment = TerrainFeatureRegistry.GetConcealmentRadius(u.transform.position);
                 if (concealment > 0f && d > concealment) continue;
-                threatDist = d; threat = u;
+
+                if (u.Archetype == UnitArchetype.Worker)
+                {
+                    if (d < workerThreatDist) { workerThreatDist = d; workerThreat = u; }
+                }
+                else
+                {
+                    if (d < combatThreatDist) { combatThreatDist = d; combatThreat = u; }
+                }
             }
 
-            if (threat != null)
+            // Combat units nearby: flee toward allies if possible, otherwise fight
+            if (combatThreat != null)
             {
                 ClearFruitAssignment();
-                _self.OrderMove(FindFleeDestination());
+                var fleeDest = FindFleeDestination();
+                bool hasAllyNearby = fleeDest != transform.position;
+                if (hasAllyNearby)
+                {
+                    _self.OrderMove(fleeDest);
+                }
+                else
+                {
+                    _self.OrderAttack(combatThreat);
+                }
                 return;
             }
 
-            // Already busy gathering or returning — keep going
+            // Being attacked by a player worker or worker spotted very close: fight back
+            if (wasHitRecently || (workerThreat != null && workerThreatDist < WorkerFightBackRadius))
+            {
+                var attacker = workerThreat;
+                if (attacker == null)
+                {
+                    foreach (var u in RtsSimRegistry.Units)
+                    {
+                        if (u == null || u.Team != Team.Player || !u.IsAlive) continue;
+                        float d = Vector3.Distance(transform.position, u.transform.position);
+                        if (d < vision) { attacker = u; break; }
+                    }
+                }
+                if (attacker != null)
+                {
+                    ClearFruitAssignment();
+                    _self.OrderAttack(attacker);
+                    return;
+                }
+            }
+
             if (_self.CurrentOrder is UnitOrder.Gather or UnitOrder.ReturnDeposit)
                 return;
 
-            // Idle — pick the best fruit using round-trip scoring
             if (_self.CurrentOrder == UnitOrder.Idle)
             {
                 ClearFruitAssignment();
@@ -126,7 +167,6 @@ namespace InsectWars.RTS
 
         Vector3 FindFleeDestination()
         {
-            // Prefer fleeing toward a nearby allied combat unit so the threat gets engaged
             InsectUnit nearestAlly = null;
             float bestDist = 25f;
             foreach (var u in RtsSimRegistry.Units)
@@ -139,8 +179,12 @@ namespace InsectWars.RTS
 
             if (nearestAlly != null) return nearestAlly.transform.position;
 
+            // No allies nearby — check if hive is reasonably close (not across the map)
             var hive = HiveDeposit.EnemyHive;
-            return hive != null ? hive.DepositPoint : transform.position;
+            if (hive != null && Vector3.Distance(transform.position, hive.DepositPoint) < 35f)
+                return hive.DepositPoint;
+
+            return transform.position;
         }
 
         void AssignFruit(RottingFruitNode node)

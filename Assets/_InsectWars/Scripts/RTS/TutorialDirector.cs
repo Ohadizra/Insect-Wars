@@ -57,9 +57,9 @@ namespace InsectWars.RTS
         int _startingFighterCount;
 
         // Ch4 army requirements
-        const int ReqWorkers = 3;
-        const int ReqMantis = 3;
-        const int ReqBombardiers = 2;
+        const int ReqWorkers = 4;
+        const int ReqMantis = 5;
+        const int ReqBombardiers = 4;
         bool _ccPopupShown;
         bool _ccPopupDismissed;
         GameObject _ccPopup;
@@ -276,8 +276,7 @@ namespace InsectWars.RTS
             // Place an Underground (pre-built) for combat units
             ProductionBuilding.Place(hiveXZ + new Vector3(8f, 0f, -8f), BuildingType.Underground, Team.Player, startBuilt: true);
 
-            // Give plenty of calories so the focus is on CC, not gathering
-            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(2000);
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(3000);
 
             _ccPopupShown = false;
             _ccPopupDismissed = false;

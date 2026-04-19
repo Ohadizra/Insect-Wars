@@ -40,6 +40,16 @@ Shader "InsectWars/MinimapFog"
             sampler2D _IW_FogWarTex;
             float _IW_FogActive;
 
+            static const fixed3 ShroudColor = fixed3(0.012, 0.014, 0.028);
+            static const fixed3 ExploredTint = fixed3(0.38, 0.42, 0.52);
+
+            float hash12(float2 p)
+            {
+                float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
+                p3 += dot(p3, p3.yzx + 33.33);
+                return frac((p3.x + p3.y) * p3.z);
+            }
+
             v2f vert(appdata_t v)
             {
                 v2f o;
@@ -58,13 +68,16 @@ Shader "InsectWars/MinimapFog"
 
                 fixed2 fog = tex2D(_IW_FogWarTex, i.texcoord).rg;
 
-                // G = current vision, R = ever explored
-                if (fog.g > 0.22)
-                    return scene;
-                if (fog.r > 0.18)
-                    return fixed4(scene.rgb * fixed3(0.48, 0.5, 0.58), scene.a);
+                float noise = hash12(i.texcoord * 200.0) * 0.12;
 
-                return fixed4(0, 0, 0, scene.a);
+                fixed visFactor = smoothstep(0.10 + noise, 0.35 + noise, fog.g);
+                fixed expFactor = smoothstep(0.08 + noise, 0.30 + noise, fog.r);
+
+                fixed3 explored = scene.rgb * ExploredTint;
+                fixed3 col = lerp(ShroudColor, explored, expFactor);
+                col = lerp(col, scene.rgb, visFactor);
+
+                return fixed4(col, scene.a);
             }
             ENDCG
         }
