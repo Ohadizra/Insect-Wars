@@ -1405,14 +1405,15 @@ namespace InsectWars.RTS
 
         void CancelQueueSlot(int slotIndex)
         {
-            if (_queueDisplayBuilding != null && slotIndex < _queueDisplayBuilding.QueueCount)
+            int queueIndex = slotIndex + 1;
+            if (_queueDisplayBuilding != null && queueIndex < _queueDisplayBuilding.QueueCount)
             {
-                _queueDisplayBuilding.CancelAtIndex(slotIndex);
+                _queueDisplayBuilding.CancelAtIndex(queueIndex);
                 ForceRebuild();
             }
-            else if (_queueDisplayHive != null && slotIndex < _queueDisplayHive.QueueCount)
+            else if (_queueDisplayHive != null && queueIndex < _queueDisplayHive.QueueCount)
             {
-                _queueDisplayHive.CancelAtIndex(slotIndex);
+                _queueDisplayHive.CancelAtIndex(queueIndex);
                 ForceRebuild();
             }
         }
