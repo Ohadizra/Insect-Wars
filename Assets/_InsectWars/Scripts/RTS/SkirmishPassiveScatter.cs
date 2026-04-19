@@ -121,6 +121,8 @@ namespace InsectWars.RTS
             Color c;
             if (theme == ScatterTheme.Frozen)
                 c = Color.Lerp(new Color(0.65f, 0.58f, 0.38f), new Color(0.78f, 0.72f, 0.55f), (float)rng.NextDouble());
+            else if (theme == ScatterTheme.Lava)
+                c = Color.Lerp(new Color(0.12f, 0.11f, 0.10f), new Color(0.22f, 0.18f, 0.15f), (float)rng.NextDouble());
             else
                 c = Color.Lerp(new Color(0.18f, 0.42f, 0.14f), new Color(0.28f, 0.52f, 0.2f), (float)rng.NextDouble());
 
@@ -147,6 +149,11 @@ namespace InsectWars.RTS
                 var tex = GetFrozenRockTexture();
                 if (tex != null) mat.SetTexture("_BaseMap", tex);
                 go.GetComponent<Renderer>().sharedMaterial = mat;
+            }
+            else if (theme == ScatterTheme.Lava)
+            {
+                var c = Color.Lerp(new Color(0.1f, 0.08f, 0.08f), new Color(0.25f, 0.15f, 0.12f), (float)rng.NextDouble());
+                go.GetComponent<Renderer>().sharedMaterial = Mat(c);
             }
             else
             {
@@ -183,6 +190,30 @@ namespace InsectWars.RTS
                 go.GetComponent<Renderer>().sharedMaterial = mat;
                 return;
             }
+            if (theme == ScatterTheme.Lava)
+            {
+                // Spawn lava spike
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                go.name = "LavaSpike";
+                go.transform.SetParent(parent, false);
+                if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
+                var h = 0.4f + (float)rng.NextDouble() * 0.8f;
+                go.transform.position = new Vector3(x, h * 0.45f, z);
+                go.transform.localScale = new Vector3(0.1f, h, 0.1f);
+                go.transform.rotation = Quaternion.Euler(
+                    (float)rng.NextDouble() * 10f - 5f,
+                    (float)rng.NextDouble() * 360f,
+                    (float)rng.NextDouble() * 10f - 5f);
+                
+                var mat = Mat(new Color(1.00f, 0.45f, 0.05f)); // Glowing Orange
+                if (mat.HasProperty("_EmissionColor")) 
+                {
+                    mat.EnableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", new Color(1.0f, 0.3f, 0.0f) * 2.0f);
+                }
+                go.GetComponent<Renderer>().sharedMaterial = mat;
+                return;
+            }
 
             var stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             stem.name = "ShroomStem";
@@ -200,10 +231,10 @@ namespace InsectWars.RTS
             cap.transform.localScale = new Vector3(0.38f, 0.22f, 0.38f);
             var capC = Color.Lerp(new Color(0.75f, 0.2f, 0.22f), new Color(0.55f, 0.15f, 0.45f), (float)rng.NextDouble());
             cap.GetComponent<Renderer>().sharedMaterial = Mat(capC);
-        }
+            }
 
-        static void SpawnTwig(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
-        {
+            static void SpawnTwig(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
+            {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Twig";
             go.transform.SetParent(parent, false);
@@ -215,10 +246,12 @@ namespace InsectWars.RTS
             Color c;
             if (theme == ScatterTheme.Frozen)
                 c = new Color(0.32f, 0.28f, 0.26f);
+            else if (theme == ScatterTheme.Lava)
+                c = new Color(0.08f, 0.07f, 0.06f); // Charred wood
             else
                 c = new Color(0.38f, 0.28f, 0.18f);
 
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
-        }
+            }
     }
 }

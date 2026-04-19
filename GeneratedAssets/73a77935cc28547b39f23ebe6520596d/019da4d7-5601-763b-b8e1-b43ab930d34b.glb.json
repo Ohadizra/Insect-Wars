@@ -1,0 +1,12 @@
+{
+    "asset": "73a77935cc28547b39f23ebe6520596d",
+    "fileName": "019da4d7-5601-763b-b8e1-b43ab930d34b.glb",
+    "prompt": "A sharp, jagged volcanic rock spire with glowing lava veins, insect scale, ominous and dark basalt texture.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "214fdb04bb7240b946fe6aa28bbbb1d7",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

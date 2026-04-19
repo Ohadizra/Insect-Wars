@@ -1,0 +1,12 @@
+{
+    "asset": "4c239a6a6e856410cb9c5ff1daf47881",
+    "fileName": "019da4d4-0053-7fee-bee5-cbf06ef01f48_Preview.jpg",
+    "prompt": "molten flowing orange and red magma lava with black cooling crust patches, seamless, realistic texture",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 944733559,
+    "w3CTraceId": "551224a6310650c1bb2bc15bb42c16ab",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

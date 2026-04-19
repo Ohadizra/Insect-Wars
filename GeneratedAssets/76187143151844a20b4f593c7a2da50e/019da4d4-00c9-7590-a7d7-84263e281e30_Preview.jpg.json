@@ -1,0 +1,12 @@
+{
+    "asset": "76187143151844a20b4f593c7a2da50e",
+    "fileName": "019da4d4-00c9-7590-a7d7-84263e281e30_Preview.jpg",
+    "prompt": "a charred, blackened apple with glowing red embers inside the cracks, burnt texture",
+    "negativePrompt": "",
+    "model": "1a149e0e-3482-46a2-be9b-de997b8829fb",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 902593027,
+    "w3CTraceId": "60ac90bba0fe257af38fe58141b0e03e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

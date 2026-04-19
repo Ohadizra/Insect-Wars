@@ -46,7 +46,7 @@ namespace InsectWars.Data
         public Vector3 scale;
     }
 
-    public enum ScatterTheme { Default, Frozen }
+    public enum ScatterTheme { Default, Frozen, Lava }
 
     /// <summary>
     /// Serialized map layout for SkirmishDirector. Assign on the director or leave null for built-in Demo 0 defaults.

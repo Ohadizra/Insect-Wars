@@ -80,6 +80,18 @@ namespace InsectWars.Data
                     _ => Color.white
                 };
             }
+            if (theme == ScatterTheme.Lava)
+            {
+                return t switch
+                {
+                    TerrainFeatureType.WaterPuddle => new Color(1.00f, 0.35f, 0.10f), // Molten Lava
+                    TerrainFeatureType.TallGrass   => new Color(0.20f, 0.18f, 0.18f), // Charred remains
+                    TerrainFeatureType.MudPatch    => new Color(0.12f, 0.11f, 0.10f), // Ash deposits
+                    TerrainFeatureType.ThornPatch  => new Color(0.25f, 0.15f, 0.10f), // Sharp obsidian/scorched earth
+                    TerrainFeatureType.RockyRidge  => new Color(0.18f, 0.15f, 0.12f), // Basalt ridges
+                    _ => Color.white
+                };
+            }
 
             return t switch
             {
