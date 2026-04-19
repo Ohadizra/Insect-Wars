@@ -1259,6 +1259,12 @@
       "conversation_id": "1d54ad19-7c12-4f45-8039-261aacbf1ae1",
       "content": "I have rearranged the UI control bar as requested.\n\n### UI Layout Changes:\n1.  **Reordered Elements**:\n    *   **Map (Minimap)** remains on the far left.\n    *   **Unit Icon (Portrait)** has been moved to the left, immediately following the minimap area.\n    *   **Central Frame (Selection Block)** has been moved to the right of the unit icon.\n    *   **Action Frame (Command Panel)** remains on the far right.\n2.  **Health Bar & Labels**:\n    *   The unit's name, HP text, and health bar have been moved from the central frame to the **Unit Icon** block.\n    *   The health bar is now positioned directly below the unit icon for better at-a-glance monitoring.\n3.  **Code Health**:\n    *   Verified and fixed variable references in `BottomBar.cs` to ensure the project compiles successfully after the layout changes.\n    *   Adjusted the spacing and offsets (Minimap $\\to$ Icon $\\to$ Central Frame) to ensure a clean, non-overlapping visual flow.\n\nThe new layout provides a more logical progression: **Where** I am (Map) $\\to$ **Who** I am (Unit Icon/HP) $\\to$ **What** is selected (Selection Block) $\\to$ **How** I act (Command Panel).",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "6bd13642-61ab-4ebf-8819-2f148671934b",
+      "content": "fix progress bar,l it shuld be solid green color and less 40% in width",
+      "snapshot_message_type": 0
     }
   ]
 }
