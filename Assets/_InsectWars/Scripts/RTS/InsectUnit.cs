@@ -277,8 +277,11 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.Move;
-            _agent.isStopped = false;
-            _agent.SetDestination(world);
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(world);
+            }
         }
 
         public void OrderAttackMove(Vector3 world)
@@ -291,8 +294,11 @@ namespace InsectWars.RTS
             _holdPosition = false;
             _patrolActive = false;
             _order = UnitOrder.AttackMove;
-            _agent.isStopped = false;
-            _agent.SetDestination(world);
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(world);
+            }
         }
 
         public void OrderAttack(InsectUnit target, bool keepAttackMoveIntent = false)
@@ -308,7 +314,8 @@ namespace InsectWars.RTS
             _patrolActive = false;
             _attackTarget = target.transform;
             _order = UnitOrder.Attack;
-            _agent.isStopped = false;
+            if (_agent.isOnNavMesh)
+                _agent.isStopped = false;
         }
 
         public void OrderAttackBuilding(ProductionBuilding target)
@@ -318,7 +325,8 @@ namespace InsectWars.RTS
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
-            _agent.isStopped = false;
+            if (_agent.isOnNavMesh)
+                _agent.isStopped = false;
         }
 
         public void OrderAttackHive(HiveDeposit target)
@@ -328,7 +336,8 @@ namespace InsectWars.RTS
             ClearTargets();
             _attackTarget = target.transform;
             _order = UnitOrder.AttackBuilding;
-            _agent.isStopped = false;
+            if (_agent.isOnNavMesh)
+                _agent.isStopped = false;
         }
 
         public void OrderBuild(ProductionBuilding building)
@@ -339,8 +348,11 @@ namespace InsectWars.RTS
             _buildTarget = building;
             _attackTarget = building.transform;
             _order = UnitOrder.Build;
-            _agent.isStopped = false;
-            _agent.SetDestination(building.transform.position);
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = false;
+                _agent.SetDestination(building.transform.position);
+            }
         }
 
         public void OrderStop()
@@ -495,14 +507,14 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > _gatherTarget.GatherRange)
             {
-                if (!_agent.hasPath && !_agent.pathPending)
+                if (!_agent.hasPath && !_agent.pathPending && _agent.isOnNavMesh)
                 {
                     _agent.isStopped = false;
                     _agent.SetDestination(_gatherTarget.GetGatherPoint(_gatherAngle));
                 }
                 return;
             }
-            _agent.isStopped = true;
+            if (_agent.isOnNavMesh) _agent.isStopped = true;
             _gatherTimer += Time.deltaTime;
             if (_gatherTimer < _gatherTarget.GatherTickSeconds) return;
             _gatherTimer = 0f;
@@ -512,11 +524,14 @@ namespace InsectWars.RTS
             inv.Carrying += amt;
             _gatherTarget = null;
             _order = UnitOrder.ReturnDeposit;
-            _agent.ResetPath();
-            _agent.isStopped = false;
-            var returnDest = FindNearestTeamDepositPoint();
-            if (returnDest.HasValue)
-                _agent.SetDestination(returnDest.Value);
+            if (_agent.isOnNavMesh)
+            {
+                _agent.ResetPath();
+                _agent.isStopped = false;
+                var returnDest = FindNearestTeamDepositPoint();
+                if (returnDest.HasValue)
+                    _agent.SetDestination(returnDest.Value);
+            }
         }
 
         void TickReturn()
@@ -536,14 +551,14 @@ namespace InsectWars.RTS
             diff.y = 0f;
             if (diff.magnitude > arrivalDist)
             {
-                if (!_agent.hasPath && !_agent.pathPending)
+                if (!_agent.hasPath && !_agent.pathPending && _agent.isOnNavMesh)
                 {
                     _agent.isStopped = false;
                     _agent.SetDestination(depositDest.Value);
                 }
                 return;
             }
-            _agent.isStopped = true;
+            if (_agent.isOnNavMesh) _agent.isStopped = true;
             if (inv != null && inv.Carrying > 0)
             {
                 if (team == Team.Player && PlayerResources.Instance != null)
@@ -646,9 +661,9 @@ namespace InsectWars.RTS
             if (_agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance + 0.35f)
             {
                 _patrolToB = !_patrolToB;
-                _agent.SetDestination(_patrolToB ? _patrolB : _patrolA);
+                if (_agent.isOnNavMesh) _agent.SetDestination(_patrolToB ? _patrolB : _patrolA);
             }
-            else if (!_agent.hasPath)
+            else if (!_agent.hasPath && _agent.isOnNavMesh)
             {
                 _agent.SetDestination(_patrolToB ? _patrolB : _patrolA);
             }
@@ -701,7 +716,7 @@ namespace InsectWars.RTS
                     _buildTarget.UnregisterBuilder();
                     _registeredAsBuilder = false;
                 }
-                if (!_agent.hasPath && !_agent.pathPending)
+                if (!_agent.hasPath && !_agent.pathPending && _agent.isOnNavMesh)
                 {
                     _agent.isStopped = false;
                     _agent.SetDestination(_buildTarget.transform.position);
@@ -709,7 +724,7 @@ namespace InsectWars.RTS
                 return;
             }
 
-            _agent.isStopped = true;
+            if (_agent.isOnNavMesh) _agent.isStopped = true;
 
             var lookDir = _buildTarget.transform.position - transform.position;
             lookDir.y = 0f;
@@ -786,28 +801,40 @@ _attackCooldown = definition.attackCooldown;
                 if (dist <= range)
                 {
                     _meleeLockedPos = transform.position;
-                    _agent.isStopped = true;
-                    _agent.ResetPath();
-                    _agent.velocity = Vector3.zero;
+                    if (_agent.isOnNavMesh)
+                    {
+                        _agent.isStopped = true;
+                        _agent.ResetPath();
+                        _agent.velocity = Vector3.zero;
+                    }
                     _agent.updatePosition = false;
                     return;
                 }
 
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackTarget.position);
+                if (_agent.isOnNavMesh)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_attackTarget.position);
+                }
                 return;
-            }
+                }
 
-            if (dist > range)
-            {
-                _agent.isStopped = false;
-                _agent.SetDestination(_attackTarget.position);
+                if (dist > range)
+                {
+                if (_agent.isOnNavMesh)
+                {
+                    _agent.isStopped = false;
+                    _agent.SetDestination(_attackTarget.position);
+                }
                 return;
-            }
+                }
 
-            _agent.isStopped = true;
-            _agent.ResetPath();
-            _agent.velocity = Vector3.zero;
+                if (_agent.isOnNavMesh)
+                {
+                _agent.isStopped = true;
+                _agent.ResetPath();
+                _agent.velocity = Vector3.zero;
+                }
 
             var animDriver = GetComponent<UnitAnimationDriver>();
 
