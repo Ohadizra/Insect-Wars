@@ -95,7 +95,19 @@ namespace InsectWars.Core
             if (Instance == null) return;
             
             if (Instance.backgroundMusic == null)
-                Instance.backgroundMusic = Resources.Load<AudioClip>("Audio/Music_TribalBattle");
+            {
+                var theme = ScatterTheme.Default;
+                if (GameSession.SelectedMap != null) theme = GameSession.SelectedMap.scatterTheme;
+
+                string path = theme switch
+                {
+                    ScatterTheme.Frozen => "Audio/Music_FinntrollStyle",
+                    ScatterTheme.Lava => "Audio/Music_LavaPass",
+                    _ => "Audio/Music_TribalBattle"
+                };
+
+                Instance.backgroundMusic = Resources.Load<AudioClip>(path);
+            }
 
             if (Instance.backgroundMusic != null && Instance._musicSrc != null)
             {

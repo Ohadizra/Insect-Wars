@@ -1,0 +1,14 @@
+{
+    "asset": "16902325a6c2e456ea24b0d0aff0194c",
+    "fileName": "019da92b-e6e4-7ea1-a8c9-9f2631434fbb.wav",
+    "prompt": "Tribal battle music for a volcanic lava pass, blending dark folk metal elements with ambient environment sounds: crackling fire, whispering embers, deep tectonic rumbles, and bubbling lava. Fast-paced tribal drums but with a haunting, atmospheric overlay of whispering heat. High energy but with a distinct charred, burnt soundscape.",
+    "negativePrompt": "",
+    "model": "7df9b85a-1695-49f7-89bf-988208d5a3bc",
+    "modelName": "Meta MusicGen",
+    "customSeed": -1,
+    "w3CTraceId": "dac25823f6320079e71be6ec5094269a",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}
