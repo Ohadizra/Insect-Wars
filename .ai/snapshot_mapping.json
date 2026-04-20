@@ -1331,6 +1331,12 @@
       "conversation_id": "a11cca03-52d7-440c-9b6d-024c6216d85c",
       "content": "I have fixed the issue where the video had no sound.\n\n### What happened:\nWhen switching the `VideoPlayer` to output through an `AudioSource` (to allow for the smooth fade transition), the `VideoPlayer` defaults to having 0 \"controlled audio tracks.\" This meant it wasn't sending any audio data to the linked `AudioSource`.\n\n### Fix:\n*   **Explicit Audio Routing**: I updated the initialization code to explicitly set `controlledAudioTrackCount = 1`. This tells the `VideoPlayer` to reserve and route its first audio track to the provided `AudioSource`.\n*   **Initialization Timing**: The target `AudioSource` is now linked and the track is enabled immediately during the video preparation phase, ensuring sound starts playing the moment the video begins.\n\nThe video sound should now be audible from the start, and it will still smoothly cross-fade into the menu music at the end.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "e31995e1-b73e-44cc-9207-069dc17d24fa",
+      "content": "in the frozen map there are soem raw objects with no art attached, please locate them and fix it",
+      "snapshot_message_type": 0
     }
   ]
 }

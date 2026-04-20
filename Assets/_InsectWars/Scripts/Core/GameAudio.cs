@@ -141,7 +141,7 @@ namespace InsectWars.Core
 
             string path = theme switch
             {
-                ScatterTheme.Frozen => "Audio/Music_FinntrollStyle",
+                ScatterTheme.Frozen => "Audio/Music_TribalBattle",
                 ScatterTheme.Lava => "Audio/Music_LavaPass",
                 _ => "Audio/Music_TribalBattle"
             };
