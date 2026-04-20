@@ -57,9 +57,8 @@ namespace InsectWars.RTS
         int _startingFighterCount;
 
         // Ch4 army requirements
-        const int ReqWorkers = 4;
-        const int ReqMantis = 5;
-        const int ReqBombardiers = 4;
+        const int ReqMantis = 1;
+        const int ReqBombardiers = 1;
         bool _ccPopupShown;
         bool _ccPopupDismissed;
         GameObject _ccPopup;
@@ -136,10 +135,8 @@ namespace InsectWars.RTS
                 new TutorialChapter(
                     "Build Your Army",
                     "Time to raise a fighting force!\n\n" +
-                    $"Train <b>{ReqWorkers} Workers</b>, <b>{ReqMantis} Mantis</b>, " +
-                    $"and <b>{ReqBombardiers} Bombardiers</b>.\n" +
-                    "If you run out of Colony Capacity, build an\n" +
-                    "<b>Ant's Nest</b> or <b>Root Cellar</b> to expand it.",
+                    $"Train <b>{ReqMantis} Mantis</b> and <b>{ReqBombardiers} Bombardier</b>.\n" +
+                    "Select the <b>Underground</b> to train combat units.",
                     GetArmyObjective(),
                     SetupArmyChapter,
                     IsArmyComplete
@@ -269,14 +266,12 @@ namespace InsectWars.RTS
         void SetupArmyChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
-            // Give the player a worker to start
             var worker = SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
             if (worker != null) worker.OrderStop();
 
-            // Place an Underground (pre-built) for combat units
             ProductionBuilding.Place(hiveXZ + new Vector3(8f, 0f, -8f), BuildingType.Underground, Team.Player, startBuilt: true);
 
-            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(3000);
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(800);
 
             _ccPopupShown = false;
             _ccPopupDismissed = false;
@@ -325,8 +320,7 @@ namespace InsectWars.RTS
 
         bool IsArmyComplete()
         {
-            return CountPlayerUnits(UnitArchetype.Worker) >= ReqWorkers
-                && CountPlayerUnits(UnitArchetype.BasicFighter) >= ReqMantis
+            return CountPlayerUnits(UnitArchetype.BasicFighter) >= ReqMantis
                 && CountPlayerUnits(UnitArchetype.BasicRanged) >= ReqBombardiers;
         }
 
@@ -436,23 +430,16 @@ namespace InsectWars.RTS
         void UpdateCh4Highlights()
         {
             var sc = SelectionController.Instance;
-            bool hiveSel = sc != null && sc.SelectedHive != null;
             bool bldSel = sc != null && sc.SelectedBuilding != null;
 
-            if (!hiveSel && !bldSel)
+            if (!bldSel)
             {
-                int workers = CountPlayerUnits(UnitArchetype.Worker);
                 int mantis = CountPlayerUnits(UnitArchetype.BasicFighter);
                 int bombardiers = CountPlayerUnits(UnitArchetype.BasicRanged);
 
                 ClearHighlights();
 
-                if (workers < ReqWorkers)
-                {
-                    var hive = HiveDeposit.PlayerHive;
-                    SetWorldArrowTarget(hive != null ? hive.transform : null);
-                }
-                else if (mantis < ReqMantis || bombardiers < ReqBombardiers)
+                if (mantis < ReqMantis || bombardiers < ReqBombardiers)
                 {
                     var underground = FindPlayerBuilding(BuildingType.Underground);
                     SetWorldArrowTarget(underground != null ? underground.transform : null);
@@ -465,16 +452,11 @@ namespace InsectWars.RTS
             else
             {
                 SetWorldArrowTarget(null);
-                if (hiveSel)
-                    SetHighlight("Worker");
-                else if (bldSel)
-                {
-                    int mantis = CountPlayerUnits(UnitArchetype.BasicFighter);
-                    if (mantis < ReqMantis)
-                        SetHighlight("Mantis");
-                    else
-                        SetHighlight("Beetle");
-                }
+                int mantis = CountPlayerUnits(UnitArchetype.BasicFighter);
+                if (mantis < ReqMantis)
+                    SetHighlight("Mantis");
+                else
+                    SetHighlight("Beetle");
             }
         }
 
@@ -528,11 +510,9 @@ namespace InsectWars.RTS
 
         string GetArmyObjective()
         {
-            int w = CountPlayerUnits(UnitArchetype.Worker);
             int m = CountPlayerUnits(UnitArchetype.BasicFighter);
             int b = CountPlayerUnits(UnitArchetype.BasicRanged);
-            return $"Workers: {Mathf.Min(w, ReqWorkers)}/{ReqWorkers}  |  " +
-                   $"Mantis: {Mathf.Min(m, ReqMantis)}/{ReqMantis}  |  " +
+            return $"Mantis: {Mathf.Min(m, ReqMantis)}/{ReqMantis}  |  " +
                    $"Bombardiers: {Mathf.Min(b, ReqBombardiers)}/{ReqBombardiers}";
         }
 
@@ -1006,8 +986,8 @@ namespace InsectWars.RTS
             var panel = new GameObject("Panel");
             panel.transform.SetParent(_introOverlay.transform, false);
             var prt = panel.AddComponent<RectTransform>();
-            prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(780, 520);
+            prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.55f);
+            prt.sizeDelta = new Vector2(780, 420);
             var pImg = panel.AddComponent<Image>();
             pImg.color = ColPanelWhite;
 

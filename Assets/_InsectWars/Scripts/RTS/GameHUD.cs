@@ -14,6 +14,8 @@ namespace InsectWars.RTS
         public static RectTransform SelectionPanel { get; private set; }
         public static RectTransform ActionPanel { get; private set; }
 
+        RectTransform _ownedCanvasRect;
+
         [Header("Natural Ornate Assets")]
         [SerializeField] Sprite barMechanicalSprite;
         [SerializeField] Sprite frameSquareSprite;
