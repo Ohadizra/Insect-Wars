@@ -226,17 +226,34 @@ namespace InsectWars.UI
             vp.renderMode = VideoRenderMode.RenderTexture;
             vp.targetTexture = vrt;
             vp.aspectRatio = VideoAspectRatio.FitInside;
+            
+            // Setup audio output
+            vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            var vAsrc = vgo.AddComponent<AudioSource>();
+            vAsrc.playOnAwake = false;
+            vAsrc.volume = 1f;
 
             if (backgroundClip != null)
             {
                 vp.source = VideoSource.VideoClip;
                 vp.clip = backgroundClip;
                 vp.Prepare();
-                vp.prepareCompleted += (p) => { p.Play(); OnVideoReady(); };
+                vp.prepareCompleted += (p) => 
+                { 
+                    if (p.controlledAudioTrackCount > 0)
+                    {
+                        p.EnableAudioTrack(0, true);
+                        p.SetTargetAudioSource(0, vAsrc);
+                    }
+                    p.Play(); 
+                    OnVideoReady(); 
+                };
                 vp.loopPointReached += (p) => { p.Pause(); };
                 var freeze = vgo.AddComponent<VideoFreezeBeforeEnd>();
                 freeze.player = vp;
-                freeze.freezeBeforeEnd = 0.4;
+                freeze.videoAudio = vAsrc;
+                freeze.freezeBeforeEnd = 1.0; 
+                freeze.fadeDuration = 1.0f;
             }
             else
             {
@@ -572,31 +589,52 @@ namespace InsectWars.UI
     public class VideoFreezeBeforeEnd : MonoBehaviour
     {
         public UnityEngine.Video.VideoPlayer player;
+        public AudioSource videoAudio;
         public double freezeBeforeEnd = 0.4;
-        bool _musicStarted = false;
+        public float fadeDuration = 1.0f;
+
+        bool _transitionStarted = false;
 
         void Update()
         {
             if (player == null || !player.isPrepared) return;
 
-            // If video is almost done or has naturally reached loop point/end
-            if (player.isPlaying && player.time >= player.length - freezeBeforeEnd)
+            // If video is almost done
+            if (!_transitionStarted && player.isPlaying && player.time >= player.length - freezeBeforeEnd)
             {
-                player.Pause();
-                StartMenuMusic();
+                StartTransition();
             }
-            else if (!player.isPlaying && !_musicStarted)
+            else if (!_transitionStarted && !player.isPlaying)
             {
                 // Fallback if player stopped for any other reason
-                StartMenuMusic();
+                StartTransition();
             }
         }
 
-        void StartMenuMusic()
+        void StartTransition()
         {
-            if (_musicStarted) return;
-            _musicStarted = true;
-            GameAudio.PlayMenuMusic();
+            if (_transitionStarted) return;
+            _transitionStarted = true;
+
+            StartCoroutine(FadeOutAndFreeze());
+            GameAudio.PlayMenuMusic(fadeDuration);
+        }
+
+        System.Collections.IEnumerator FadeOutAndFreeze()
+        {
+            float elapsed = 0f;
+            float startVol = videoAudio != null ? videoAudio.volume : 1f;
+
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / fadeDuration;
+                if (videoAudio != null) videoAudio.volume = Mathf.Lerp(startVol, 0f, t);
+                yield return null;
+            }
+
+            if (videoAudio != null) videoAudio.volume = 0f;
+            player.Pause();
         }
     }
 }

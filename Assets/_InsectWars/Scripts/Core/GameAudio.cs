@@ -90,7 +90,7 @@ namespace InsectWars.Core
                 Instance._src.PlayOneShot(Instance.workerLift, Instance.uiVolume);
         }
 
-        public static void PlayMenuMusic()
+        public static void PlayMenuMusic(float fadeDuration = 0f)
         {
             if (Instance == null) return;
             
@@ -103,10 +103,32 @@ namespace InsectWars.Core
                     return;
 
                 Instance._musicSrc.clip = Instance.backgroundMusic;
-                Instance._musicSrc.volume = Instance.musicVolume;
                 Instance._musicSrc.loop = true;
-                Instance._musicSrc.Play();
+
+                if (fadeDuration > 0f)
+                {
+                    Instance._musicSrc.volume = 0f;
+                    Instance._musicSrc.Play();
+                    Instance.StartCoroutine(Instance.FadeInMusic(fadeDuration));
+                }
+                else
+                {
+                    Instance._musicSrc.volume = Instance.musicVolume;
+                    Instance._musicSrc.Play();
+                }
             }
+        }
+
+        System.Collections.IEnumerator FadeInMusic(float duration)
+        {
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                _musicSrc.volume = Mathf.Lerp(0f, musicVolume, t / duration);
+                yield return null;
+            }
+            _musicSrc.volume = musicVolume;
         }
 
         public static void PlayGameMusic()
