@@ -187,12 +187,12 @@ namespace InsectWars.RTS
             BuildingType.AntNest => "Ant's Nest",
             BuildingType.SkyTower => "Sky Tower",
             BuildingType.RootCellar => "Root Cellar",
-            BuildingType.Hive => "Hive",
+            BuildingType.Hive => "Ant Nest",
             _ => type.ToString()
-        };
+            };
 
-        public static string GetDescription(BuildingType type) => type switch
-        {
+            public static string GetDescription(BuildingType type) => type switch
+            {
             BuildingType.Underground => "Military barracks dug beneath the surface. Produces Mantis fighters and Beetle ranged units.",
             BuildingType.AntNest => "Expands the colony. Produces Worker ants and provides supply capacity.",
             BuildingType.SkyTower => "Elevated hive tower. Produces Black Widows — elite assassins — and Sticks — invisible spy units that can climb high ground.",

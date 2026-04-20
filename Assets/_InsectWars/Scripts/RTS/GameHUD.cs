@@ -105,7 +105,7 @@ namespace InsectWars.RTS
             if (barMechanicalSprite == null) barMechanicalSprite = LoadSpriteFromResources("UI/Extracted/top_bar_frame");
             if (frameSquareSprite == null) frameSquareSprite = LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             if (portraitFrameSprite == null) portraitFrameSprite = LoadSpriteFromResources("UI/Extracted/frame_portrait");
-            if (buttonRoundSprite == null) buttonRoundSprite = LoadSpriteFromResources("UI/Extracted/btn_menu");
+            if (buttonRoundSprite == null) buttonRoundSprite = LoadSpriteFromResources("UI/Extracted/frame_gear_circle");
             if (larvaIcon == null) larvaIcon = LoadSpriteFromResources("UI/Extracted/icon_larva");
             if (eggIcon == null) eggIcon = LoadSpriteFromResources("UI/Extracted/icon_egg");
             if (crystalIcon == null) crystalIcon = LoadSpriteFromResources("UI/Extracted/icon_crystal");

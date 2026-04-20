@@ -798,22 +798,22 @@ namespace InsectWars.RTS
             _ccPopup.transform.SetParent(canvasRect, false);
             var rt = _ccPopup.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(520, 220);
+            rt.sizeDelta = new Vector2(620, 270);
 
             var bg = _ccPopup.AddComponent<Image>();
             bg.color = ColPopupBg;
             bg.raycastTarget = true;
 
             var title = MakeLabel(_ccPopup.transform, "Title",
-                "Colony Capacity Full!", 26,
+                "Colony Capacity Full!", 32,
                 FontStyle.Bold, ColHighlight, TextAnchor.MiddleCenter);
-            AnchorFill(title, new Vector2(0f, 0.65f), new Vector2(1f, 0.92f));
+            AnchorFill(title, new Vector2(0f, 0.68f), new Vector2(1f, 0.93f));
 
             var body = MakeLabel(_ccPopup.transform, "Body",
                 "Build an <b>Ant's Nest</b> (+25 CC) or\n" +
                 "<b>Root Cellar</b> (+15 CC) to increase\nyour Colony Capacity.",
-                17, FontStyle.Normal, ColPanelWhite, TextAnchor.MiddleCenter);
-            AnchorFill(body, new Vector2(0.05f, 0.25f), new Vector2(0.95f, 0.65f));
+                22, FontStyle.Normal, ColPanelWhite, TextAnchor.MiddleCenter);
+            AnchorFill(body, new Vector2(0.05f, 0.26f), new Vector2(0.95f, 0.68f));
 
             var btn = MakeGreenButton(_ccPopup.transform, "OkBtn", "GOT IT!", () =>
             {
@@ -821,8 +821,8 @@ namespace InsectWars.RTS
                 if (_ccPopup != null) { Destroy(_ccPopup); _ccPopup = null; }
             });
             var brt = btn.GetComponent<RectTransform>();
-            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.10f);
-            brt.sizeDelta = new Vector2(180, 48);
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.09f);
+            brt.sizeDelta = new Vector2(220, 54);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -834,9 +834,9 @@ namespace InsectWars.RTS
             var canvasRect = GameHUD.HudCanvasRect;
             if (canvasRect == null) return;
 
-            float rowH = 36f;
-            float headerH = 34f;
-            float pad = 12f;
+            float rowH = 42f;
+            float headerH = 40f;
+            float pad = 14f;
             float panelH = headerH + _chapters.Length * rowH + pad * 2;
 
             _trackerPanel = new GameObject("TutorialTracker");
@@ -845,15 +845,15 @@ namespace InsectWars.RTS
             rt.anchorMin = new Vector2(1f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);
             rt.pivot = new Vector2(1f, 1f);
-            rt.anchoredPosition = new Vector2(-12f, -100f);
-            rt.sizeDelta = new Vector2(280f, panelH);
+            rt.anchoredPosition = new Vector2(-14f, -105f);
+            rt.sizeDelta = new Vector2(340f, panelH);
 
             var bg = _trackerPanel.AddComponent<Image>();
             bg.color = ColTrackerBg;
             bg.raycastTarget = false;
 
             var header = MakeLabel(_trackerPanel.transform, "Header", "PROGRESS",
-                16, FontStyle.Bold, ColMuted, TextAnchor.MiddleCenter);
+                20, FontStyle.Bold, ColMuted, TextAnchor.MiddleCenter);
             var hrt = header.GetComponent<RectTransform>();
             hrt.anchorMin = new Vector2(0f, 1f);
             hrt.anchorMax = new Vector2(1f, 1f);
@@ -869,24 +869,24 @@ namespace InsectWars.RTS
                 float yPos = -(pad + headerH + i * rowH);
 
                 var check = MakeLabel(_trackerPanel.transform, $"C{i}", "[ ]",
-                    16, FontStyle.Bold, ColGray, TextAnchor.MiddleCenter);
+                    20, FontStyle.Bold, ColGray, TextAnchor.MiddleCenter);
                 var crt = check.GetComponent<RectTransform>();
                 crt.anchorMin = new Vector2(0f, 1f);
                 crt.anchorMax = new Vector2(0f, 1f);
                 crt.pivot = new Vector2(0f, 1f);
-                crt.anchoredPosition = new Vector2(10f, yPos);
-                crt.sizeDelta = new Vector2(36f, rowH);
+                crt.anchoredPosition = new Vector2(12f, yPos);
+                crt.sizeDelta = new Vector2(42f, rowH);
                 _trackerChecks[i] = check;
 
                 var lbl = MakeLabel(_trackerPanel.transform, $"L{i}",
-                    $"{i + 1}. {_chapters[i].Title}", 16,
+                    $"{i + 1}. {_chapters[i].Title}", 20,
                     FontStyle.Normal, ColGray, TextAnchor.MiddleLeft);
                 var lrt = lbl.GetComponent<RectTransform>();
                 lrt.anchorMin = new Vector2(0f, 1f);
                 lrt.anchorMax = new Vector2(1f, 1f);
                 lrt.pivot = new Vector2(0f, 1f);
-                lrt.anchoredPosition = new Vector2(46f, yPos);
-                lrt.sizeDelta = new Vector2(-56f, rowH);
+                lrt.anchoredPosition = new Vector2(54f, yPos);
+                lrt.sizeDelta = new Vector2(-66f, rowH);
                 _trackerLabels[i] = lbl;
             }
         }
@@ -951,28 +951,28 @@ namespace InsectWars.RTS
             rt.anchorMin = new Vector2(0.5f, 1f);
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
-            rt.anchoredPosition = new Vector2(0f, -10f);
-            rt.sizeDelta = new Vector2(580f, 80f);
+            rt.anchoredPosition = new Vector2(0f, -12f);
+            rt.sizeDelta = new Vector2(700f, 100f);
 
             var bg = _hudPanel.AddComponent<Image>();
             bg.color = ColHudBg;
             bg.raycastTarget = false;
 
-            _titleLabel = MakeLabel(_hudPanel.transform, "Title", "", 22,
+            _titleLabel = MakeLabel(_hudPanel.transform, "Title", "", 28,
                 FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
             var titleRt = _titleLabel.GetComponent<RectTransform>();
             titleRt.anchorMin = new Vector2(0f, 0.5f);
             titleRt.anchorMax = new Vector2(1f, 1f);
-            titleRt.offsetMin = new Vector2(14f, 0f);
-            titleRt.offsetMax = new Vector2(-14f, -4f);
+            titleRt.offsetMin = new Vector2(16f, 0f);
+            titleRt.offsetMax = new Vector2(-16f, -5f);
 
-            _objectiveLabel = MakeLabel(_hudPanel.transform, "Obj", "", 16,
+            _objectiveLabel = MakeLabel(_hudPanel.transform, "Obj", "", 20,
                 FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             var objRt = _objectiveLabel.GetComponent<RectTransform>();
             objRt.anchorMin = new Vector2(0f, 0f);
             objRt.anchorMax = new Vector2(1f, 0.5f);
-            objRt.offsetMin = new Vector2(14f, 4f);
-            objRt.offsetMax = new Vector2(-14f, 0f);
+            objRt.offsetMin = new Vector2(16f, 5f);
+            objRt.offsetMax = new Vector2(-16f, 0f);
 
             _hudPanel.SetActive(false);
         }
@@ -1007,29 +1007,29 @@ namespace InsectWars.RTS
             panel.transform.SetParent(_introOverlay.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(640, 440);
+            prt.sizeDelta = new Vector2(780, 520);
             var pImg = panel.AddComponent<Image>();
             pImg.color = ColPanelWhite;
 
             var numTxt = MakeLabel(panel.transform, "Num",
                 $"Chapter {_currentIndex + 1} of {_chapters.Length}",
-                17, FontStyle.Normal, ColMuted, TextAnchor.MiddleCenter);
-            AnchorFill(numTxt, new Vector2(0f, 0.90f), new Vector2(1f, 0.97f));
+                21, FontStyle.Normal, ColMuted, TextAnchor.MiddleCenter);
+            AnchorFill(numTxt, new Vector2(0f, 0.91f), new Vector2(1f, 0.97f));
 
             var titleTxt = MakeLabel(panel.transform, "Title",
-                _current.Title, 36, FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
-            AnchorFill(titleTxt, new Vector2(0f, 0.76f), new Vector2(1f, 0.90f));
+                _current.Title, 44, FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
+            AnchorFill(titleTxt, new Vector2(0f, 0.76f), new Vector2(1f, 0.91f));
 
             MakeSepLine(panel.transform, 0.74f);
 
             var bodyTxt = MakeLabel(panel.transform, "Body",
-                _current.IntroText, 19, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
-            AnchorFill(bodyTxt, new Vector2(0.07f, 0.22f), new Vector2(0.93f, 0.72f));
+                _current.IntroText, 24, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
+            AnchorFill(bodyTxt, new Vector2(0.06f, 0.20f), new Vector2(0.94f, 0.72f));
 
             var btnGo = MakeGreenButton(panel.transform, "BeginBtn", "BEGIN", () => StartPlaying());
             var brt = btnGo.GetComponent<RectTransform>();
-            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.09f);
-            brt.sizeDelta = new Vector2(220, 52);
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.08f);
+            brt.sizeDelta = new Vector2(260, 60);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -1052,19 +1052,19 @@ namespace InsectWars.RTS
             panel.transform.SetParent(_completeOverlay.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(520, 200);
+            prt.sizeDelta = new Vector2(620, 240);
             panel.AddComponent<Image>().color = ColPanelWhite;
 
             bool isLast = _currentIndex + 1 >= _chapters.Length;
 
-            var done = MakeLabel(panel.transform, "Done", "COMPLETE!", 34,
+            var done = MakeLabel(panel.transform, "Done", "COMPLETE!", 42,
                 FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
             AnchorFill(done, new Vector2(0f, 0.50f), new Vector2(1f, 0.90f));
 
             string subMsg = isLast
                 ? "All chapters finished!"
                 : $"Next: Chapter {_currentIndex + 2} - {_chapters[_currentIndex + 1].Title}";
-            var sub = MakeLabel(panel.transform, "Sub", subMsg, 18,
+            var sub = MakeLabel(panel.transform, "Sub", subMsg, 22,
                 FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(sub, new Vector2(0f, 0.10f), new Vector2(1f, 0.48f));
 
@@ -1096,36 +1096,36 @@ namespace InsectWars.RTS
             panel.transform.SetParent(root.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(620, 460);
+            prt.sizeDelta = new Vector2(740, 540);
             panel.AddComponent<Image>().color = ColPanelWhite;
 
-            var title = MakeLabel(panel.transform, "Title", "TUTORIAL COMPLETE", 38,
+            var title = MakeLabel(panel.transform, "Title", "TUTORIAL COMPLETE", 46,
                 FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
-            AnchorFill(title, new Vector2(0f, 0.82f), new Vector2(1f, 0.96f));
+            AnchorFill(title, new Vector2(0f, 0.84f), new Vector2(1f, 0.96f));
 
-            MakeSepLine(panel.transform, 0.80f);
+            MakeSepLine(panel.transform, 0.82f);
 
             for (int i = 0; i < _chapters.Length; i++)
             {
-                float rowTop = 0.74f - i * 0.08f;
-                float rowBot = rowTop - 0.07f;
+                float rowTop = 0.76f - i * 0.09f;
+                float rowBot = rowTop - 0.08f;
 
-                var mark = MakeLabel(panel.transform, $"M{i}", "[X]", 18,
+                var mark = MakeLabel(panel.transform, $"M{i}", "[X]", 22,
                     FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
                 AnchorFill(mark, new Vector2(0.06f, rowBot), new Vector2(0.14f, rowTop));
 
                 var lbl = MakeLabel(panel.transform, $"D{i}",
-                    $"Chapter {i + 1}: {_chapters[i].Title}", 19,
+                    $"Chapter {i + 1}: {_chapters[i].Title}", 24,
                     FontStyle.Normal, ColTitle, TextAnchor.MiddleLeft);
                 AnchorFill(lbl, new Vector2(0.16f, rowBot), new Vector2(0.94f, rowTop));
             }
 
-            MakeSepLine(panel.transform, 0.30f);
+            MakeSepLine(panel.transform, 0.28f);
 
             var sub = MakeLabel(panel.transform, "Sub",
-                "You've learned the basics.\nYou're ready for real battle!", 19,
+                "You've learned the basics.\nYou're ready for real battle!", 24,
                 FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
-            AnchorFill(sub, new Vector2(0f, 0.14f), new Vector2(1f, 0.28f));
+            AnchorFill(sub, new Vector2(0f, 0.12f), new Vector2(1f, 0.26f));
 
             var btnGo = MakeGreenButton(panel.transform, "MenuBtn", "RETURN TO MENU", () =>
             {
@@ -1134,8 +1134,8 @@ namespace InsectWars.RTS
                 SceneLoader.LoadHome();
             });
             var brt = btnGo.GetComponent<RectTransform>();
-            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.06f);
-            brt.sizeDelta = new Vector2(280, 54);
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.05f);
+            brt.sizeDelta = new Vector2(320, 60);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -1159,8 +1159,8 @@ namespace InsectWars.RTS
             t.raycastTarget = false;
 
             var outline = go.AddComponent<Outline>();
-            outline.effectColor = new Color(color.r, color.g, color.b, 0.3f);
-            outline.effectDistance = new Vector2(0.8f, -0.8f);
+            outline.effectColor = new Color(color.r * 0.3f, color.g * 0.3f, color.b * 0.3f, 0.5f);
+            outline.effectDistance = new Vector2(1f, -1f);
 
             return t;
         }
@@ -1183,7 +1183,7 @@ namespace InsectWars.RTS
             btn.colors = cols;
             btn.onClick.AddListener(onClick);
 
-            var lbl = MakeLabel(go.transform, "Lbl", label, 22,
+            var lbl = MakeLabel(go.transform, "Lbl", label, 26,
                 FontStyle.Bold, ColBtnText, TextAnchor.MiddleCenter);
             StretchRT(lbl.GetComponent<RectTransform>());
 

@@ -52,7 +52,7 @@ namespace InsectWars.UI
             _font = UiFontHelper.GetFont();
 
             if (mainFrameSprite == null) mainFrameSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
-            if (buttonSprite == null) buttonSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/btn_menu");
+            if (buttonSprite == null) buttonSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             if (separatorSprite == null) separatorSprite = RTS.GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
             if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_WithTitle");
             if (logoSprite == null) logoSprite = RTS.GameHUD.LoadSpriteFromResources("UI/InsectWarsLogo_Raw");
@@ -286,6 +286,13 @@ namespace InsectWars.UI
             AnchorTopCenter(titleRt, new Vector2(0, -30f), new Vector2(650, 260));
 
             float y = -310f;
+            DarkButton(box.transform, "TUTORIAL", ref y, () =>
+            {
+                GameSession.SetLearningMode(true);
+                GameSession.SetTutorialMode(true);
+                GameSession.SetSelectedMap(SkirmishMapPresets.GetTutorialMap());
+                SceneLoader.LoadSkirmishDemo();
+            });
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
@@ -353,14 +360,7 @@ namespace InsectWars.UI
             var box = DarkBox(_panelLearning.transform, 550, 550);
             PanelHeader(box.transform, "LEARNING", -50f);
             float y = -150f;
-            DarkButton(box.transform, "HOW TO PLAY", ref y, () =>
-            {
-                GameSession.SetLearningMode(true);
-                GameSession.SetTutorialMode(true);
-                GameSession.SetSelectedMap(SkirmishMapPresets.GetTutorialMap());
-                SceneLoader.LoadSkirmishDemo();
-            });
-            DarkButton(box.transform, "LEARNING MAP", ref y, () =>
+            DarkButton(box.transform, "SANDBOX MAP", ref y, () =>
             {
                 GameSession.SetLearningMode(true);
                 GameSession.SetTutorialMode(false);

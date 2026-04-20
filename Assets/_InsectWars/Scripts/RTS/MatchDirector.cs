@@ -100,7 +100,7 @@ namespace InsectWars.RTS
             }
 
             var frameSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
-            var btnSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/btn_menu");
+            var btnSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
 
             // Fullscreen dim backdrop
             _overlayRoot = new GameObject("MatchOverlay");

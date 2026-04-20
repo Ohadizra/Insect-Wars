@@ -681,9 +681,11 @@ namespace InsectWars.RTS
             _prodRoot = new GameObject("ProdRoot");
             _prodRoot.transform.SetParent(infoBlock.transform, false);
             var prodRt = _prodRoot.AddComponent<RectTransform>();
-            prodRt.anchorMin = new Vector2(0.02f, 0.16f);
-            prodRt.anchorMax = new Vector2(0.98f, 0.74f);
-            prodRt.offsetMin = prodRt.offsetMax = Vector2.zero;
+            prodRt.anchorMin = new Vector2(0.5f, 0.5f);
+            prodRt.anchorMax = new Vector2(0.5f, 0.5f);
+            prodRt.pivot = new Vector2(0.5f, 0.5f);
+            prodRt.anchoredPosition = Vector2.zero;
+            prodRt.sizeDelta = new Vector2(280f, 60f);
 
             // --- Row 1: active icon + progress bar ---
             var row1 = new GameObject("ProdRow");
@@ -700,7 +702,7 @@ namespace InsectWars.RTS
             asrt.anchorMax = new Vector2(0f, 1f);
             asrt.pivot = new Vector2(0f, 0.5f);
             asrt.anchoredPosition = Vector2.zero;
-            asrt.sizeDelta = new Vector2(30f, 0f);
+            asrt.sizeDelta = new Vector2(28f, 0f);
             var asBg = activeSlot.AddComponent<Image>();
             asBg.sprite = slotFrame;
             asBg.type = Image.Type.Simple;
@@ -721,8 +723,8 @@ namespace InsectWars.RTS
             barContainer.transform.SetParent(row1.transform, false);
             var bcrt = barContainer.AddComponent<RectTransform>();
             bcrt.anchorMin = new Vector2(0f, 0f);
-            bcrt.anchorMax = new Vector2(0.6f, 1f);
-            bcrt.offsetMin = new Vector2(34f, 2f);
+            bcrt.anchorMax = new Vector2(1f, 1f);
+            bcrt.offsetMin = new Vector2(32f, 2f);
             bcrt.offsetMax = new Vector2(0f, -2f);
 
             _prodBarBgImg = barContainer.AddComponent<Image>();
@@ -755,12 +757,11 @@ namespace InsectWars.RTS
             var r2rt = _queueRow.AddComponent<RectTransform>();
             r2rt.anchorMin = new Vector2(0f, 0f);
             r2rt.anchorMax = new Vector2(1f, 0.48f);
-            r2rt.offsetMin = new Vector2(34f, 0f);
-            r2rt.offsetMax = Vector2.zero;
+            r2rt.offsetMin = r2rt.offsetMax = Vector2.zero;
 
             var qLayout = _queueRow.AddComponent<HorizontalLayoutGroup>();
             qLayout.spacing = 3f;
-            qLayout.childAlignment = TextAnchor.MiddleLeft;
+            qLayout.childAlignment = TextAnchor.MiddleCenter;
             qLayout.childForceExpandWidth = false;
             qLayout.childForceExpandHeight = false;
             qLayout.childControlWidth = false;
@@ -805,10 +806,10 @@ namespace InsectWars.RTS
             }
 
             _prodRoot.SetActive(false);
-            }
+        }
 
-            Sprite GetBuildingIcon(BuildingType t)
-            {
+        Sprite GetBuildingIcon(BuildingType t)
+        {
             return t switch
             {
                 BuildingType.Underground => iconUnderground,
@@ -817,9 +818,9 @@ namespace InsectWars.RTS
                 BuildingType.RootCellar => iconRootCellar,
                 _ => null
             };
-            }
+        }
 
-            Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
+        Text CreateText(string name, Transform parent, int size, Color color, TextAnchor anchor)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -1610,6 +1611,7 @@ namespace InsectWars.RTS
             {
                 if (cellIdx >= _selectionCells.Length) break;
                 var cell = _selectionCells[cellIdx];
+                cell.sprite = GetBuildingIcon(kvp.Key);
                 bool isActive = hasActiveType && kvp.Key == sc.ActiveBuildingType.Value;
                 cell.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
                 var tx = cell.GetComponentInChildren<Text>();
