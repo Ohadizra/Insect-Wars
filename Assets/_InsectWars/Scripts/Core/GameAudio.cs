@@ -90,6 +90,25 @@ namespace InsectWars.Core
                 Instance._src.PlayOneShot(Instance.workerLift, Instance.uiVolume);
         }
 
+        public static void PlayMenuMusic()
+        {
+            if (Instance == null) return;
+            
+            if (Instance.backgroundMusic == null)
+                Instance.backgroundMusic = Resources.Load<AudioClip>("Audio/Music_MenuAmbient");
+
+            if (Instance.backgroundMusic != null && Instance._musicSrc != null)
+            {
+                if (Instance._musicSrc.clip == Instance.backgroundMusic && Instance._musicSrc.isPlaying)
+                    return;
+
+                Instance._musicSrc.clip = Instance.backgroundMusic;
+                Instance._musicSrc.volume = Instance.musicVolume;
+                Instance._musicSrc.loop = true;
+                Instance._musicSrc.Play();
+            }
+        }
+
         public static void PlayGameMusic()
         {
             if (Instance == null) return;

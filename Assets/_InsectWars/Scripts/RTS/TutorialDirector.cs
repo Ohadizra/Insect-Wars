@@ -1078,9 +1078,11 @@ namespace InsectWars.RTS
             panel.transform.SetParent(_introOverlay.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.55f);
-            prt.sizeDelta = new Vector2(780, 420);
+            prt.sizeDelta = new Vector2(780, 450);
             var pImg = panel.AddComponent<Image>();
-            pImg.color = ColPanelWhite;
+            pImg.sprite = _frameSprite;
+            pImg.color = ColWhite;
+            pImg.type = Image.Type.Sliced;
 
             var numTxt = MakeLabel(panel.transform, "Num",
                 $"Chapter {_currentIndex + 1} of {_chapters.Length}",
@@ -1097,7 +1099,7 @@ namespace InsectWars.RTS
                 _current.IntroText, 24, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(bodyTxt, new Vector2(0.06f, 0.20f), new Vector2(0.94f, 0.72f));
 
-            var btnGo = MakeGreenButton(panel.transform, "BeginBtn", "BEGIN", () => StartPlaying());
+            var btnGo = MakeWoodenButton(panel.transform, "BeginBtn", "BEGIN", () => StartPlaying());
             var brt = btnGo.GetComponent<RectTransform>();
             brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.08f);
             brt.sizeDelta = new Vector2(260, 60);
@@ -1123,8 +1125,11 @@ namespace InsectWars.RTS
             panel.transform.SetParent(_completeOverlay.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(620, 240);
-            panel.AddComponent<Image>().color = ColPanelWhite;
+            prt.sizeDelta = new Vector2(620, 260);
+            var pImg = panel.AddComponent<Image>();
+            pImg.sprite = _frameSprite;
+            pImg.color = ColWhite;
+            pImg.type = Image.Type.Sliced;
 
             bool isLast = _currentIndex + 1 >= _chapters.Length;
 
@@ -1160,15 +1165,19 @@ namespace InsectWars.RTS
             var root = new GameObject("TutorialFinished");
             root.transform.SetParent(canvasRect, false);
             StretchRT(root.AddComponent<RectTransform>());
-            root.AddComponent<Image>().color = ColDimBg;
-            root.GetComponent<Image>().raycastTarget = true;
+            var rootImg = root.AddComponent<Image>();
+            rootImg.color = ColDimBg;
+            rootImg.raycastTarget = true;
 
             var panel = new GameObject("Panel");
             panel.transform.SetParent(root.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(740, 540);
-            panel.AddComponent<Image>().color = ColPanelWhite;
+            prt.sizeDelta = new Vector2(740, 560);
+            var pImg = panel.AddComponent<Image>();
+            pImg.sprite = _frameSprite;
+            pImg.color = ColWhite;
+            pImg.type = Image.Type.Sliced;
 
             var title = MakeLabel(panel.transform, "Title", "TUTORIAL COMPLETE", 46,
                 FontStyle.Bold, ColGreen, TextAnchor.MiddleCenter);
@@ -1198,7 +1207,7 @@ namespace InsectWars.RTS
                 FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(sub, new Vector2(0f, 0.12f), new Vector2(1f, 0.26f));
 
-            var btnGo = MakeGreenButton(panel.transform, "MenuBtn", "RETURN TO MENU", () =>
+            var btnGo = MakeWoodenButton(panel.transform, "MenuBtn", "RETURN TO MENU", () =>
             {
                 GameSession.SetTutorialMode(false);
                 Time.timeScale = 1f;
@@ -1236,7 +1245,7 @@ namespace InsectWars.RTS
             return t;
         }
 
-        GameObject MakeGreenButton(Transform parent, string name, string label,
+        GameObject MakeWoodenButton(Transform parent, string name, string label,
             UnityEngine.Events.UnityAction onClick)
         {
             var go = new GameObject(name);
@@ -1244,12 +1253,13 @@ namespace InsectWars.RTS
             go.AddComponent<RectTransform>();
 
             var img = go.AddComponent<Image>();
-            img.color = ColBtnBg;
+            img.sprite = _buttonSprite;
+            img.color = ColWhite;
+            img.type = Image.Type.Sliced;
 
             var btn = go.AddComponent<Button>();
             var cols = btn.colors;
-            cols.normalColor = Color.white;
-            cols.highlightedColor = ColBtnHover;
+            cols.highlightedColor = ColBtnHighlight;
             cols.pressedColor = ColBtnPress;
             btn.colors = cols;
             btn.onClick.AddListener(onClick);
@@ -1268,8 +1278,10 @@ namespace InsectWars.RTS
             var srt = sep.AddComponent<RectTransform>();
             srt.anchorMin = new Vector2(0.08f, anchorY);
             srt.anchorMax = new Vector2(0.92f, anchorY);
-            srt.sizeDelta = new Vector2(0f, 1f);
-            sep.AddComponent<Image>().color = ColSep;
+            srt.sizeDelta = new Vector2(0f, 12f);
+            var sepImg = sep.AddComponent<Image>();
+            sepImg.sprite = _separatorSprite;
+            sepImg.color = ColSep;
         }
 
         static void AnchorFill(Text t, Vector2 anchorMin, Vector2 anchorMax)

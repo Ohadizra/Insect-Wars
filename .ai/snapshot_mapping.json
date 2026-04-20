@@ -1307,6 +1307,12 @@
       "conversation_id": "778f6682-a350-484d-a2d8-81ee63b31501",
       "content": "good, now for the home page video, can you take the video sound that ends after few secounds and make a continueing track that will follow up when the video freezes? smoth transition",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "a11cca03-52d7-440c-9b6d-024c6216d85c",
+      "content": "home page has a short video with sound, the sound ends after few secounds with the video. please make check the sound of the video and make a smoth trasnition to a song that will continue the flow of the sound whent he video freezes",
+      "snapshot_message_type": 0
     }
   ]
 }

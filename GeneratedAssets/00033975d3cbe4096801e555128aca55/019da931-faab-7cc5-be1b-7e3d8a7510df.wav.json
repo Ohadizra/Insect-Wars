@@ -1,0 +1,14 @@
+{
+    "asset": "00033975d3cbe4096801e555128aca55",
+    "fileName": "019da931-faab-7cc5-be1b-7e3d8a7510df.wav",
+    "prompt": "Cinematic, loopable ambient menu music for a steampunk insect game. Atmospheric pads, low tribal drums, subtle ticking clockwork, and a mysterious melody. High energy but settled into a steady rhythm. Perfect for a main menu loop.",
+    "negativePrompt": "",
+    "model": "7df9b85a-1695-49f7-89bf-988208d5a3bc",
+    "modelName": "Meta MusicGen",
+    "customSeed": -1,
+    "w3CTraceId": "5063dadd68bf5f518e728e610d5f8808",
+    "feedback": 0,
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}

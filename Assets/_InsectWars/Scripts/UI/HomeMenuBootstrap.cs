@@ -573,13 +573,30 @@ namespace InsectWars.UI
     {
         public UnityEngine.Video.VideoPlayer player;
         public double freezeBeforeEnd = 0.4;
+        bool _musicStarted = false;
 
         void Update()
         {
-            if (player == null || !player.isPrepared || !player.isPlaying) return;
-            if (player.length <= 0) return;
-            if (player.time >= player.length - freezeBeforeEnd)
+            if (player == null || !player.isPrepared) return;
+
+            // If video is almost done or has naturally reached loop point/end
+            if (player.isPlaying && player.time >= player.length - freezeBeforeEnd)
+            {
                 player.Pause();
+                StartMenuMusic();
+            }
+            else if (!player.isPlaying && !_musicStarted)
+            {
+                // Fallback if player stopped for any other reason
+                StartMenuMusic();
+            }
+        }
+
+        void StartMenuMusic()
+        {
+            if (_musicStarted) return;
+            _musicStarted = true;
+            GameAudio.PlayMenuMusic();
         }
     }
 }
