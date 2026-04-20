@@ -1,0 +1,12 @@
+{
+    "asset": "5942fb3ba6e0d4ca497185dd6b4f128b",
+    "fileName": "019da95a-0b8d-7121-acbe-6a6b8528760d.glb",
+    "prompt": "A small tuft of dry, frost-covered grass, for a frozen map.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "317e9221566fa6c2ecb4da59e1e30832",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

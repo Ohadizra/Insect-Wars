@@ -1,0 +1,12 @@
+{
+    "asset": "a187ab6ff1fbf42658521c8a855435d8",
+    "fileName": "019da959-81b4-7d2a-a438-cd8f252f92e9.glb",
+    "prompt": "A small, frozen tree branch or twig, covered in ice.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "bcf61bdf7a419a7bd2c43bb53d839779",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

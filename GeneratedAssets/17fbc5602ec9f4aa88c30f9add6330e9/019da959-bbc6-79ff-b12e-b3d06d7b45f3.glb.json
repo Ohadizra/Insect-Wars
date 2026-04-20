@@ -1,0 +1,12 @@
+{
+    "asset": "17fbc5602ec9f4aa88c30f9add6330e9",
+    "fileName": "019da959-bbc6-79ff-b12e-b3d06d7b45f3.glb",
+    "prompt": "A sharp, translucent ice crystal spire, small prop.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "8e2b1eeb25e7c9094e1f25529a026acb",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

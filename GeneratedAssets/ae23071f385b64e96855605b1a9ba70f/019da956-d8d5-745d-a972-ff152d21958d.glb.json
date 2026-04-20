@@ -1,0 +1,12 @@
+{
+    "asset": "ae23071f385b64e96855605b1a9ba70f",
+    "fileName": "019da956-d8d5-745d-a972-ff152d21958d.glb",
+    "prompt": "A tall, jagged, frozen insectoid pillar with organic textures, covered in frost and ice crystals, low poly stylized.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "66e97ee32db77199eabc27c164f2a8a7",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,12 @@
+{
+    "asset": "465437c624577470d92e243554855311",
+    "fileName": "019da956-fa3a-753c-9ee5-a97c50496282.glb",
+    "prompt": "A jagged stone wall segment, horizontal, covered in snow and ice, for a frozen map barrier.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "3d77a16ee76df0e042321bdcc8ee844e",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,12 @@
+{
+    "asset": "6f8334667d1b4470d93e3f5a5b6300b2",
+    "fileName": "019da959-a7ae-777c-ae76-0579049374df.glb",
+    "prompt": "A jagged, snow-covered rock, low poly stylized.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "f0cabddc04225aa1b4e3e64173c81b05",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

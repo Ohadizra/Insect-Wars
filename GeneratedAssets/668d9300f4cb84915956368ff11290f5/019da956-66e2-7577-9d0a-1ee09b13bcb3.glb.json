@@ -1,0 +1,12 @@
+{
+    "asset": "668d9300f4cb84915956368ff11290f5",
+    "fileName": "019da956-66e2-7577-9d0a-1ee09b13bcb3.glb",
+    "prompt": "A rotting, bitten apple covered in frost and icicles, realistic but stylized, game prop.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "3378b7bfa3cc1bb5de518648e5d38146",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

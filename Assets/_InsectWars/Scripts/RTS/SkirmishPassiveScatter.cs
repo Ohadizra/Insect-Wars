@@ -111,22 +111,38 @@ namespace InsectWars.RTS
         static GameObject s_volcanicRockPrefab;
         static GameObject s_ashTuftPrefab;
 
-        static void EnsureLavaAssets()
+        static GameObject s_frozenGrassPrefab;
+        static GameObject s_frozenRockPrefab;
+        static GameObject s_iceCrystalPrefab;
+        static GameObject s_frozenBranchPrefab;
+
+        static void EnsureThemeAssets(ScatterTheme theme)
         {
-            if (s_lavaSpikePrefab == null) s_lavaSpikePrefab = Resources.Load<GameObject>("Models/LavaSpike");
-            if (s_volcanicRockPrefab == null) s_volcanicRockPrefab = Resources.Load<GameObject>("Models/VolcanicRock");
-            if (s_ashTuftPrefab == null) s_ashTuftPrefab = Resources.Load<GameObject>("Models/AshTuft");
+            if (theme == ScatterTheme.Lava)
+            {
+                if (s_lavaSpikePrefab == null) s_lavaSpikePrefab = Resources.Load<GameObject>("Models/LavaSpike");
+                if (s_volcanicRockPrefab == null) s_volcanicRockPrefab = Resources.Load<GameObject>("Models/VolcanicRock");
+                if (s_ashTuftPrefab == null) s_ashTuftPrefab = Resources.Load<GameObject>("Models/AshTuft");
+            }
+            else if (theme == ScatterTheme.Frozen)
+            {
+                if (s_frozenGrassPrefab == null) s_frozenGrassPrefab = Resources.Load<GameObject>("Models/FrozenGrass");
+                if (s_frozenRockPrefab == null) s_frozenRockPrefab = Resources.Load<GameObject>("Models/FrozenRock");
+                if (s_iceCrystalPrefab == null) s_iceCrystalPrefab = Resources.Load<GameObject>("Models/IceCrystalSmall");
+                if (s_frozenBranchPrefab == null) s_frozenBranchPrefab = Resources.Load<GameObject>("Models/FrozenBranch");
+            }
         }
 
         static void SpawnGrassTuft(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
-            if (theme == ScatterTheme.Lava)
+            if (theme == ScatterTheme.Lava || theme == ScatterTheme.Frozen)
             {
-                EnsureLavaAssets();
-                if (s_ashTuftPrefab != null)
+                EnsureThemeAssets(theme);
+                GameObject prefab = (theme == ScatterTheme.Lava) ? s_ashTuftPrefab : s_frozenGrassPrefab;
+                if (prefab != null)
                 {
-                    var go = Object.Instantiate(s_ashTuftPrefab, parent);
-                    go.name = "AshTuft";
+                    var go = Object.Instantiate(prefab, parent);
+                    go.name = (theme == ScatterTheme.Lava) ? "AshTuft" : "FrozenGrass";
                     go.transform.position = new Vector3(x, 0.05f, z);
                     go.transform.localScale = Vector3.one * (0.4f + (float)rng.NextDouble() * 0.6f);
                     go.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f);
@@ -135,7 +151,7 @@ namespace InsectWars.RTS
             }
 
             var goPrimitive = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            goPrimitive.name = "GrassTuft";
+goPrimitive.name = "GrassTuft";
             goPrimitive.transform.SetParent(parent, false);
             if (Application.isPlaying) Object.Destroy(goPrimitive.GetComponent<Collider>()); else Object.DestroyImmediate(goPrimitive.GetComponent<Collider>());
             var g = 0.28f + (float)rng.NextDouble() * 0.35f;
@@ -154,16 +170,17 @@ namespace InsectWars.RTS
 
         static void SpawnRock(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
         {
-            if (theme == ScatterTheme.Lava)
+            if (theme == ScatterTheme.Lava || theme == ScatterTheme.Frozen)
             {
-                EnsureLavaAssets();
-                if (s_volcanicRockPrefab != null)
+                EnsureThemeAssets(theme);
+                GameObject prefab = (theme == ScatterTheme.Lava) ? s_volcanicRockPrefab : s_frozenRockPrefab;
+                if (prefab != null)
                 {
-                    var go = Object.Instantiate(s_volcanicRockPrefab, parent);
-                    go.name = "VolcanicRock";
+                    var go = Object.Instantiate(prefab, parent);
+                    go.name = (theme == ScatterTheme.Lava) ? "VolcanicRock" : "FrozenRock";
                     var s = 0.25f + (float)rng.NextDouble() * 0.55f;
                     go.transform.position = new Vector3(x, s * 0.3f, z);
-                    go.transform.localScale = Vector3.one * s * 1.5f;
+                    go.transform.localScale = Vector3.one * s * (theme == ScatterTheme.Lava ? 1.5f : 1.0f);
                     go.transform.rotation = Quaternion.Euler(
                         (float)rng.NextDouble() * 360f,
                         (float)rng.NextDouble() * 360f,
@@ -173,7 +190,7 @@ namespace InsectWars.RTS
             }
 
             var goPrimitive = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            goPrimitive.name = "Rock";
+goPrimitive.name = "Rock";
             goPrimitive.transform.SetParent(parent, false);
             if (Application.isPlaying) Object.Destroy(goPrimitive.GetComponent<Collider>()); else Object.DestroyImmediate(goPrimitive.GetComponent<Collider>());
             var sVal = 0.25f + (float)rng.NextDouble() * 0.55f;
@@ -202,15 +219,30 @@ namespace InsectWars.RTS
         {
             if (theme == ScatterTheme.Frozen)
             {
-                // Spawn ice crystal instead
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = "IceCrystal";
-                go.transform.SetParent(parent, false);
-                if (Application.isPlaying) Object.Destroy(go.GetComponent<Collider>()); else Object.DestroyImmediate(go.GetComponent<Collider>());
-                var h = 0.25f + (float)rng.NextDouble() * 0.6f;
-                go.transform.position = new Vector3(x, h * 0.45f, z);
-                go.transform.localScale = new Vector3(0.15f, h, 0.15f);
-                go.transform.rotation = Quaternion.Euler(
+                EnsureThemeAssets(theme);
+                if (s_iceCrystalPrefab != null)
+                {
+                    var go = Object.Instantiate(s_iceCrystalPrefab, parent);
+                    go.name = "IceCrystal";
+                    var h = 0.25f + (float)rng.NextDouble() * 0.6f;
+                    go.transform.position = new Vector3(x, h * 0.45f, z);
+                    go.transform.localScale = new Vector3(0.5f, h * 1.5f, 0.5f);
+                    go.transform.rotation = Quaternion.Euler(
+                        (float)rng.NextDouble() * 15f,
+                        (float)rng.NextDouble() * 360f,
+                        (float)rng.NextDouble() * 15f);
+                    return;
+                }
+
+                // Fallback
+                var goPrim = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                goPrim.name = "IceCrystal";
+                goPrim.transform.SetParent(parent, false);
+                if (Application.isPlaying) Object.Destroy(goPrim.GetComponent<Collider>()); else Object.DestroyImmediate(goPrim.GetComponent<Collider>());
+                var h2 = 0.25f + (float)rng.NextDouble() * 0.6f;
+                goPrim.transform.position = new Vector3(x, h2 * 0.45f, z);
+                goPrim.transform.localScale = new Vector3(0.15f, h2, 0.15f);
+                goPrim.transform.rotation = Quaternion.Euler(
                     (float)rng.NextDouble() * 15f,
                     (float)rng.NextDouble() * 360f,
                     (float)rng.NextDouble() * 15f);
@@ -223,13 +255,13 @@ namespace InsectWars.RTS
                 mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
                 if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.9f);
                 
-                go.GetComponent<Renderer>().sharedMaterial = mat;
+                goPrim.GetComponent<Renderer>().sharedMaterial = mat;
                 return;
             }
             if (theme == ScatterTheme.Lava)
             {
                 // Spawn lava spike
-                EnsureLavaAssets();
+                EnsureThemeAssets(theme);
                 if (s_lavaSpikePrefab != null)
                 {
                     var go = Object.Instantiate(s_lavaSpikePrefab, parent);
@@ -282,10 +314,24 @@ namespace InsectWars.RTS
             cap.transform.localScale = new Vector3(0.38f, 0.22f, 0.38f);
             var capC = Color.Lerp(new Color(0.75f, 0.2f, 0.22f), new Color(0.55f, 0.15f, 0.45f), (float)rng.NextDouble());
             cap.GetComponent<Renderer>().sharedMaterial = Mat(capC);
+        }
+
+        static void SpawnTwig(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
+        {
+            if (theme == ScatterTheme.Frozen)
+            {
+                EnsureThemeAssets(theme);
+                if (s_frozenBranchPrefab != null)
+                {
+                    var goPrefab = Object.Instantiate(s_frozenBranchPrefab, parent);
+                    goPrefab.name = "FrozenBranch";
+                    goPrefab.transform.position = new Vector3(x, 0.04f, z);
+                    goPrefab.transform.localScale = Vector3.one * (0.8f + (float)rng.NextDouble() * 0.4f);
+                    goPrefab.transform.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, (float)rng.NextDouble() * 16f - 8f);
+                    return;
+                }
             }
 
-            static void SpawnTwig(Transform parent, float x, float z, System.Random rng, ScatterTheme theme)
-            {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "Twig";
             go.transform.SetParent(parent, false);
@@ -303,6 +349,6 @@ namespace InsectWars.RTS
                 c = new Color(0.38f, 0.28f, 0.18f);
 
             go.GetComponent<Renderer>().sharedMaterial = Mat(c);
-            }
-    }
+        }
+}
 }

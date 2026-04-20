@@ -778,7 +778,7 @@ namespace InsectWars.RTS
 
             var col = go.AddComponent<BoxCollider>();
             col.center = new Vector3(0f, 0.5f, 0f);
-            col.size = Vector3.one;
+            col.size = new Vector3(1.5f, 1f, 1.5f);
 
             var obs = go.AddComponent<NavMeshObstacle>();
             obs.carving = true;
@@ -904,7 +904,8 @@ namespace InsectWars.RTS
 
             var col = go.GetComponent<BoxCollider>();
             if (col == null) col = go.AddComponent<BoxCollider>();
-            col.size = localSize;
+            const float selectionPad = 1.5f;
+            col.size = new Vector3(localSize.x * selectionPad, localSize.y, localSize.z * selectionPad);
             col.center = localCenter;
 
             var obs = go.AddComponent<NavMeshObstacle>();

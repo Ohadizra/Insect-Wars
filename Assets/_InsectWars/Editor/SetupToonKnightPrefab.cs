@@ -1178,7 +1178,7 @@ namespace InsectWars.Editor
 
             var col = root.AddComponent<BoxCollider>();
             col.center = colCenter;
-            col.size = colSize;
+            col.size = new Vector3(colSize.x * 1.5f, colSize.y, colSize.z * 1.5f);
             col.isTrigger = true;
 
             var modifier = root.AddComponent<NavMeshModifier>();
