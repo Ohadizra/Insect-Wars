@@ -94,16 +94,17 @@ namespace InsectWars.Core
         {
             if (Instance == null) return;
             
-            if (Instance.backgroundMusic == null)
-                Instance.backgroundMusic = Resources.Load<AudioClip>("Audio/Music_MenuAmbient");
+            var menuClip = Resources.Load<AudioClip>("Audio/Music_MenuAmbient");
+            if (menuClip == null) return;
 
-            if (Instance.backgroundMusic != null && Instance._musicSrc != null)
+            if (Instance._musicSrc != null)
             {
-                if (Instance._musicSrc.clip == Instance.backgroundMusic && Instance._musicSrc.isPlaying)
+                if (Instance._musicSrc.clip == menuClip && Instance._musicSrc.isPlaying)
                     return;
 
-                Instance._musicSrc.clip = Instance.backgroundMusic;
+                Instance._musicSrc.clip = menuClip;
                 Instance._musicSrc.loop = true;
+                Instance.backgroundMusic = menuClip;
 
                 if (fadeDuration > 0f)
                 {
@@ -135,26 +136,24 @@ namespace InsectWars.Core
         {
             if (Instance == null) return;
             
-            if (Instance.backgroundMusic == null)
+            var theme = ScatterTheme.Default;
+            if (GameSession.SelectedMap != null) theme = GameSession.SelectedMap.scatterTheme;
+
+            string path = theme switch
             {
-                var theme = ScatterTheme.Default;
-                if (GameSession.SelectedMap != null) theme = GameSession.SelectedMap.scatterTheme;
+                ScatterTheme.Frozen => "Audio/Music_FinntrollStyle",
+                ScatterTheme.Lava => "Audio/Music_LavaPass",
+                _ => "Audio/Music_TribalBattle"
+            };
 
-                string path = theme switch
-                {
-                    ScatterTheme.Frozen => "Audio/Music_FinntrollStyle",
-                    ScatterTheme.Lava => "Audio/Music_LavaPass",
-                    _ => "Audio/Music_TribalBattle"
-                };
-
-                Instance.backgroundMusic = Resources.Load<AudioClip>(path);
-            }
-
-            if (Instance.backgroundMusic != null && Instance._musicSrc != null)
+            var clip = Resources.Load<AudioClip>(path);
+            if (clip != null && Instance._musicSrc != null)
             {
-                Instance._musicSrc.clip = Instance.backgroundMusic;
+                Instance._musicSrc.clip = clip;
                 Instance._musicSrc.volume = Instance.musicVolume;
+                Instance._musicSrc.loop = true;
                 Instance._musicSrc.Play();
+                Instance.backgroundMusic = clip; // Update cache
             }
         }
 
