@@ -229,9 +229,12 @@ namespace InsectWars.UI
             
             // Setup audio output
             vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            vp.controlledAudioTrackCount = 1; 
             var vAsrc = vgo.AddComponent<AudioSource>();
             vAsrc.playOnAwake = false;
             vAsrc.volume = 1f;
+            vAsrc.spatialBlend = 0f;
+            vp.SetTargetAudioSource(0, vAsrc);
 
             if (backgroundClip != null)
             {
@@ -240,11 +243,7 @@ namespace InsectWars.UI
                 vp.Prepare();
                 vp.prepareCompleted += (p) => 
                 { 
-                    if (p.controlledAudioTrackCount > 0)
-                    {
-                        p.EnableAudioTrack(0, true);
-                        p.SetTargetAudioSource(0, vAsrc);
-                    }
+                    p.EnableAudioTrack(0, true);
                     p.Play(); 
                     OnVideoReady(); 
                 };

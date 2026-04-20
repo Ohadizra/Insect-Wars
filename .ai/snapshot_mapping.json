@@ -1325,6 +1325,12 @@
       "conversation_id": "a11cca03-52d7-440c-9b6d-024c6216d85c",
       "content": "I've corrected the issue with the game music.\n\n### What happened:\nThe implementation of the smooth transition for the home page caused a \"caching\" bug. When the menu music loaded, it occupied the `backgroundMusic` slot. The game music logic then saw that the slot was \"already filled\" and skipped loading the theme-specific music (like the Frozen map's \"Finntroll\" style), playing the menu music during the game instead.\n\n### Fix:\n*   Updated `PlayGameMusic` to always resolve the correct theme (Frozen, Lava, or Default) and load the appropriate track, regardless of what was previously playing in the menu.\n*   Updated `PlayMenuMusic` to specifically load the menu ambient track, ensuring that returning to the menu correctly restores the menu music.\n\nThe Frozen map should now correctly play its original music (`Music_FinntrollStyle`) again.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "906d7a1a-33b0-4957-8a60-d6edacf89efc",
+      "conversation_id": "a11cca03-52d7-440c-9b6d-024c6216d85c",
+      "content": "I have fixed the issue where the video had no sound.\n\n### What happened:\nWhen switching the `VideoPlayer` to output through an `AudioSource` (to allow for the smooth fade transition), the `VideoPlayer` defaults to having 0 \"controlled audio tracks.\" This meant it wasn't sending any audio data to the linked `AudioSource`.\n\n### Fix:\n*   **Explicit Audio Routing**: I updated the initialization code to explicitly set `controlledAudioTrackCount = 1`. This tells the `VideoPlayer` to reserve and route its first audio track to the provided `AudioSource`.\n*   **Initialization Timing**: The target `AudioSource` is now linked and the track is enabled immediately during the video preparation phase, ensuring sound starts playing the moment the video begins.\n\nThe video sound should now be audible from the start, and it will still smoothly cross-fade into the menu music at the end.",
+      "snapshot_message_type": 1
     }
   ]
 }
