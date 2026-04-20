@@ -83,6 +83,12 @@ namespace InsectWars.RTS
         Font _font;
         Transform _cmdGridParent;
         readonly Dictionary<string, Image> _cmdButtonImages = new();
+        Image[] _selectionCellIcons;
+        Image[] _selectionCellHpBg;
+        Image[] _selectionCellHpFill;
+        RectTransform _selectionGridRt;
+        GridLayoutGroup _selectionGridLayout;
+        bool _gridInMultiUnitMode;
 
         const int QueueSlotCount = 5;
         GameObject _prodRoot;
@@ -646,29 +652,72 @@ namespace InsectWars.RTS
             gr.anchorMin = new Vector2(0.40f, 1f);
             gr.anchorMax = new Vector2(1f, 1f);
             gr.pivot = new Vector2(0f, 1f);
-            gr.anchoredPosition = new Vector2(0f, -8f); 
+            gr.anchoredPosition = new Vector2(0f, -8f);
             gr.sizeDelta = new Vector2(0f, 51f);
+            _selectionGridRt = gr;
 
             var gridLayout = gridRoot.AddComponent<GridLayoutGroup>();
             gridLayout.cellSize = new Vector2(42f, 42f);
             gridLayout.spacing = new Vector2(5f, 5f);
             gridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
             gridLayout.constraintCount = 1;
+            _selectionGridLayout = gridLayout;
 
             _selectionCells = new Image[24];
+            _selectionCellIcons = new Image[24];
+            _selectionCellHpBg = new Image[24];
+            _selectionCellHpFill = new Image[24];
             for (var i = 0; i < 24; i++)
             {
                 var cell = new GameObject($"Sel_{i}");
                 cell.transform.SetParent(gridRoot.transform, false);
-                var img = cell.AddComponent<Image>();
-                img.color = new Color(1f, 1f, 1f, 0f);
-                img.raycastTarget = false; 
-                var tx = CreateText("t", cell.transform, 12, Color.white, TextAnchor.LowerRight);
+                var cellBg = cell.AddComponent<Image>();
+                cellBg.sprite = slotFrame;
+                cellBg.type = Image.Type.Sliced;
+                cellBg.color = new Color(1f, 1f, 1f, 0f);
+                cellBg.raycastTarget = false;
+
+                var iconGo = new GameObject("Icon");
+                iconGo.transform.SetParent(cell.transform, false);
+                var iconImg = iconGo.AddComponent<Image>();
+                iconImg.preserveAspect = true;
+                iconImg.raycastTarget = false;
+                iconImg.color = new Color(1f, 1f, 1f, 0f);
+                var iconRt = iconImg.rectTransform;
+                iconRt.anchorMin = new Vector2(0.06f, 0.20f);
+                iconRt.anchorMax = new Vector2(0.94f, 0.95f);
+                iconRt.offsetMin = iconRt.offsetMax = Vector2.zero;
+
+                var hpBgGo = new GameObject("HpBg");
+                hpBgGo.transform.SetParent(cell.transform, false);
+                var hpBgImg = hpBgGo.AddComponent<Image>();
+                hpBgImg.color = new Color(0f, 0f, 0f, 0f);
+                hpBgImg.raycastTarget = false;
+                var hpBgRt = hpBgImg.rectTransform;
+                hpBgRt.anchorMin = new Vector2(0.06f, 0.04f);
+                hpBgRt.anchorMax = new Vector2(0.94f, 0.16f);
+                hpBgRt.offsetMin = hpBgRt.offsetMax = Vector2.zero;
+
+                var hpFillGo = new GameObject("HpFill");
+                hpFillGo.transform.SetParent(hpBgGo.transform, false);
+                var hpFillImg = hpFillGo.AddComponent<Image>();
+                hpFillImg.color = new Color(0.25f, 0.85f, 0.35f, 0f);
+                hpFillImg.raycastTarget = false;
+                var hpFillRt = hpFillImg.rectTransform;
+                hpFillRt.anchorMin = Vector2.zero;
+                hpFillRt.anchorMax = Vector2.one;
+                hpFillRt.offsetMin = hpFillRt.offsetMax = Vector2.zero;
+
+                var tx = CreateText("t", cell.transform, 11, Color.white, TextAnchor.LowerRight);
                 var trt = tx.rectTransform;
                 trt.anchorMin = Vector2.zero;
                 trt.anchorMax = Vector2.one;
                 trt.offsetMin = trt.offsetMax = new Vector2(2f, 2f);
-                _selectionCells[i] = img;
+
+                _selectionCells[i] = cellBg;
+                _selectionCellIcons[i] = iconImg;
+                _selectionCellHpBg[i] = hpBgImg;
+                _selectionCellHpFill[i] = hpFillImg;
             }
 
             _pendingHint = CreateText("PendingHint", hud, 15, ColTitle, TextAnchor.MiddleCenter);
@@ -1456,11 +1505,15 @@ namespace InsectWars.RTS
         void RefreshSelectionGrid()
         {
             if (_selectionCells == null) return;
-            foreach (var c in _selectionCells)
+            SetGridMode(false);
+            for (int i = 0; i < _selectionCells.Length; i++)
             {
-                c.color = new Color(1f, 1f, 1f, 0f);
-                c.sprite = null;
-                var t = c.GetComponentInChildren<Text>();
+                _selectionCells[i].color = new Color(1f, 1f, 1f, 0f);
+                _selectionCellIcons[i].sprite = null;
+                _selectionCellIcons[i].color = new Color(1f, 1f, 1f, 0f);
+                _selectionCellHpBg[i].color = new Color(0f, 0f, 0f, 0f);
+                _selectionCellHpFill[i].color = new Color(0f, 0f, 0f, 0f);
+                var t = _selectionCells[i].GetComponentInChildren<Text>();
                 if (t != null) t.text = "";
             }
 
@@ -1479,7 +1532,8 @@ namespace InsectWars.RTS
                 _attributeLabel.text = "Resource - Organic";
                 
                 var cell0 = _selectionCells[0];
-                cell0.color = Color.white;
+                cell0.color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
+                _selectionCellIcons[0].color = Color.white;
                 var tx0 = cell0.GetComponentInChildren<Text>();
                 if (tx0 != null)
                 {
@@ -1498,8 +1552,9 @@ namespace InsectWars.RTS
                 if (_portraitBlock != null) _portraitBlock.SetActive(true);
                 ShowHpDisplay(hive.CurrentHealth, hive.MaxHealth);
                 var cell0 = _selectionCells[0];
-                cell0.color = Color.white;
-                cell0.sprite = iconAntNest;
+                cell0.color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
+                _selectionCellIcons[0].sprite = iconAntNest;
+                _selectionCellIcons[0].color = Color.white;
                 return;
             }
 
@@ -1552,25 +1607,97 @@ namespace InsectWars.RTS
 
             if (list.Count == 0) return;
 
-            var first = list[0];
-            _portraitLabel.text = first.Definition != null ? first.Definition.displayName : "Unit";
-            _attributeLabel.text = GetAttributes(first);
-            if (_portraitMain != null) { _portraitMain.sprite = GetUnitPortrait(first.Archetype); _portraitMain.color = Color.white; }
-            if (_portraitBlock != null) _portraitBlock.SetActive(true);
-
             var sc2 = SelectionController.Instance;
-            if (sc2.HasMultipleSubgroups)
-                _attributeLabel.text += " · Tab to cycle";
 
-            float totalHp = 0f, totalMax = 0f;
-            foreach (var u in list)
+            if (list.Count == 1)
             {
-                totalHp += u.CurrentHealth;
-                totalMax += u.MaxHealth;
+                var first = list[0];
+                _portraitLabel.text = first.Definition != null ? first.Definition.displayName : "Unit";
+                _attributeLabel.text = GetAttributes(first);
+                if (_portraitMain != null) { _portraitMain.sprite = GetUnitPortrait(first.Archetype); _portraitMain.color = Color.white; }
+                if (_portraitBlock != null) _portraitBlock.SetActive(true);
+                ShowHpDisplay(first.CurrentHealth, first.MaxHealth);
+                if (sc2.HasMultipleSubgroups)
+                {
+                    _attributeLabel.text += " · Tab to cycle";
+                    ShowMixedSelectionGrid(sc2);
+                }
+                return;
             }
-            ShowHpDisplay(totalHp, totalMax);
 
-            ShowMixedSelectionGrid(sc2);
+            // Multi-unit: show individual unit cards with HP bars
+            SetGridMode(true);
+            _portraitLabel.text = $"Selected: {list.Count} units";
+            _attributeLabel.text = sc2.HasMultipleSubgroups ? "Tab to cycle groups" : "";
+
+            int cellIdx = 0;
+            for (int i = 0; i < list.Count && cellIdx < _selectionCells.Length; i++)
+            {
+                var u = list[i];
+                _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
+                _selectionCellIcons[cellIdx].sprite = GetUnitPortrait(u.Archetype);
+                _selectionCellIcons[cellIdx].color = Color.white;
+
+                float frac = u.MaxHealth > 0f ? Mathf.Clamp01(u.CurrentHealth / u.MaxHealth) : 0f;
+                _selectionCellHpBg[cellIdx].color = new Color(0f, 0f, 0f, 0.6f);
+                _selectionCellHpFill[cellIdx].color = HpBarColor(frac);
+                _selectionCellHpFill[cellIdx].rectTransform.anchorMax = new Vector2(frac, 1f);
+                cellIdx++;
+            }
+
+            // Show building type chips if mixed selection with Tab cycling
+            if (sc2.HasMultipleSubgroups)
+            {
+                var bldCounts = new System.Collections.Generic.SortedDictionary<BuildingType, int>();
+                foreach (var b in sc2.SelectedBuildings)
+                {
+                    if (b == null || !b.IsAlive) continue;
+                    bldCounts.TryGetValue(b.Type, out var n);
+                    bldCounts[b.Type] = n + 1;
+                }
+                foreach (var kvp in bldCounts)
+                {
+                    if (cellIdx >= _selectionCells.Length) break;
+                    _selectionCells[cellIdx].color = new Color(0.3f, 0.3f, 0.3f, 0.6f);
+                    _selectionCellIcons[cellIdx].sprite = GetBuildingIcon(kvp.Key);
+                    _selectionCellIcons[cellIdx].color = new Color(0.6f, 0.6f, 0.6f, 0.8f);
+                    var tx = _selectionCells[cellIdx].GetComponentInChildren<Text>();
+                    if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
+                    cellIdx++;
+                }
+            }
+        }
+
+        void SetGridMode(bool multiUnit)
+        {
+            if (_selectionGridRt == null) return;
+            if (_gridInMultiUnitMode == multiUnit) return;
+            _gridInMultiUnitMode = multiUnit;
+            if (multiUnit)
+            {
+                _selectionGridRt.anchorMin = new Vector2(0.02f, 0.08f);
+                _selectionGridRt.anchorMax = new Vector2(0.98f, 0.85f);
+                _selectionGridRt.pivot = new Vector2(0.5f, 0.5f);
+                _selectionGridRt.anchoredPosition = Vector2.zero;
+                _selectionGridRt.sizeDelta = Vector2.zero;
+                _selectionGridLayout.cellSize = new Vector2(50f, 60f);
+                _selectionGridLayout.spacing = new Vector2(5f, 5f);
+                _selectionGridLayout.constraint = GridLayoutGroup.Constraint.Flexible;
+                _selectionGridLayout.childAlignment = TextAnchor.MiddleCenter;
+            }
+            else
+            {
+                _selectionGridRt.anchorMin = new Vector2(0.40f, 1f);
+                _selectionGridRt.anchorMax = new Vector2(1f, 1f);
+                _selectionGridRt.pivot = new Vector2(0f, 1f);
+                _selectionGridRt.anchoredPosition = new Vector2(0f, -8f);
+                _selectionGridRt.sizeDelta = new Vector2(0f, 51f);
+                _selectionGridLayout.cellSize = new Vector2(42f, 42f);
+                _selectionGridLayout.spacing = new Vector2(5f, 5f);
+                _selectionGridLayout.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+                _selectionGridLayout.constraintCount = 1;
+                _selectionGridLayout.childAlignment = TextAnchor.MiddleLeft;
+            }
         }
 
         /// <summary>Show the selection grid with all unit archetypes + building types, sorted for Tab order.</summary>
@@ -1579,7 +1706,6 @@ namespace InsectWars.RTS
             int cellIdx = 0;
             bool hasActiveType = sc.ActiveBuildingType.HasValue;
 
-            // Unit archetype chips
             var unitCounts = new Dictionary<UnitArchetype, int>();
             foreach (var u in sc.SelectedPlayerUnits())
             {
@@ -1592,15 +1718,14 @@ namespace InsectWars.RTS
             {
                 if (!unitCounts.TryGetValue(arch, out var cnt)) continue;
                 if (cellIdx >= _selectionCells.Length) break;
-                var cell = _selectionCells[cellIdx];
-                cell.sprite = GetUnitPortrait(arch);
-                cell.color = unitsAreActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
-                var tx = cell.GetComponentInChildren<Text>();
+                _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.7f);
+                _selectionCellIcons[cellIdx].sprite = GetUnitPortrait(arch);
+                _selectionCellIcons[cellIdx].color = unitsAreActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
+                var tx = _selectionCells[cellIdx].GetComponentInChildren<Text>();
                 if (tx != null) tx.text = cnt > 1 ? $"{cnt}" : "";
                 cellIdx++;
             }
 
-            // Building type chips (sorted by enum to match Tab cycling order)
             var bldCounts = new SortedDictionary<BuildingType, int>();
             foreach (var b in sc.SelectedBuildings)
             {
@@ -1611,11 +1736,11 @@ namespace InsectWars.RTS
             foreach (var kvp in bldCounts)
             {
                 if (cellIdx >= _selectionCells.Length) break;
-                var cell = _selectionCells[cellIdx];
-                cell.sprite = GetBuildingIcon(kvp.Key);
                 bool isActive = hasActiveType && kvp.Key == sc.ActiveBuildingType.Value;
-                cell.color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
-                var tx = cell.GetComponentInChildren<Text>();
+                _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.7f);
+                _selectionCellIcons[cellIdx].sprite = GetBuildingIcon(kvp.Key);
+                _selectionCellIcons[cellIdx].color = isActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
+                var tx = _selectionCells[cellIdx].GetComponentInChildren<Text>();
                 if (tx != null) tx.text = kvp.Value > 1 ? $"{kvp.Value}" : "";
                 cellIdx++;
             }

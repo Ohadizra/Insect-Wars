@@ -674,6 +674,7 @@ namespace InsectWars.RTS
         void TickIdleAutoGather()
         {
             if (definition == null || !definition.canGather) return;
+            if (team == Team.Player && Core.GameSession.IsTutorialMode) return;
 
             if (_hasReceivedOrder && team == Team.Player)
             {

@@ -42,24 +42,24 @@ namespace InsectWars.Data
             map.passiveScatterSeed = 54321;
 
             // ── Visual Overrides (Lava Theme) ──
-            map.clayColor = new Color(0.15f, 0.12f, 0.10f); // Dark basalt
-            map.mapBoundsColor = new Color(0.85f, 0.25f, 0.05f); // Glowing lava bounds
+            map.clayColor = new Color(0.25f, 0.20f, 0.18f); // Warm dark stone
+            map.mapBoundsColor = new Color(0.65f, 0.15f, 0.02f); // Darker magma glow
             map.scatterTheme = ScatterTheme.Lava;
 
-            map.baseTerrainLayer = Resources.Load<TerrainLayer>("Materials/VolcanicBasalt_Layer");
-            map.secondaryTerrainLayer = Resources.Load<TerrainLayer>("Materials/MagmaLava_Layer");
+            map.baseTerrainLayer = Resources.Load<TerrainLayer>("Materials/DrySoil_Layer");
+            map.secondaryTerrainLayer = Resources.Load<TerrainLayer>("Materials/VolcanicBasalt_Layer");
             map.bigAppleMaterial = Resources.Load<Material>("Materials/CharredApple");
-        #if UNITY_EDITOR
+            #if UNITY_EDITOR
             if (map.baseTerrainLayer == null)
                 map.baseTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                    "Assets/_InsectWars/Materials/VolcanicBasalt_Layer.terrainlayer");
+                    "Assets/_InsectWars/Materials/DrySoil_Layer.terrainlayer");
             if (map.secondaryTerrainLayer == null)
                 map.secondaryTerrainLayer = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainLayer>(
-                    "Assets/_InsectWars/Materials/MagmaLava_Layer.terrainlayer");
+                    "Assets/_InsectWars/Materials/VolcanicBasalt_Layer.terrainlayer");
             if (map.bigAppleMaterial == null)
                 map.bigAppleMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(
                     "Assets/_InsectWars/Materials/CharredApple.mat");
-        #endif
+            #endif
 
             // ── Elevation ──
             // UV = (worldPos + 51.75) / 103.5
@@ -94,7 +94,9 @@ namespace InsectWars.Data
 
             map.terrainFeatures = new[]
             {
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 11.5f }, // Lava pool
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 11.5f }, // Center Lava pool
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(-25f, 0f, 0f), radius = 6f },  // Side Lava pool
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3( 25f, 0f, 0f), radius = 6f },  // Side Lava pool
                 new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-20.7f, 0f, -20.7f), radius = 9.2f }, // Ash husks
                 new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 20.7f, 0f,  20.7f), radius = 9.2f },
                 new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, 40.25f), radius = 6.9f }, // Scorched earth

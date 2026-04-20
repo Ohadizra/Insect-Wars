@@ -408,18 +408,18 @@ systems = new GameObject("Systems");
             Material oobMat = (lib != null && lib.outOfBoundsMaterial != null) ? lib.outOfBoundsMaterial : null;
             Material barrierMat = (lib != null && lib.mapBarrierMaterial != null) ? lib.mapBarrierMaterial : null;
 
-            bool isFrozen = (lib != null && lib.baseSoilLayer != null && lib.baseSoilLayer.name.Contains("Frozen"));
-            // Better check for frozen theme
-            if (!isFrozen)
-            {
-                var m = GameSession.SelectedMap;
-                if (m != null && m.scatterTheme == ScatterTheme.Frozen) isFrozen = true;
-            }
+            ScatterTheme theme = ScatterTheme.Default;
+            var m = GameSession.SelectedMap;
+            if (m != null) theme = m.scatterTheme;
+            else if (lib != null && lib.baseSoilLayer != null && lib.baseSoilLayer.name.Contains("Frozen")) theme = ScatterTheme.Frozen;
 
-            float mapWallTopY = isFrozen ? 5.0f : 2.5f;
-            float mapWallBottomY = -5.0f;
+            bool isFrozen = (theme == ScatterTheme.Frozen);
+            bool isLava = (theme == ScatterTheme.Lava);
+
+            float mapWallTopY = isFrozen ? 5.0f : (isLava ? 4.0f : 2.5f);
+            float mapWallBottomY = -15.0f;
             float barrierHeight = mapWallTopY - mapWallBottomY;
-float len = extent * 2f;
+            float len = extent * 2f;
 
             void Edge(string name, Vector3 pos, Vector3 scale)
             {
@@ -427,18 +427,15 @@ float len = extent * 2f;
                 container.transform.SetParent(parent);
                 container.transform.position = pos;
 
-                // Create a single solid cube for the entire edge to ensure it is perfectly straight
                 var e = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 e.name = name + "_Solid";
                 e.transform.SetParent(container.transform);
                 
-                // Align the top of the wall to a fixed world height (mapWallTopY)
-                // and extend deep into the ground (mapWallBottomY) to handle all levels
                 float centerY = (mapWallTopY + mapWallBottomY) * 0.5f;
                 e.transform.position = new Vector3(pos.x, centerY, pos.z);
                 e.transform.localScale = new Vector3(scale.x, barrierHeight, scale.z);
                 
-                if (barrierMat != null) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
+                if (barrierMat != null && isFrozen) e.GetComponent<Renderer>().sharedMaterial = barrierMat;
                 else ApplyMat(e, boundsColor);
                 
                 SafeDestroy(e.GetComponent<Collider>());
@@ -449,29 +446,32 @@ float len = extent * 2f;
             Edge("MapEdge_E", new Vector3(extent, 0f, 0f), new Vector3(thickness, thickness, len));
             Edge("MapEdge_W", new Vector3(-extent, 0f, 0f), new Vector3(thickness, thickness, len));
 
-            if (oobMat != null)
+            if (oobMat != null || isLava)
             {
                 var skirt = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 skirt.name = "OutOfBounds_Skirt";
                 skirt.transform.SetParent(parent);
-                skirt.transform.position = new Vector3(0f, -0.05f, 0f);
+                skirt.transform.position = new Vector3(0f, -0.1f, 0f);
                 skirt.transform.localScale = new Vector3(400f, 1f, 400f); 
-                skirt.GetComponent<Renderer>().sharedMaterial = oobMat;
+
+                if (isLava)
+                {
+                    // Use a dark magma color for the lava abyss
+                    ApplyMat(skirt, new Color(0.12f, 0.05f, 0.02f));
+                }
+                else if (oobMat != null)
+                {
+                    skirt.GetComponent<Renderer>().sharedMaterial = oobMat;
+                }
                 SafeDestroy(skirt.GetComponent<Collider>());
 
                 if (isFrozen && lib != null && lib.iciclePrefab != null)
                 {
-                    // Bold and crazy: Scatter huge icicles in the abyss
-                    // EXCLUDE SOUTH to avoid camera occlusion
                     Random.InitState(42); 
                     for (int i = 0; i < 150; i++)
                     {
                         Vector2 p = Random.insideUnitCircle.normalized * (extent + Random.Range(35f, 160f));
-                        
-                        // Avoid spawning in the south sector entirely
                         if (p.y < -extent + 10f) continue; 
-                        
-                        // Keep further away from playable bounds due to huge scale
                         if (Mathf.Abs(p.x) < extent + 25f && Mathf.Abs(p.y) < extent + 25f) continue;
 
                         var icicle = Instantiate(lib.iciclePrefab, parent);
@@ -481,7 +481,32 @@ float len = extent * 2f;
                         icicle.transform.rotation = Quaternion.Euler(Random.Range(-10f, 10f), Random.Range(0, 360), Random.Range(-10f, 10f));
                     }
                 }
-}
+                else if (isLava)
+                {
+                    // Scatter volcanic spires in the lava abyss
+                    Random.InitState(1337);
+                    GameObject spirePrefab = Resources.Load<GameObject>("Models/VolcanicSpire");
+        #if UNITY_EDITOR
+                    if (spirePrefab == null)
+                        spirePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_InsectWars/Models/VolcanicSpire.prefab");
+        #endif
+                    if (spirePrefab != null)
+                    {
+                        for (int i = 0; i < 80; i++)
+                        {
+                            Vector2 p = Random.insideUnitCircle.normalized * (extent + Random.Range(20f, 120f));
+                            if (p.y < -extent + 5f) continue;
+                            if (Mathf.Abs(p.x) < extent + 15f && Mathf.Abs(p.y) < extent + 15f) continue;
+
+                            var spire = Instantiate(spirePrefab, parent);
+                            spire.name = "Abyss_Spire_" + i;
+                            spire.transform.position = new Vector3(p.x, -10f, p.y);
+                            spire.transform.localScale = Vector3.one * Random.Range(10f, 30f);
+                            spire.transform.rotation = Quaternion.Euler(Random.Range(-5f, 5f), Random.Range(0, 360), Random.Range(-5f, 5f));
+                        }
+                    }
+                }
+            }
         }
 
         static void EnsureLitShader()

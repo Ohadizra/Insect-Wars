@@ -474,6 +474,98 @@ namespace InsectWars.UI
             if (_panelSettings) _panelSettings.SetActive(_panelSettings == on);
         }
 
+        Text SettingsRow(Transform parent, string label, string initialValue, ref float y,
+            float rowH, float rowGap,
+            UnityEngine.Events.UnityAction onLeft, UnityEngine.Events.UnityAction onRight)
+        {
+            const float labelW = 280f;
+            const float valueW = 140f;
+            const float arrowW = 52f;
+
+            var row = new GameObject(label + "Row");
+            row.transform.SetParent(parent, false);
+            var rowRt = row.AddComponent<RectTransform>();
+            rowRt.anchorMin = rowRt.anchorMax = rowRt.pivot = new Vector2(0.5f, 1f);
+            rowRt.anchoredPosition = new Vector2(0, y);
+            rowRt.sizeDelta = new Vector2(labelW + arrowW + valueW + arrowW + 16f, rowH);
+            y -= rowGap;
+
+            var lbl = Txt(row.transform, label, 20, ColTitle, TextAnchor.MiddleLeft);
+            lbl.fontStyle = FontStyle.Bold;
+            var lblRt = lbl.rectTransform;
+            lblRt.anchorMin = new Vector2(0, 0); lblRt.anchorMax = new Vector2(0, 1);
+            lblRt.pivot = new Vector2(0, 0.5f);
+            lblRt.anchoredPosition = new Vector2(0, 0);
+            lblRt.sizeDelta = new Vector2(labelW, 0);
+
+            float cx = labelW;
+            ArrowButton(row.transform, "<", cx, arrowW, rowH, onLeft);
+            cx += arrowW + 4f;
+
+            var val = Txt(row.transform, initialValue, 20, ColSub, TextAnchor.MiddleCenter);
+            val.fontStyle = FontStyle.Bold;
+            var valRt = val.rectTransform;
+            valRt.anchorMin = new Vector2(0, 0); valRt.anchorMax = new Vector2(0, 1);
+            valRt.pivot = new Vector2(0, 0.5f);
+            valRt.anchoredPosition = new Vector2(cx, 0);
+            valRt.sizeDelta = new Vector2(valueW, 0);
+            cx += valueW + 4f;
+
+            ArrowButton(row.transform, ">", cx, arrowW, rowH, onRight);
+
+            return val;
+        }
+
+        void ArrowButton(Transform parent, string symbol, float x, float w, float h,
+            UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject(symbol + "Btn");
+            go.transform.SetParent(parent, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 0); rt.anchorMax = new Vector2(0, 1);
+            rt.pivot = new Vector2(0, 0.5f);
+            rt.anchoredPosition = new Vector2(x, 0);
+            rt.sizeDelta = new Vector2(w, 0);
+
+            var img = go.AddComponent<Image>();
+            img.sprite = buttonSprite;
+            img.color = ColWhite;
+            img.type = Image.Type.Sliced;
+
+            var btn = go.AddComponent<Button>();
+            var cols = btn.colors;
+            cols.highlightedColor = new Color(1, 0.9f, 0.7f, 1f);
+            cols.pressedColor = new Color(0.8f, 0.7f, 0.5f, 1f);
+            btn.colors = cols;
+            btn.onClick.AddListener(onClick);
+
+            var tx = Txt(go.transform, symbol, BtnFontSize, ColTitle, TextAnchor.MiddleCenter);
+            tx.fontStyle = FontStyle.Bold;
+            Stretch(tx.rectTransform);
+        }
+
+        void AdjustVolume(float delta)
+        {
+            float vol = Mathf.Clamp01(GameSession.GetSavedMasterVolume() + delta);
+            GameSession.SetMasterVolume(vol);
+            if (_volValueLabel) _volValueLabel.text = Mathf.RoundToInt(vol * 100) + "%";
+        }
+
+        void ToggleFullscreen()
+        {
+            bool fs = !Screen.fullScreen;
+            GameSession.SetFullscreen(fs);
+            if (_fsValueLabel) _fsValueLabel.text = fs ? "ON" : "OFF";
+        }
+
+        void AdjustQuality(int delta)
+        {
+            int cur = QualitySettings.GetQualityLevel();
+            int next = Mathf.Clamp(cur + delta, 0, QualitySettings.names.Length - 1);
+            GameSession.SetQualityLevel(next);
+            if (_qualValueLabel) _qualValueLabel.text = QualitySettings.names[next].ToUpper();
+        }
+
         void SetDiff(DemoDifficulty d) => GameSession.SetDifficulty(d);
     }
 
