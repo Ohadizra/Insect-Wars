@@ -105,7 +105,7 @@ namespace InsectWars.RTS
             BuildingType.Underground => "Underground",
             BuildingType.AntNest => "Ant's\nNest",
             BuildingType.SkyTower => "Sky Tower",
-            BuildingType.Hive => "Hive",
+            BuildingType.Hive => "Ant Nest",
             _ => _type.ToString()
         };
 

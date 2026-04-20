@@ -816,6 +816,7 @@ namespace InsectWars.RTS
                 BuildingType.AntNest => iconAntNest,
                 BuildingType.SkyTower => iconSkyTower,
                 BuildingType.RootCellar => iconRootCellar,
+                BuildingType.Hive => iconAntNest,
                 _ => null
             };
         }
@@ -1020,7 +1021,7 @@ namespace InsectWars.RTS
             if (cmdName.Contains("Stag Beetle")) return portraitStagBeetle;
             if (cmdName.Contains("Underground")) return iconUnderground;
             if (cmdName.Contains("Sky Tower")) return iconSkyTower;
-            if (cmdName.Contains("Ant's Nest")) return iconAntNest;
+            if (cmdName.Contains("Ant's Nest") || cmdName.Contains("Ant Nest")) return iconAntNest;
             if (cmdName.Contains("Root Cellar")) return iconRootCellar;
             if (cmdName.Contains("Evolve")) return iconEvolve;
             if (cmdName.Contains("Clear Rally")) return iconClearRally;

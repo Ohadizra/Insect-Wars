@@ -28,15 +28,16 @@ namespace InsectWars.UI
         static readonly Color ColWhite     = Color.white;
 
         const float PanelW = 750f, PanelH = 722.5f;
-        const float BtnW = 400f, BtnH = 120f, BtnGap = 110f;
+        const float BtnW = 520f, BtnH = 72f, BtnGap = 80f;
         const int TitleSize = 48, SubSize = 15, BtnFontSize = 22;
 
         Canvas _canvas;
         Font _font;
-        GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelLearning, _panelSettings, _panelAbout;
+        GameObject _panelMain, _panelPlay, _panelMapSelect, _panelHow, _panelLearning, _panelSettings;
+        SpotlightPanel _spotlightPanel;
         GameObject _loadingScreen;
         CanvasGroup _loadingCanvasGroup;
-        Text _volValueLabel, _diffLabelInMapSelect;
+        Text _volValueLabel, _qualValueLabel, _fsValueLabel, _diffLabelInMapSelect;
         float _fadeTimer = -1f;
         int _revealCountdown = -1;
         const float FadeDuration = 0.5f;
@@ -275,8 +276,7 @@ namespace InsectWars.UI
             });
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
             DarkButton(box.transform, "PLAY-GROUND", ref y, () => ShowLearning());
-            DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
-            DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
+            DarkButton(box.transform, "SETTINGS", ref y, () => ShowSettings());
 
             MakeSeparator(box.transform, y + 20f, 400f);
             y -= 20f;
@@ -295,19 +295,31 @@ namespace InsectWars.UI
             DarkButton(boxPlay.transform, "BACK", ref yP, () => ShowMain());
 
             _panelSettings = MakePanel("SettingsPanel");
-            var boxSet = DarkBox(_panelSettings.transform, 550, 550);
-            PanelHeader(boxSet.transform, "CONFIGURATION", -50f);
-            float yS = -150f;
-            DarkButton(boxSet.transform, "TOGGLE FULLSCREEN", ref yS, () => { Screen.fullScreen = !Screen.fullScreen; });
-            DarkButton(boxSet.transform, "BACK", ref yS, () => ShowMain());
+            var boxSet = DarkBox(_panelSettings.transform, 600, 580);
+            PanelHeader(boxSet.transform, "SETTINGS", -50f);
 
-            _panelAbout = MakePanel("AboutPanel");
-            var boxAb = DarkBox(_panelAbout.transform, 650, 500);
-            PanelHeader(boxAb.transform, "LOGS", -50f);
-            var body = Txt(boxAb.transform, "INSECT WAR\n\nA Unity 6 RTS Vertical Slice.\nBuilt with URP and New Input System.", 20, ColTitle, TextAnchor.UpperCenter);
-            AnchorTopCenter(body.rectTransform, new Vector2(0, -150f), new Vector2(500, 200));
-            float yA = -380f;
-            DarkButton(boxAb.transform, "BACK", ref yA, () => ShowMain());
+            float yS = -130f;
+            const float rowH = 55f;
+            const float rowGap = 70f;
+
+            float curVol = GameSession.GetSavedMasterVolume();
+            _volValueLabel = SettingsRow(boxSet.transform, "MASTER VOLUME", Mathf.RoundToInt(curVol * 100) + "%", ref yS, rowH, rowGap,
+                () => { AdjustVolume(-0.05f); },
+                () => { AdjustVolume(0.05f); });
+
+            bool curFs = GameSession.GetSavedFullscreen();
+            _fsValueLabel = SettingsRow(boxSet.transform, "FULLSCREEN", curFs ? "ON" : "OFF", ref yS, rowH, rowGap,
+                () => { ToggleFullscreen(); },
+                () => { ToggleFullscreen(); });
+
+            int curQ = GameSession.GetSavedQuality();
+            string qName = QualitySettings.names.Length > curQ ? QualitySettings.names[curQ] : curQ.ToString();
+            _qualValueLabel = SettingsRow(boxSet.transform, "QUALITY", qName.ToUpper(), ref yS, rowH, rowGap,
+                () => { AdjustQuality(-1); },
+                () => { AdjustQuality(1); });
+
+            yS -= 10f;
+            DarkButton(boxSet.transform, "BACK", ref yS, () => ShowMain());
 
             BuildMapSelectPanel();
             BuildLearningPanel();
@@ -340,14 +352,18 @@ namespace InsectWars.UI
             var box = DarkBox(_panelLearning.transform, 550, 550);
             PanelHeader(box.transform, "PLAY-GROUND", -50f);
             float y = -150f;
-            DarkButton(box.transform, "PLAY-GROUND", ref y, () =>
+            DarkButton(box.transform, "SANDBOX MAP", ref y, () =>
             {
                 GameSession.SetLearningMode(true);
                 GameSession.SetTutorialMode(false);
                 GameSession.SetSelectedMap(SkirmishMapPresets.GetLearningMap());
                 SceneLoader.LoadSkirmishDemo();
             });
+            DarkButton(box.transform, "SPOTLIGHT", ref y, () => ShowSpotlight());
             DarkButton(box.transform, "BACK", ref y, () => ShowMain());
+
+            _spotlightPanel = SpotlightPanel.Create(
+                _canvas.transform, visualLibrary, _font, buttonSprite, () => ShowLearning());
         }
 
         void BuildHowToPlayPanel()
@@ -443,8 +459,8 @@ namespace InsectWars.UI
         void ShowPlay() => SetActivePanels(_panelPlay);
         void ShowHow() => SetActivePanels(_panelHow);
         void ShowLearning() => SetActivePanels(_panelLearning);
+        void ShowSpotlight() => SetActivePanels(_spotlightPanel != null ? _spotlightPanel.gameObject : null);
         void ShowSettings() => SetActivePanels(_panelSettings);
-        void ShowAbout() => SetActivePanels(_panelAbout);
         void ShowMapSelect() => SetActivePanels(_panelMapSelect);
 
         void SetActivePanels(GameObject on)
@@ -454,8 +470,8 @@ namespace InsectWars.UI
             if (_panelMapSelect) _panelMapSelect.SetActive(_panelMapSelect == on);
             if (_panelHow) _panelHow.SetActive(_panelHow == on);
             if (_panelLearning) _panelLearning.SetActive(_panelLearning == on);
+            if (_spotlightPanel) _spotlightPanel.gameObject.SetActive(_spotlightPanel.gameObject == on);
             if (_panelSettings) _panelSettings.SetActive(_panelSettings == on);
-            if (_panelAbout) _panelAbout.SetActive(_panelAbout == on);
         }
 
         void SetDiff(DemoDifficulty d) => GameSession.SetDifficulty(d);
