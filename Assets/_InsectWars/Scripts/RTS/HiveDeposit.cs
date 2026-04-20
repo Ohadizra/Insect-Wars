@@ -49,6 +49,17 @@ namespace InsectWars.RTS
                 gameObject.AddComponent<BuildingHealthBar>();
         }
 
+        void OnEnable()
+        {
+            RegisterHive();
+        }
+
+        void OnDisable()
+        {
+            if (PlayerHive == this) PlayerHive = null;
+            if (EnemyHive == this) EnemyHive = null;
+        }
+
         void OnDestroy()
         {
             if (PlayerHive == this) PlayerHive = null;

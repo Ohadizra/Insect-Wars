@@ -211,6 +211,17 @@ namespace InsectWars.RTS
             _ => 4f
         };
 
+        void OnEnable()
+        {
+            if (!s_all.Contains(this))
+                s_all.Add(this);
+        }
+
+        void OnDisable()
+        {
+            s_all.Remove(this);
+        }
+
         void OnDestroy()
         {
             s_all.Remove(this);
