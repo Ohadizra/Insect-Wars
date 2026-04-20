@@ -13,14 +13,15 @@ namespace InsectWars.RTS
 
         enum MatchState { Playing, Won, Lost }
 
+        // ── Parchment / Wooden Palette (matches Home menu) ──
         static readonly Color ColAmber = new(0.96f, 0.90f, 0.78f);
-        static readonly Color ColStat = new(0.83f, 0.78f, 0.68f);
+        static readonly Color ColSub = new(0.83f, 0.69f, 0.44f);
         static readonly Color ColVictory = new(1f, 0.92f, 0.5f);
         static readonly Color ColDefeat = new(1f, 0.4f, 0.35f);
-        static readonly Color ColPanelTint = new(0.08f, 0.1f, 0.06f, 0.95f);
-        static readonly Color ColBtnFill = new(0.15f, 0.18f, 0.12f, 0.92f);
-        static readonly Color ColBtnHighlight = new(0.85f, 1f, 0.85f);
-        static readonly Color ColBtnPressed = new(0.6f, 0.8f, 0.6f);
+        static readonly Color ColWhite = Color.white;
+        static readonly Color ColDimBg = new(0f, 0f, 0f, 0.70f);
+        static readonly Color ColBtnHighlight = new(1f, 0.9f, 0.7f, 1f);
+        static readonly Color ColBtnPressed = new(0.8f, 0.7f, 0.5f, 1f);
         static readonly Color ColOutline = new(0.1f, 0.08f, 0.05f, 0.8f);
 
         MatchState _state = MatchState.Playing;
@@ -107,6 +108,7 @@ namespace InsectWars.RTS
 
             var frameSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             var btnSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            var sepSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
 
             // Fullscreen dim backdrop
             _overlayRoot = new GameObject("MatchOverlay");
@@ -117,30 +119,30 @@ namespace InsectWars.RTS
             rt.offsetMin = rt.offsetMax = Vector2.zero;
 
             var dim = _overlayRoot.AddComponent<Image>();
-            dim.color = new Color(0f, 0f, 0f, 0.6f);
+            dim.color = ColDimBg;
             dim.raycastTarget = true;
 
-            // Center panel
+            // Center panel — wooden frame
             var panel = new GameObject("Panel");
             panel.transform.SetParent(_overlayRoot.transform, false);
             var prt = panel.AddComponent<RectTransform>();
             prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.5f);
-            prt.sizeDelta = new Vector2(460, 340);
+            prt.sizeDelta = new Vector2(550, 520);
             var pImg = panel.AddComponent<Image>();
-            if (frameSprite != null)
-            {
-                pImg.sprite = frameSprite;
-                pImg.type = Image.Type.Sliced;
-            }
-            pImg.color = ColPanelTint;
+            pImg.sprite = frameSprite;
+            pImg.color = ColWhite;
+            pImg.type = Image.Type.Sliced;
 
             bool won = end == MatchState.Won;
 
             // Banner title
             var bannerColor = won ? ColVictory : ColDefeat;
             var bannerText = won ? "VICTORY" : "DEFEAT";
-            CreateLabel(panel.transform, "Banner", bannerText, 42, bannerColor, FontStyle.Bold,
-                new Vector2(0f, 0.72f), new Vector2(1f, 0.95f), TextAnchor.MiddleCenter);
+            CreateLabel(panel.transform, "Banner", bannerText, 46, bannerColor, FontStyle.Bold,
+                new Vector2(0f, 0.82f), new Vector2(1f, 0.96f), TextAnchor.MiddleCenter);
+
+            // Separator below banner
+            MakeSeparator(panel.transform, sepSprite, new Vector2(0.08f, 0.80f), new Vector2(0.92f, 0.80f));
 
             // Stats section
             int minutes = Mathf.FloorToInt(MatchStats.ElapsedTime / 60f);
@@ -148,34 +150,35 @@ namespace InsectWars.RTS
             string durationStr = $"{minutes}:{seconds:D2}";
 
             CreateLabel(panel.transform, "StatDuration",
-                $"Match Duration:   {durationStr}", 20, ColStat, FontStyle.Normal,
-                new Vector2(0.1f, 0.52f), new Vector2(0.9f, 0.66f), TextAnchor.MiddleLeft);
+                $"Match Duration:   {durationStr}", 22, ColSub, FontStyle.Normal,
+                new Vector2(0.1f, 0.62f), new Vector2(0.9f, 0.76f), TextAnchor.MiddleLeft);
 
             CreateLabel(panel.transform, "StatKills",
-                $"Enemy Units Killed:   {MatchStats.EnemyUnitsKilled:N0}", 20, ColStat, FontStyle.Normal,
-                new Vector2(0.1f, 0.38f), new Vector2(0.9f, 0.52f), TextAnchor.MiddleLeft);
+                $"Enemy Units Killed:   {MatchStats.EnemyUnitsKilled:N0}", 22, ColSub, FontStyle.Normal,
+                new Vector2(0.1f, 0.48f), new Vector2(0.9f, 0.62f), TextAnchor.MiddleLeft);
 
             CreateLabel(panel.transform, "StatCalories",
-                $"Calories Gathered:   {MatchStats.CaloriesGathered:N0}", 20, ColStat, FontStyle.Normal,
-                new Vector2(0.1f, 0.24f), new Vector2(0.9f, 0.38f), TextAnchor.MiddleLeft);
+                $"Calories Gathered:   {MatchStats.CaloriesGathered:N0}", 22, ColSub, FontStyle.Normal,
+                new Vector2(0.1f, 0.34f), new Vector2(0.9f, 0.48f), TextAnchor.MiddleLeft);
+
+            // Separator above buttons
+            MakeSeparator(panel.transform, sepSprite, new Vector2(0.08f, 0.30f), new Vector2(0.92f, 0.30f));
 
             // Play Again button
-            CreateButton(panel.transform, "PlayAgainBtn", "Play Again", btnSprite,
-                new Vector2(0.5f, 0.12f), new Vector2(0, 52),
-                () =>
-                {
-                    Time.timeScale = 1f;
-                    SceneLoader.LoadSkirmishDemo();
-                });
+            float btnY = -380f;
+            const float btnGap = 70f;
+            CreateWoodenButton(panel.transform, btnSprite, ref btnY, btnGap, "PLAY AGAIN", () =>
+            {
+                Time.timeScale = 1f;
+                SceneLoader.LoadSkirmishDemo();
+            });
 
             // Main Menu button
-            CreateButton(panel.transform, "MenuBtn", "Main Menu", btnSprite,
-                new Vector2(0.5f, -0.02f), new Vector2(0, -4),
-                () =>
-                {
-                    Time.timeScale = 1f;
-                    SceneLoader.LoadHome();
-                });
+            CreateWoodenButton(panel.transform, btnSprite, ref btnY, btnGap, "MAIN MENU", () =>
+            {
+                Time.timeScale = 1f;
+                SceneLoader.LoadHome();
+            });
         }
 
         Text CreateLabel(Transform parent, string name, string content, int fontSize, Color color,
@@ -194,6 +197,8 @@ namespace InsectWars.RTS
             t.color = color;
             t.fontStyle = style;
             t.alignment = alignment;
+            t.text = content;
+            t.supportRichText = true;
             t.raycastTarget = false;
 
             var outline = go.AddComponent<Outline>();
@@ -203,34 +208,47 @@ namespace InsectWars.RTS
             return t;
         }
 
-        void CreateButton(Transform parent, string name, string label, Sprite btnSprite,
-            Vector2 anchor, Vector2 posOffset, UnityEngine.Events.UnityAction onClick)
+        void MakeSeparator(Transform parent, Sprite sepSprite, Vector2 anchorMin, Vector2 anchorMax)
         {
-            var btnGo = new GameObject(name);
+            var sep = new GameObject("Sep");
+            sep.transform.SetParent(parent, false);
+            var srt = sep.AddComponent<RectTransform>();
+            srt.anchorMin = anchorMin;
+            srt.anchorMax = anchorMax;
+            srt.sizeDelta = new Vector2(0f, 12f);
+            var sImg = sep.AddComponent<Image>();
+            sImg.sprite = sepSprite;
+            sImg.color = ColSub;
+        }
+
+        void CreateWoodenButton(Transform parent, Sprite btnSprite, ref float y, float gap,
+            string label, UnityEngine.Events.UnityAction onClick)
+        {
+            var btnGo = new GameObject(label + "Btn");
             btnGo.transform.SetParent(parent, false);
             var brt = btnGo.AddComponent<RectTransform>();
-            brt.anchorMin = brt.anchorMax = anchor;
-            brt.anchoredPosition = posOffset;
-            brt.sizeDelta = new Vector2(250, 50);
+            brt.anchorMin = brt.anchorMax = brt.pivot = new Vector2(0.5f, 1f);
+            brt.anchoredPosition = new Vector2(0, y);
+            brt.sizeDelta = new Vector2(360, 60);
+            y -= gap;
 
             var img = btnGo.AddComponent<Image>();
-            if (btnSprite != null)
-            {
-                img.sprite = btnSprite;
-                img.type = Image.Type.Sliced;
-            }
-            img.color = ColBtnFill;
+            img.sprite = btnSprite;
+            img.color = ColWhite;
+            img.type = Image.Type.Sliced;
 
             var btn = btnGo.AddComponent<Button>();
             var colors = btn.colors;
             colors.highlightedColor = ColBtnHighlight;
             colors.pressedColor = ColBtnPressed;
             btn.colors = colors;
+            btn.onClick.AddListener(onClick);
 
             var lbl = new GameObject("Label").AddComponent<Text>();
             lbl.transform.SetParent(btnGo.transform, false);
             lbl.font = UiFontHelper.GetFont();
             lbl.fontSize = 22;
+            lbl.fontStyle = FontStyle.Bold;
             lbl.color = ColAmber;
             lbl.alignment = TextAnchor.MiddleCenter;
             lbl.text = label;
@@ -240,7 +258,9 @@ namespace InsectWars.RTS
             lrt.anchorMax = Vector2.one;
             lrt.offsetMin = lrt.offsetMax = Vector2.zero;
 
-            btn.onClick.AddListener(onClick);
+            var outline = lbl.gameObject.AddComponent<Outline>();
+            outline.effectColor = ColOutline;
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
         }
 
         void OnDestroy()
