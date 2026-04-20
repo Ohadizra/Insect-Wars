@@ -1289,6 +1289,12 @@
       "conversation_id": "6580f68a-45c1-4c44-a241-0cd85f0f612d",
       "content": "I have updated the **Lava Pass** map to refine its visual theme and fulfill your \"less lava, more ground\" request:\n\n### 1. Recreated the Map's Edge (Lava Theme)\nThe off-map \"abyss\" is no longer frozen. I updated `SkirmishDirector.cs` to detect the Lava theme and apply the following:\n*   **Lava Abyss**: The frozen \"deep ice\" skirt has been replaced with a dark, molten magma-colored surface (`Color(0.12, 0.05, 0.02)`).\n*   **Volcanic Spires**: Instead of giant icicles, the off-map area is now scattered with huge **Volcanic Spires** that rise from the dark abyss, matching the active lava theme.\n*   **Dynamic Scaling**: The map boundary walls now have a custom height (4.0m) optimized for the volcanic look.\n\n### 2. \"Less Lava, More Ground\" Terrain\nI swapped the terrain layers in `SkirmishMapPresets.cs` to give the map a more grounded, soil-based feel while retaining volcanic elements:\n*   **Base Ground**: Switched from Basalt to `DrySoil_Layer`. The main floor of the map is now a natural, dusty ground.\n*   **Slopes & High Ground**: Changed from glowing lava to `VolcanicBasalt_Layer`. The hills and ramps are now dark, scorched volcanic rock rather than liquid magma.\n*   **Lava Elements**: To maintain the volcanic identity, I added **two additional lava pools** (Water Puddles in the lava theme) on the sides of the map. This keeps the lava as a \"feature element\" rather than a floor-wide texture.\n*   **Color Refinement**:\n    *   **Clay Walls**: Updated to a warm dark stone color (`Color(0.25, 0.20, 0.18)`).\n    *   **Map Bounds**: Changed to a darker, more realistic magma glow (`Color(0.65, 0.15, 0.02)`).\n\nThe map is now significantly more \"ground-focused\" with volcanic accents and a consistent, active lava-themed boundary.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_2",
+      "conversation_id": "778f6682-a350-484d-a2d8-81ee63b31501",
+      "content": "make a song for the Lava pass map, similar to the frozen map song but a diffrent sound and more ephasis on Whispering embers vibes of envirment sonds",
+      "snapshot_message_type": 0
     }
   ]
 }
