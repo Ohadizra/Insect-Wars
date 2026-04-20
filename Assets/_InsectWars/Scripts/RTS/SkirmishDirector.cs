@@ -118,7 +118,7 @@ namespace InsectWars.RTS
             GameSession.LoadPrefs();
             EnemyResources.Reset();
             BuildWorldPreview();
-            if (!GameSession.IsTutorialMode)
+            if (!GameSession.IsTutorialMode && !GameSession.IsLearningMode)
                 GameAudio.PlayGameMusic();
 
             if (GameSession.IsTutorialMode)

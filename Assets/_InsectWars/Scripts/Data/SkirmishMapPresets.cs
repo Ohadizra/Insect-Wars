@@ -28,16 +28,16 @@ namespace InsectWars.Data
                 "A narrow, scorched corridor where hives are mere seconds apart.\n" +
                 "Brace for an immediate clash on this compact, basalt-covered rush map.";
 
-            map.mapHalfExtent = 45f;
+            map.mapHalfExtent = 51.75f;
 
             // ── Spawns ──
-            map.playerHivePosition    = new Vector3(-35f, 1f, -30f);
-            map.enemyHivePosition     = new Vector3( 35f, 1f,  30f);
-            map.playerArmyStart       = new Vector3(-35f, 0f, -30f);
-            map.enemyArmyStart        = new Vector3( 35f, 0f,  30f);
-            map.cameraFocusWorld      = new Vector3(-30f, 0f, -25f);
-            map.bigApplePosition      = new Vector3(-28f, 1.5f, -22f);
-            map.enemyBigApplePosition = new Vector3( 28f, 1.5f,  22f);
+            map.playerHivePosition    = new Vector3(-40.25f, 1f, -34.5f);
+            map.enemyHivePosition     = new Vector3( 40.25f, 1f,  34.5f);
+            map.playerArmyStart       = new Vector3(-40.25f, 0f, -34.5f);
+            map.enemyArmyStart        = new Vector3( 40.25f, 0f,  34.5f);
+            map.cameraFocusWorld      = new Vector3(-34.5f, 0f, -28.75f);
+            map.bigApplePosition      = new Vector3(-32.2f, 1.5f, -25.3f);
+            map.enemyBigApplePosition = new Vector3( 32.2f, 1.5f,  25.3f);
 
             map.passiveScatterSeed = 54321;
 
@@ -62,25 +62,25 @@ namespace InsectWars.Data
         #endif
 
             // ── Elevation ──
-            // UV = (worldPos + 45) / 90
-            // Base radius 0.32 matches the 28.8m radius of Frozen Expanse (0.12 * 240 / 90)
+            // UV = (worldPos + 51.75) / 103.5
+            // Base radius 0.32 matches the 33.12m radius (0.32 * 103.5)
             map.highGrounds = new[]
             {
                 // Main base plateaus
                 new HighGroundPlaced { uv = new Vector2(0.1111f, 0.1667f), radius = 0.32f, rampWidth = 0.06f, heightFraction = 0.15f, rotation = 45f },
                 new HighGroundPlaced { uv = new Vector2(0.8889f, 0.8333f), radius = 0.32f, rampWidth = 0.06f, heightFraction = 0.15f, rotation = 225f },
                 // Central contestable ledge
-                new HighGroundPlaced { uv = new Vector2(0.5f, 0.5f), radius = 0.12f, rampWidth = 0.07f, heightFraction = 0.12f, rotation = 135f },
+                new HighGroundPlaced { uv = new Vector2(0.5f, 0.5f), radius = 0.094f, rampWidth = 0.07f, heightFraction = 0.12f, rotation = 135f },
             };
 
             // ── Clay Walls (Basalt Pillars) ──
             map.clay = new[]
             {
                 // Narrowing the central pass
-                new ClayPlaced { position = new Vector3(-15f, 0f, 5f), scale = new Vector3(8f, 6f, 3f) },
-                new ClayPlaced { position = new Vector3( 15f, 0f, -5f), scale = new Vector3(8f, 6f, 3f) },
-                new ClayPlaced { position = new Vector3(-5f, 0f, 15f), scale = new Vector3(3f, 6f, 8f) },
-                new ClayPlaced { position = new Vector3( 5f, 0f, -15f), scale = new Vector3(3f, 6f, 8f) },
+                new ClayPlaced { position = new Vector3(-17.25f, 0f, 5.75f), scale = new Vector3(8f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3( 17.25f, 0f, -5.75f), scale = new Vector3(8f, 6f, 3f) },
+                new ClayPlaced { position = new Vector3(-5.75f, 0f, 17.25f), scale = new Vector3(3f, 6f, 8f) },
+                new ClayPlaced { position = new Vector3( 5.75f, 0f, -17.25f), scale = new Vector3(3f, 6f, 8f) },
             };
 
             map.fruits = new[]
@@ -88,25 +88,25 @@ namespace InsectWars.Data
                 // Center fruit
                 new FruitPlaced { position = new Vector3(0f, 0.6f, 0f), calories = 9000, gatherPerTick = 12, gatherSeconds = 4f },
                 // Expansion-lite positions
-                new FruitPlaced { position = new Vector3(-20f, 0.6f, 20f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
-                new FruitPlaced { position = new Vector3( 20f, 0.6f, -20f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3(-23f, 0.6f, 23f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
+                new FruitPlaced { position = new Vector3( 23f, 0.6f, -23f), calories = 6000, gatherPerTick = 8, gatherSeconds = 5f },
             };
 
             map.terrainFeatures = new[]
             {
-                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 10f }, // Lava pool
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-18f, 0f, -18f), radius = 8f }, // Ash husks
-                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 18f, 0f,  18f), radius = 8f },
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, 35f), radius = 6f }, // Scorched earth
-                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, -35f), radius = 6f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.WaterPuddle, position = new Vector3(0f, 0f, 0f), radius = 11.5f }, // Lava pool
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3(-20.7f, 0f, -20.7f), radius = 9.2f }, // Ash husks
+                new TerrainFeaturePlaced { type = TerrainFeatureType.TallGrass, position = new Vector3( 20.7f, 0f,  20.7f), radius = 9.2f },
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, 40.25f), radius = 6.9f }, // Scorched earth
+                new TerrainFeaturePlaced { type = TerrainFeatureType.ThornPatch, position = new Vector3(0f, 0f, -40.25f), radius = 6.9f },
             };
 
             map.decorativePrefabs = new[]
             {
-                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(-40f, 0f, -40f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
-                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3( 40f, 0f,  40f), rotation = Vector3.zero, scale = Vector3.one * 1.5f },
-                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(0f, 0f, 25f), rotation = new Vector3(0, 90, 0), scale = Vector3.one * 1.2f },
-                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(0f, 0f, -25f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 1.2f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(-46f, 0f, -46f), rotation = Vector3.zero, scale = Vector3.one * 1.725f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3( 46f, 0f,  46f), rotation = Vector3.zero, scale = Vector3.one * 1.725f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(0f, 0f, 28.75f), rotation = new Vector3(0, 90, 0), scale = Vector3.one * 1.38f },
+                new DecorativePrefabPlaced { prefabPath = "Assets/_InsectWars/Models/VolcanicSpire.prefab", position = new Vector3(0f, 0f, -28.75f), rotation = new Vector3(0, 270, 0), scale = Vector3.one * 1.38f },
             };
 
             return map;
@@ -482,7 +482,7 @@ namespace InsectWars.Data
         {
             var map = ScriptableObject.CreateInstance<SkirmishMapDefinition>();
             map.name = "LearningMap";
-            map.displayName = "Training Grounds";
+            map.displayName = "Play-Ground";
             map.description = "A flat sandbox for learning the basics.\nNo enemy AI — practice building, gathering, and combat on a training dummy.";
 
             map.mapHalfExtent = 35f;

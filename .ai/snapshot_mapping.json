@@ -1277,6 +1277,12 @@
       "conversation_id": "6580f68a-45c1-4c44-a241-0cd85f0f612d",
       "content": "Lave pass is currently not playable as Ai/enemy base is blocked. please make the map 15% bigger and the high ground in the center 10% smaller",
       "snapshot_message_type": 0
+    },
+    {
+      "message_id": "c5ce17d1-d8c3-4136-b608-6a32fde75b12",
+      "conversation_id": "6580f68a-45c1-4c44-a241-0cd85f0f612d",
+      "content": "I have updated the **Lava Pass** map configuration in `SkirmishMapPresets.cs` to resolve the blocked AI/enemy base and fulfill your scaling requests:\n\n1.  **Map Size**: Increased the `mapHalfExtent` by 15% (from 45m to **51.75m**), expanding the total playable area to 103.5m x 103.5m.\n2.  **Central High Ground**: Reduced the radius of the central plateau by 10% in absolute world units (coefficient reduced from 0.12 to **0.094**), creating a wider corridor in the center.\n3.  **Spawn Positions**: Scaled all hive, army, and objective positions by 1.15x to maintain their relative placement on the enlarged map while moving them further from the center and edges to prevent clipping.\n4.  **Environmental Balancing**: Scaled the radii of terrain features (lava pool, tall grass, thorn patches) and decorative assets by 15% to maintain visual consistency with the larger map scale.\n\nThese changes significantly widen the \"pass\" between the player and enemy bases, ensuring the AI has ample room to maneuver and exit its starting plateau.\n\n**Validation:**\n- Checked `SkirmishMapPresets.cs` for compilation errors (none found).\n- Verified UV mapping logic for high ground still aligns with the new world positions.\n- Confirmed that the enemy hive is now 11.5m from the map edge (previously 10m), providing more clearance.",
+      "snapshot_message_type": 1
     }
   ]
 }

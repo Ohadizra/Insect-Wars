@@ -44,8 +44,6 @@ namespace InsectWars.UI
 
         void Awake()
         {
-            HideSceneJunk();
-
             GameSession.LoadPrefs();
             AudioListener.volume = GameSession.GetSavedMasterVolume();
             Screen.fullScreen = GameSession.GetSavedFullscreen();
@@ -68,24 +66,6 @@ namespace InsectWars.UI
             systems.AddComponent<GameAudio>();
             }
 
-        void HideSceneJunk()
-        {
-            var cam = Camera.main;
-            if (cam != null)
-            {
-                cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = Color.black;
-            }
-
-            foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
-            {
-                r.enabled = false;
-                var agent = r.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                if (agent != null) agent.enabled = false;
-                var unit = r.GetComponent<InsectUnit>();
-                if (unit != null) unit.enabled = false;
-            }
-        }
 
         void Update()
         {
@@ -294,7 +274,7 @@ namespace InsectWars.UI
                 SceneLoader.LoadSkirmishDemo();
             });
             DarkButton(box.transform, "START MISSION", ref y, () => ShowPlay());
-            DarkButton(box.transform, "LEARNING", ref y, () => ShowLearning());
+            DarkButton(box.transform, "PLAY-GROUND", ref y, () => ShowLearning());
             DarkButton(box.transform, "CONFIGURATION", ref y, () => ShowSettings());
             DarkButton(box.transform, "LOGS", ref y, () => ShowAbout());
 
@@ -358,9 +338,9 @@ namespace InsectWars.UI
         {
             _panelLearning = MakePanel("LearningPanel");
             var box = DarkBox(_panelLearning.transform, 550, 550);
-            PanelHeader(box.transform, "LEARNING", -50f);
+            PanelHeader(box.transform, "PLAY-GROUND", -50f);
             float y = -150f;
-            DarkButton(box.transform, "SANDBOX MAP", ref y, () =>
+            DarkButton(box.transform, "PLAY-GROUND", ref y, () =>
             {
                 GameSession.SetLearningMode(true);
                 GameSession.SetTutorialMode(false);
