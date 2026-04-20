@@ -10,23 +10,24 @@ namespace InsectWars.RTS
     {
         public static TutorialDirector Instance { get; private set; }
 
-        static readonly Color ColPanelWhite = new(0.97f, 0.96f, 0.93f, 1f);
-        static readonly Color ColTitle = new(0.12f, 0.10f, 0.08f);
-        static readonly Color ColBody = new(0.22f, 0.20f, 0.18f);
-        static readonly Color ColMuted = new(0.45f, 0.42f, 0.38f);
-        static readonly Color ColGreen = new(0.15f, 0.62f, 0.22f);
-        static readonly Color ColGold = new(0.72f, 0.58f, 0.10f);
-        static readonly Color ColGray = new(0.55f, 0.52f, 0.48f);
-        static readonly Color ColSep = new(0.82f, 0.80f, 0.75f, 1f);
-        static readonly Color ColBtnBg = new(0.18f, 0.50f, 0.22f, 1f);
-        static readonly Color ColBtnHover = new(0.22f, 0.60f, 0.28f, 1f);
-        static readonly Color ColBtnPress = new(0.14f, 0.40f, 0.18f, 1f);
-        static readonly Color ColBtnText = Color.white;
-        static readonly Color ColDimBg = new(0f, 0f, 0f, 0.55f);
-        static readonly Color ColHudBg = new(0.97f, 0.96f, 0.93f, 0.95f);
-        static readonly Color ColTrackerBg = new(0.97f, 0.96f, 0.93f, 0.92f);
-        static readonly Color ColHighlight = new(1f, 0.82f, 0.15f, 1f);
-        static readonly Color ColPopupBg = new(0.14f, 0.12f, 0.10f, 0.96f);
+        // ── Parchment / Wooden Palette (matches Home menu) ──
+        static readonly Color ColTitle      = new(0.96f, 0.90f, 0.78f);
+        static readonly Color ColBody       = new(0.83f, 0.69f, 0.44f);
+        static readonly Color ColMuted      = new(0.70f, 0.60f, 0.42f);
+        static readonly Color ColGreen      = new(0.45f, 0.82f, 0.35f);
+        static readonly Color ColGold       = new(0.96f, 0.90f, 0.78f);
+        static readonly Color ColGray       = new(0.60f, 0.55f, 0.45f);
+        static readonly Color ColSep        = new(0.83f, 0.69f, 0.44f, 0.7f);
+        static readonly Color ColBtnHighlight = new(1f, 0.9f, 0.7f, 1f);
+        static readonly Color ColBtnPress   = new(0.8f, 0.7f, 0.5f, 1f);
+        static readonly Color ColBtnText    = new(0.96f, 0.90f, 0.78f);
+        static readonly Color ColDimBg      = new(0f, 0f, 0f, 0.70f);
+        static readonly Color ColHighlight  = new(1f, 0.82f, 0.15f, 1f);
+        static readonly Color ColWhite      = Color.white;
+
+        Sprite _frameSprite;
+        Sprite _buttonSprite;
+        Sprite _separatorSprite;
 
         enum Phase { Intro, Playing, Complete, Finished }
 
@@ -80,6 +81,10 @@ namespace InsectWars.RTS
 
         void Start()
         {
+            _frameSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            _buttonSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            _separatorSprite = GameHUD.LoadSpriteFromResources("UI/Extracted/frame_ornate");
+
             BuildChapters();
             BuildTracker();
             BuildHud();
@@ -858,24 +863,26 @@ namespace InsectWars.RTS
             _ccPopup.transform.SetParent(canvasRect, false);
             var rt = _ccPopup.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(620, 270);
+            rt.sizeDelta = new Vector2(620, 300);
 
             var bg = _ccPopup.AddComponent<Image>();
-            bg.color = ColPopupBg;
+            bg.sprite = _frameSprite;
+            bg.color = ColWhite;
+            bg.type = Image.Type.Sliced;
             bg.raycastTarget = true;
 
             var title = MakeLabel(_ccPopup.transform, "Title",
                 "Colony Capacity Full!", 32,
-                FontStyle.Bold, ColHighlight, TextAnchor.MiddleCenter);
+                FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
             AnchorFill(title, new Vector2(0f, 0.68f), new Vector2(1f, 0.93f));
 
             var body = MakeLabel(_ccPopup.transform, "Body",
                 "Build an <b>Ant's Nest</b> (+25 CC) or\n" +
                 "<b>Root Cellar</b> (+15 CC) to increase\nyour Colony Capacity.",
-                22, FontStyle.Normal, ColPanelWhite, TextAnchor.MiddleCenter);
+                22, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(body, new Vector2(0.05f, 0.26f), new Vector2(0.95f, 0.68f));
 
-            var btn = MakeGreenButton(_ccPopup.transform, "OkBtn", "GOT IT!", () =>
+            var btn = MakeWoodenButton(_ccPopup.transform, "OkBtn", "GOT IT!", () =>
             {
                 _ccPopupDismissed = true;
                 if (_ccPopup != null) { Destroy(_ccPopup); _ccPopup = null; }
@@ -909,11 +916,13 @@ namespace InsectWars.RTS
             rt.sizeDelta = new Vector2(340f, panelH);
 
             var bg = _trackerPanel.AddComponent<Image>();
-            bg.color = ColTrackerBg;
+            bg.sprite = _frameSprite;
+            bg.color = ColWhite;
+            bg.type = Image.Type.Sliced;
             bg.raycastTarget = false;
 
             var header = MakeLabel(_trackerPanel.transform, "Header", "PROGRESS",
-                20, FontStyle.Bold, ColMuted, TextAnchor.MiddleCenter);
+                20, FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
             var hrt = header.GetComponent<RectTransform>();
             hrt.anchorMin = new Vector2(0f, 1f);
             hrt.anchorMax = new Vector2(1f, 1f);
@@ -1015,7 +1024,9 @@ namespace InsectWars.RTS
             rt.sizeDelta = new Vector2(700f, 100f);
 
             var bg = _hudPanel.AddComponent<Image>();
-            bg.color = ColHudBg;
+            bg.sprite = _frameSprite;
+            bg.color = ColWhite;
+            bg.type = Image.Type.Sliced;
             bg.raycastTarget = false;
 
             _titleLabel = MakeLabel(_hudPanel.transform, "Title", "", 28,

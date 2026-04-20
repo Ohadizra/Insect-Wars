@@ -1301,6 +1301,12 @@
       "conversation_id": "778f6682-a350-484d-a2d8-81ee63b31501",
       "content": "I have generated a new song for the **Lava Pass** map and integrated it into the game's audio system.\n\n### Changes Made:\n1.  **Generated New Music**: Created `Assets/Resources/Audio/Music_LavaPass.wav` using a generative model with the prompt: *\"Tribal battle music for a volcanic lava pass, blending dark folk metal elements with ambient environment sounds: crackling fire, whispering embers, deep tectonic rumbles, and bubbling lava.\"*\n2.  **Updated GameAudio System**: Modified `GameAudio.cs` to dynamically load the background music based on the map's theme.\n    *   **Lava Theme**: Plays the new `Music_LavaPass`.\n    *   **Frozen Theme**: Plays `Music_FinntrollStyle` (matching the \"frozen map song\" you referenced).\n    *   **Default Theme**: Continues to play `Music_TribalBattle`.\n3.  **Map Integration**: Verified that the `Lava Pass` map preset in `SkirmishMapPresets.cs` is correctly set to the `Lava` theme, ensuring it triggers the new song automatically when played.\n\nThe new track emphasizes the \"Whispering embers\" vibe with atmospheric environmental sounds (crackling fire and whispers) layered over the tribal battle drums.",
       "snapshot_message_type": 1
+    },
+    {
+      "message_id": "INT_1",
+      "conversation_id": "778f6682-a350-484d-a2d8-81ee63b31501",
+      "content": "good, now for the home page video, can you take the video sound that ends after few secounds and make a continueing track that will follow up when the video freezes? smoth transition",
+      "snapshot_message_type": 0
     }
   ]
 }

@@ -21,16 +21,21 @@ namespace InsectWars.RTS
         [SerializeField] Sprite frameSquareSprite;
         [SerializeField] Sprite portraitFrameSprite;
         [SerializeField] Sprite buttonRoundSprite;
+        [SerializeField] Sprite buttonSprite;
+        [SerializeField] Sprite separatorSprite;
         [SerializeField] Sprite larvaIcon;
         [SerializeField] Sprite eggIcon;
         [SerializeField] Sprite crystalIcon;
         [SerializeField] Sprite appleIcon;
         [SerializeField] Sprite colonyCapacityIcon;
 
-        // ── Organic Palette ──
+        // ── Parchment / Wooden Palette (matches Home menu) ──
         static readonly Color ColAmber     = new(0.96f, 0.90f, 0.78f); // Parchment/Amber
         static readonly Color ColSub       = new(0.83f, 0.69f, 0.44f); // Copper
         static readonly Color ColWhite     = Color.white;
+        static readonly Color ColBtnHighlight = new(1f, 0.9f, 0.7f, 1f);
+        static readonly Color ColBtnPressed   = new(0.8f, 0.7f, 0.5f, 1f);
+        static readonly Color ColPanelDark    = new(0f, 0f, 0f, 0.70f);
 
         Text _calorieLabel;
         Text _ccLabel;
@@ -108,6 +113,8 @@ namespace InsectWars.RTS
             if (frameSquareSprite == null) frameSquareSprite = LoadSpriteFromResources("UI/Extracted/frame_square_panel");
             if (portraitFrameSprite == null) portraitFrameSprite = LoadSpriteFromResources("UI/Extracted/frame_portrait");
             if (buttonRoundSprite == null) buttonRoundSprite = LoadSpriteFromResources("UI/Extracted/frame_gear_circle");
+            if (buttonSprite == null) buttonSprite = LoadSpriteFromResources("UI/Extracted/frame_square_panel");
+            if (separatorSprite == null) separatorSprite = LoadSpriteFromResources("UI/Extracted/frame_ornate");
             if (larvaIcon == null) larvaIcon = LoadSpriteFromResources("UI/Extracted/icon_larva");
             if (eggIcon == null) eggIcon = LoadSpriteFromResources("UI/Extracted/icon_egg");
             if (crystalIcon == null) crystalIcon = LoadSpriteFromResources("UI/Extracted/icon_crystal");
@@ -147,16 +154,34 @@ namespace InsectWars.RTS
             Sprite ccIcon = colonyCapacityIcon != null ? colonyCapacityIcon : eggIcon;
             _ccLabel = CreateResourceItem(ccContainer, ccIcon, "0 / 0");
 
-            // --- Top Right: Settings Button ---
-            var menuBtnGo = CreatePanel("SettingsBtn", HudCanvasRect, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-30, -25.5f), new Vector2(68, 68), buttonRoundSprite);
-            menuBtnGo.gameObject.AddComponent<Button>().onClick.AddListener(ToggleSettingsPanel);
+            // --- Top Right: Menu Button (wooden style matching home page) ---
+            var menuBtnGo = new GameObject("MenuBtn");
+            menuBtnGo.transform.SetParent(HudCanvasRect, false);
+            var menuRt = menuBtnGo.AddComponent<RectTransform>();
+            menuRt.anchorMin = menuRt.anchorMax = menuRt.pivot = new Vector2(1, 1);
+            menuRt.anchoredPosition = new Vector2(-20, -18);
+            menuRt.sizeDelta = new Vector2(130, 52);
+            var menuImg = menuBtnGo.AddComponent<Image>();
+            menuImg.sprite = buttonSprite;
+            menuImg.color = ColWhite;
+            menuImg.type = Image.Type.Sliced;
+            var menuBtn = menuBtnGo.AddComponent<Button>();
+            var menuCols = menuBtn.colors;
+            menuCols.highlightedColor = ColBtnHighlight;
+            menuCols.pressedColor = ColBtnPressed;
+            menuBtn.colors = menuCols;
+            menuBtn.onClick.AddListener(ToggleSettingsPanel);
+            var menuTxt = CreateText("Label", menuRt, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f),
+                Vector2.zero, Vector2.zero, "MENU", 22, ColAmber);
+            menuTxt.alignment = TextAnchor.MiddleCenter;
+            menuTxt.fontStyle = FontStyle.Bold;
+            menuTxt.raycastTarget = false;
 
             BuildSettingsPanel();
         }
 
         void BuildSettingsPanel()
         {
-            // Full-screen dimmed backdrop that also catches clicks to close
             _settingsPanel = new GameObject("SettingsPanel");
             _settingsPanel.transform.SetParent(HudCanvasRect, false);
             var panelRt = _settingsPanel.AddComponent<RectTransform>();
@@ -165,29 +190,44 @@ namespace InsectWars.RTS
             panelRt.offsetMin = panelRt.offsetMax = Vector2.zero;
 
             var backdrop = _settingsPanel.AddComponent<Image>();
-            backdrop.color = new Color(0f, 0f, 0f, 0.55f);
+            backdrop.color = ColPanelDark;
             var backdropBtn = _settingsPanel.AddComponent<Button>();
             backdropBtn.transition = Selectable.Transition.None;
             backdropBtn.onClick.AddListener(CloseSettingsPanel);
 
-            // Center card
+            // Center card — wooden frame
             var card = new GameObject("Card");
             card.transform.SetParent(panelRt, false);
             var cardRt = card.AddComponent<RectTransform>();
             cardRt.anchorMin = cardRt.anchorMax = cardRt.pivot = new Vector2(0.5f, 0.5f);
-            cardRt.sizeDelta = new Vector2(320, 260);
+            cardRt.sizeDelta = new Vector2(480, 420);
             var cardImg = card.AddComponent<Image>();
             cardImg.sprite = frameSquareSprite;
-            cardImg.color = new Color(0.08f, 0.1f, 0.06f, 0.95f);
+            cardImg.color = ColWhite;
             cardImg.type = Image.Type.Sliced;
 
             // Title
             var title = CreateText("Title", cardRt, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1),
-                new Vector2(10, -50), new Vector2(-10, -15), "SETTINGS", 28, ColAmber);
+                new Vector2(10, -50), new Vector2(-10, -15), "SETTINGS", 36, ColAmber);
             title.alignment = TextAnchor.MiddleCenter;
+            title.fontStyle = FontStyle.Bold;
+
+            // Separator under title
+            var sep = new GameObject("Sep");
+            sep.transform.SetParent(cardRt, false);
+            var sepRt = sep.AddComponent<RectTransform>();
+            sepRt.anchorMin = sepRt.anchorMax = new Vector2(0.5f, 1f);
+            sepRt.anchoredPosition = new Vector2(0f, -80f);
+            sepRt.sizeDelta = new Vector2(360f, 12f);
+            var sepImg = sep.AddComponent<Image>();
+            sepImg.sprite = separatorSprite;
+            sepImg.color = ColSub;
+
+            float btnY = -110f;
+            const float btnGap = 80f;
 
             // Pause button
-            var pauseBtn = CreateSettingsButton(cardRt, new Vector2(0, -90),
+            var pauseBtn = CreateWoodenButton(cardRt, ref btnY, btnGap,
                 PauseController.IsPaused ? "RESUME" : "PAUSE", () =>
             {
                 PauseController.TogglePause();
@@ -196,40 +236,46 @@ namespace InsectWars.RTS
             _pauseBtnLabel = pauseBtn.GetComponentInChildren<Text>();
 
             // Quit button
-            CreateSettingsButton(cardRt, new Vector2(0, -160), "QUIT TO MENU", () =>
+            CreateWoodenButton(cardRt, ref btnY, btnGap, "QUIT TO MENU", () =>
             {
                 PauseController.ForceUnpause();
                 SceneLoader.LoadHome();
             });
 
+            // Close button
+            CreateWoodenButton(cardRt, ref btnY, btnGap, "CLOSE", () => CloseSettingsPanel());
+
             _settingsPanel.SetActive(false);
             SettingsPanelOpen = false;
         }
 
-        GameObject CreateSettingsButton(RectTransform parent, Vector2 offset, string label, UnityEngine.Events.UnityAction action)
+        GameObject CreateWoodenButton(RectTransform parent, ref float y, float gap,
+            string label, UnityEngine.Events.UnityAction action)
         {
             var btnGo = new GameObject(label + "Btn");
             btnGo.transform.SetParent(parent, false);
             var rt = btnGo.AddComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 1);
-            rt.anchoredPosition = offset;
-            rt.sizeDelta = new Vector2(250, 50);
+            rt.anchoredPosition = new Vector2(0, y);
+            rt.sizeDelta = new Vector2(360, 60);
+            y -= gap;
 
             var img = btnGo.AddComponent<Image>();
-            img.sprite = buttonRoundSprite;
-            img.color = new Color(0.15f, 0.18f, 0.12f, 0.92f);
+            img.sprite = buttonSprite;
+            img.color = ColWhite;
             img.type = Image.Type.Sliced;
 
             var btn = btnGo.AddComponent<Button>();
             var colors = btn.colors;
-            colors.highlightedColor = new Color(0.85f, 1f, 0.85f);
-            colors.pressedColor = new Color(0.6f, 0.8f, 0.6f);
+            colors.highlightedColor = ColBtnHighlight;
+            colors.pressedColor = ColBtnPressed;
             btn.colors = colors;
             btn.onClick.AddListener(action);
 
             var txt = CreateText("Label", rt, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f),
                 Vector2.zero, Vector2.zero, label, 22, ColAmber);
             txt.alignment = TextAnchor.MiddleCenter;
+            txt.fontStyle = FontStyle.Bold;
             txt.raycastTarget = false;
 
             return btnGo;
