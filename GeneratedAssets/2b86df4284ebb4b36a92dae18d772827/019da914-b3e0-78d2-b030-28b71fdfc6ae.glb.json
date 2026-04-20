@@ -1,0 +1,12 @@
+{
+    "asset": "2b86df4284ebb4b36a92dae18d772827",
+    "fileName": "019da914-b3e0-78d2-b030-28b71fdfc6ae.glb",
+    "prompt": "A small clump of charred, dry, ash-covered grass tufts, stylized game asset.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "48fd8b2b7aef6cdca8ca1b7c6b4f4849",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

@@ -125,7 +125,8 @@ namespace InsectWars.RTS
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
             canvasGo.AddComponent<GraphicRaycaster>();
-            HudCanvasRect = canvasGo.GetComponent<RectTransform>();
+            _ownedCanvasRect = canvasGo.GetComponent<RectTransform>();
+            HudCanvasRect = _ownedCanvasRect;
 
             // --- Top Left: Resource Display (Icon + Text Only) ---
             var container = new GameObject("CalorieDisplay").AddComponent<RectTransform>();
@@ -336,7 +337,8 @@ namespace InsectWars.RTS
                 PlayerResources.Instance.OnCaloriesChanged -= OnCalories;
             }
             ColonyCapacity.OnPlayerCCChanged -= OnCCChanged;
-            HudCanvasRect = null;
+            if (HudCanvasRect == _ownedCanvasRect)
+                HudCanvasRect = null;
         }
 
         void OnCalories(int n)

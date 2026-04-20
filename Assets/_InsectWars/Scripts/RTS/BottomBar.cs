@@ -1508,12 +1508,13 @@ namespace InsectWars.RTS
             SetGridMode(false);
             for (int i = 0; i < _selectionCells.Length; i++)
             {
+                _selectionCells[i].gameObject.SetActive(false);
                 _selectionCells[i].color = new Color(1f, 1f, 1f, 0f);
                 _selectionCellIcons[i].sprite = null;
                 _selectionCellIcons[i].color = new Color(1f, 1f, 1f, 0f);
                 _selectionCellHpBg[i].color = new Color(0f, 0f, 0f, 0f);
                 _selectionCellHpFill[i].color = new Color(0f, 0f, 0f, 0f);
-                var t = _selectionCells[i].GetComponentInChildren<Text>();
+                var t = _selectionCells[i].GetComponentInChildren<Text>(true);
                 if (t != null) t.text = "";
             }
 
@@ -1532,6 +1533,7 @@ namespace InsectWars.RTS
                 _attributeLabel.text = "Resource - Organic";
                 
                 var cell0 = _selectionCells[0];
+                cell0.gameObject.SetActive(true);
                 cell0.color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
                 _selectionCellIcons[0].color = Color.white;
                 var tx0 = cell0.GetComponentInChildren<Text>();
@@ -1552,6 +1554,7 @@ namespace InsectWars.RTS
                 if (_portraitBlock != null) _portraitBlock.SetActive(true);
                 ShowHpDisplay(hive.CurrentHealth, hive.MaxHealth);
                 var cell0 = _selectionCells[0];
+                cell0.gameObject.SetActive(true);
                 cell0.color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
                 _selectionCellIcons[0].sprite = iconAntNest;
                 _selectionCellIcons[0].color = Color.white;
@@ -1634,6 +1637,7 @@ namespace InsectWars.RTS
             for (int i = 0; i < list.Count && cellIdx < _selectionCells.Length; i++)
             {
                 var u = list[i];
+                _selectionCells[cellIdx].gameObject.SetActive(true);
                 _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.9f);
                 _selectionCellIcons[cellIdx].sprite = GetUnitPortrait(u.Archetype);
                 _selectionCellIcons[cellIdx].color = Color.white;
@@ -1658,6 +1662,7 @@ namespace InsectWars.RTS
                 foreach (var kvp in bldCounts)
                 {
                     if (cellIdx >= _selectionCells.Length) break;
+                    _selectionCells[cellIdx].gameObject.SetActive(true);
                     _selectionCells[cellIdx].color = new Color(0.3f, 0.3f, 0.3f, 0.6f);
                     _selectionCellIcons[cellIdx].sprite = GetBuildingIcon(kvp.Key);
                     _selectionCellIcons[cellIdx].color = new Color(0.6f, 0.6f, 0.6f, 0.8f);
@@ -1718,6 +1723,7 @@ namespace InsectWars.RTS
             {
                 if (!unitCounts.TryGetValue(arch, out var cnt)) continue;
                 if (cellIdx >= _selectionCells.Length) break;
+                _selectionCells[cellIdx].gameObject.SetActive(true);
                 _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.7f);
                 _selectionCellIcons[cellIdx].sprite = GetUnitPortrait(arch);
                 _selectionCellIcons[cellIdx].color = unitsAreActive ? Color.white : new Color(0.6f, 0.6f, 0.6f, 0.8f);
@@ -1736,6 +1742,7 @@ namespace InsectWars.RTS
             foreach (var kvp in bldCounts)
             {
                 if (cellIdx >= _selectionCells.Length) break;
+                _selectionCells[cellIdx].gameObject.SetActive(true);
                 bool isActive = hasActiveType && kvp.Key == sc.ActiveBuildingType.Value;
                 _selectionCells[cellIdx].color = new Color(0.18f, 0.14f, 0.1f, 0.7f);
                 _selectionCellIcons[cellIdx].sprite = GetBuildingIcon(kvp.Key);

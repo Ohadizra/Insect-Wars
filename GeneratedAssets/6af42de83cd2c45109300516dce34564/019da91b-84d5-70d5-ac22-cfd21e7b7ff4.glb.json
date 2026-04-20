@@ -1,0 +1,12 @@
+{
+    "asset": "6af42de83cd2c45109300516dce34564",
+    "fileName": "019da91b-84d5-70d5-ac22-cfd21e7b7ff4.glb",
+    "prompt": "A stylized volcanic ant worker, dark carapace with glowing orange segments, low poly game asset.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "5bdb150abefa75f8111c256c59f66a85",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

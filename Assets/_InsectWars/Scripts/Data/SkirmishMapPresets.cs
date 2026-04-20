@@ -36,8 +36,8 @@ namespace InsectWars.Data
             map.playerArmyStart       = new Vector3(-40.25f, 0f, -34.5f);
             map.enemyArmyStart        = new Vector3( 40.25f, 0f,  34.5f);
             map.cameraFocusWorld      = new Vector3(-34.5f, 0f, -28.75f);
-            map.bigApplePosition      = new Vector3(-32.2f, 1.5f, -25.3f);
-            map.enemyBigApplePosition = new Vector3( 32.2f, 1.5f,  25.3f);
+            map.bigApplePosition      = new Vector3(-28.25f, 1.5f, -22.5f);
+            map.enemyBigApplePosition = new Vector3( 28.25f, 1.5f,  22.5f);
 
             map.passiveScatterSeed = 54321;
 

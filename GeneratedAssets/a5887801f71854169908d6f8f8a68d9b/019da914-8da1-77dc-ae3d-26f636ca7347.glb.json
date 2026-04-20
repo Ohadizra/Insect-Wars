@@ -1,0 +1,12 @@
+{
+    "asset": "a5887801f71854169908d6f8f8a68d9b",
+    "fileName": "019da914-8da1-77dc-ae3d-26f636ca7347.glb",
+    "prompt": "A scorched, black, wrinkly rotting apple, stylized game asset.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "3fa8104d1b88c4943e0bbb6fa1e594cc",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

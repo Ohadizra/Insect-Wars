@@ -823,10 +823,24 @@ float height = topY - bottomY;
             const float hiveScale = 2.7f;
             float groundY = SampleMaxTerrainHeight(worldPos, 10f);
 
+            bool isLava = false;
+            var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
+            if (m != null && m.scatterTheme == ScatterTheme.Lava) isLava = true;
+
             GameObject hive;
+            GameObject prefab = null;
             if (visualLibrary != null && visualLibrary.hivePrefab != null)
             {
-                hive = Instantiate(visualLibrary.hivePrefab, parent);
+                prefab = visualLibrary.hivePrefab;
+            }
+            else if (isLava)
+            {
+                prefab = Resources.Load<GameObject>("Models/VolcanicHive");
+            }
+
+            if (prefab != null)
+            {
+                hive = Instantiate(prefab, parent);
                 hive.name = name;
                 if (!hive.CompareTag("Hive")) hive.tag = "Hive";
                 hive.transform.position = new Vector3(worldPos.x, 0f, worldPos.z);
@@ -1042,18 +1056,31 @@ float height = topY - bottomY;
             var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
             const float appleHeight = 3f;
-            // Center Y = h + (Height/6) to bury the bottom 1/3 (assuming pivot at center)
             float posY = h + (appleHeight / 6f);
 
+            bool isLava = false;
+            var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
+            if (m != null && m.scatterTheme == ScatterTheme.Lava) isLava = true;
+
+            GameObject prefab = null;
             if (lib != null && lib.rottingApplePrefab != null)
             {
-                apple = Object.Instantiate(lib.rottingApplePrefab, parent);
+                prefab = lib.rottingApplePrefab;
+            }
+            else if (isLava)
+            {
+                prefab = Resources.Load<GameObject>("Models/CharredApple");
+            }
+
+            if (prefab != null)
+            {
+                apple = Object.Instantiate(prefab, parent);
                 apple.name = "RottingApple";
                 apple.tag = "Fruit";
                 apple.transform.position = new Vector3(pos.x, posY, pos.z);
                 apple.transform.localScale = new Vector3(4f, appleHeight, 4f);
 
-                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : lib.bigAppleMaterial;
+                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : (lib != null ? lib.bigAppleMaterial : null);
                 if (appleMat != null)
                 {
                     foreach (var rend in apple.GetComponentsInChildren<Renderer>())
@@ -1100,18 +1127,31 @@ float height = topY - bottomY;
             var lib = ActiveVisualLibrary;
             float h = GetHeight(pos);
             const float fruitHeight = 1.8f;
-            // Center Y = h + (Height/6) to bury the bottom 1/3
             float posY = h + (fruitHeight / 6f);
 
+            bool isLava = false;
+            var m = GameSession.SelectedMap != null ? GameSession.SelectedMap : mapDefinition;
+            if (m != null && m.scatterTheme == ScatterTheme.Lava) isLava = true;
+
+            GameObject prefab = null;
             if (lib != null && lib.rottingApplePrefab != null)
             {
-                fruit = Object.Instantiate(lib.rottingApplePrefab, parent);
+                prefab = lib.rottingApplePrefab;
+            }
+            else if (isLava)
+            {
+                prefab = Resources.Load<GameObject>("Models/CharredApple");
+            }
+
+            if (prefab != null)
+            {
+                fruit = Object.Instantiate(prefab, parent);
                 fruit.name = "RottingFruit";
                 fruit.tag = "Fruit";
                 fruit.transform.position = new Vector3(pos.x, posY, pos.z);
                 fruit.transform.localScale = Vector3.one * fruitHeight;
 
-                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : lib.bigAppleMaterial;
+                Material appleMat = _mapAppleMaterial != null ? _mapAppleMaterial : (lib != null ? lib.bigAppleMaterial : null);
                 if (appleMat != null)
                 {
                     foreach (var rend in fruit.GetComponentsInChildren<Renderer>())

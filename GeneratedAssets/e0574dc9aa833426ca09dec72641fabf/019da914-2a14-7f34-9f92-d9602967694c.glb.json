@@ -1,0 +1,12 @@
+{
+    "asset": "e0574dc9aa833426ca09dec72641fabf",
+    "fileName": "019da914-2a14-7f34-9f92-d9602967694c.glb",
+    "prompt": "A sharp, jagged volcanic rock spike with glowing orange lava veins in the cracks, stylized low poly game asset.",
+    "negativePrompt": "",
+    "model": "f923f4af-999c-47c7-b9bf-b8952ffe003e",
+    "modelName": "Rodin Hyper 3D",
+    "customSeed": -1,
+    "w3CTraceId": "d1ad6a172734349085351cfe4b7b64d6",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

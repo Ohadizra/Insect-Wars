@@ -93,7 +93,13 @@ namespace InsectWars.RTS
             var parent = GameHUD.HudCanvasRect;
             if (parent == null)
             {
-                Debug.LogWarning("MatchDirector: HudCanvasRect is null, loading home to avoid soft-lock.");
+                var fallbackCanvas = Object.FindFirstObjectByType<Canvas>();
+                if (fallbackCanvas != null)
+                    parent = fallbackCanvas.GetComponent<RectTransform>();
+            }
+            if (parent == null)
+            {
+                Debug.LogWarning("MatchDirector: No canvas found, loading home to avoid soft-lock.");
                 Time.timeScale = 1f;
                 SceneLoader.LoadHome();
                 return;

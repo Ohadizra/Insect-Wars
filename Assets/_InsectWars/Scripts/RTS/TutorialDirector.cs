@@ -133,6 +133,16 @@ namespace InsectWars.RTS
                     IsUndergroundBuilt
                 ),
                 new TutorialChapter(
+                    "Expand Colony Capacity",
+                    "Your colony can only support a limited number of units.\n\n" +
+                    "Each unit costs <b>Colony Capacity</b> (CC).\n" +
+                    "Build an <b>Ant's Nest</b> to increase your CC\n" +
+                    "and make room for a larger army!",
+                    "Select a Worker, open Build (B), place an Ant's Nest.",
+                    SetupExpandCCChapter,
+                    IsAntNestBuilt
+                ),
+                new TutorialChapter(
                     "Build Your Army",
                     "Time to raise a fighting force!\n\n" +
                     $"Train <b>{ReqMantis} Mantis</b> and <b>{ReqBombardiers} Bombardier</b>.\n" +
@@ -144,9 +154,9 @@ namespace InsectWars.RTS
                 new TutorialChapter(
                     "Attack!",
                     "Enemy scouts have been spotted nearby!\n\n" +
+                    "Your army is ready to strike.\n" +
                     "<b>Select</b> your combat units,\n" +
-                    "then <b>right-click</b> the enemies to attack.\n" +
-                    "Destroy them all to prove your command!",
+                    "then <b>right-click</b> the enemies to attack!",
                     "Select your army and right-click enemies to attack!",
                     SetupAttackChapter,
                     IsEnemyDummyDestroyed
@@ -263,6 +273,14 @@ namespace InsectWars.RTS
             if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(600);
         }
 
+        void SetupExpandCCChapter()
+        {
+            var hiveXZ = GetPlayerHiveXZ();
+            var worker = SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 3f), Team.Player, UnitArchetype.Worker);
+            if (worker != null) worker.OrderStop();
+            if (PlayerResources.Instance != null) PlayerResources.Instance.AddCalories(500);
+        }
+
         void SetupArmyChapter()
         {
             var hiveXZ = GetPlayerHiveXZ();
@@ -281,14 +299,16 @@ namespace InsectWars.RTS
         {
             var hiveXZ = GetPlayerHiveXZ();
 
-            // Spawn the player's army from Ch4
+            // Spawn a solid army so the player can attack immediately
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(3f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(-3f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(0f, 0f, 3f), Team.Player, UnitArchetype.BasicFighter);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(6f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 0f), Team.Player, UnitArchetype.BasicFighter);
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(6f, 0f, 3f), Team.Player, UnitArchetype.BasicRanged);
             SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(-6f, 0f, 3f), Team.Player, UnitArchetype.BasicRanged);
+            SkirmishDirector.SpawnUnit(hiveXZ + new Vector3(0f, 0f, -3f), Team.Player, UnitArchetype.BasicRanged);
 
-            // Spawn enemy group at a distance
             var enemyPos = hiveXZ + new Vector3(20f, 0f, 20f);
             for (int i = 0; i < 3; i++)
             {
@@ -314,6 +334,15 @@ namespace InsectWars.RTS
             foreach (var bld in ProductionBuilding.All)
                 if (bld != null && bld.IsAlive && !bld.IsUnderConstruction
                     && bld.Team == Team.Player && bld.Type == BuildingType.Underground)
+                    return true;
+            return false;
+        }
+
+        static bool IsAntNestBuilt()
+        {
+            foreach (var bld in ProductionBuilding.All)
+                if (bld != null && bld.IsAlive && !bld.IsUnderConstruction
+                    && bld.Team == Team.Player && bld.Type == BuildingType.AntNest)
                     return true;
             return false;
         }
@@ -361,8 +390,9 @@ namespace InsectWars.RTS
                 case 0: UpdateCh1Highlights(); break;
                 case 1: UpdateCh2Highlights(); break;
                 case 2: UpdateCh3Highlights(); break;
-                case 3: UpdateCh4Highlights(); break;
+                case 3: UpdateCh4CCHighlights(); break;
                 case 4: UpdateCh5Highlights(); break;
+                case 5: UpdateCh6Highlights(); break;
             }
         }
 
@@ -427,7 +457,33 @@ namespace InsectWars.RTS
             }
         }
 
-        void UpdateCh4Highlights()
+        void UpdateCh4CCHighlights()
+        {
+            var sc = SelectionController.Instance;
+            bool hasWorker = sc != null && sc.HasWorkerSelected();
+
+            if (!hasWorker)
+            {
+                ClearHighlights();
+                var worker = FindFirstPlayerUnit(UnitArchetype.Worker);
+                SetWorldArrowTarget(worker != null ? worker.transform : null);
+                return;
+            }
+
+            SetWorldArrowTarget(null);
+            if (BottomBar.Instance != null)
+            {
+                bool buildMenuOpen = BottomBar.Pending == PendingCommand.PlaceBuilding;
+                if (buildMenuOpen)
+                    ClearHighlights();
+                else if (IsBuildMenuOpen())
+                    SetHighlight("Nest");
+                else
+                    SetHighlight("Build");
+            }
+        }
+
+        void UpdateCh5Highlights()
         {
             var sc = SelectionController.Instance;
             bool bldSel = sc != null && sc.SelectedBuilding != null;
@@ -460,7 +516,7 @@ namespace InsectWars.RTS
             }
         }
 
-        void UpdateCh5Highlights()
+        void UpdateCh6Highlights()
         {
             ClearHighlights();
             InsectUnit enemy = null;
@@ -504,6 +560,21 @@ namespace InsectWars.RTS
             }
             else if (_currentIndex == 3)
             {
+                var sc = SelectionController.Instance;
+                bool hasWorker = sc != null && sc.HasWorkerSelected();
+                if (!hasWorker)
+                    _objectiveLabel.text = "Select a Worker first.";
+                else if (IsBuildMenuOpen())
+                    _objectiveLabel.text = "Click Ant's Nest to start placing it.";
+                else if (BottomBar.Pending == PendingCommand.PlaceBuilding)
+                    _objectiveLabel.text = "Click a spot near the hive to place the Ant's Nest.";
+                else if (HasAntNestUnderConstruction())
+                    _objectiveLabel.text = "Good! Wait for construction to finish.";
+                else
+                    _objectiveLabel.text = "Select a Worker, then click Build (B).";
+            }
+            else if (_currentIndex == 4)
+            {
                 _objectiveLabel.text = GetArmyObjective();
             }
         }
@@ -518,7 +589,7 @@ namespace InsectWars.RTS
 
         void CheckCCPopup()
         {
-            if (_currentIndex != 3 || _ccPopupDismissed) return;
+            if (_currentIndex != 4 || _ccPopupDismissed) return;
 
             int used = ColonyCapacity.GetUsed(Team.Player) + ColonyCapacity.GetQueued(Team.Player);
             int cap = ColonyCapacity.GetCap(Team.Player);
@@ -575,6 +646,15 @@ namespace InsectWars.RTS
             foreach (var b in ProductionBuilding.All)
                 if (b != null && b.IsAlive && b.IsUnderConstruction
                     && b.Team == Team.Player && b.Type == BuildingType.Underground)
+                    return true;
+            return false;
+        }
+
+        static bool HasAntNestUnderConstruction()
+        {
+            foreach (var b in ProductionBuilding.All)
+                if (b != null && b.IsAlive && b.IsUnderConstruction
+                    && b.Team == Team.Player && b.Type == BuildingType.AntNest)
                     return true;
             return false;
         }
