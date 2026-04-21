@@ -29,7 +29,7 @@ namespace InsectWars.RTS
         Sprite _buttonSprite;
         Sprite _separatorSprite;
 
-        enum Phase { Intro, Playing, Complete, Finished }
+        enum Phase { Welcome, Intro, Playing, Complete, Finished }
 
         TutorialChapter[] _chapters;
         int _currentIndex = -1;
@@ -44,6 +44,7 @@ namespace InsectWars.RTS
         Text _titleLabel;
         Text _objectiveLabel;
 
+        GameObject _welcomeOverlay;
         GameObject _introOverlay;
         GameObject _completeOverlay;
         float _completeTimer;
@@ -89,7 +90,7 @@ namespace InsectWars.RTS
             BuildTracker();
             BuildHud();
             CreateWorldArrow();
-            BeginChapter(0);
+            ShowWelcomeOverlay();
         }
 
         void OnDestroy()
@@ -97,6 +98,7 @@ namespace InsectWars.RTS
             if (Instance == this) Instance = null;
             ClearHighlights();
             if (_worldArrow != null) Destroy(_worldArrow);
+            if (_welcomeOverlay != null) Destroy(_welcomeOverlay);
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -141,11 +143,11 @@ namespace InsectWars.RTS
                     "Expand Colony Capacity",
                     "Your colony can only support a limited number of units.\n\n" +
                     "Each unit costs <b>Colony Capacity</b> (CC).\n" +
-                    "Build an <b>Ant's Nest</b> to increase your CC\n" +
+                    "Build a <b>Root Cellar</b> to increase your CC\n" +
                     "and make room for a larger army!",
-                    "Select a Worker, open Build (B), place an Ant's Nest.",
+                    "Select a Worker, open Build (B), place a Root Cellar.",
                     SetupExpandCCChapter,
-                    IsAntNestBuilt
+                    IsRootCellarBuilt
                 ),
                 new TutorialChapter(
                     "Build Your Army",
@@ -343,11 +345,11 @@ namespace InsectWars.RTS
             return false;
         }
 
-        static bool IsAntNestBuilt()
+        static bool IsRootCellarBuilt()
         {
             foreach (var bld in ProductionBuilding.All)
                 if (bld != null && bld.IsAlive && !bld.IsUnderConstruction
-                    && bld.Team == Team.Player && bld.Type == BuildingType.AntNest)
+                    && bld.Team == Team.Player && bld.Type == BuildingType.RootCellar)
                     return true;
             return false;
         }
@@ -482,7 +484,7 @@ namespace InsectWars.RTS
                 if (buildMenuOpen)
                     ClearHighlights();
                 else if (IsBuildMenuOpen())
-                    SetHighlight("Nest");
+                    SetHighlight("Root Cellar");
                 else
                     SetHighlight("Build");
             }
@@ -744,6 +746,7 @@ namespace InsectWars.RTS
                 if (canvasRect == null) { entry.frame.SetActive(false); continue; }
 
                 entry.frame.SetActive(true);
+                entry.frame.transform.SetAsLastSibling();
                 var frt = entry.frame.GetComponent<RectTransform>();
 
                 Vector3[] corners = new Vector3[4];
@@ -800,29 +803,43 @@ namespace InsectWars.RTS
             _worldArrow = new GameObject("TutorialArrow");
             _worldArrow.transform.SetParent(transform);
 
-            var lineGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            lineGo.name = "ArrowBody";
-            lineGo.transform.SetParent(_worldArrow.transform, false);
-            lineGo.transform.localScale = new Vector3(0.3f, 2f, 0.3f);
-            lineGo.transform.localPosition = new Vector3(0f, 1f, 0f);
-            var col = lineGo.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            var tipGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            tipGo.name = "ArrowTip";
-            tipGo.transform.SetParent(_worldArrow.transform, false);
-            tipGo.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
-            tipGo.transform.localPosition = Vector3.zero;
-            tipGo.transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
-            var tipCol = tipGo.GetComponent<Collider>();
-            if (tipCol != null) Destroy(tipCol);
-
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")
                 ?? Shader.Find("Sprites/Default"));
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", ColHighlight);
             else if (mat.HasProperty("_Color"))
                 mat.color = ColHighlight;
+
+            // Shaft
+            var shaft = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            shaft.name = "Shaft";
+            shaft.transform.SetParent(_worldArrow.transform, false);
+            shaft.transform.localScale = new Vector3(0.25f, 1.2f, 0.25f);
+            shaft.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+            Destroy(shaft.GetComponent<Collider>());
+
+            // Arrowhead — a cone-like shape made from 4 flattened cubes
+            // angled inward to form a downward-pointing chevron
+            var headRoot = new GameObject("Arrowhead");
+            headRoot.transform.SetParent(_worldArrow.transform, false);
+            headRoot.transform.localPosition = new Vector3(0f, 0.3f, 0f);
+
+            float bladeLen = 1.0f;
+            float bladeThick = 0.18f;
+            float angle = 50f;
+
+            for (int i = 0; i < 4; i++)
+            {
+                var blade = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                blade.name = $"Blade{i}";
+                blade.transform.SetParent(headRoot.transform, false);
+                blade.transform.localScale = new Vector3(bladeThick, bladeLen, bladeThick);
+                float yaw = i * 90f;
+                blade.transform.localRotation = Quaternion.Euler(angle, yaw, 0f);
+                blade.transform.localPosition = Quaternion.Euler(0f, yaw, 0f)
+                    * new Vector3(0f, 0f, 0.15f);
+                Destroy(blade.GetComponent<Collider>());
+            }
 
             foreach (var r in _worldArrow.GetComponentsInChildren<Renderer>())
                 r.sharedMaterial = mat;
@@ -877,8 +894,8 @@ namespace InsectWars.RTS
             AnchorFill(title, new Vector2(0f, 0.68f), new Vector2(1f, 0.93f));
 
             var body = MakeLabel(_ccPopup.transform, "Body",
-                "Build an <b>Ant's Nest</b> (+25 CC) or\n" +
-                "<b>Root Cellar</b> (+15 CC) to increase\nyour Colony Capacity.",
+                "Build a <b>Root Cellar</b> (+15 CC) or\n" +
+                "<b>Ant's Nest</b> (+25 CC) to increase\nyour Colony Capacity.",
                 22, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
             AnchorFill(body, new Vector2(0.05f, 0.26f), new Vector2(0.95f, 0.68f));
 
@@ -1054,6 +1071,60 @@ namespace InsectWars.RTS
                 _titleLabel.text = $"Chapter {_currentIndex + 1}: {_current.Title}";
             if (_objectiveLabel != null && _current != null)
                 _objectiveLabel.text = _current.ObjectiveText;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  UI — Welcome Overlay (before Chapter 1)
+        // ═══════════════════════════════════════════════════════════
+
+        void ShowWelcomeOverlay()
+        {
+            var canvasRect = GameHUD.HudCanvasRect;
+            if (canvasRect == null) { BeginChapter(0); return; }
+
+            _phase = Phase.Welcome;
+            Time.timeScale = 0f;
+
+            _welcomeOverlay = new GameObject("TutorialWelcome");
+            _welcomeOverlay.transform.SetParent(canvasRect, false);
+            StretchRT(_welcomeOverlay.AddComponent<RectTransform>());
+            var dim = _welcomeOverlay.AddComponent<Image>();
+            dim.color = ColDimBg;
+            dim.raycastTarget = true;
+
+            var panel = new GameObject("Panel");
+            panel.transform.SetParent(_welcomeOverlay.transform, false);
+            var prt = panel.AddComponent<RectTransform>();
+            prt.anchorMin = prt.anchorMax = new Vector2(0.5f, 0.55f);
+            prt.sizeDelta = new Vector2(820, 500);
+            var pImg = panel.AddComponent<Image>();
+            pImg.sprite = _frameSprite;
+            pImg.color = ColWhite;
+            pImg.type = Image.Type.Sliced;
+
+            var titleTxt = MakeLabel(panel.transform, "Title",
+                "INSECT WARS", 48, FontStyle.Bold, ColTitle, TextAnchor.MiddleCenter);
+            AnchorFill(titleTxt, new Vector2(0f, 0.82f), new Vector2(1f, 0.96f));
+
+            MakeSepLine(panel.transform, 0.80f);
+
+            var bodyTxt = MakeLabel(panel.transform, "Body",
+                "You are the commander of an insect colony.\n\n" +
+                "Gather <b>Calories</b> from rotting fruit,\n" +
+                "build structures, train an army,\n" +
+                "and <b>destroy the enemy hive</b> to win.\n\n" +
+                "This tutorial will teach you the basics.",
+                24, FontStyle.Normal, ColBody, TextAnchor.MiddleCenter);
+            AnchorFill(bodyTxt, new Vector2(0.06f, 0.22f), new Vector2(0.94f, 0.78f));
+
+            var btnGo = MakeWoodenButton(panel.transform, "StartBtn", "LET'S GO!", () =>
+            {
+                if (_welcomeOverlay != null) { Destroy(_welcomeOverlay); _welcomeOverlay = null; }
+                BeginChapter(0);
+            });
+            var brt = btnGo.GetComponent<RectTransform>();
+            brt.anchorMin = brt.anchorMax = new Vector2(0.5f, 0.08f);
+            brt.sizeDelta = new Vector2(280, 60);
         }
 
         // ═══════════════════════════════════════════════════════════

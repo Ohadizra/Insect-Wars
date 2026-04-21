@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using InsectWars.Data;
 using InsectWars.RTS;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace InsectWars.UI
@@ -22,9 +23,15 @@ namespace InsectWars.UI
         static readonly Color ColBtn   = new(0.30f, 0.26f, 0.20f, 0.95f);
         static readonly Color ColBtnHi = new(0.50f, 0.42f, 0.30f, 1f);
 
-        const float RotSpeed = 40f;
+        const float DefaultRotSpeed = 40f;
+        const float MinRotSpeed = 0f;
+        const float MaxRotSpeed = 120f;
         const float PreviewDistance = 4.5f;
         const float PreviewFov = 30f;
+        const float MinZoom = 0.4f;
+        const float MaxZoom = 3f;
+        const float MinPitch = 0.05f;
+        const float MaxPitch = 0.85f;
         static readonly Vector3 PreviewWorldOrigin = new(500f, 0f, 500f);
 
         UnitVisualLibrary _lib;
@@ -39,6 +46,11 @@ namespace InsectWars.UI
         Text _nameLabel, _descLabel, _statsLabel;
         float _orbitAngle;
         float _previewHeight = 1f;
+        float _rotSpeed = DefaultRotSpeed;
+        float _zoomFactor = 1f;
+        float _pitchFactor = 0.6f;
+        Slider _speedSlider;
+        Text _speedLabel;
 
         readonly List<Button> _unitButtons = new();
         readonly List<Button> _buildingButtons = new();
@@ -110,13 +122,93 @@ namespace InsectWars.UI
             _previewImage.texture = _previewRT;
             _previewImage.color = Color.white;
 
-            var hint = Txt(area, "drag to rotate", 14, ColSub, TextAnchor.LowerCenter);
+            var hint = Txt(area, "LMB rotate · RMB pitch · Scroll zoom", 12, ColSub, TextAnchor.LowerCenter);
             var hrt = hint.rectTransform;
             hrt.anchorMin = new Vector2(0f, 0f);
             hrt.anchorMax = new Vector2(1f, 0f);
             hrt.pivot = new Vector2(0.5f, 0f);
             hrt.anchoredPosition = new Vector2(0, 8f);
             hrt.sizeDelta = new Vector2(0, 24);
+
+            BuildSpeedSlider(area);
+        }
+
+        void BuildSpeedSlider(RectTransform parent)
+        {
+            var row = MakeChild("SpeedRow", parent);
+            row.anchorMin = new Vector2(0.05f, 0.93f);
+            row.anchorMax = new Vector2(0.95f, 0.98f);
+            row.offsetMin = row.offsetMax = Vector2.zero;
+
+            _speedLabel = Txt(row, "Speed", 12, ColSub, TextAnchor.MiddleLeft);
+            var slrt = _speedLabel.rectTransform;
+            slrt.anchorMin = Vector2.zero;
+            slrt.anchorMax = new Vector2(0.22f, 1f);
+            slrt.offsetMin = slrt.offsetMax = Vector2.zero;
+
+            var sliderGo = new GameObject("SpeedSlider");
+            sliderGo.transform.SetParent(row, false);
+            var srt = sliderGo.AddComponent<RectTransform>();
+            srt.anchorMin = new Vector2(0.23f, 0.2f);
+            srt.anchorMax = new Vector2(1f, 0.8f);
+            srt.offsetMin = srt.offsetMax = Vector2.zero;
+
+            var bgGo = new GameObject("Background");
+            bgGo.transform.SetParent(sliderGo.transform, false);
+            var bgImg = bgGo.AddComponent<Image>();
+            bgImg.color = new Color(0.15f, 0.12f, 0.10f, 0.8f);
+            var bgRt = bgImg.rectTransform;
+            bgRt.anchorMin = new Vector2(0f, 0.35f);
+            bgRt.anchorMax = new Vector2(1f, 0.65f);
+            bgRt.offsetMin = bgRt.offsetMax = Vector2.zero;
+
+            var fillArea = MakeChild("FillArea", sliderGo.GetComponent<RectTransform>());
+            fillArea.anchorMin = new Vector2(0f, 0.25f);
+            fillArea.anchorMax = new Vector2(1f, 0.75f);
+            fillArea.offsetMin = new Vector2(5f, 0f);
+            fillArea.offsetMax = new Vector2(-5f, 0f);
+            var fillGo = new GameObject("Fill");
+            fillGo.transform.SetParent(fillArea, false);
+            var fillImg = fillGo.AddComponent<Image>();
+            fillImg.color = ColSub;
+            var fillRt = fillImg.rectTransform;
+            fillRt.anchorMin = Vector2.zero;
+            fillRt.anchorMax = Vector2.one;
+            fillRt.offsetMin = fillRt.offsetMax = Vector2.zero;
+
+            var handleArea = MakeChild("HandleSlideArea", sliderGo.GetComponent<RectTransform>());
+            handleArea.anchorMin = Vector2.zero;
+            handleArea.anchorMax = Vector2.one;
+            handleArea.offsetMin = new Vector2(5f, 0f);
+            handleArea.offsetMax = new Vector2(-5f, 0f);
+            var handleGo = new GameObject("Handle");
+            handleGo.transform.SetParent(handleArea, false);
+            var handleImg = handleGo.AddComponent<Image>();
+            handleImg.color = ColTitle;
+            var handleRt = handleImg.rectTransform;
+            handleRt.sizeDelta = new Vector2(10f, 0f);
+            handleRt.anchorMin = new Vector2(0f, 0f);
+            handleRt.anchorMax = new Vector2(0f, 1f);
+
+            _speedSlider = sliderGo.AddComponent<Slider>();
+            _speedSlider.fillRect = fillRt;
+            _speedSlider.handleRect = handleRt;
+            _speedSlider.targetGraphic = handleImg;
+            _speedSlider.minValue = MinRotSpeed;
+            _speedSlider.maxValue = MaxRotSpeed;
+            _speedSlider.value = _rotSpeed;
+            _speedSlider.onValueChanged.AddListener(v =>
+            {
+                _rotSpeed = v;
+                UpdateSpeedLabel();
+            });
+            UpdateSpeedLabel();
+        }
+
+        void UpdateSpeedLabel()
+        {
+            if (_speedLabel != null)
+                _speedLabel.text = _rotSpeed < 1f ? "Paused" : $"Speed {_rotSpeed:0}";
         }
 
         // ────────────────── Details (right half) ──────────────────
@@ -128,10 +220,10 @@ namespace InsectWars.UI
             area.anchorMax = Vector2.one;
             area.offsetMin = area.offsetMax = Vector2.zero;
 
-            // tab row
+            // tab row (below the back button)
             var tabRow = MakeChild("TabRow", area);
-            tabRow.anchorMin = new Vector2(0f, 0.92f);
-            tabRow.anchorMax = Vector2.one;
+            tabRow.anchorMin = new Vector2(0f, 0.85f);
+            tabRow.anchorMax = new Vector2(1f, 0.92f);
             tabRow.offsetMin = tabRow.offsetMax = Vector2.zero;
 
             _unitTabBtn = MakeTabButton(tabRow, "UNITS", 0f, 0.48f, btnSprite, () => SwitchTab(Tab.Units));
@@ -141,22 +233,22 @@ namespace InsectWars.UI
             _nameLabel = Txt(area, "", 32, ColTitle, TextAnchor.UpperLeft);
             _nameLabel.fontStyle = FontStyle.Bold;
             var nrt = _nameLabel.rectTransform;
-            nrt.anchorMin = new Vector2(0.02f, 0.82f);
-            nrt.anchorMax = new Vector2(0.98f, 0.90f);
+            nrt.anchorMin = new Vector2(0.02f, 0.76f);
+            nrt.anchorMax = new Vector2(0.98f, 0.84f);
             nrt.offsetMin = nrt.offsetMax = Vector2.zero;
 
             // description
             _descLabel = Txt(area, "", 16, ColSub, TextAnchor.UpperLeft);
             var drt = _descLabel.rectTransform;
-            drt.anchorMin = new Vector2(0.02f, 0.68f);
-            drt.anchorMax = new Vector2(0.98f, 0.82f);
+            drt.anchorMin = new Vector2(0.02f, 0.62f);
+            drt.anchorMax = new Vector2(0.98f, 0.76f);
             drt.offsetMin = drt.offsetMax = Vector2.zero;
 
             // stats
             _statsLabel = Txt(area, "", 18, ColTitle, TextAnchor.UpperLeft);
             var srt = _statsLabel.rectTransform;
             srt.anchorMin = new Vector2(0.02f, 0.18f);
-            srt.anchorMax = new Vector2(0.98f, 0.68f);
+            srt.anchorMax = new Vector2(0.98f, 0.62f);
             srt.offsetMin = srt.offsetMax = Vector2.zero;
 
             // item buttons (unit list)
@@ -291,6 +383,8 @@ namespace InsectWars.UI
 
             _previewHeight = EstimateModelHeight(_previewGo);
             _orbitAngle = 0f;
+            _zoomFactor = 1f;
+            _pitchFactor = 0.6f;
             UpdateCameraOrbit();
         }
 
@@ -318,8 +412,9 @@ namespace InsectWars.UI
         {
             if (_previewCam == null) return;
             float rad = _orbitAngle * Mathf.Deg2Rad;
-            float camHeight = _previewHeight * 0.6f;
-            float dist = Mathf.Max(PreviewDistance, _previewHeight * 2.2f);
+            float camHeight = _previewHeight * _pitchFactor;
+            float baseDist = Mathf.Max(PreviewDistance, _previewHeight * 2.2f);
+            float dist = baseDist / _zoomFactor;
             var offset = new Vector3(Mathf.Sin(rad) * dist, camHeight, Mathf.Cos(rad) * dist);
             _previewCam.transform.position = PreviewWorldOrigin + offset;
             _previewCam.transform.LookAt(PreviewWorldOrigin + Vector3.up * camHeight * 0.6f);
@@ -457,15 +552,30 @@ namespace InsectWars.UI
         {
             if (_previewGo == null) return;
 
-            // auto-rotate + drag override
-            if (Input.GetMouseButton(0) && RectTransformUtility.RectangleContainsScreenPoint(
-                    _previewImage.rectTransform, Input.mousePosition, null))
+            var mouse = Mouse.current;
+            bool overPreview = mouse != null &&
+                RectTransformUtility.RectangleContainsScreenPoint(
+                    _previewImage.rectTransform, mouse.position.ReadValue(), null);
+
+            if (mouse != null && overPreview)
             {
-                _orbitAngle -= Input.GetAxis("Mouse X") * 3f;
+                var delta = mouse.delta.ReadValue();
+
+                if (mouse.leftButton.isPressed)
+                    _orbitAngle -= delta.x * 0.3f;
+                else
+                    _orbitAngle += _rotSpeed * Time.unscaledDeltaTime;
+
+                if (mouse.rightButton.isPressed)
+                    _pitchFactor = Mathf.Clamp(_pitchFactor - delta.y * 0.004f, MinPitch, MaxPitch);
+
+                float scroll = mouse.scroll.ReadValue().y;
+                if (Mathf.Abs(scroll) > 0.01f)
+                    _zoomFactor = Mathf.Clamp(_zoomFactor + scroll * 0.001f, MinZoom, MaxZoom);
             }
             else
             {
-                _orbitAngle += RotSpeed * Time.unscaledDeltaTime;
+                _orbitAngle += _rotSpeed * Time.unscaledDeltaTime;
             }
 
             UpdateCameraOrbit();

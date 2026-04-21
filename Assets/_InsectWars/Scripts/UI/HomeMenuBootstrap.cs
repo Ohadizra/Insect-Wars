@@ -355,6 +355,7 @@ namespace InsectWars.UI
                 var mapName = m.displayName;
                 DarkButton(box.transform, mapName.ToUpper(), ref y, () => {
                     GameSession.SetLearningMode(false);
+                    GameSession.SetTutorialMode(false);
                     GameSession.SetSelectedMap(m);
                     SceneLoader.LoadSkirmishDemo();
                 });

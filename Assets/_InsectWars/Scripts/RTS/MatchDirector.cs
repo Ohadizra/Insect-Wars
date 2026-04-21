@@ -151,15 +151,15 @@ namespace InsectWars.RTS
 
             CreateLabel(panel.transform, "StatDuration",
                 $"Match Duration:   {durationStr}", 22, ColSub, FontStyle.Normal,
-                new Vector2(0.1f, 0.62f), new Vector2(0.9f, 0.76f), TextAnchor.MiddleLeft);
+                new Vector2(0.1f, 0.62f), new Vector2(0.9f, 0.76f), TextAnchor.MiddleCenter);
 
             CreateLabel(panel.transform, "StatKills",
                 $"Enemy Units Killed:   {MatchStats.EnemyUnitsKilled:N0}", 22, ColSub, FontStyle.Normal,
-                new Vector2(0.1f, 0.48f), new Vector2(0.9f, 0.62f), TextAnchor.MiddleLeft);
+                new Vector2(0.1f, 0.48f), new Vector2(0.9f, 0.62f), TextAnchor.MiddleCenter);
 
             CreateLabel(panel.transform, "StatCalories",
                 $"Calories Gathered:   {MatchStats.CaloriesGathered:N0}", 22, ColSub, FontStyle.Normal,
-                new Vector2(0.1f, 0.34f), new Vector2(0.9f, 0.48f), TextAnchor.MiddleLeft);
+                new Vector2(0.1f, 0.34f), new Vector2(0.9f, 0.48f), TextAnchor.MiddleCenter);
 
             // Separator above buttons
             MakeSeparator(panel.transform, sepSprite, new Vector2(0.08f, 0.30f), new Vector2(0.92f, 0.30f));

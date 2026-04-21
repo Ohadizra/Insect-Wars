@@ -429,7 +429,7 @@ namespace InsectWars.RTS
                     AddCmdButton(_cmdGridParent, "Cancel", "Esc", () => { _buildMenuActive = false; HideTooltip(); ForceRebuild(); });
                     break;
                 case BarMode.Hive:
-                    AddCmdButton(_cmdGridParent, $"Worker\n<size=11>{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal · {ColonyCapacity.GetUnitCCCost(UnitArchetype.Worker)} CC</size>", "W", BuildWorker);
+                    AddCmdButton(_cmdGridParent, "Worker", "W", BuildWorker, $"{ProductionBuilding.GetUnitCost(UnitArchetype.Worker)} cal");
                     var hive = SelectionController.Instance?.SelectedHive;
                     if (hive != null && hive.Team == Team.Player)
                     {
@@ -459,7 +459,7 @@ namespace InsectWars.RTS
                             {
                                 var arch = units[i];
                                 string hk = i < hotkeys.Length ? hotkeys[i] : "";
-                                AddCmdButton(_cmdGridParent, $"{ProductionBuilding.GetUnitName(arch)}\n<size=11>{ProductionBuilding.GetUnitCost(arch)} cal</size>", hk, () => ProduceFromAllActiveBuildings(arch));
+                                AddCmdButton(_cmdGridParent, ProductionBuilding.GetUnitName(arch), hk, () => ProduceFromAllActiveBuildings(arch), $"{ProductionBuilding.GetUnitCost(arch)} cal");
                             }
                             bool anyProducing = false;
                             foreach (var ab in SelectionController.Instance.SelectedBuildingsOfActiveType)
@@ -886,7 +886,7 @@ namespace InsectWars.RTS
             return t;
         }
 
-        void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick)
+        void AddCmdButton(Transform parent, string name, string key, UnityEngine.Events.UnityAction onClick, string costText = null)
         {
             var go = new GameObject($"Cmd_{name}");
             go.transform.SetParent(parent, false);
@@ -918,6 +918,18 @@ namespace InsectWars.RTS
             var krt = keyLabel.rectTransform;
             krt.offsetMin = new Vector2(2f, 2f);
             krt.offsetMax = new Vector2(-2f, -1f);
+
+            if (!string.IsNullOrEmpty(costText))
+            {
+                var cost = CreateText("Cost", go.transform, 10, ColSub, TextAnchor.LowerCenter);
+                cost.text = costText;
+                var crt = cost.rectTransform;
+                crt.anchorMin = new Vector2(0f, 0f);
+                crt.anchorMax = new Vector2(1f, 0f);
+                crt.pivot = new Vector2(0.5f, 1f);
+                crt.anchoredPosition = new Vector2(0f, -2f);
+                crt.sizeDelta = new Vector2(0f, 14f);
+            }
 
             _cmdButtonImages[name] = img;
         }
